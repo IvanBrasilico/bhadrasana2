@@ -18,6 +18,6 @@ if __name__ == '__main__':
     port = 5005
     application = DispatcherMiddleware(app,
                                     {
-                                        '/bhadrasana': app
+                                        '/bhadrasana2': app
                                     })
     run_simple('localhost', port, application, use_reloader=True)
