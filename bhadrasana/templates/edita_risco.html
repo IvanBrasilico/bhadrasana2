@@ -1,0 +1,50 @@
+{% extends "layout.html" %} {% block content %} {{super()}}
+<div id="main" class="container-fluid">
+    <div id="top" class="row">
+        <div class="col-sm-12">
+            <form method="POST" id="formfiltro" action="inclui_risco">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <div class="row">
+                    <div class="form-group">
+                        Campo<input type="text" name="campo">
+                        Valor<input type="text" name="valor">
+                        Motivo<input type="text" name="motivo">
+                    </div>
+                </div>
+                <button class="btn btn-default btn-info" onclick="submit">
+                    Incluir risco
+                </button>
+            </form>
+        </div>
+        <div class="table-responsive col-sm-12">
+            <h4>Lista de Riscos Ativos</h4>
+            <div class="table">
+                <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive" cellspacing="0"
+                    cellpadding="0">
+                    {% for row in riscos_ativos %}
+                    <tr>
+                        {% for col in row %}
+                        <td align="center">
+                            {{ col }}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                    {% if not riscos_ativos %}
+                    <tr>
+                        <td>Sem resultados.</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+            &nbsp;
+        </div>
+    </div>
+    <div id="bottom" class="row">
+        AJNA - Receita Federal do Brasil 2017
+    </div>
+</div>
+{% endblock %} {% block scripts %} {{super()}}
+<script>
+
+</script> {% endblock %}

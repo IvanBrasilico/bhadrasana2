@@ -24,7 +24,7 @@ import ajna_commons.flask.login as login_ajna
 from ajna_commons.flask.conf import ALLOWED_EXTENSIONS, SECRET, logo
 from ajna_commons.flask.log import logger
 from ajna_commons.flask.user import DBUser
-from flask import (Flask, flash, redirect, render_template, request,
+from flask import (Flask, flash, jsonify, redirect, render_template, request,
                    url_for)
 from flask_bootstrap import Bootstrap
 # from flask_cors import CORS
@@ -36,7 +36,8 @@ from flask_wtf.csrf import CSRFProtect
 from wtforms import BooleanField
 
 from bhadrasana.conf import APP_PATH, CSV_FOLDER
-from bhadrasana.models.mercantemanager import mercanterisco
+from bhadrasana.models.mercantemanager import mercanterisco, riscosativos,\
+    insererisco
 
 app = Flask(__name__, static_url_path='/static')
 csrf = CSRFProtect(app)
@@ -108,11 +109,16 @@ def risco():
     static_path = os.path.join(APP_PATH,
                                app.config.get('STATIC_FOLDER', 'static'),
                                current_user.name)
-    user_folder = os.path.join(CSV_FOLDER, current_user.name)
+    user_name = current_user.name
+    user_folder = os.path.join(CSV_FOLDER, user_name)
     lista_risco = []
     if request.method == 'POST':
         try:
             riscos_ativos_form = RiscosAtivosForm(request.form)
+            riscos_ativos = riscosativos(dbsession, user_name)
+            ncms = [risco[1] for risco in riscos_ativos
+                    if risco[0] == 'ncm']
+            print(ncms)
             filtros = {}
             if riscos_ativos_form.consignatario.data is True:
                 filtros['consignatario'] = ['00']
@@ -121,7 +127,7 @@ def risco():
             if riscos_ativos_form.portoorigem.data is True:
                 filtros['portoOrigemCarga'] = ['CNXGG']
             if riscos_ativos_form.ncm.data is True:
-                filtros['ncm'] = ['8528', '3906', '4202']
+                filtros['ncm'] = ncms  # ['8528', '3906', '4202']
             lista_risco = mercanterisco(dbsession, filtros)
             # print('***********', lista_risco)
         except Exception as err:
@@ -141,7 +147,29 @@ def risco():
 @app.route('/edita_risco', methods=['POST', 'GET'])
 @login_required
 def edita_risco():
-    return index()
+    session = app.config.get('dbsession')
+    user_name = current_user.name
+    riscos_ativos = riscosativos(session, user_name)
+    return render_template('edita_risco.html',
+                           riscos_ativos=riscos_ativos)
+
+
+@app.route('/inclui_risco', methods=['POST'])
+@login_required
+def inclui_risco():
+    session = app.config.get('dbsession')
+    user_name = current_user.name
+    campo = request.form.get('campo')
+    valor = request.form.get('valor')
+    motivo = request.form.get('motivo')
+    # print(user_name, campo, valor, motivo)
+    insererisco(session,
+                user_name=user_name,
+                campo=campo,
+                valor=valor,
+                motivo=motivo)
+    return redirect(url_for('edita_risco'))
+
 
 
 @nav.navigation()

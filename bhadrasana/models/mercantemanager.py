@@ -1,5 +1,5 @@
 from sqlalchemy import select, and_, join, or_
-from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem
+from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, RiscoAtivo
 
 
 def mercanterisco(session, pfiltros: dict):
@@ -36,3 +36,21 @@ def mercanterisco(session, pfiltros: dict):
         print(dir(row))
         result.append({key: row[key] for key in keys})
     return result
+
+
+def riscosativos(session, user_name):
+    riscosativos = session.query(RiscoAtivo).\
+        filter(RiscoAtivo.user_name == user_name).all()
+    return [(risco.campo, risco.valor, risco.motivo)
+            for risco in riscosativos]
+
+
+def insererisco(session, **kwargs):
+    novorisco = RiscoAtivo(**kwargs)
+    try:
+        session.add(novorisco)
+        session.commit()
+        return True
+    except:
+        session.rollout()
+        return False
