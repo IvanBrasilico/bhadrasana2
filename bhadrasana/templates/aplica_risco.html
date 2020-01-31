@@ -1,0 +1,98 @@
+{% extends "layout.html" %} {% block content %} {{super()}}
+<div id="main" class="container-fluid">
+    <div id="top" class="row">
+        <div class="col-sm-12">
+            <form method="POST" id="formfiltro" action="risco">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <div class="row">
+                    <h4>Filtros ativos</h4>
+                    <div class="form-group">
+                        <div class="col-sm-1">
+                            <input class="form-control" type="checkbox" name="consignatario" {% if oform.consignatario.data %} checked {% endif %} />
+                        </div>
+                        <div class="col-sm-2">
+                            Consignatário
+                        </div>
+                        <div class="col-sm-1">
+                            <input class="form-control" type="checkbox" name="embarcador" {% if oform.embarcador.data %} checked {% endif %} />
+                        </div>
+                        <div class="col-sm-2">
+                            Embarcador
+                        </div>
+                        <div class="col-sm-1">
+                            <input class="form-control" type="checkbox" name="portoorigem" {% if oform.portoorigem.data %} checked {% endif %} />
+                        </div>
+                        <div class="col-sm-2">
+                            Porto de Origem
+                        </div>
+                        <div class="col-sm-1">
+                            <input class="form-control" type="checkbox" name="ncm" {% if oform.ncm.data %} checked {% endif %} />
+                        </div>
+                        <div class="col-sm-2">
+                            NCM
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-default btn-info" onclick="submit">
+                    Aplicar risco
+                </button>
+            </form>
+        </div>
+        <div class="table-responsive col-sm-12">
+            <h4>Lista de Riscos da Base {{filename}} - total de {{total_linhas}} linhas - Máximos de 100 linhas, baixe a planilha
+                para ver as restantes ou aplique mais filtros</h4>
+            {% if csv_salvo %}
+            <big>
+                <a href="static/{{ current_user.name }}/{{csv_salvo}}">
+                    <span class="label label-success">
+                        <b>Baixar planilha</b>
+                    </span>
+                </a>
+            </big>
+            {% endif %}
+            <div class="table">
+                <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive" cellspacing="0"
+                    cellpadding="0">
+                    {% if lista_risco is defined %}
+                        <tr>
+                            {% for key, value in lista_risco[0].items() %}
+                                <th>{{ key }}</th>
+                            {% endfor %}
+                        </tr>
+                    {% endif %}
+                    {% for row in lista_risco %}
+                    <tr>
+                        {% for key, value in row.items() %}
+                        <td align="center">
+                            {% if key=='numeroCEmercante' %}
+                              <a href="https://ajna.labin.rf08.srf/virasana/cemercante/{{value}}" target="_BLANK">
+                                  {{value}}
+                              </a>
+                            {% elif key=='codigoConteiner' %}
+                              <a href="https://ajna.labin.rf08.srf/virasana/files?numero={{value}}" target="_BLANK">
+                                  {{value}}
+                              </a>
+                            {% else %}
+                                {{value}}
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %} {% if not lista_risco %}
+                    <tr>
+                        <td>Sem resultados.</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+            &nbsp;
+        </div>
+    </div>
+    <div id="bottom" class="row">
+        AJNA - Receita Federal do Brasil 2017
+    </div>
+</div>
+{% endblock %} {% block scripts %} {{super()}}
+<script>
+
+</script> {% endblock %}
