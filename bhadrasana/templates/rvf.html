@@ -1,0 +1,83 @@
+{% extends "layout.html" %} {% block content %} {{super()}}
+<div id="main" class="container-fluid">
+    <div id="top" class="row">
+        <div class="col-sm-12">
+            <form method="POST" id="formrvf" action="rvf">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <input type="hidden" name="id" value="{{ oform.id.data }}" />
+                <div class="row">
+                    <div class="form-group">
+                        CE Mercante {{ oform.numeroCEmercante}}<br>
+                        Descrição <br>
+                        {{ oform.descricao }}<br>
+                    </div>
+                </div>
+                <button class="btn btn-default btn-info" onclick="submit">
+                    Salvar
+                </button>
+            </form>
+        </div>
+        <div class="col-sm-12">
+            <h4>Marcas encontradas</h4>
+            <div class="ui-widget">
+                <input id="marcas"> <!-- <button id="btnincluimarca" type="button">Incluir</button> -->
+            </div>
+            <div class="col-sm-6" id="div_marcas_encontradas" border="1">
+                    {% for marca in marcas_encontradas %}
+                    <button type="button" class="btn btn-primary">
+                        {{ marca.nome }} <span class="badge" onclick="exclui_marca_encontrada({{oform.id.data}}, {{ marca.id }})">X</span>
+                    </button>
+                    {% endfor %}
+            </div>
+            <div class="col-sm-6">
+            </div>
+        </div>
+    </div>
+    <div id="bottom" class="row">
+        AJNA - Receita Federal do Brasil 2017
+    </div>
+</div>
+{% endblock %} {% block scripts %} {{super()}}
+<script>
+    function mostra_marcas(marcas_encontradas){
+        console.log(marcas_encontradas);
+        $('#div_marcas_encontradas').empty();
+        $.each(marcas_encontradas, function(i, marca) {
+            console.log(marca);
+            console.log(marca.nome);
+            console.log(marca.id);
+            $('<button type="button" class="btn btn-primary>').append(
+            $('<span>').html(marca.nome + 'span class="badge" onclick="exclui_marca_encontrada('+ marca.id + '\')" />')
+            ).appendTo('#div_marcas_encontradas');
+        });
+    }
+    function exclui_marca_encontrada(rvf_id, marca_id){
+        $.getJSON('exclui_marca_encontrada', {
+          rvf_id: rvf_id, marca_id: marca_id
+        }, function(marcas_encontradas) {
+          mostra_marcas(marcas_encontradas);
+        });
+    }
+    function inclui_marca_encontrada(rvf_id, marca_nome){
+        $.getJSON('inclui_marca_encontrada', {
+          rvf_id: rvf_id, marca_nome: marca_nome
+        }, function(marcas_encontradas) {
+          mostra_marcas(marcas_encontradas);
+        });
+    }
+    $( function() {
+        var marcas = [
+        {% for marca in marcas %}
+        "{{ marca.nome }}",
+        {% endfor %}
+        ];
+        $( "#marcas" ).autocomplete({
+          source: marcas
+        });
+    } );
+    $('input#marcas').bind('keydown', function(e) {
+      if (e.keyCode == 13) {
+        inclui_marca_encontrada({{oform.id.data}}, $('input#marcas').val());
+      }
+    });
+</script> {% endblock %}

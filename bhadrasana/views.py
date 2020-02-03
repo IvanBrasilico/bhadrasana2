@@ -24,20 +24,21 @@ import ajna_commons.flask.login as login_ajna
 from ajna_commons.flask.conf import ALLOWED_EXTENSIONS, SECRET, logo
 from ajna_commons.flask.log import logger
 from ajna_commons.flask.user import DBUser
-from flask import (Flask, flash, jsonify, redirect, render_template, request,
-                   url_for)
+from flask import (Flask, flash, redirect, render_template, request,
+                   url_for, jsonify)
 from flask_bootstrap import Bootstrap
 # from flask_cors import CORS
 from flask_login import current_user, login_required
 from flask_nav import Nav
 from flask_nav.elements import Navbar, View
-from flask_wtf import FlaskForm
 from flask_wtf.csrf import CSRFProtect
-from wtforms import BooleanField
 
 from bhadrasana.conf import APP_PATH, CSV_FOLDER
-from bhadrasana.models.mercantemanager import mercanterisco, riscosativos,\
+from bhadrasana.forms.riscosativos import RiscosAtivosForm
+from bhadrasana.forms.rvf import RVFForm
+from bhadrasana.models.mercantemanager import mercanterisco, riscosativos, \
     insererisco
+from bhadrasana.models.rvfmanager import get_marcas, exclui_marca_encontrada, cadastra_rvf, inclui_marca_encontrada
 
 app = Flask(__name__, static_url_path='/static')
 csrf = CSRFProtect(app)
@@ -84,17 +85,6 @@ def index():
         return render_template('index.html')
     else:
         return redirect(url_for('commons.login'))
-
-
-class RiscosAtivosForm(FlaskForm):
-    consignatario = BooleanField(u'Consignatario',
-                                 default=0)
-    embarcador = BooleanField(u'Embarcador',
-                              default=0)
-    portoorigem = BooleanField(u'Porto de Origem',
-                               default=1)
-    ncm = BooleanField(u'NCM',
-                       default=0)
 
 
 @app.route('/risco', methods=['POST', 'GET'])
@@ -144,6 +134,7 @@ def risco():
                            oform=riscos_ativos_form,
                            lista_risco=lista_risco)
 
+
 @app.route('/edita_risco', methods=['POST', 'GET'])
 @login_required
 def edita_risco():
@@ -171,6 +162,58 @@ def inclui_risco():
     return redirect(url_for('edita_risco'))
 
 
+@app.route('/rvf', methods=['POST', 'GET'])
+@login_required
+def rvf():
+    session = app.config.get('dbsession')
+    user_name = current_user.name
+    marcas_encontradas = []
+    if request.method == 'POST':
+        try:
+            rvf_form = RVFForm(request.form)
+            rvf_form.validate()
+            print(rvf_form.id.data)
+            rvf = cadastra_rvf(session,
+                               rvf_form.id.data,
+                               rvf_form.descricao.data,
+                               rvf_form.numeroCEmercante.data)
+            rvf_form.id.data = rvf.id
+            marcas_encontradas = rvf.marcasencontradas
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro ao aplicar risco! ' +
+                  'Detalhes no log da aplicação.')
+            flash(type(err))
+            flash(err)
+    else:
+        rvf_form = RVFForm()
+    marcas = get_marcas(session)
+    print(marcas)
+    print(marcas_encontradas)
+    return render_template('rvf.html',
+                           marcas=marcas,
+                           oform=rvf_form,
+                           marcas_encontradas=marcas_encontradas)
+
+@app.route('/inclui_marca_encontrada', methods=['GET'])
+@login_required
+def inclui_marca():
+    session = app.config.get('dbsession')
+    rvf_id = request.args.get('rvf_id')
+    marca_nome = request.args.get('marca_nome')
+    novas_marcas = inclui_marca_encontrada(session, rvf_id, marca_nome)
+    return jsonify([{'id':marca.id, 'nome': marca.nome} for marca in novas_marcas])
+
+
+@app.route('/exclui_marca_encontrada', methods=['GET'])
+@login_required
+def exclui_marca():
+    session = app.config.get('dbsession')
+    rvf_id = request.args.get('rvf_id')
+    marca_id = request.args.get('marca_id')
+    novas_marcas = exclui_marca_encontrada(session, rvf_id, marca_id)
+    return jsonify([{'id':marca.id, 'nome': marca.nome} for marca in novas_marcas])
+
 
 @nav.navigation()
 def mynavbar():
@@ -178,6 +221,7 @@ def mynavbar():
     items = [View('Home', 'index'),
              View('Risco', 'risco'),
              View('Editar Riscos', 'edita_risco'),
+             View('RVF', 'rvf'),
              ]
     if current_user.is_authenticated:
         items.append(View('Sair', 'commons.logout'))
