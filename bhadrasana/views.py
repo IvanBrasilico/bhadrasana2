@@ -38,7 +38,8 @@ from bhadrasana.forms.riscosativos import RiscosAtivosForm
 from bhadrasana.forms.rvf import RVFForm
 from bhadrasana.models.mercantemanager import mercanterisco, riscosativos, \
     insererisco
-from bhadrasana.models.rvfmanager import get_marcas, exclui_marca_encontrada, cadastra_rvf, inclui_marca_encontrada
+from bhadrasana.models.rvfmanager import get_marcas, exclui_marca_encontrada, cadastra_rvf, inclui_marca_encontrada, \
+    get_rvf
 
 app = Flask(__name__, static_url_path='/static')
 csrf = CSRFProtect(app)
@@ -172,7 +173,6 @@ def rvf():
         try:
             rvf_form = RVFForm(request.form)
             rvf_form.validate()
-            print(rvf_form.id.data)
             rvf = cadastra_rvf(session,
                                rvf_form.id.data,
                                rvf_form.descricao.data,
@@ -181,12 +181,19 @@ def rvf():
             marcas_encontradas = rvf.marcasencontradas
         except Exception as err:
             logger.error(err, exc_info=True)
-            flash('Erro ao aplicar risco! ' +
-                  'Detalhes no log da aplicação.')
+            flash('Erro! Detalhes no log da aplicação.')
             flash(type(err))
             flash(err)
     else:
         rvf_form = RVFForm()
+        rvf_id = request.args.get('id')
+        if rvf_id is not None:
+            rvf = get_rvf(session, rvf_id)
+            if rvf is not None:
+                rvf_form.id.data = rvf.id
+                rvf_form.descricao.data = rvf.descricao
+                rvf_form.numeroCEmercante.data = rvf.numeroCEmercante
+                marcas_encontradas = rvf.marcasencontradas
     marcas = get_marcas(session)
     print(marcas)
     print(marcas_encontradas)
@@ -195,6 +202,7 @@ def rvf():
                            oform=rvf_form,
                            marcas_encontradas=marcas_encontradas)
 
+
 @app.route('/inclui_marca_encontrada', methods=['GET'])
 @login_required
 def inclui_marca():
@@ -202,7 +210,7 @@ def inclui_marca():
     rvf_id = request.args.get('rvf_id')
     marca_nome = request.args.get('marca_nome')
     novas_marcas = inclui_marca_encontrada(session, rvf_id, marca_nome)
-    return jsonify([{'id':marca.id, 'nome': marca.nome} for marca in novas_marcas])
+    return jsonify([{'id': marca.id, 'nome': marca.nome} for marca in novas_marcas])
 
 
 @app.route('/exclui_marca_encontrada', methods=['GET'])
@@ -212,7 +220,38 @@ def exclui_marca():
     rvf_id = request.args.get('rvf_id')
     marca_id = request.args.get('marca_id')
     novas_marcas = exclui_marca_encontrada(session, rvf_id, marca_id)
-    return jsonify([{'id':marca.id, 'nome': marca.nome} for marca in novas_marcas])
+    return jsonify([{'id': marca.id, 'nome': marca.nome} for marca in novas_marcas])
+
+
+def valid_file(file, extensions=['jpg']):
+    """Valida arquivo passado e retorna validade e mensagem."""
+    if not file or file.filename == '' or not allowed_file(file.filename, extensions):
+        if not file:
+            mensagem = 'Arquivo nao informado'
+        elif not file.filename:
+            mensagem = 'Nome do arquivo vazio'
+        else:
+            mensagem = 'Nome de arquivo não permitido: ' + \
+                       file.filename
+            # print(file)
+        return False, mensagem
+    return True, None
+
+
+@app.route('/rvf_imgupload', methods=['POST'])
+@login_required
+def rvf_imgupload():
+    rvf_id = request.form.get('rvf_id')
+    if rvf_id is None:
+        flash('Escolha um RVF antes')
+        return redirect(url_for('rvf'))
+    for file in request.files:
+        validfile, mensagem = valid_file(file)
+        if not validfile:
+            flash(mensagem)
+            return redirect(url_for('rvf'))
+        content = file.read()
+    return redirect(url_for('rvf', id=rvf_id))
 
 
 @nav.navigation()

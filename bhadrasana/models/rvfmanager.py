@@ -5,6 +5,8 @@ def get_marcas(session):
     marcas = session.query(Marca).all()
     return [marca for marca in marcas]
 
+def get_rvf(session, id):
+    return session.query(RVF).filter(RVF.id == id).one_or_none()
 
 def cadastra_rvf(session,
                  id,
