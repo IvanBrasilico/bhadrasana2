@@ -3,8 +3,8 @@
     <div id="top" class="row">
         <div class="col-sm-12">
             <form method="POST" id="formrvf" action="rvf">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                <input type="hidden" name="id" value="{{ oform.id.data }}" />
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <input type="hidden" name="id" value="{{ oform.id.data }}"/>
                 <div class="row">
                     <div class="form-group">
                         CE Mercante {{ oform.numeroCEmercante}}<br>
@@ -22,14 +22,17 @@
             <div class="ui-widget">
                 <input id="marcas"> <!-- <button id="btnincluimarca" type="button">Incluir</button> -->
             </div>
-            <div class="col-sm-6" id="div_marcas_encontradas" border="1">
+            <div class="row">
+                <div class="col-sm-6" id="div_marcas_encontradas" border="1">
                     {% for marca in marcas_encontradas %}
                     <button type="button" class="btn btn-primary">
-                        {{ marca.nome }} <span class="badge" onclick="exclui_marca_encontrada({{oform.id.data}}, {{ marca.id }})">X</span>
+                        {{ marca.nome }} <span class="badge"
+                                               onclick="exclui_marca_encontrada({{oform.id.data}}, {{ marca.id }})">X</span>
                     </button>
                     {% endfor %}
-            </div>
-            <div class="col-sm-6">
+                </div>
+                <div class="col-sm-6">
+                </div>
             </div>
         </div>
     </div>
@@ -43,11 +46,8 @@
         console.log(marcas_encontradas);
         $('#div_marcas_encontradas').empty();
         $.each(marcas_encontradas, function(i, marca) {
-            console.log(marca);
-            console.log(marca.nome);
-            console.log(marca.id);
-            $('<button type="button" class="btn btn-primary>').append(
-            $('<span>').html(marca.nome + 'span class="badge" onclick="exclui_marca_encontrada('+ marca.id + '\')" />')
+            $('<button type="button" class="btn btn-primary">').text(marca.nome+ ' ').append(
+            $('<span class="badge" onclick="exclui_marca_encontrada({{oform.id.data}}, ' + marca.id + ')">').text('X')
             ).appendTo('#div_marcas_encontradas');
         });
     }
@@ -80,4 +80,5 @@
         inclui_marca_encontrada({{oform.id.data}}, $('input#marcas').val());
       }
     });
+
 </script> {% endblock %}
