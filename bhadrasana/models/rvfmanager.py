@@ -47,3 +47,6 @@ def inclui_marca_encontrada(session, rvf_id, marca_nome):
 
 def exclui_marca_encontrada(session, rvf_id, marca_id):
     return gerencia_marca_encontrada(session, rvf_id, marca_id, inclui=False)
+
+def get_ids_anexos(rvf):
+    return []

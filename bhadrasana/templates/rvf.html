@@ -2,6 +2,27 @@
 <div id="main" class="container-fluid">
     <div id="top" class="row">
         <div class="col-sm-12">
+            <form method="POST" id="filtroformrvf" action="rvf">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="row">
+                    <div class="form-group">
+                        CE Mercante {{ formfiltro.ce}}<br>
+                        Data inicial
+                        <input id="datainicio" name="datainicio" type="datetime-local"
+                               value="{{ formfiltro.datainicio.data }}"><br>
+                        Data final
+                        <input id="datafim" name="datafim" type="datetime-local"
+                               value="{{ formfiltro.datafim.data }}"><br>
+                    </div>
+                </div>
+                <button class="btn btn-default btn-info" onclick="submit">
+                    Salvar
+                </button>
+            </form>
+        </div>
+        <div class="col-sm-12">
+        </div>
+        <div class="col-sm-12">
             <form method="POST" id="formrvf" action="rvf">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <input type="hidden" name="id" value="{{ oform.id.data }}"/>
@@ -10,6 +31,9 @@
                         CE Mercante {{ oform.numeroCEmercante}}<br>
                         Descrição <br>
                         {{ oform.descricao }}<br>
+                        Dia e horário da verificação
+                        <input id="datahora" name="datahora" type="datetime-local"
+                               value="{{ oform.datahora.data }}"><br>
                     </div>
                 </div>
                 <button class="btn btn-default btn-info" onclick="submit">
@@ -35,11 +59,11 @@
                 </div>
             </div>
             <div class="form-group">
-                <form action="/rvf_imgupload" method="post">
+                <form action="/rvf_imgupload"  enctype="multipart/form-data" method="post">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <input type="hidden" name="rvf_id" value="{{ oform.id.data }}"/>
                     <h4>Selecione anexos:</h4>
-                    <div class="col-sm-2"><input type="file" name="img" multiple>
+                    <div class="col-sm-2"><input type="file" name="img" multiple="">
                     </div>
                     <div class="col-sm-10">
                         <button class="btn btn-default btn-info" onclick="submit">Enviar</button>
@@ -92,8 +116,10 @@
     $('input#marcas').bind('keydown', function(e) {
       if (e.keyCode == 13) {
         inclui_marca_encontrada({{oform.id.data}}, $('input#marcas').val());
+        $('input#marcas').val('');
       }
     });
+
 
 
 </script> {% endblock %}
