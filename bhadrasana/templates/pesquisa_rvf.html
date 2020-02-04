@@ -1,0 +1,58 @@
+{% extends "layout.html" %} {% block content %} {{super()}}
+<div id="main" class="container-fluid">
+    <div id="top" class="row col-sm-12">
+        <div class="form-group">
+            <form method="POST" id="filtroformrvf" action="pesquisa_rvf">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="row">
+                    <div class="form-group">
+                        CE Mercante {{ oform.numeroCEmercante }}<br>
+                        Data inicial
+                        <input id="datainicio" name="datainicio" type="datetime-local"
+                               value="{{ oform.datainicio.data }}"><br>
+                        Data final
+                        <input id="datafim" name="datafim" type="datetime-local"
+                               value="{{ oform.datafim.data }}"><br>
+                    </div>
+                </div>
+                <button class="btn btn-default btn-info" onclick="submit">
+                    Pesquisar
+                </button>
+                <button class="btn btn-default btn-info" formaction="/rvf">
+                    Nova RVF
+                </button>
+            </form>
+        </div>
+    </div>
+    <div id="list" class="row col-sm-12">
+        <div class="table">
+            <table class="inlineTable table table-bordered table-hover table-responsive"
+                   id="filtro_personalizado_table">
+                <thead>
+                <tr>
+                    <th></th>
+                    <th>CE Mercante</th>
+                    <th>Data da verificação</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for rvf in rvfs %}
+                <tr>
+                    <td><a href="rvf?id={{ rvf.id }}">{{ rvf.id }}</a></td>
+                    <td>{{ rvf.numeroCEmercante }}</td>
+                    <td>{{ rvf.datahora }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div id="bottom" class="row col-sm-12">
+        AJNA - Receita Federal do Brasil 2017
+    </div>
+</div>
+{% endblock %} {% block scripts %} {{super()}}
+<script>
+
+</script>
+{% endblock %}
