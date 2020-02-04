@@ -19,7 +19,9 @@ a aplicação de filtros/parâmetros de risco.
 """
 
 import os
+from datetime import date, timedelta
 
+from bson import ObjectId
 from gridfs import GridFS
 
 import ajna_commons.flask.login as login_ajna
@@ -27,7 +29,7 @@ from ajna_commons.flask.conf import ALLOWED_EXTENSIONS, SECRET, logo
 from ajna_commons.flask.log import logger
 from ajna_commons.flask.user import DBUser
 from flask import (Flask, flash, redirect, render_template, request,
-                   url_for, jsonify)
+                   url_for, jsonify, Response)
 from flask_bootstrap import Bootstrap
 # from flask_cors import CORS
 from flask_login import current_user, login_required
@@ -36,6 +38,7 @@ from flask_nav.elements import Navbar, View
 from flask_wtf.csrf import CSRFProtect
 
 from ajna_commons.models.bsonimage import BsonImage
+from ajna_commons.utils.images import mongo_image
 from bhadrasana.conf import APP_PATH, CSV_FOLDER
 from bhadrasana.forms.riscosativos import RiscosAtivosForm
 from bhadrasana.forms.filtro_rvf import FiltroRVFForm
@@ -43,7 +46,7 @@ from bhadrasana.forms.rvf import RVFForm
 from bhadrasana.models.mercantemanager import mercanterisco, riscosativos, \
     insererisco
 from bhadrasana.models.rvfmanager import get_marcas, exclui_marca_encontrada, cadastra_rvf, inclui_marca_encontrada, \
-    get_rvf, get_ids_anexos
+    get_rvf, get_ids_anexos, get_rvfs_filtro
 
 app = Flask(__name__, static_url_path='/static')
 csrf = CSRFProtect(app)
@@ -168,13 +171,38 @@ def inclui_risco():
     return redirect(url_for('edita_risco'))
 
 
+@app.route('/pesquisa_rvf', methods=['POST', 'GET'])
+@login_required
+def pesquisa_rvf():
+    session = app.config.get('dbsession')
+    user_name = current_user.name
+    rvfs = []
+    filtro_form = FiltroRVFForm(datainicio=date.today() - timedelta(days=10),
+                                datafim=date.today())
+    try:
+        if request.method == 'POST':
+            filtro_form = FiltroRVFForm(request.form)
+            filtro_form.validate()
+            rvfs = get_rvfs_filtro(session, filtro_form)
+    except Exception as err:
+        logger.error(err, exc_info=True)
+        flash('Erro! Detalhes no log da aplicação.')
+        flash(type(err))
+        flash(err)
+    return render_template('pesquisa_rvf.html',
+                           oform=filtro_form,
+                           rvfs=rvfs)
+
+
 @app.route('/rvf', methods=['POST', 'GET'])
 @login_required
 def rvf():
     session = app.config.get('dbsession')
+    db = app.config['mongo_risco']
     user_name = current_user.name
     marcas = []
     marcas_encontradas = []
+    anexos = []
     rvf = None
     rvf_form = RVFForm()
     form_filtro = FiltroRVFForm()
@@ -200,7 +228,7 @@ def rvf():
         if rvf:
             rvf_form.id.data = rvf.id
             marcas_encontradas = rvf.marcasencontradas
-            anexos = get_ids_anexos(rvf)
+            anexos = get_ids_anexos(db, rvf)
     except Exception as err:
         logger.error(err, exc_info=True)
         flash('Erro! Detalhes no log da aplicação.')
@@ -210,7 +238,8 @@ def rvf():
                            marcas=marcas,
                            oform=rvf_form,
                            formfiltro=form_filtro,
-                           marcas_encontradas=marcas_encontradas)
+                           marcas_encontradas=marcas_encontradas,
+                           anexos=anexos)
 
 
 @app.route('/inclui_marca_encontrada', methods=['GET'])
@@ -267,8 +296,33 @@ def rvf_imgupload():
         content = file.read()
         bson_img = BsonImage()
         bson_img.set_campos(file.filename, content, rvf_id=rvf_id)
-        print(bson_img.tomongo(fs))
+        bson_img.tomongo(fs)
     return redirect(url_for('rvf', id=rvf_id))
+
+
+@app.route('/exclui_anexo')
+def exclui_anexo():
+    """Exclui _id de fs.files
+
+    """
+    _id = request.args.get('_id')
+    db = app.config['mongo_risco']
+    grid_out = db['fs.files'].find_one({'_id': ObjectId(_id)})
+    rvf_id = grid_out['metadata']['rvf_id']
+    db['fs.files'].delete_one({'_id': ObjectId(_id)})
+    return redirect(url_for('rvf', id=rvf_id))
+
+
+@app.route('/image/<_id>')
+def image_id(_id):
+    """Recupera a imagem do banco e serializa para stream HTTP.
+
+    """
+    db = app.config['mongo_risco']
+    image = mongo_image(db, _id)
+    if image:
+        return Response(response=image, mimetype='image/jpeg')
+    return 'Sem Imagem'
 
 
 @nav.navigation()
@@ -277,7 +331,7 @@ def mynavbar():
     items = [View('Home', 'index'),
              View('Risco', 'risco'),
              View('Editar Riscos', 'edita_risco'),
-             View('RVF', 'rvf'),
+             View('RVF', 'pesquisa_rvf'),
              ]
     if current_user.is_authenticated:
         items.append(View('Sair', 'commons.logout'))

@@ -5,6 +5,10 @@ def get_marcas(session):
     marcas = session.query(Marca).all()
     return [marca for marca in marcas]
 
+def get_rvfs_filtro(session, filtro):
+    rvfs = session.query(RVF).all()
+    return [rvf for rvf in rvfs]
+
 def get_rvf(session, id):
     return session.query(RVF).filter(RVF.id == id).one_or_none()
 
@@ -48,5 +52,10 @@ def inclui_marca_encontrada(session, rvf_id, marca_nome):
 def exclui_marca_encontrada(session, rvf_id, marca_id):
     return gerencia_marca_encontrada(session, rvf_id, marca_id, inclui=False)
 
-def get_ids_anexos(rvf):
-    return []
+def get_ids_anexos(db, rvf):
+    filtro = {'metadata.rvf_id': str(rvf.id)}
+    count = db['fs.files'].count_documents(filtro)
+    result = [str(row['_id']) for row in db['fs.files'].find(filtro)]
+    print(filtro, result, count)
+    return result
+

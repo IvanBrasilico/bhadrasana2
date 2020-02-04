@@ -2,27 +2,6 @@
 <div id="main" class="container-fluid">
     <div id="top" class="row">
         <div class="col-sm-12">
-            <form method="POST" id="filtroformrvf" action="rvf">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                <div class="row">
-                    <div class="form-group">
-                        CE Mercante {{ formfiltro.ce}}<br>
-                        Data inicial
-                        <input id="datainicio" name="datainicio" type="datetime-local"
-                               value="{{ formfiltro.datainicio.data }}"><br>
-                        Data final
-                        <input id="datafim" name="datafim" type="datetime-local"
-                               value="{{ formfiltro.datafim.data }}"><br>
-                    </div>
-                </div>
-                <button class="btn btn-default btn-info" onclick="submit">
-                    Salvar
-                </button>
-            </form>
-        </div>
-        <div class="col-sm-12">
-        </div>
-        <div class="col-sm-12">
             <form method="POST" id="formrvf" action="rvf">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <input type="hidden" name="id" value="{{ oform.id.data }}"/>
@@ -47,7 +26,7 @@
                 <input id="marcas">
             </div>
             <div class="row">
-                <div class="col-sm-6" id="div_marcas_encontradas" border="1">
+                <div class="col-sm-12" id="div_marcas_encontradas" border="1">
                     {% for marca in marcas_encontradas %}
                     <button type="button" class="btn btn-primary">
                         {{ marca.nome }} <span class="badge"
@@ -55,11 +34,9 @@
                     </button>
                     {% endfor %}
                 </div>
-                <div class="col-sm-6">
-                </div>
             </div>
             <div class="form-group">
-                <form action="/rvf_imgupload"  enctype="multipart/form-data" method="post">
+                <form action="/rvf_imgupload" enctype="multipart/form-data" method="post">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <input type="hidden" name="rvf_id" value="{{ oform.id.data }}"/>
                     <h4>Selecione anexos:</h4>
@@ -71,6 +48,14 @@
                 </form>
             </div>
             <div class="row">
+                <div class="col-sm-12" id="div_imagens" border="1">
+                    {% for anexo in anexos %}
+                    <span class="badge">
+                    <img src="/image/{{anexo}}" class="btn btn-primary" alt="{{ anexo }}" width="240px" height="160px"/>
+                    <span class="badge" onclick="exclui_anexo('{{ anexo }}')">X</span>
+                    </span>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </div>
@@ -81,7 +66,6 @@
 {% endblock %} {% block scripts %} {{super()}}
 <script>
     function mostra_marcas(marcas_encontradas){
-        console.log(marcas_encontradas);
         $('#div_marcas_encontradas').empty();
         $.each(marcas_encontradas, function(i, marca) {
             $('<button type="button" class="btn btn-primary">').text(marca.nome+ ' ').append(
@@ -103,6 +87,14 @@
           mostra_marcas(marcas_encontradas);
         });
     }
+    function exclui_anexo(anexo_id){
+        $.getJSON('exclui_anexo', {
+         _id: anexo_id
+        }, function(anexos) {
+          // mostra_anexos(anexos);
+        });
+        location.reload();
+    }
     $( function() {
         var marcas = [
         {% for marca in marcas %}
@@ -119,6 +111,9 @@
         $('input#marcas').val('');
       }
     });
+
+
+
 
 
 
