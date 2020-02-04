@@ -26,10 +26,11 @@ from bhadrasana.views import configure_app
 
 conn = MongoClient(host=MONGODB_URI)
 mongodb = conn[DATABASE]
+mongodb_risco = conn['risco']
 engine = create_engine(SQL_URI)
 Session = sessionmaker(bind=engine)
 session = Session()
-app = configure_app(mongodb, session)
+app = configure_app(mongodb, session, mongodb_risco)
 
 if __name__ == '__main__':
     print('Iniciando Servidor Bhadrasana...')

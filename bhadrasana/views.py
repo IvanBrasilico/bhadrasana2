@@ -20,6 +20,8 @@ a aplicação de filtros/parâmetros de risco.
 
 import os
 
+from gridfs import GridFS
+
 import ajna_commons.flask.login as login_ajna
 from ajna_commons.flask.conf import ALLOWED_EXTENSIONS, SECRET, logo
 from ajna_commons.flask.log import logger
@@ -33,13 +35,15 @@ from flask_nav import Nav
 from flask_nav.elements import Navbar, View
 from flask_wtf.csrf import CSRFProtect
 
+from ajna_commons.models.bsonimage import BsonImage
 from bhadrasana.conf import APP_PATH, CSV_FOLDER
 from bhadrasana.forms.riscosativos import RiscosAtivosForm
+from bhadrasana.forms.filtro_rvf import FiltroRVFForm
 from bhadrasana.forms.rvf import RVFForm
 from bhadrasana.models.mercantemanager import mercanterisco, riscosativos, \
     insererisco
 from bhadrasana.models.rvfmanager import get_marcas, exclui_marca_encontrada, cadastra_rvf, inclui_marca_encontrada, \
-    get_rvf
+    get_rvf, get_ids_anexos
 
 app = Flask(__name__, static_url_path='/static')
 csrf = CSRFProtect(app)
@@ -48,7 +52,7 @@ nav = Nav()
 nav.init_app(app)
 
 
-def configure_app(mongodb, sqlsession):
+def configure_app(mongodb, sqlsession, mongo_risco):
     """Configurações gerais e de Banco de Dados da Aplicação."""
     app.config['DEBUG'] = os.environ.get('DEBUG', 'None') == '1'
     if app.config['DEBUG'] is True:
@@ -61,6 +65,7 @@ def configure_app(mongodb, sqlsession):
     DBUser.dbsession = mongodb
     app.config['dbsession'] = sqlsession
     app.config['mongodb'] = mongodb
+    app.config['mongo_risco'] = mongo_risco
     return app
 
 
@@ -73,10 +78,10 @@ def log_every_request():
         logger.info(request.url + ' - ' + name)
 
 
-def allowed_file(filename):
+def allowed_file(filename, extensions=ALLOWED_EXTENSIONS):
     """Checa extensões permitidas."""
     return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+           filename.rsplit('.', 1)[1].lower() in extensions
 
 
 @app.route('/')
@@ -168,38 +173,43 @@ def inclui_risco():
 def rvf():
     session = app.config.get('dbsession')
     user_name = current_user.name
+    marcas = []
     marcas_encontradas = []
-    if request.method == 'POST':
-        try:
+    rvf = None
+    rvf_form = RVFForm()
+    form_filtro = FiltroRVFForm()
+    try:
+        if request.method == 'POST':
             rvf_form = RVFForm(request.form)
             rvf_form.validate()
             rvf = cadastra_rvf(session,
                                rvf_form.id.data,
                                rvf_form.descricao.data,
                                rvf_form.numeroCEmercante.data)
+        else:
+            rvf_id = request.args.get('id')
+            if rvf_id is not None:
+                rvf = get_rvf(session, rvf_id)
+                if rvf is not None:
+                    rvf_form = RVFForm(**rvf.__dict__)
+                    # rvf_form.id.data = rvf.id
+                    # rvf_form.descricao.data = rvf.descricao
+                    # rvf_form.numeroCEmercante.data = rvf.numeroCEmercante
+                    marcas_encontradas = rvf.marcasencontradas
+        marcas = get_marcas(session)
+        if rvf:
             rvf_form.id.data = rvf.id
             marcas_encontradas = rvf.marcasencontradas
-        except Exception as err:
-            logger.error(err, exc_info=True)
-            flash('Erro! Detalhes no log da aplicação.')
-            flash(type(err))
-            flash(err)
-    else:
-        rvf_form = RVFForm()
-        rvf_id = request.args.get('id')
-        if rvf_id is not None:
-            rvf = get_rvf(session, rvf_id)
-            if rvf is not None:
-                rvf_form.id.data = rvf.id
-                rvf_form.descricao.data = rvf.descricao
-                rvf_form.numeroCEmercante.data = rvf.numeroCEmercante
-                marcas_encontradas = rvf.marcasencontradas
-    marcas = get_marcas(session)
-    print(marcas)
-    print(marcas_encontradas)
+            anexos = get_ids_anexos(rvf)
+    except Exception as err:
+        logger.error(err, exc_info=True)
+        flash('Erro! Detalhes no log da aplicação.')
+        flash(type(err))
+        flash(err)
     return render_template('rvf.html',
                            marcas=marcas,
                            oform=rvf_form,
+                           formfiltro=form_filtro,
                            marcas_encontradas=marcas_encontradas)
 
 
@@ -223,7 +233,7 @@ def exclui_marca():
     return jsonify([{'id': marca.id, 'nome': marca.nome} for marca in novas_marcas])
 
 
-def valid_file(file, extensions=['jpg']):
+def valid_file(file, extensions=['jpg', 'jpeg']):
     """Valida arquivo passado e retorna validade e mensagem."""
     if not file or file.filename == '' or not allowed_file(file.filename, extensions):
         if not file:
@@ -241,16 +251,23 @@ def valid_file(file, extensions=['jpg']):
 @app.route('/rvf_imgupload', methods=['POST'])
 @login_required
 def rvf_imgupload():
+    db = app.config['mongo_risco']
+    fs = GridFS(db)
     rvf_id = request.form.get('rvf_id')
     if rvf_id is None:
         flash('Escolha um RVF antes')
         return redirect(url_for('rvf'))
-    for file in request.files:
+    for file in request.files.getlist('img'):
+        print('Arquivo:', file)
         validfile, mensagem = valid_file(file)
         if not validfile:
             flash(mensagem)
-            return redirect(url_for('rvf'))
+            print('Não é válido %s' % mensagem)
+            return redirect(url_for('rvf', id=rvf_id))
         content = file.read()
+        bson_img = BsonImage()
+        bson_img.set_campos(file.filename, content, rvf_id=rvf_id)
+        print(bson_img.tomongo(fs))
     return redirect(url_for('rvf', id=rvf_id))
 
 

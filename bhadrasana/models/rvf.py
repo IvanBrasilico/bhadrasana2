@@ -48,5 +48,7 @@ if __name__ == '__main__':
 
     metadata.create_all(engine,
                         [
-                         metadata.tables['marcasencontradas']
-                         ])
+                            metadata.tables['marcasencontradas'],
+                            metadata.tables['marcas'],
+                            metadata.tables['verificacoesfisicas']
+                        ])
