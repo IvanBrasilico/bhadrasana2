@@ -147,3 +147,7 @@ notebooks/*.csv
 bhadrasana/static/ajna/Última planilha.csv
 celerybeat*
 .idea/*
+
+virasana/*
+ajna_commons/*
+/virasana/
