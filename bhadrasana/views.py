@@ -20,7 +20,7 @@ a aplicação de filtros/parâmetros de risco.
 
 import os
 import tempfile
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 from werkzeug.utils import secure_filename
 
@@ -87,6 +87,14 @@ def log_every_request():
         logger.info(request.url + ' - ' + name)
 
 
+def get_user_save_path():
+    static_path = os.path.join(APP_PATH,
+                               app.config.get('STATIC_FOLDER', 'static'),
+                               current_user.name)
+    if not os.path.exists(static_path):
+        os.mkdir(static_path)
+
+
 def allowed_file(filename, extensions=ALLOWED_EXTENSIONS):
     """Checa extensões permitidas."""
     return '.' in filename and \
@@ -137,7 +145,10 @@ def risco():
             flash(str(err))
         # Salvar resultado um arquivo para donwload
         # Limita resultados em 100 linhas na tela
-        with open('resultado.csv', 'w') as out_file:
+        csv_salvo = 'resultado_' \
+                    + datetime.strftime(datetime.now(), '%Y-%m%dT%x') + \
+                    '.csv'
+        with open(os.path.join(get_user_save_path(), csv_salvo), 'w') as out_file:
             for row in lista_risco:
                 campos = [str(value).replace(';', ',') for value in row.values()]
                 out_file.write(';'.join(campos) + '\n')
@@ -145,7 +156,8 @@ def risco():
         riscos_ativos_form = RiscosAtivosForm()
     return render_template('aplica_risco.html',
                            oform=riscos_ativos_form,
-                           lista_risco=lista_risco[:100])
+                           lista_risco=lista_risco[:100],
+                           csv_salvo=csv_salvo)
 
 
 @app.route('/edita_risco', methods=['POST', 'GET'])
@@ -159,6 +171,7 @@ def edita_risco():
     return render_template('edita_risco.html',
                            riscos_ativos=riscos_ativos,
                            oform=edita_risco_form)
+
 
 @app.route('/inclui_risco', methods=['POST'])
 @login_required
@@ -202,6 +215,7 @@ def excluir_risco(id):
         flash(str(type(err)))
         flash(str(err))
     return redirect(url_for('edita_risco'))
+
 
 @app.route('/pesquisa_rvf', methods=['POST', 'GET'])
 @login_required
@@ -352,15 +366,12 @@ def exporta_csv():
 
     """
     session = app.config.get('dbsession')
-    static_path = os.path.join(APP_PATH,
-                               app.config.get('STATIC_FOLDER', 'static'),
-                               current_user.name)
-    if not os.path.exists(static_path):
-        os.mkdir(static_path)
-    riscos_out_filename = 'riscos_ativos.csv'
     try:
+        riscos_out_filename = 'riscos_ativos' + \
+                              datetime.strftime(datetime.now(), '%Y-%m%dT%x') + \
+                              '.csv'
         riscos_ativos = riscosativos(session, current_user.name)
-        with open(os.path.join(static_path, riscos_out_filename), 'w') as riscos_out:
+        with open(os.path.join(get_user_save_path(), riscos_out_filename), 'w') as riscos_out:
             for risco in riscos_ativos:
                 linha_out = ';'.join((risco.campo, risco.valor, risco.motivo))
                 riscos_out.write(linha_out + '\n')
@@ -381,7 +392,7 @@ def get_csv_valido(request):
         return False
     logger.info('FILE***' + csvf.filename)
     if ('.' in csvf.filename and
-                csvf.filename.rsplit('.', 1)[1].lower() == 'csv'):
+            csvf.filename.rsplit('.', 1)[1].lower() == 'csv'):
         return csvf
     return False
 
