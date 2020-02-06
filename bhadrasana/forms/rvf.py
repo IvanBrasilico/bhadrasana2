@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, TextAreaField
-from wtforms.fields.html5 import DateTimeField
+from wtforms.fields.html5 import DateField, TimeField
 
 
 class RVFForm(FlaskForm):
@@ -10,4 +10,5 @@ class RVFForm(FlaskForm):
     descricao = TextAreaField(u'Descrição',
                               render_kw={"rows": 5, "cols": 100},
                               default='')
-    datahora = DateTimeField(u'Data e horário')
+    data = DateField(u'Data')
+    hora = TimeField(u'Horário')

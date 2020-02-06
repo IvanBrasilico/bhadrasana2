@@ -5,26 +5,48 @@
             <form method="POST" id="filtroformrvf" action="pesquisa_rvf">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="row">
-                    <div class="form-group">
-                        CE Mercante {{ oform.numeroCEmercante }}<br>
-                        Data inicial
-                        <input id="datainicio" name="datainicio" type="datetime-local"
-                               value="{{ oform.datainicio.data }}"><br>
-                        Data final
-                        <input id="datafim" name="datafim" type="datetime-local"
-                               value="{{ oform.datafim.data }}"><br>
+                    <div class="col-sm-2">
+                        <label for="numeroCEmercante">Número CE-Mercante</label>
+                    </div>
+                    <div class="col-sm-4">
+                        <label for="datainicio">Início e fim de período de pesquisa</label>
+                    </div>
+                    <div class="col-sm-6">
                     </div>
                 </div>
-                <button class="btn btn-default btn-info" onclick="submit">
-                    Pesquisar
-                </button>
-                <button class="btn btn-default btn-info" formaction="/rvf">
-                    Nova RVF
-                </button>
+                <div class="row">
+                    <div class="form-group">
+                        <div class="col-sm-2">
+                            {{ oform.numeroCEmercante(class='form-control') }}
+                        </div>
+                        <div class="col-sm-2">
+                            {{ oform.datainicio(class='form-control') }}
+                        </div>
+                        <div class="col-sm-2">
+                            {{ oform.datafim(class='form-control') }}
+                        </div>
+                        <div class="col-sm-6">
+                        </div>
+                    </div>
+                </div>
+                <div class="row col-sm-12">
+                    &nbsp;<br>
+                    <div class="col-sm-2">
+                        <button class="btn btn-default btn-info form-control" onclick="submit">
+                            Pesquisar
+                        </button>
+                    </div>
+                    <div class="col-sm-2">
+                        <button class="btn btn-default btn-info form-control" formaction="/rvf">
+                            Nova RVF
+                        </button>
+                    </div>
+                </div>
             </form>
         </div>
     </div>
     <div id="list" class="row col-sm-12">
+        &nbsp;<br>
         <div class="table">
             <table class="inlineTable table table-bordered table-hover table-responsive"
                    id="filtro_personalizado_table">
