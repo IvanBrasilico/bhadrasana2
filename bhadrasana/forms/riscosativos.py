@@ -4,10 +4,14 @@ from wtforms import BooleanField
 
 class RiscosAtivosForm(FlaskForm):
     consignatario = BooleanField(u'Consignatario',
-                                 default=0)
-    embarcador = BooleanField(u'Embarcador',
-                              default=0)
-    portoorigem = BooleanField(u'Porto de Origem',
-                               default=1)
+                                 default=1)
+    portoOrigemCarga = BooleanField(u'Porto de Origem',
+                               default=0)
     ncm = BooleanField(u'NCM',
                        default=0)
+    codigoConteiner = BooleanField(u'NCM',
+                       default=0)
+    descricao = BooleanField(u'NCM',
+                       default=0)
+    embarcador = BooleanField(u'Embarcador',
+                              default=0)
