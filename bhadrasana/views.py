@@ -126,7 +126,7 @@ def risco():
                 if value is True:
                     riscos_ativos_campo = [risco.valor for risco in riscos_ativos
                                            if risco.campo == fieldname]
-                    filtros['fieldname'] = riscos_ativos_campo
+                    filtros[fieldname] = riscos_ativos_campo
             lista_risco = mercanterisco(dbsession, filtros)
             # print('***********', lista_risco)
         except Exception as err:
@@ -137,9 +137,10 @@ def risco():
             flash(str(err))
         # Salvar resultado um arquivo para donwload
         # Limita resultados em 100 linhas na tela
-        #with open('resultado.csv', 'w') as out_file:
-        #    for row in lista_risco:
-        #        out_file.write(';'.join(row.values()) + '\n')
+        with open('resultado.csv', 'w') as out_file:
+            for row in lista_risco:
+                campos = [str(value).replace(';', ',') for value in row.values()]
+                out_file.write(';'.join(campos) + '\n')
     else:
         riscos_ativos_form = RiscosAtivosForm()
     return render_template('aplica_risco.html',

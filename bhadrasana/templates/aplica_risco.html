@@ -7,29 +7,29 @@
                 <div class="row">
                     <h4>Filtros ativos</h4>
                     <div class="form-group">
-                        <div class="col-sm-1">
-                            <input class="form-control" type="checkbox" name="consignatario" {% if oform.consignatario.data %} checked {% endif %} />
-                        </div>
                         <div class="col-sm-2">
+                            <input type="checkbox" name="consignatario" {% if oform.consignatario.data %} checked {% endif %} />
                             Consignatário
                         </div>
-                        <div class="col-sm-1">
-                            <input class="form-control" type="checkbox" name="embarcador" {% if oform.embarcador.data %} checked {% endif %} />
-                        </div>
                         <div class="col-sm-2">
-                            Embarcador
-                        </div>
-                        <div class="col-sm-1">
-                            <input class="form-control" type="checkbox" name="portoorigem" {% if oform.portoorigem.data %} checked {% endif %} />
-                        </div>
-                        <div class="col-sm-2">
+                            <input  type="checkbox" name="portoOrigemCarga" {% if oform.portoOrigemCarga.data %} checked {% endif %} />
                             Porto de Origem
                         </div>
-                        <div class="col-sm-1">
-                            <input class="form-control" type="checkbox" name="ncm" {% if oform.ncm.data %} checked {% endif %} />
+                        <div class="col-sm-2">
+                            <input type="checkbox" name="ncm" {% if oform.ncm.data %} checked {% endif %} />
+                            NCM
                         </div>
                         <div class="col-sm-2">
-                            NCM
+                            <input type="checkbox" name="codigoConteiner" {% if oform.codigoConteiner.data %} checked {% endif %} />
+                            Número do Contêiner
+                        </div>
+                        <div class="col-sm-2">
+                            <input type="checkbox" name="embarcador" {% if oform.embarcador.data %} checked {% endif %} />
+                            Embarcador
+                        </div>
+                        <div class="col-sm-2">
+                            <input type="checkbox" name="descricao" {% if oform.descricao.data %} checked {% endif %} />
+                            Descrição
                         </div>
                     </div>
                 </div>
