@@ -18,10 +18,13 @@ def mercanterisco(session, pfiltros: dict, limit=1000):
     #    limit(10).all()
     keys = ['numeroCEmercante', 'descricao', 'embarcador',
             'consignatario', 'portoOrigemCarga', 'codigoConteiner', 'identificacaoNCM']
-    filtros = and_()
+    # filtros = and_(Conhecimento.numeroCEmercante.ilike('15%') )
     data = pfiltros.get('data')
     if data:
-        filtros = and_(filtros, Conhecimento.create_date >= data)
+        filtros = and_(Conhecimento.create_date >= data)
+    destino = pfiltros.get('portoDestFinal')
+    if destino:
+        filtros = and_(Conhecimento.portoDestFinal.ilike(destino + '%'), filtros)
     for key in keys:
         lista = pfiltros.get(key)
         if lista is not None:
