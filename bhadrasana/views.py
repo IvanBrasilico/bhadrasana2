@@ -88,11 +88,12 @@ def log_every_request():
 
 
 def get_user_save_path():
-    static_path = os.path.join(APP_PATH,
+    user_save_path = os.path.join(APP_PATH,
                                app.config.get('STATIC_FOLDER', 'static'),
                                current_user.name)
-    if not os.path.exists(static_path):
-        os.mkdir(static_path)
+    if not os.path.exists(user_save_path):
+        os.mkdir(user_save_path)
+    return user_save_path
 
 
 def allowed_file(filename, extensions=ALLOWED_EXTENSIONS):
@@ -125,6 +126,7 @@ def risco():
     user_name = current_user.name
     user_folder = os.path.join(CSV_FOLDER, user_name)
     lista_risco = []
+    csv_salvo = None
     if request.method == 'POST':
         try:
             riscos_ativos_form = RiscosAtivosForm(request.form)
@@ -145,13 +147,15 @@ def risco():
             flash(str(err))
         # Salvar resultado um arquivo para donwload
         # Limita resultados em 100 linhas na tela
-        csv_salvo = 'resultado_' \
-                    + datetime.strftime(datetime.now(), '%Y-%m%dT%x') + \
-                    '.csv'
-        with open(os.path.join(get_user_save_path(), csv_salvo), 'w') as out_file:
-            for row in lista_risco:
-                campos = [str(value).replace(';', ',') for value in row.values()]
-                out_file.write(';'.join(campos) + '\n')
+        if lista_risco and len(lista_risco) > 0:
+            csv_salvo = 'resultado_' \
+                        + datetime.strftime(datetime.now(), '%Y-%m%dT%H%M%S') + \
+                        '.csv'
+            with open(os.path.join(get_user_save_path(), csv_salvo), 'w') as out_file:
+                out_file.write(';'.join([key for key in lista_risco[0].keys()]) + '\n')
+                for row in lista_risco:
+                    campos = [str(value).replace(';', ',') for value in row.values()]
+                    out_file.write(';'.join(campos) + '\n')
     else:
         riscos_ativos_form = RiscosAtivosForm()
     return render_template('aplica_risco.html',
