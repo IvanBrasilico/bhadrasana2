@@ -1,0 +1,47 @@
+<div id="main" class="container-fluid">
+    <div id="top" class="row">
+        <div class="row col-xs-12">
+            <div class="col-xs-12">
+                CE Mercante: {{ rvf.numeroCEmercante }}
+            </div>
+            <div class="col-xs-12">
+                Descrição: <br>
+                {{ rvf.descricao }}
+            </div>
+            <div class="col-xs-12">
+                <div class="col-xs-3">
+                    Data da verificação: {{ rvf.datahora }}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row col-xs-12">
+        <div class="row col-xs-3">
+            <h3>Marcas encontradas</h3>
+        </div>
+        <div class="col-xs-9">
+        </div>
+        <div class="row col-xs-12">
+            <div class="col-xs-12" id="div_marcas_encontradas" border="1">
+                {% for marca in marcas_encontradas %}
+                <span class="badge">
+                    {{ marca.nome }}
+                </span>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="row col-xs-3">
+            <h3>Fotos</h3>
+        </div>
+        <div class="row col-xs-12">
+            {% for anexo in anexos %}
+            <span align="center" width="80%">
+                <img src="/image/{{anexo}}" class="btn btn-primary" alt="{{ anexo }}" width="80%"/>
+            </span>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<div id="bottom" class="row col-xs-12">
+    AJNA - Receita Federal do Brasil 2017
+</div>

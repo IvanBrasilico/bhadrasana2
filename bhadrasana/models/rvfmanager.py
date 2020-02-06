@@ -1,3 +1,7 @@
+from datetime import datetime
+
+from sqlalchemy import and_
+
 from bhadrasana.models.rvf import Marca, RVF
 
 
@@ -5,8 +9,11 @@ def get_marcas(session):
     marcas = session.query(Marca).all()
     return [marca for marca in marcas]
 
-def get_rvfs_filtro(session, filtro):
-    rvfs = session.query(RVF).all()
+def get_rvfs_filtro(session, pfiltro):
+    filtro = and_()
+    if pfiltro.get('datainicio'):
+        filtro = and_(RVF.datahora >= pfiltro.get('datainicio'))
+    rvfs = session.query(RVF).filter(filtro).all()
     return [rvf for rvf in rvfs]
 
 def get_rvf(session, id):
@@ -15,13 +22,23 @@ def get_rvf(session, id):
 def cadastra_rvf(session,
                  id,
                  descricao,
-                 numeroCEmercante):
+                 numeroCEmercante,
+                 data,
+                 hora):
     if id:
         rvf = session.query(RVF).filter(RVF.id == id).one_or_none()
     else:
         rvf = RVF()
     rvf.descricao = descricao
     rvf.numeroCEmercante = numeroCEmercante
+    print(data, hora)
+    try:
+        if isinstance(data, str):
+            data = datetime.strptime(data, '%Y-%m-%d')
+    except:
+        data = datetime.date.today()
+    rvf.datahora = datetime.combine(data, hora)
+    print(rvf.datahora)
     session.add(rvf)
     session.commit()
     return rvf

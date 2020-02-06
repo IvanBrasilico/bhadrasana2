@@ -16,7 +16,7 @@ def mercanterisco(session, pfiltros: dict, limit=1000):
     # conhecimentos = session.query(Conhecimento).\
     #    join(NCMItem, Conhecimento.numeroCEmercante == NCMItem.numeroCEMercante).\
     #    limit(10).all()
-    keys = ['descricao', 'embarcador',
+    keys = ['numeroCEmercante', 'descricao', 'embarcador',
             'consignatario', 'portoOrigemCarga', 'codigoConteiner', 'identificacaoNCM']
     filtros = and_()
     data = pfiltros.get('data')
@@ -43,9 +43,6 @@ def mercanterisco(session, pfiltros: dict, limit=1000):
 
     result = []
     for row in resultproxy:
-        print(row)
-        print(list(row.keys()))
-        print(dir(row))
         result.append(OrderedDict([(key, row[key]) for key in keys]))
     return result
 

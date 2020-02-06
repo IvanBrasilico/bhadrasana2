@@ -89,8 +89,8 @@ def log_every_request():
 
 def get_user_save_path():
     user_save_path = os.path.join(APP_PATH,
-                               app.config.get('STATIC_FOLDER', 'static'),
-                               current_user.name)
+                                  app.config.get('STATIC_FOLDER', 'static'),
+                                  current_user.name)
     if not os.path.exists(user_save_path):
         os.mkdir(user_save_path)
     return user_save_path
@@ -109,6 +109,12 @@ def index():
         return render_template('index.html')
     else:
         return redirect(url_for('commons.login'))
+
+
+def append_images(lista_risco):
+    for risco in lista_risco:
+
+    pass
 
 
 @app.route('/risco', methods=['POST', 'GET'])
@@ -138,6 +144,7 @@ def risco():
                                            if risco.campo == fieldname]
                     filtros[fieldname] = riscos_ativos_campo
             lista_risco = mercanterisco(dbsession, filtros)
+            append_images(lista_risco)
             # print('***********', lista_risco)
         except Exception as err:
             logger.error(err, exc_info=True)
@@ -233,7 +240,7 @@ def pesquisa_rvf():
         if request.method == 'POST':
             filtro_form = FiltroRVFForm(request.form)
             filtro_form.validate()
-            rvfs = get_rvfs_filtro(session, filtro_form)
+            rvfs = get_rvfs_filtro(session, dict(filtro_form.data.items()))
     except Exception as err:
         logger.error(err, exc_info=True)
         flash('Erro! Detalhes no log da aplicação.')
@@ -259,17 +266,24 @@ def rvf():
     try:
         if request.method == 'POST':
             rvf_form = RVFForm(request.form)
+            print(request.form.values())
+            rvf_form.data.data = request.form['data']
+            rvf_form.data.hora = request.form['hora']
             rvf_form.validate()
             rvf = cadastra_rvf(session,
                                rvf_form.id.data,
                                rvf_form.descricao.data,
-                               rvf_form.numeroCEmercante.data)
+                               rvf_form.numeroCEmercante.data,
+                               rvf_form.data.data,
+                               rvf_form.hora.data)
         else:
             rvf_id = request.args.get('id')
             if rvf_id is not None:
                 rvf = get_rvf(session, rvf_id)
                 if rvf is not None:
                     rvf_form = RVFForm(**rvf.__dict__)
+                    rvf_form.data.data = rvf.datahora.date()
+                    rvf_form.hora.data = rvf.datahora.time()
                     # rvf_form.id.data = rvf.id
                     # rvf_form.descricao.data = rvf.descricao
                     # rvf_form.numeroCEmercante.data = rvf.numeroCEmercante
@@ -288,6 +302,28 @@ def rvf():
                            marcas=marcas,
                            oform=rvf_form,
                            formfiltro=form_filtro,
+                           marcas_encontradas=marcas_encontradas,
+                           anexos=anexos)
+
+
+@app.route('/rvf_impressao/<id>', methods=['GET'])
+@login_required
+def rvf_impressao(id):
+    session = app.config.get('dbsession')
+    db = app.config['mongo_risco']
+    user_name = current_user.name
+    marcas_encontradas = []
+    anexos = []
+    rvf = None
+    rvf_form = RVFForm()
+    rvf = get_rvf(session, id)
+    if rvf is None:
+        flash("rvf %s não encontrado." % id)
+        return redirect(url_for('pesquisa_rvf'))
+    marcas_encontradas = rvf.marcasencontradas
+    anexos = get_ids_anexos(db, rvf)
+    return render_template('rvf_impressao.html',
+                           rvf=rvf,
                            marcas_encontradas=marcas_encontradas,
                            anexos=anexos)
 
