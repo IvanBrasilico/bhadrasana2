@@ -22,6 +22,7 @@ import os
 import tempfile
 from datetime import date, datetime, timedelta
 
+import requests
 from werkzeug.utils import secure_filename
 
 from bhadrasana.forms.editarisco import EditaRiscoForm
@@ -112,9 +113,26 @@ def index():
 
 
 def append_images(lista_risco):
-    for risco in lista_risco:
+    lista_risco_nova = []
+    for linha in lista_risco:
+        ce = linha.get('numeroCEmercante')
+        conteiner = linha.get('codigoConteiner')
+        if ce and conteiner:
+            params = {'query':
+                          {'metadata.carga.conhecimento.conhecimento': ce,
+                           'metadata.numeroinformado': conteiner},
+                      'projection': {'_id': 1}
+                      }
+            r = requests.post('https://ajna.labin.rf08.srf/virasana/grid_data', json=params, verify=False)
+            lista = r.json()
+            _id = ''
+            if lista and len(lista) > 0:
+                _id = lista[0]['_id']
+            linha['_id'] = _id
+            lista_risco_nova.append(linha)
+    return lista_risco_nova
 
-    pass
+
 
 
 @app.route('/risco', methods=['POST', 'GET'])
@@ -144,7 +162,6 @@ def risco():
                                            if risco.campo == fieldname]
                     filtros[fieldname] = riscos_ativos_campo
             lista_risco = mercanterisco(dbsession, filtros)
-            append_images(lista_risco)
             # print('***********', lista_risco)
         except Exception as err:
             logger.error(err, exc_info=True)
@@ -163,11 +180,13 @@ def risco():
                 for row in lista_risco:
                     campos = [str(value).replace(';', ',') for value in row.values()]
                     out_file.write(';'.join(campos) + '\n')
+        lista_risco = append_images(lista_risco[:100])
+
     else:
         riscos_ativos_form = RiscosAtivosForm()
     return render_template('aplica_risco.html',
                            oform=riscos_ativos_form,
-                           lista_risco=lista_risco[:100],
+                           lista_risco=lista_risco,
                            csv_salvo=csv_salvo)
 
 

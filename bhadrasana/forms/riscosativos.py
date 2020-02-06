@@ -1,10 +1,15 @@
 from flask_wtf import FlaskForm
 from flask_wtf.csrf import CSRFProtect
 from wtforms import BooleanField
+from wtforms.fields.html5 import DateField
+
 
 class RiscosAtivosForm(FlaskForm):
+    data = DateField(u'Data inicial da pesquisa')
+    portoDestFinal = BooleanField(u'Porto de Destino Final',
+                               default=1)
     consignatario = BooleanField(u'Consignatario',
-                                 default=1)
+                                 default=0)
     portoOrigemCarga = BooleanField(u'Porto de Origem',
                                default=0)
     ncm = BooleanField(u'NCM',
