@@ -19,15 +19,22 @@ a aplicação de filtros/parâmetros de risco.
 """
 
 import os
+import tempfile
 from datetime import date, timedelta
 
-from bson import ObjectId
-from gridfs import GridFS
+from werkzeug.utils import secure_filename
+
+from bhadrasana.forms.editarisco import EditaRiscoForm
+
+tmpdir = tempfile.mkdtemp()
 
 import ajna_commons.flask.login as login_ajna
 from ajna_commons.flask.conf import ALLOWED_EXTENSIONS, SECRET, logo
 from ajna_commons.flask.log import logger
 from ajna_commons.flask.user import DBUser
+from ajna_commons.models.bsonimage import BsonImage
+from ajna_commons.utils.images import mongo_image
+from bson import ObjectId
 from flask import (Flask, flash, redirect, render_template, request,
                    url_for, jsonify, Response)
 from flask_bootstrap import Bootstrap
@@ -36,15 +43,14 @@ from flask_login import current_user, login_required
 from flask_nav import Nav
 from flask_nav.elements import Navbar, View
 from flask_wtf.csrf import CSRFProtect
+from gridfs import GridFS
 
-from ajna_commons.models.bsonimage import BsonImage
-from ajna_commons.utils.images import mongo_image
 from bhadrasana.conf import APP_PATH, CSV_FOLDER
-from bhadrasana.forms.riscosativos import RiscosAtivosForm
 from bhadrasana.forms.filtro_rvf import FiltroRVFForm
+from bhadrasana.forms.riscosativos import RiscosAtivosForm
 from bhadrasana.forms.rvf import RVFForm
 from bhadrasana.models.mercantemanager import mercanterisco, riscosativos, \
-    insererisco
+    insererisco, exclui_risco, CAMPOS_RISCO
 from bhadrasana.models.rvfmanager import get_marcas, exclui_marca_encontrada, cadastra_rvf, inclui_marca_encontrada, \
     get_rvf, get_ids_anexos, get_rvfs_filtro
 
@@ -115,33 +121,30 @@ def risco():
         try:
             riscos_ativos_form = RiscosAtivosForm(request.form)
             riscos_ativos = riscosativos(dbsession, user_name)
-            ncms = [risco[1] for risco in riscos_ativos
-                    if risco[0] == 'ncm']
-            print(ncms)
             filtros = {}
-            if riscos_ativos_form.consignatario.data is True:
-                filtros['consignatario'] = ['00']
-            if riscos_ativos_form.embarcador.data is True:
-                filtros['embarcador'] = ['RUIAN']
-            if riscos_ativos_form.portoorigem.data is True:
-                filtros['portoOrigemCarga'] = ['CNXGG']
-            if riscos_ativos_form.ncm.data is True:
-                filtros['ncm'] = ncms  # ['8528', '3906', '4202']
+            for fieldname, value in riscos_ativos_form.data.items():
+                if value is True:
+                    riscos_ativos_campo = [risco.valor for risco in riscos_ativos
+                                           if risco.campo == fieldname]
+                    filtros['fieldname'] = riscos_ativos_campo
             lista_risco = mercanterisco(dbsession, filtros)
             # print('***********', lista_risco)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro ao aplicar risco! ' +
                   'Detalhes no log da aplicação.')
-            flash(type(err))
-            flash(err)
+            flash(str(type(err)))
+            flash(str(err))
         # Salvar resultado um arquivo para donwload
         # Limita resultados em 100 linhas na tela
+        #with open('resultado.csv', 'w') as out_file:
+        #    for row in lista_risco:
+        #        out_file.write(';'.join(row.values()) + '\n')
     else:
         riscos_ativos_form = RiscosAtivosForm()
     return render_template('aplica_risco.html',
                            oform=riscos_ativos_form,
-                           lista_risco=lista_risco)
+                           lista_risco=lista_risco[:100])
 
 
 @app.route('/edita_risco', methods=['POST', 'GET'])
@@ -150,26 +153,54 @@ def edita_risco():
     session = app.config.get('dbsession')
     user_name = current_user.name
     riscos_ativos = riscosativos(session, user_name)
+    edita_risco_form = EditaRiscoForm()
+    edita_risco_form.campo.choices = CAMPOS_RISCO
     return render_template('edita_risco.html',
-                           riscos_ativos=riscos_ativos)
-
+                           riscos_ativos=riscos_ativos,
+                           oform=edita_risco_form)
 
 @app.route('/inclui_risco', methods=['POST'])
 @login_required
 def inclui_risco():
     session = app.config.get('dbsession')
     user_name = current_user.name
-    campo = request.form.get('campo')
+    campoid = request.form.get('campo')
+    if campoid == '0':
+        flash('Selecionar campo')
+        return redirect(url_for('edita_risco'))
+    campo = dict(CAMPOS_RISCO)[campoid]
     valor = request.form.get('valor')
     motivo = request.form.get('motivo')
     # print(user_name, campo, valor, motivo)
-    insererisco(session,
-                user_name=user_name,
-                campo=campo,
-                valor=valor,
-                motivo=motivo)
+    try:
+        insererisco(session,
+                    user_name=user_name,
+                    campo=campo,
+                    valor=valor,
+                    motivo=motivo)
+    except Exception as err:
+        logger.error(err, exc_info=True)
+        flash('Erro ao incluir risco! ' +
+              'Detalhes no log da aplicação.')
+        flash(str(type(err)))
+        flash(str(err))
+
     return redirect(url_for('edita_risco'))
 
+
+@app.route('/exclui_risco/<id>', methods=['GET'])
+@login_required
+def excluir_risco(id):
+    session = app.config.get('dbsession')
+    try:
+        exclui_risco(session, id)
+    except Exception as err:
+        logger.error(err, exc_info=True)
+        flash('Erro ao incluir risco! ' +
+              'Detalhes no log da aplicação.')
+        flash(str(type(err)))
+        flash(str(err))
+    return redirect(url_for('edita_risco'))
 
 @app.route('/pesquisa_rvf', methods=['POST', 'GET'])
 @login_required
@@ -311,6 +342,77 @@ def exclui_anexo():
     rvf_id = grid_out['metadata']['rvf_id']
     db['fs.files'].delete_one({'_id': ObjectId(_id)})
     return redirect(url_for('rvf', id=rvf_id))
+
+
+@app.route('/exporta_csv', methods=['POST', 'GET'])
+@login_required
+def exporta_csv():
+    """Grava em arquivo parâmetros ativos.
+
+    """
+    session = app.config.get('dbsession')
+    static_path = os.path.join(APP_PATH,
+                               app.config.get('STATIC_FOLDER', 'static'),
+                               current_user.name)
+    if not os.path.exists(static_path):
+        os.mkdir(static_path)
+    riscos_out_filename = 'riscos_ativos.csv'
+    try:
+        riscos_ativos = riscosativos(session, current_user.name)
+        with open(os.path.join(static_path, riscos_out_filename), 'w') as riscos_out:
+            for risco in riscos_ativos:
+                linha_out = ';'.join((risco.campo, risco.valor, risco.motivo))
+                riscos_out.write(linha_out + '\n')
+        return redirect('/static/%s/%s' % (current_user.name, riscos_out_filename))
+    except Exception as err:
+        logger.warning(err, exc_info=True)
+        flash(str(err))
+    return redirect(url_for('edita_risco'))
+
+
+def get_csv_valido(request):
+    if 'csv' not in request.files:
+        flash('Arquivo não repassado')
+        return False
+    csvf = request.files['csv']
+    if csvf.filename == '':
+        flash('Nome de arquivo vazio')
+        return False
+    logger.info('FILE***' + csvf.filename)
+    if ('.' in csvf.filename and
+                csvf.filename.rsplit('.', 1)[1].lower() == 'csv'):
+        return csvf
+    return False
+
+
+@app.route('/importacsv', methods=['POST', 'GET'])
+@login_required
+def importacsv():
+    """Importar arquivo.
+
+    """
+    print('IMPORTA CSV')
+    session = app.config.get('dbsession')
+    print(request.files)
+    print(request.method)
+    if request.method == 'POST':
+        csvf = get_csv_valido(request)
+        if csvf:
+            filename = secure_filename(csvf.filename)
+            save_name = os.path.join(tmpdir, filename)
+            csvf.save(save_name)
+            logger.info('CSV RECEBIDO: %s' % save_name)
+            with open(save_name) as in_csv:
+                lines = in_csv.readlines()
+            user_name = current_user.name
+            for line in lines:
+                campo, valor, motivo = line.split(';')
+                insererisco(session,
+                            user_name=user_name,
+                            campo=campo,
+                            valor=valor,
+                            motivo=motivo)
+    return redirect(url_for('edita_risco'))
 
 
 @app.route('/image/<_id>')

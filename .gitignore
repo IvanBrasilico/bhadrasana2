@@ -151,3 +151,4 @@ celerybeat*
 virasana/*
 ajna_commons/*
 /virasana/
+*.csv

@@ -1,15 +1,27 @@
+from collections import OrderedDict
+
 from sqlalchemy import select, and_, join, or_
 from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, RiscoAtivo
 
+CAMPOS_RISCO = [('0', 'Selecione'),
+                ('1', 'consignatario'),
+                ('2', 'ncm'),
+                ('3', 'portoOrigemCarga'),
+                ('4', 'codigoConteiner'),
+                ('5', 'descricao'),
+                ('6', 'embarcador'),
+                ]
 
-def mercanterisco(session, pfiltros: dict):
+def mercanterisco(session, pfiltros: dict, limit=1000):
     # conhecimentos = session.query(Conhecimento).\
     #    join(NCMItem, Conhecimento.numeroCEmercante == NCMItem.numeroCEMercante).\
     #    limit(10).all()
-    keys = ['dataEmissao', 'numeroCEmercante', 'consignatario', 'descricao',
-            'embarcador', 'portoOrigemCarga', 'codigoConteiner', 'identificacaoNCM']
-    portosorigem = pfiltros.get('portoOrigemCarga')
+    keys = ['descricao', 'embarcador',
+            'consignatario', 'portoOrigemCarga', 'codigoConteiner', 'identificacaoNCM']
     filtros = and_()
+    data = pfiltros.get('data')
+    if data:
+        filtros = and_(filtros, Conhecimento.create_date >= data)
     for key in keys:
         lista = pfiltros.get(key)
         if lista is not None:
@@ -26,7 +38,7 @@ def mercanterisco(session, pfiltros: dict):
     s = select([Conhecimento, NCMItem]).select_from(j). \
         where(filtros). \
         order_by(Conhecimento.numeroCEmercante, NCMItem.numeroSequencialItemCarga). \
-        limit(100)
+        limit(limit)
     resultproxy = session.execute(s)
 
     result = []
@@ -34,15 +46,14 @@ def mercanterisco(session, pfiltros: dict):
         print(row)
         print(list(row.keys()))
         print(dir(row))
-        result.append({key: row[key] for key in keys})
+        result.append(OrderedDict([(key, row[key]) for key in keys]))
     return result
 
 
 def riscosativos(session, user_name):
-    riscosativos = session.query(RiscoAtivo).\
+    riscosativos = session.query(RiscoAtivo). \
         filter(RiscoAtivo.user_name == user_name).all()
-    return [(risco.campo, risco.valor, risco.motivo)
-            for risco in riscosativos]
+    return riscosativos
 
 
 def insererisco(session, **kwargs):
@@ -51,6 +62,17 @@ def insererisco(session, **kwargs):
         session.add(novorisco)
         session.commit()
         return True
-    except:
-        session.rollout()
-        return False
+    except Exception as err:
+        session.rollback()
+        raise (err)
+
+
+def exclui_risco(session, id):
+    risco = session.query(RiscoAtivo).filter(RiscoAtivo.ID == id).one()
+    try:
+        session.delete(risco)
+        session.commit()
+        return True
+    except Exception as err:
+        session.rollback()
+        raise (err)
