@@ -3,31 +3,66 @@
     <div id="top" class="row">
         <div class="col-sm-12">
             <form method="POST" id="formfiltro" action="inclui_risco">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="row">
-                    <div class="form-group">
-                        Campo<input type="text" name="campo">
-                        Valor<input type="text" name="valor">
-                        Motivo<input type="text" name="motivo">
+                    <div class="col-sm-2">
+                        <label for="campo">Campo</label>
+                    </div>
+                    <div class="col-sm-2">
+                        <label for="valor">Valor</label>
+                    </div>
+                    <div class="col-sm-2">
+                        <label for="motivo">Motivo</label>
+                    </div>
+                    <div class="col-sm-6">
                     </div>
                 </div>
-                <button class="btn btn-default btn-info" onclick="submit">
-                    Incluir risco
-                </button>
+                <div class="row">
+                    <div class="form-group">
+                        <div class="col-sm-2">
+                            {{ oform.campo(class='form-control') }}
+                        </div>
+                        <div class="col-sm-2">
+                            <input class="form-control" type="text" name="valor" id="valor"/>
+                        </div>
+                        <div class="col-sm-2">
+                            <input class="form-control" type="text" name="motivo" value="{{ motivo }}" id="motivo"/>
+                        </div>
+                        <div class="col-sm-2">
+                            <input class="btn btn-default btn-info" type="submit" value="Incluir risco"/>
+                        </div>
+                        <div class="col-sm-2">
+                            <button onclick="exporta_csv()" id="btn_exportar"
+                                    type="button" class="btn btn-default">Exportar Planilha</button>
+                        </div>
+                        <div class="col-sm-2">
+                            <button id="btn_incluir" type="button" class="btn btn-primary"
+                                    data-toggle="modal" data-target="#importa_csv">Importar Planilha</button>
+                        </div>
+                    </div>
+                </div>
             </form>
         </div>
         <div class="table-responsive col-sm-12">
             <h4>Lista de Riscos Ativos</h4>
             <div class="table">
-                <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive" cellspacing="0"
-                    cellpadding="0">
-                    {% for row in riscos_ativos %}
+                <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive"
+                       cellspacing="0"
+                       cellpadding="0">
+                    {% for risco in riscos_ativos %}
                     <tr>
-                        {% for col in row %}
                         <td align="center">
-                            {{ col }}
+                            {{ risco.campo }}
                         </td>
-                        {% endfor %}
+                        <td align="center">
+                            {{ risco.valor }}
+                        </td>
+                        <td align="center">
+                            {{ risco.motivo }}
+                        </td>
+                        <td align="center">
+                            <a href="exclui_risco/{{ risco.ID }}">X</a>
+                        </td>
                     </tr>
                     {% endfor %}
                     {% if not riscos_ativos %}
@@ -43,8 +78,38 @@
     <div id="bottom" class="row">
         AJNA - Receita Federal do Brasil 2017
     </div>
+        <div class="modal fade" id="importa_csv" tabindex="-1" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title" id="ModalLabel">Importar CSV</h1>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="/importacsv" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                        <label class="btn btn-default btn-choose" for="csv">
+                            <input id="csv" name="csv" type="file" style="display:none" onchange="$('#upload-file-info').html(this.files[0].name)"> Escolha o CSV
+                        </label>
+                        <big>
+                            <span class='label label-success' id="upload-file-info"></span>
+                        </big>
+                        &nbsp;
+                        <input class="btn btn-primary" type="submit" value="Importar CSV" />
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 {% endblock %} {% block scripts %} {{super()}}
+
 <script>
+    function exporta_csv() {
+        window.location.assign('exporta_csv');
+    }
 
 </script> {% endblock %}
