@@ -425,7 +425,7 @@ def exporta_csv():
     session = app.config.get('dbsession')
     try:
         riscos_out_filename = 'riscos_ativos' + \
-                              datetime.strftime(datetime.now(), '%Y-%m%dT%x') + \
+                              datetime.strftime(datetime.now(), '%Y-%m%dT%H%M%S') + \
                               '.csv'
         riscos_ativos = riscosativos(session, current_user.name)
         with open(os.path.join(get_user_save_path(), riscos_out_filename), 'w') as riscos_out:
