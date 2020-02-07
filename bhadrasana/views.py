@@ -25,7 +25,7 @@ from datetime import date, datetime, timedelta
 import requests
 from werkzeug.utils import secure_filename
 
-from bhadrasana.forms.editarisco import EditaRiscoForm
+from bhadrasana.forms.editarisco import get_edita_risco_form
 
 tmpdir = tempfile.mkdtemp()
 
@@ -133,8 +133,6 @@ def append_images(lista_risco):
     return lista_risco_nova
 
 
-
-
 @app.route('/risco', methods=['POST', 'GET'])
 @login_required
 def risco():
@@ -196,8 +194,7 @@ def edita_risco():
     session = app.config.get('dbsession')
     user_name = current_user.name
     riscos_ativos = riscosativos(session, user_name)
-    edita_risco_form = EditaRiscoForm()
-    edita_risco_form.campo.choices = CAMPOS_RISCO
+    edita_risco_form = get_edita_risco_form()
     return render_template('edita_risco.html',
                            riscos_ativos=riscos_ativos,
                            oform=edita_risco_form)

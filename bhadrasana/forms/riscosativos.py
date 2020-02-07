@@ -5,7 +5,8 @@ from wtforms.fields.html5 import DateField
 
 
 class RiscosAtivosForm(FlaskForm):
-    data = DateField(u'Data inicial da pesquisa')
+    datainicio = DateField(u'Data inicial da pesquisa')
+    datafim = DateField(u'Data final da pesquisa')
     portoDestFinal = BooleanField(u'Porto de Destino Final',
                                default=1)
     consignatario = BooleanField(u'Consignatario',

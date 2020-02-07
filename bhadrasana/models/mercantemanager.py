@@ -10,6 +10,7 @@ CAMPOS_RISCO = [('0', 'Selecione'),
                 ('4', 'codigoConteiner'),
                 ('5', 'descricao'),
                 ('6', 'embarcador'),
+                ('7', 'PortoDestFinal')
                 ]
 
 def mercanterisco(session, pfiltros: dict, limit=1000):
@@ -19,9 +20,13 @@ def mercanterisco(session, pfiltros: dict, limit=1000):
     keys = ['numeroCEmercante', 'descricao', 'embarcador',
             'consignatario', 'portoOrigemCarga', 'codigoConteiner', 'identificacaoNCM']
     # filtros = and_(Conhecimento.numeroCEmercante.ilike('15%') )
-    data = pfiltros.get('data')
-    if data:
-        filtros = and_(Conhecimento.create_date >= data)
+    datainicio = pfiltros.get('datainicio')
+    datafim = pfiltros.get('datafim')
+    filtros = and_()
+    if datainicio:
+        filtros = and_(Conhecimento.create_date >= datainicio, filtros)
+    if datafim:
+        filtros = and_(Conhecimento.create_date <= datafim, filtros)
     destino = pfiltros.get('portoDestFinal')
     if destino:
         filtros = and_(Conhecimento.portoDestFinal.ilike(destino + '%'), filtros)
