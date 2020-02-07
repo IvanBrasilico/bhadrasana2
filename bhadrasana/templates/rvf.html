@@ -74,7 +74,7 @@
             </div>
             <div class="row col-sm-12">
                 <div class="form-group">
-                    <form action="/rvf_imgupload" enctype="multipart/form-data" method="post">
+                    <form action="rvf_imgupload" enctype="multipart/form-data" method="post">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         <input type="hidden" name="rvf_id" value="{{ oform.id.data }}"/>
                         <h4>Selecione anexos:</h4>
@@ -89,7 +89,7 @@
                     <div class="col-sm-12" id="div_imagens" border="1">
                         {% for anexo in anexos %}
                         <span class="badge">
-                    <img src="/image/{{anexo}}" class="btn btn-primary" alt="{{ anexo }}" width="240px" height="160px"/>
+                    <img src="image/{{anexo}}" class="btn btn-primary" alt="{{ anexo }}" width="240px" height="160px"/>
                     <span class="badge" onclick="exclui_anexo('{{ anexo }}')">X</span>
                     </span>
                         {% endfor %}
