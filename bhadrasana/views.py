@@ -23,9 +23,8 @@ import tempfile
 from datetime import date, datetime, timedelta
 
 import requests
-from werkzeug.utils import secure_filename
-
 from bhadrasana.forms.editarisco import get_edita_risco_form
+from werkzeug.utils import secure_filename
 
 tmpdir = tempfile.mkdtemp()
 
@@ -154,6 +153,9 @@ def risco():
             riscos_ativos_form = RiscosAtivosForm(request.form)
             riscos_ativos = riscosativos(dbsession, user_name)
             filtros = {}
+            filtros['datainicio'] = riscos_ativos_form.datainicio.data
+            print(riscos_ativos_form.datafim.data)
+            filtros['datafim'] = riscos_ativos_form.datafim.data
             for fieldname, value in riscos_ativos_form.data.items():
                 if value is True:
                     riscos_ativos_campo = [risco.valor for risco in riscos_ativos
@@ -178,8 +180,7 @@ def risco():
                 for row in lista_risco:
                     campos = [str(value).replace(';', ',') for value in row.values()]
                     out_file.write(';'.join(campos) + '\n')
-        lista_risco = append_images(lista_risco[:100])
-
+            lista_risco = append_images(lista_risco[:100])
     else:
         riscos_ativos_form = RiscosAtivosForm()
     return render_template('aplica_risco.html',
