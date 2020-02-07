@@ -12,17 +12,15 @@
                                 Data de atualização:
                             </div>
                             <div class="col-sm-2">
-                                {{ oform.data(class='form-control') }}
+                                {{ oform.datainicio(class='form-control') }}
+                            </div>
+                            <div class="col-sm-2">
+                                {{ oform.datafim(class='form-control') }}
                             </div>
                             <div class="col-sm-2">
                                 <input type="checkbox" name="portoDestFinal" {% if oform.portoDestFinal.data %} checked
                                        {% endif %}/>
                                 Porto de Destino
-                            </div>
-                            <div class="col-sm-2">
-                                <input type="checkbox" name="portoOrigemCarga" {% if oform.portoOrigemCarga.data %}
-                                       checked {% endif %}/>
-                                Porto de Origem
                             </div>
                             <div class="col-sm-4">
                                 <button class="btn btn-default btn-info form-control" onclick="submit">
@@ -47,6 +45,11 @@
                                 Número do Contêiner
                             </div>
                             <div class="col-sm-2">
+                                <input type="checkbox" name="portoOrigemCarga" {% if oform.portoOrigemCarga.data %}
+                                       checked {% endif %}/>
+                                Porto de Origem
+                            </div>
+                            <div class="col-sm-2">
                                 <input type="checkbox" name="embarcador" {% if oform.embarcador.data %} checked {% endif
                                        %}/>
                                 Embarcador
@@ -55,8 +58,6 @@
                                 <input type="checkbox" name="descricao" {% if oform.descricao.data %} checked {% endif
                                        %}/>
                                 Descrição
-                            </div>
-                            <div class="col-sm-2">
                             </div>
                         </div>
                     </div>
