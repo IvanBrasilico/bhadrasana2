@@ -432,7 +432,7 @@ def exporta_csv():
             for risco in riscos_ativos:
                 linha_out = ';'.join((risco.campo, risco.valor, risco.motivo))
                 riscos_out.write(linha_out + '\n')
-        return redirect('/static/%s/%s' % (current_user.name, riscos_out_filename))
+        return redirect('static/%s/%s' % (current_user.name, riscos_out_filename))
     except Exception as err:
         logger.warning(err, exc_info=True)
         flash(str(err))
