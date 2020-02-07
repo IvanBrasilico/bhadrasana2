@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+from ajna_commons.flask.log import logger
 from sqlalchemy import select, and_, join, or_
 from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, RiscoAtivo
 
@@ -47,6 +48,7 @@ def mercanterisco(session, pfiltros: dict, limit=1000):
         where(filtros). \
         order_by(Conhecimento.numeroCEmercante, NCMItem.numeroSequencialItemCarga). \
         limit(limit)
+    logger.info(str(s))
     resultproxy = session.execute(s)
 
     result = []
