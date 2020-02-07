@@ -11,7 +11,7 @@ CAMPOS_RISCO = [('0', 'Selecione'),
                 ('4', 'codigoConteiner'),
                 ('5', 'descricao'),
                 ('6', 'embarcador'),
-                ('7', 'PortoDestFinal')
+                ('7', 'portoDestFinal')
                 ]
 
 def mercanterisco(session, pfiltros: dict, limit=1000):
@@ -20,17 +20,13 @@ def mercanterisco(session, pfiltros: dict, limit=1000):
     #    limit(10).all()
     keys = ['numeroCEmercante', 'descricao', 'embarcador',
             'consignatario', 'portoOrigemCarga', 'codigoConteiner', 'identificacaoNCM']
-    # filtros = and_(Conhecimento.numeroCEmercante.ilike('15%') )
-    datainicio = pfiltros.get('datainicio')
-    datafim = pfiltros.get('datafim')
     filtros = and_()
+    datainicio = pfiltros.get('datainicio')
     if datainicio:
         filtros = and_(Conhecimento.create_date >= datainicio, filtros)
+    datafim = pfiltros.get('datafim')
     if datafim:
         filtros = and_(Conhecimento.create_date <= datafim, filtros)
-    destino = pfiltros.get('portoDestFinal')
-    if destino:
-        filtros = and_(Conhecimento.portoDestFinal.ilike(destino + '%'), filtros)
     for key in keys:
         lista = pfiltros.get(key)
         if lista is not None:
@@ -38,6 +34,12 @@ def mercanterisco(session, pfiltros: dict, limit=1000):
                          [and_(getattr(Conhecimento, key).ilike(porto + '%'))
                           for porto in lista])
             filtros = and_(filtros, filtro)
+    destinos = pfiltros.get('portoDestFinal')
+    if destinos:
+        filtro = or_(*
+                     [and_(Conhecimento.portoDestFinal.ilike(destino + '%'))
+                      for destino in destinos])
+        filtros = and_(filtro, filtros)
     if pfiltros.get('ncm'):
         filtro = or_(*
                      [and_(NCMItem.identificacaoNCM.ilike(ncm + '%'))
@@ -46,7 +48,7 @@ def mercanterisco(session, pfiltros: dict, limit=1000):
     j = join(Conhecimento, NCMItem, Conhecimento.numeroCEmercante == NCMItem.numeroCEMercante)
     s = select([Conhecimento, NCMItem]).select_from(j). \
         where(filtros). \
-        order_by(Conhecimento.numeroCEmercante, NCMItem.numeroSequencialItemCarga). \
+        order_by(Conhecimento.numeroCEmercante). \
         limit(limit)
     logger.info(str(s))
     resultproxy = session.execute(s)
