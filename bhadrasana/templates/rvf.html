@@ -35,72 +35,77 @@
                 </div>
                 <div class="row col-sm-12">
                     &nbsp;<br>
-                    <div class="row col-sm-6">
-                        <button class="btn btn-default btn-info form-control" onclick="submit">
+                    <div class="col-sm-2">
+                        <button class="btn btn-default btn-primary form-control" onclick="submit">
                             Salvar
                         </button>
                     </div>
-                    <div class="row col-sm-1">
+                    <div class="col-sm-1">
                     </div>
-                    <div class="row col-sm-3">
-                        <a href="rvf_impressao/{{ oform.id.data }}" class="btn btn-md form-control">
+                    <div class="col-sm-2">
+                        <a href="rvf_impressao/{{ oform.id.data }}" class="btn btn-info form-control">
                             Imprimir
                         </a>
                     </div>
-                    <div class="row col-sm-2">
+                    <div class="col-sm-7">
                     </div>
                 </div>
             </form>
         </div>
         <div class="row col-sm-12">
-            <div class="col-sm-3">
+            <div class="col-sm-2">
                 <h3>Marcas encontradas</h3>
             </div>
-            <div class="col-sm-9">
+            <div class="col-sm-10">
                 <br>
                 <div class="ui-widget">
                     <input id="marcas" class="form-control">
                 </div>
             </div>
-            <div class="row col-sm-12">
-                <div class="col-sm-12" id="div_marcas_encontradas" border="1">
-                    {% for marca in marcas_encontradas %}
-                    <button type="button" class="btn btn-primary">
-                        {{ marca.nome }} <span class="badge"
-                                               onclick="exclui_marca_encontrada({{oform.id.data}}, {{ marca.id }})">X</span>
-                    </button>
-                    {% endfor %}
-                </div>
+        </div>
+        <div class="row col-sm-12">
+            <div class="col-sm-12" id="div_marcas_encontradas" border="1">
+                {% for marca in marcas_encontradas %}
+                <button type="button" class="btn btn-primary">
+                    {{ marca.nome }} <span class="badge"
+                                           onclick="exclui_marca_encontrada({{oform.id.data}}, {{ marca.id }})">X</span>
+                </button>
+                {% endfor %}
             </div>
-            <div class="row col-sm-12">
-                <div class="form-group">
-                    <form action="rvf_imgupload" enctype="multipart/form-data" method="post">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                        <input type="hidden" name="rvf_id" value="{{ oform.id.data }}"/>
-                        <h4>Selecione anexos:</h4>
-                        <div class="col-sm-2"><input type="file" name="img" multiple="">
-                        </div>
-                        <div class="col-sm-10">
-                            <button class="btn btn-default btn-info" onclick="submit">Enviar</button>
-                        </div>
-                    </form>
-                </div>
-                <div class="row ">
-                    <div class="col-sm-12" id="div_imagens" border="1">
-                        {% for anexo in anexos %}
-                        <span class="badge">
+        </div>
+        <div class="row col-sm-12">
+            <div class="form-group">
+                <form action="rvf_imgupload" enctype="multipart/form-data" method="post">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <input type="hidden" name="rvf_id" value="{{ oform.id.data }}"/>
+                    <h4>Selecione anexos:</h4>
+                    <div class="col-sm-2"><input type="file" class="btn btn-default" name="images" multiple="">
+                    </div>
+                    <div class="col-sm-1">
+                    </div>
+                    <div class="col-sm-2">
+                        <button class="btn btn-default btn-primary form-control" onclick="upload()">Enviar</button>
+                    </div>
+                    <div class="col-sm-7">
+                    </div>
+                </form>
+            </div>
+            <div class="row ">
+                <div class="col-sm-12" id="div_imagens" border="1">
+                    {% for anexo in anexos %}
+                    <span class="badge">
                     <img src="image/{{anexo}}" class="btn btn-primary" alt="{{ anexo }}" width="240px" height="160px"/>
                     <span class="badge" onclick="exclui_anexo('{{ anexo }}')">X</span>
                     </span>
-                        {% endfor %}
-                    </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
     </div>
-    <div id="bottom" class="row">
-        AJNA - Receita Federal do Brasil 2017
-    </div>
+</div>
+<div id="bottom" class="row">
+    AJNA - Receita Federal do Brasil 2017
+</div>
 </div>
 {% endblock %} {% block scripts %} {{super()}}
 <script>
@@ -150,6 +155,70 @@
         $('input#marcas').val('');
       }
     });
+
+    function upload_files(){
+    // Resize images before upload if images are too big
+        var dataurl = null;
+        // Create an image
+        var img = document.createElement("img");
+        // Create a file reader
+        var reader = new FileReader();
+        // Set the image once loaded into file reader
+        reader.onload = function(e)
+        {
+            img.src = e.target.result;
+            img.onload = function () {
+                var canvas = document.createElement("canvas");
+                var ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0);
+                var MAX_WIDTH = 800;
+                var MAX_HEIGHT = 600;
+
+                var width = img.width;
+                var height = img.height;
+
+                if (width > height) {
+                  if (width > MAX_WIDTH) {
+                    height *= MAX_WIDTH / width;
+                    width = MAX_WIDTH;
+                  }
+                } else {
+                  if (height > MAX_HEIGHT) {
+                    width *= MAX_HEIGHT / height;
+                    height = MAX_HEIGHT;
+                  }
+                }
+                canvas.width = width;
+                canvas.height = height;
+                var ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0, width, height);
+                dataurl = canvas.toDataURL("image/jpeg");
+                // Post the data
+                var fd = new FormData();
+                fd.append("name", e.target);
+                fd.append("image", dataurl);
+                fd.append("rvf_id",  {{ rvf_id }});
+                $.ajax({
+                    url: '/rvf_imgupload',
+                    data: fd,
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    type: 'POST',
+                    success: function(data){
+                    }
+                });
+            }
+            img.onload
+        }
+        // Load files into file reader
+
+        var filesToUpload = $('input#images').files;
+        for (file in filesToUpload[0]) {
+            reader.readAsDataURL(file);
+        }
+
+    }
 
 
 

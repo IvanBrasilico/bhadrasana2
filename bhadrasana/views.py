@@ -299,8 +299,9 @@ def rvf():
                 rvf = get_rvf(session, rvf_id)
                 if rvf is not None:
                     rvf_form = RVFForm(**rvf.__dict__)
-                    rvf_form.data.data = rvf.datahora.date()
-                    rvf_form.hora.data = rvf.datahora.time()
+                    if rvf.datahora:
+                        rvf_form.data.data = rvf.datahora.date()
+                        rvf_form.hora.data = rvf.datahora.time()
                     # rvf_form.id.data = rvf.id
                     # rvf_form.descricao.data = rvf.descricao
                     # rvf_form.numeroCEmercante.data = rvf.numeroCEmercante
@@ -389,7 +390,7 @@ def rvf_imgupload():
     if rvf_id is None:
         flash('Escolha um RVF antes')
         return redirect(url_for('rvf'))
-    for file in request.files.getlist('img'):
+    for file in request.files.getlist('images'):
         print('Arquivo:', file)
         validfile, mensagem = valid_file(file)
         if not validfile:
