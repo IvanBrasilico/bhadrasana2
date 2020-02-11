@@ -17,7 +17,6 @@ conexões internas.
 Adicionalmente, permite o merge entre bases, navegação de bases, e
 a aplicação de filtros/parâmetros de risco.
 """
-
 import os
 import tempfile
 from datetime import date, datetime, timedelta
@@ -45,12 +44,12 @@ from flask_nav.elements import Navbar, View
 from flask_wtf.csrf import CSRFProtect
 from gridfs import GridFS
 
-from bhadrasana.conf import APP_PATH, CSV_FOLDER
+from bhadrasana.conf import APP_PATH
 from bhadrasana.forms.filtro_rvf import FiltroRVFForm
 from bhadrasana.forms.riscosativos import RiscosAtivosForm
 from bhadrasana.forms.rvf import RVFForm
 from bhadrasana.models.mercantemanager import mercanterisco, riscosativos, \
-    insererisco, exclui_risco, CAMPOS_RISCO
+    insererisco, exclui_risco, CAMPOS_RISCO, get_lista_csv
 from bhadrasana.models.rvfmanager import get_marcas, exclui_marca_encontrada, cadastra_rvf, inclui_marca_encontrada, \
     get_rvf, get_ids_anexos, get_rvfs_filtro
 
@@ -140,14 +139,11 @@ def risco():
     Args:
     """
     dbsession = app.config.get('dbsession')
-    mongodb = app.config.get('mongodb')
-    static_path = os.path.join(APP_PATH,
-                               app.config.get('STATIC_FOLDER', 'static'),
-                               current_user.name)
     user_name = current_user.name
-    user_folder = os.path.join(CSV_FOLDER, user_name)
     lista_risco = []
+    total_linhas = 0
     csv_salvo = None
+    lista_csv = get_lista_csv(get_user_save_path())
     if request.method == 'POST':
         try:
             riscos_ativos_form = RiscosAtivosForm(request.form)
@@ -161,7 +157,7 @@ def risco():
                     riscos_ativos_campo = [risco.valor for risco in riscos_ativos
                                            if risco.campo == fieldname]
                     filtros[fieldname] = riscos_ativos_campo
-            lista_risco = mercanterisco(dbsession, filtros)
+            lista_risco, str_filtros = mercanterisco(dbsession, filtros)
             # print('***********', lista_risco)
         except Exception as err:
             logger.error(err, exc_info=True)
@@ -172,10 +168,12 @@ def risco():
         # Salvar resultado um arquivo para donwload
         # Limita resultados em 100 linhas na tela
         if lista_risco and len(lista_risco) > 0:
+            total_linhas = len(lista_risco)
             csv_salvo = 'resultado_' \
                         + datetime.strftime(datetime.now(), '%Y-%m%dT%H%M%S') + \
                         '.csv'
             with open(os.path.join(get_user_save_path(), csv_salvo), 'w') as out_file:
+                out_file.write(str_filtros + '\n')
                 out_file.write(';'.join([key for key in lista_risco[0].keys()]) + '\n')
                 for row in lista_risco:
                     campos = [str(value).replace(';', ',') for value in row.values()]
@@ -186,7 +184,9 @@ def risco():
     return render_template('aplica_risco.html',
                            oform=riscos_ativos_form,
                            lista_risco=lista_risco,
-                           csv_salvo=csv_salvo)
+                           total_linhas=total_linhas,
+                           csv_salvo=csv_salvo,
+                           lista_csv=lista_csv)
 
 
 @app.route('/edita_risco', methods=['POST', 'GET'])

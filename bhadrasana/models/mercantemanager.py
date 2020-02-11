@@ -1,4 +1,7 @@
+import json
+import os
 from collections import OrderedDict
+from datetime import date, datetime
 
 from ajna_commons.flask.log import logger
 from sqlalchemy import select, and_, join, or_
@@ -13,6 +16,12 @@ CAMPOS_RISCO = [('0', 'Selecione'),
                 ('6', 'embarcador'),
                 ('7', 'portoDestFinal')
                 ]
+
+def myconverter(o):
+    if isinstance(o, datetime):
+        return o.__str__() # datetime.strftime(o, '%Y%m%d %x')
+    if isinstance(o, date):
+        return o.__str__() # datetime.strftime(o, '%Y%m%d %x')
 
 def mercanterisco(session, pfiltros: dict, limit=1000):
     # conhecimentos = session.query(Conhecimento).\
@@ -51,12 +60,16 @@ def mercanterisco(session, pfiltros: dict, limit=1000):
         order_by(Conhecimento.numeroCEmercante). \
         limit(limit)
     logger.info(str(s))
+    logger.info(str(pfiltros))
+    str_filtros = str(s) + '\n' + json.dumps(pfiltros, default = myconverter)
+    logger.info(str_filtros)
     resultproxy = session.execute(s)
 
     result = []
     for row in resultproxy:
         result.append(OrderedDict([(key, row[key]) for key in keys]))
-    return result
+
+    return result, str_filtros
 
 
 def riscosativos(session, user_name):
@@ -85,3 +98,16 @@ def exclui_risco(session, id):
     except Exception as err:
         session.rollback()
         raise (err)
+
+
+def get_lista_csv(csvpath):
+    lista_csv = os.listdir(csvpath)
+    lista_csv = [os.path.join(csvpath, f)
+                 for f in lista_csv
+                 if '.csv' in f]
+    lista_csv.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+    for arquivo in lista_csv[4:]: # Somente manter cinco resultados
+        print('Excluir... %s' % arquivo)
+        os.remove(arquivo)
+    return os.listdir(csvpath)
+
