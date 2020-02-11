@@ -1,4 +1,4 @@
-from sqlalchemy import BigInteger, Column, DateTime, func, Integer, VARCHAR, Table
+from sqlalchemy import BigInteger, Column, DateTime, func, VARCHAR, Table
 from sqlalchemy import ForeignKey
 from sqlalchemy.dialects.mysql import TIMESTAMP
 from sqlalchemy.ext.declarative import declarative_base
