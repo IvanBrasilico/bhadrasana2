@@ -22,6 +22,7 @@ from sqlalchemy.orm import sessionmaker
 from pymongo import MongoClient
 
 from ajna_commons.flask.conf import DATABASE, MONGODB_URI, SQL_URI
+from bhadrasana.fma import fma_app
 from bhadrasana.views import configure_app
 
 conn = MongoClient(host=MONGODB_URI)
@@ -31,7 +32,7 @@ engine = create_engine(SQL_URI)
 Session = sessionmaker(bind=engine)
 session = Session()
 app = configure_app(mongodb, session, mongodb_risco)
-
+fma_app(app)
 if __name__ == '__main__':
     print('Iniciando Servidor Bhadrasana...')
     app.run(debug=app.config['DEBUG'])
