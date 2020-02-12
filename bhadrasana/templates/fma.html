@@ -47,19 +47,95 @@
                     <div class="col-sm-1">
                     </div>
                     <div class="col-sm-2">
-                        <a href="rvf_impressao/{{ oform.id.data }}" class="btn btn-info form-control">
-                            Imprimir
-                        </a>
+                        <button id="btn_historico" type="button" class="btn btn-primary btn-warning form-control"
+                                data-toggle="modal" data-target="#historico">Movimentar
+                        </button>
                     </div>
                     <div class="col-sm-7">
                     </div>
                 </div>
             </form>
         </div>
+
+        <div class="table-responsive col-sm-12">
+            <h4>Lista de Movimentações</h4>
+            <div class="table">
+                <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive"
+                       cellspacing="0"
+                       cellpadding="0">
+                    {% for historico in listahistorico %}
+                    <tr>
+                        <td align="center">
+                            {{ historico.status }}
+                        </td>
+                        <td align="center">
+                            {{ historico.user_name }}
+                        </td>
+                        <td align="center">
+                            {{ historico.motivo }}
+                        </td>
+                        <td align="center">
+                            {{ historico.create_date }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% if not listahistorico %}
+                    <tr>
+                        <td>Sem movimentações.</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
     </div>
     <div id="bottom" class="row">
         AJNA - Receita Federal do Brasil 2017
     </div>
+    <div class="modal fade" id="historico" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title" id="ModalLabel">Movimenta FMA</h1>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="/movimentafma" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <input type="hidden" name="fma_id" value="{{ historico_form.fma_id.data }}"/>
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <label for="status">Novo Status</label>
+                            </div>
+                            <div class="col-sm-9">
+                                {{ historico_form.status(class='form-control') }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <label for="motivo">Motivo</label>
+                            </div>
+                            <div class="col-sm-9">
+                                {{ historico_form.motivo(class='form-control') }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-3">
+                                Usuário
+                            </div>
+                            <div class="col-sm-9">
+                                {{ historico_form.user_name(class='form-control') }}
+                            </div>
+                        </div>
+                        <input class="btn btn-primary" type="submit" value="Movimentar"/>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 {% endblock %} {% block scripts %} {{super()}}
 <script>
