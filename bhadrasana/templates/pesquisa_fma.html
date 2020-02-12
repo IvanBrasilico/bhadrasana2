@@ -2,20 +2,32 @@
 <div id="main" class="container-fluid">
     <div id="top" class="row col-sm-12">
         <div class="form-group">
-            <form method="POST" id="filtroformrvf" action="pesquisa_rvf">
+            <form method="POST" id="filtroformfma" action="pesquisa_fma">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="row">
+                    <div class="col-sm-2">
+                        <label for="status">Status</label>
+                    </div>
+                    <div class="col-sm-2">
+                        <label for="numero">Número FMA</label>
+                    </div>
                     <div class="col-sm-2">
                         <label for="numeroCEmercante">Número CE-Mercante</label>
                     </div>
                     <div class="col-sm-4">
                         <label for="datainicio">Início e fim de período de pesquisa</label>
                     </div>
-                    <div class="col-sm-6">
+                    <div class="col-sm-2">
                     </div>
                 </div>
                 <div class="row">
                     <div class="form-group">
+                        <div class="col-sm-2">
+                            {{ oform.status(class='form-control') }}
+                        </div>
+                        <div class="col-sm-2">
+                            {{ oform.numero(class='form-control') }}
+                        </div>
                         <div class="col-sm-2">
                             {{ oform.numeroCEmercante(class='form-control') }}
                         </div>
@@ -25,7 +37,7 @@
                         <div class="col-sm-2">
                             {{ oform.datafim(class='form-control') }}
                         </div>
-                        <div class="col-sm-6">
+                        <div class="col-sm-2">
                         </div>
                     </div>
                 </div>
@@ -37,8 +49,8 @@
                         </button>
                     </div>
                     <div class="col-sm-2">
-                        <button class="btn btn-default btn-info form-control" formaction="rvf" formmethod="get">
-                            Nova RVF
+                        <button class="btn btn-default btn-info form-control" formaction="fma" formmethod="get">
+                            Nova FMA
                         </button>
                     </div>
                 </div>
@@ -53,16 +65,18 @@
                 <thead>
                 <tr>
                     <th></th>
+                    <th>Número</th>
                     <th>CE Mercante</th>
-                    <th>Data da verificação</th>
+                    <th>Data</th>
                 </tr>
                 </thead>
                 <tbody>
-                {% for rvf in rvfs %}
+                {% for fma in fmas %}
                 <tr>
-                    <td><a href="rvf?id={{ rvf.id }}">{{ rvf.id }}</a></td>
-                    <td>{{ rvf.numeroCEmercante }}</td>
-                    <td>{{ rvf.datahora }}</td>
+                    <td><a href="fma?id={{ fma.id }}">{{ fma.id }}</a></td>
+                    <td>{{ fma.numero }}</td>
+                    <td>{{ fma.numeroCEmercante }}</td>
+                    <td>{{ fma.datahora }}</td>
                 </tr>
                 {% endfor %}
                 </tbody>

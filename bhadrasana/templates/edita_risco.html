@@ -33,11 +33,13 @@
                         </div>
                         <div class="col-sm-2">
                             <button onclick="exporta_csv()" id="btn_exportar"
-                                    type="button" class="btn btn-default">Exportar Planilha</button>
+                                    type="button" class="btn btn-default">Exportar Planilha
+                            </button>
                         </div>
                         <div class="col-sm-2">
                             <button id="btn_incluir" type="button" class="btn btn-primary"
-                                    data-toggle="modal" data-target="#importa_csv">Importar Planilha</button>
+                                    data-toggle="modal" data-target="#importa_csv">Importar Planilha
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -78,7 +80,8 @@
     <div id="bottom" class="row">
         AJNA - Receita Federal do Brasil 2017
     </div>
-        <div class="modal fade" id="importa_csv" tabindex="-1" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true">
+    <div class="modal fade" id="importa_csv" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+         aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -86,15 +89,16 @@
                 </div>
                 <div class="modal-body">
                     <form method="POST" action="/importacsv" enctype="multipart/form-data">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         <label class="btn btn-default btn-choose" for="csv">
-                            <input id="csv" name="csv" type="file" style="display:none" onchange="$('#upload-file-info').html(this.files[0].name)"> Escolha o CSV
+                            <input id="csv" name="csv" type="file" style="display:none"
+                                   onchange="$('#upload-file-info').html(this.files[0].name)"> Escolha o CSV
                         </label>
                         <big>
                             <span class='label label-success' id="upload-file-info"></span>
                         </big>
                         &nbsp;
-                        <input class="btn btn-primary" type="submit" value="Importar CSV" />
+                        <input class="btn btn-primary" type="submit" value="Importar CSV"/>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -111,5 +115,6 @@
     function exporta_csv() {
         window.location.assign('exporta_csv');
     }
+
 
 </script> {% endblock %}
