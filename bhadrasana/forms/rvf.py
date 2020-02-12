@@ -10,5 +10,5 @@ class RVFForm(FlaskForm):
     descricao = TextAreaField(u'Descrição',
                               render_kw={"rows": 5, "cols": 100},
                               default='')
-    data = DateField(u'Data')
-    hora = TimeField(u'Horário')
+    adata = DateField(u'Data')
+    ahora = TimeField(u'Horário')

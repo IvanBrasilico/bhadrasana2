@@ -279,20 +279,19 @@ def rvf():
     anexos = []
     rvf = None
     rvf_form = RVFForm()
-    form_filtro = FiltroRVFForm()
     try:
         if request.method == 'POST':
             rvf_form = RVFForm(request.form)
             print(request.form.values())
-            rvf_form.data.data = request.form['data']
-            rvf_form.data.hora = request.form['hora']
+            rvf_form.adata.data = request.form['adata']
+            rvf_form.ahora.data = request.form['ahora']
             rvf_form.validate()
             rvf = cadastra_rvf(session,
                                rvf_form.id.data,
                                rvf_form.descricao.data,
                                rvf_form.numeroCEmercante.data,
-                               rvf_form.data.data,
-                               rvf_form.hora.data)
+                               rvf_form.adata.data,
+                               rvf_form.ahora.data)
         else:
             rvf_id = request.args.get('id')
             if rvf_id is not None:
@@ -300,8 +299,8 @@ def rvf():
                 if rvf is not None:
                     rvf_form = RVFForm(**rvf.__dict__)
                     if rvf.datahora:
-                        rvf_form.data.data = rvf.datahora.date()
-                        rvf_form.hora.data = rvf.datahora.time()
+                        rvf_form.adata.data = rvf.datahora.date()
+                        rvf_form.ahora.data = rvf.datahora.time()
                     # rvf_form.id.data = rvf.id
                     # rvf_form.descricao.data = rvf.descricao
                     # rvf_form.numeroCEmercante.data = rvf.numeroCEmercante
@@ -319,7 +318,6 @@ def rvf():
     return render_template('rvf.html',
                            marcas=marcas,
                            oform=rvf_form,
-                           formfiltro=form_filtro,
                            marcas_encontradas=marcas_encontradas,
                            anexos=anexos)
 
@@ -504,6 +502,8 @@ def mynavbar():
              View('Risco', 'risco'),
              View('Editar Riscos', 'edita_risco'),
              View('RVF', 'pesquisa_rvf'),
+             View('FMA', 'fma'),
+             View('FMA Pesquisa', 'pesquisa_fma'),
              ]
     if current_user.is_authenticated:
         items.append(View('Sair', 'commons.logout'))

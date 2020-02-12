@@ -25,10 +25,10 @@
                         </div>
                         <div class="col-sm-12">
                             <div class="col-sm-3">
-                                {{ oform.data(class='form-control') }}
+                                {{ oform.adata(class='form-control') }}
                             </div>
                             <div class="col-sm-3">
-                                {{ oform.hora(class='form-control') }}
+                                {{ oform.ahora(class='form-control') }}
                             </div>
                         </div>
                     </div>
@@ -53,10 +53,10 @@
             </form>
         </div>
         <div class="row col-sm-12">
-            <div class="col-sm-2">
+            <div class="col-sm-3">
                 <h3>Marcas encontradas</h3>
             </div>
-            <div class="col-sm-10">
+            <div class="col-sm-9">
                 <br>
                 <div class="ui-widget">
                     <input id="marcas" class="form-control">
@@ -79,14 +79,14 @@
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <input type="hidden" name="rvf_id" value="{{ oform.id.data }}"/>
                     <h4>Selecione anexos:</h4>
-                    <div class="col-sm-2"><input type="file" class="btn btn-default" name="images" multiple="">
+                    <div class="col-sm-3"><input type="file" class="btn btn-default" name="images" multiple="">
                     </div>
                     <div class="col-sm-1">
                     </div>
                     <div class="col-sm-2">
                         <button class="btn btn-default btn-primary form-control" onclick="upload()">Enviar</button>
                     </div>
-                    <div class="col-sm-7">
+                    <div class="col-sm-6">
                     </div>
                 </form>
             </div>

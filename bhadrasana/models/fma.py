@@ -13,9 +13,11 @@ metadata = Base.metadata
 class FMA(Base):
     __tablename__ = 'fma_fmas'
     id = Column(BigInteger(), primary_key=True)
+    numero = Column(VARCHAR(10), index=True)
+    ano = Column(VARCHAR(4), index=True)
     numeroCEmercante = Column(VARCHAR(15), index=True)
     recinto = Column(VARCHAR(50), index=True)
-    marca = Column(VARCHAR(50), index=True)
+    observacoes = Column(VARCHAR(200), index=True)
     datahora = Column(TIMESTAMP, index=True)
     status = Column(Integer(), index=True)
     user_name = Column(VARCHAR(50), index=True)
