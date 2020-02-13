@@ -19,6 +19,7 @@ class FMA(Base):
     recinto = Column(VARCHAR(50), index=True)
     observacoes = Column(VARCHAR(200), index=True)
     datahora = Column(TIMESTAMP, index=True)
+    fase = Column(Integer(), index=True)
     status = Column(Integer(), index=True)
     user_name = Column(VARCHAR(50), index=True)
     create_date = Column(TIMESTAMP, index=True,
@@ -33,7 +34,8 @@ class HistoricoFMA(Base):
     id = Column(BigInteger(), primary_key=True)
     fma_id = Column(BigInteger(), ForeignKey('fma_fmas.id'))
     fma = relationship("FMA", back_populates="historico")
-    status = Column(Integer(), index=True)
+    fase = Column(Integer(), index=True, default=0)
+    status = Column(Integer(), index=True, default=0)
     user_name = Column(VARCHAR(50), index=True)
     motivo = Column(VARCHAR(50), index=True)
     create_date = Column(TIMESTAMP, index=True,

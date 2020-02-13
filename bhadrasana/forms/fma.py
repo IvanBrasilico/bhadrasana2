@@ -21,6 +21,7 @@ class FMAForm(FlaskForm):
 class FiltroFMAForm(FlaskForm):
     id = IntegerField('ID')
     status = SelectField('status', default=0)
+    fase = SelectField('fase', default=0)
     numero = StringField(u'Numero FMA',
                                    default='')
     numeroCEmercante = StringField(u'CE Mercante',
