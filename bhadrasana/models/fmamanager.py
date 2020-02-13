@@ -21,6 +21,13 @@ tipoStatusFMA = [
     'Solic. Laudo Técnico/Labor'
 ]
 
+faseOVR = [
+    'Iniciada',
+    'Ativa',
+    'Suspensa',
+    'Arquivada'
+]
+
 
 class Enumerado:
     @classmethod
@@ -29,6 +36,13 @@ class Enumerado:
             return tipoStatusFMA[id]
         else:
             return [(id, item) for id, item in enumerate(tipoStatusFMA)]
+
+    @classmethod
+    def faseOVR(cls, id=None):
+        if id:
+            return faseOVR[id]
+        else:
+            return [(id, item) for id, item in enumerate(faseOVR)]
 
 
 def cadastra_fma(session, params):
@@ -78,19 +92,29 @@ def get_fma_filtro(session, pfiltro):
                       filtro)
     if pfiltro.get('numero'):
         filtro = and_(FMA.numero.ilike(pfiltro.get('numero')), filtro)
-    #if pfiltro.get('status'):
+    # if pfiltro.get('status'):
     #    filtro = and_(FMA.status == pfiltro.get('status'), filtro)
     fmas = session.query(FMA).filter(filtro).all()
     return [fma for fma in fmas]
+
+
+def fase_status(status_id):
+    """Retorna fase correspondente ao status"""
+    if status_id in (2, 3, 14):
+        return 2 # Suspensa
+    return 1 # Ativa
+
 
 
 def movimenta_fma(session, params):
     historicofma = HistoricoFMA()
     for key, value in params.items():
         setattr(historicofma, key, value)
+    historicofma.fase = fase_status(historicofma.status)
     try:
         fma = get_fma(session, historicofma.fma_id)
         fma.status = historicofma.status
+        fma.fase = historicofma.fase
         session.add(fma)
         session.add(historicofma)
         session.commit()
