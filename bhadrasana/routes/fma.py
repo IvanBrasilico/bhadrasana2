@@ -2,10 +2,11 @@ import datetime
 
 from ajna_commons.flask.log import logger
 from bhadrasana.forms.fma import FMAForm, FiltroFMAForm, HistoricoFMAForm
-from bhadrasana.models.fmamanager import Enumerado, cadastra_fma, get_fma, \
+from bhadrasana.models.fmamanager import cadastra_fma, get_fma, \
     get_fma_filtro, movimenta_fma
 from flask import request, flash, render_template, url_for
 from flask_login import login_required, current_user
+from virasana.integracao.mercante.mercantealchemy import Conhecimento
 from werkzeug.utils import redirect
 
 
@@ -18,6 +19,7 @@ def fma_app(app):
         fma = None
         fma_form = FMAForm()
         historico_form = HistoricoFMAForm()
+        conhecimento = None
         try:
             if request.method == 'POST':
                 fma_form = FMAForm(request.form)
@@ -26,19 +28,19 @@ def fma_app(app):
                 fma_form.validate()
                 fma = cadastra_fma(session,
                                    dict(fma_form.data.items()))
+                return redirect(url_for('fma', id=fma.id))
             else:
                 fma_id = request.args.get('id')
                 if fma_id is not None:
                     fma = get_fma(session, fma_id)
                     if fma is not None:
                         fma_form = FMAForm(**fma.__dict__)
-                        if fma.datahora:
-                            fma_form.adata.data = fma.datahora.date()
-                            fma_form.ahora.data = fma.datahora.time()
-            if fma:
-                fma_form.id.data = fma.id
-                historico_form.fma_id.data = fma_id
-                listahistorico = fma.historico
+                        conhecimento = session.query(Conhecimento).filter(
+                            Conhecimento.numeroCEmercante == fma.numeroCEmercante
+                        ).one_or_none()
+                        fma_form.id.data = fma.id
+                        historico_form.fma_id.data = fma.id
+                        listahistorico = fma.historico
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
@@ -46,6 +48,7 @@ def fma_app(app):
             flash(err)
         return render_template('fma.html',
                                oform=fma_form,
+                               conhecimento=conhecimento,
                                historico_form=historico_form,
                                listahistorico=listahistorico)
 

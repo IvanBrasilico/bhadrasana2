@@ -21,6 +21,7 @@ import os
 import tempfile
 from datetime import date, datetime, timedelta
 
+import pandas as pd
 import requests
 from bhadrasana.forms.editarisco import get_edita_risco_form
 from werkzeug.utils import secure_filename
@@ -131,6 +132,12 @@ def append_images(lista_risco):
     return lista_risco_nova
 
 
+def le_csv(filename):
+    df = pd.read_csv(filename, sep=';',
+                     header=5, encoding='windows-1252')
+    return [row[1].to_dict() for row in df.iterrows()]
+
+
 @app.route('/risco', methods=['POST', 'GET'])
 @login_required
 def risco():
@@ -141,16 +148,16 @@ def risco():
     dbsession = app.config.get('dbsession')
     user_name = current_user.name
     lista_risco = []
-    total_linhas = 0
     csv_salvo = None
+    planilha_atual = ''
     lista_csv = get_lista_csv(get_user_save_path())
     if request.method == 'POST':
         try:
             riscos_ativos_form = RiscosAtivosForm(request.form)
+            riscos_ativos_form.planilha_atual = ''
             riscos_ativos = riscosativos(dbsession, user_name)
             filtros = {}
             filtros['datainicio'] = riscos_ativos_form.datainicio.data
-            print(riscos_ativos_form.datafim.data)
             filtros['datafim'] = riscos_ativos_form.datafim.data
             for fieldname, value in riscos_ativos_form.data.items():
                 if value is True:
@@ -168,7 +175,6 @@ def risco():
         # Salvar resultado um arquivo para donwload
         # Limita resultados em 100 linhas na tela
         if lista_risco and len(lista_risco) > 0:
-            total_linhas = len(lista_risco)
             csv_salvo = 'resultado_' \
                         + datetime.strftime(datetime.now(), '%Y-%m%dT%H%M%S') + \
                         '.csv'
@@ -178,15 +184,21 @@ def risco():
                 for row in lista_risco:
                     campos = [str(value).replace(';', ',') for value in row.values()]
                     out_file.write(';'.join(campos) + '\n')
-            lista_risco = append_images(lista_risco[:100])
     else:
         riscos_ativos_form = RiscosAtivosForm()
+        planilha_atual = request.args.get('planilha_atual', '')
+        if planilha_atual:
+            csv_salvo = planilha_atual
+            lista_risco = le_csv(os.path.join(get_user_save_path(), csv_salvo))
+    total_linhas = len(lista_risco)
+    lista_risco = append_images(lista_risco[:100])
     return render_template('aplica_risco.html',
                            oform=riscos_ativos_form,
                            lista_risco=lista_risco,
                            total_linhas=total_linhas,
                            csv_salvo=csv_salvo,
-                           lista_csv=lista_csv)
+                           lista_csv=lista_csv,
+                           planilha_atual=planilha_atual)
 
 
 @app.route('/edita_risco', methods=['POST', 'GET'])
@@ -503,6 +515,7 @@ def mynavbar():
              View('Editar Riscos', 'edita_risco'),
              View('RVF', 'pesquisa_rvf'),
              View('FMA', 'pesquisa_fma'),
+             View('OVR', 'pesquisa_ovr'),
              ]
     if current_user.is_authenticated:
         items.append(View('Sair', 'commons.logout'))

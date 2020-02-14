@@ -65,15 +65,19 @@
             </form>
         </div>
         <div class="table-responsive col-sm-12">
-            <h2>Pesquisas anteriores</h2>
+            <h3>Pesquisas anteriores</h3>
             <div class="table">
                 <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive">
                     {% for arquivo in lista_csv %}
                     <tr>
                         <td>
-                            <a href="static/{{ current_user.name }}/{{arquivo}}">
-                                {{ arquivo }}
-                            </a>
+                            {{ arquivo }}
+                        </td>
+                        <td>
+                            <a href="risco?planilha_atual={{arquivo}}">Mostrar na tela</a>
+                        </td>
+                        <td>
+                            <a href="static/{{ current_user.name }}/{{arquivo}}">Baixar</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -82,9 +86,13 @@
         </div>
         <div class="table-responsive col-sm-12">
             <h4>Lista de Riscos da Base {{filename}} - total de {{total_linhas}} linhas - Máximo de 100 linhas.</h4>
-
-                Baixe a planilha
-                para ver as linhas restantes ou aplique mais filtros. A planilha tem um limite de 1000 linhas.</h4>
+            <h6>
+                Baixe a planilha para ver as linhas restantes ou aplique mais filtros. A planilha tem um limite de 1000
+                linhas.
+            </h6>
+            {% if planilha_atual %}
+            <h4 class="btn-warning">Exibindo planilha {{ planilha_atual }} </h4>
+            {% endif %}
             {% if csv_salvo %}
             <big>
                 <a href="static/{{ current_user.name }}/{{csv_salvo}}">
