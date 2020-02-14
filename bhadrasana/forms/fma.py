@@ -32,7 +32,7 @@ class FiltroFMAForm(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.status.choices = Enumerado.tipoStatusFMA()
+        self.status.choices = [(None, 'Selecione'), *Enumerado.tipoStatusFMA()]
         self.fase.choices = Enumerado.faseOVR()
 
 
@@ -46,3 +46,7 @@ class HistoricoFMAForm(FlaskForm):
                                    default='')
     motivo = StringField(u'Nome do usuário',
                                    default='')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.status.choices = Enumerado.tipoStatusFMA()

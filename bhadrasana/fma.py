@@ -18,7 +18,6 @@ def fma_app(app):
         fma = None
         fma_form = FMAForm()
         historico_form = HistoricoFMAForm()
-        historico_form.status.choices = Enumerado.tipoStatusFMA()
         try:
             if request.method == 'POST':
                 fma_form = FMAForm(request.form)
@@ -60,11 +59,9 @@ def fma_app(app):
             datainicio=datetime.date.today() - datetime.timedelta(days=10),
             datafim=datetime.date.today()
         )
-        filtro_form.status.choices = Enumerado.tipoStatusFMA()
         try:
             if request.method == 'POST':
                 filtro_form = FiltroFMAForm(request.form)
-                filtro_form.status.choices = Enumerado.tipoStatusFMA()
                 filtro_form.validate()
                 fmas = get_fma_filtro(session, dict(filtro_form.data.items()))
         except Exception as err:
