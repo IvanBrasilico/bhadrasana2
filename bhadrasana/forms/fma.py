@@ -1,4 +1,5 @@
 from flask_wtf import FlaskForm
+from bhadrasana.models.fmamanager import Enumerado
 from wtforms import StringField, IntegerField, TextAreaField, SelectField
 from wtforms.fields.html5 import DateField, TimeField
 
@@ -28,6 +29,13 @@ class FiltroFMAForm(FlaskForm):
                                    default='')
     datainicio = DateField(u'Data inicial da pesquisa')
     datafim = DateField(u'Data final da pesquisa')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.status.choices = Enumerado.tipoStatusFMA()
+        self.fase.choices = Enumerado.faseOVR()
+
+
 
 
 class HistoricoFMAForm(FlaskForm):
