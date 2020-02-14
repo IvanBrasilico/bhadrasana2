@@ -9,6 +9,9 @@
                         <label for="status">Status</label>
                     </div>
                     <div class="col-sm-2">
+                        <label for="status">Fase</label>
+                    </div>
+                    <div class="col-sm-2">
                         <label for="numero">Número FMA</label>
                     </div>
                     <div class="col-sm-2">
@@ -17,13 +20,14 @@
                     <div class="col-sm-4">
                         <label for="datainicio">Início e fim de período de pesquisa</label>
                     </div>
-                    <div class="col-sm-2">
-                    </div>
                 </div>
                 <div class="row">
                     <div class="form-group">
                         <div class="col-sm-2">
                             {{ oform.status(class='form-control') }}
+                        </div>
+                        <div class="col-sm-2">
+                            {{ oform.fase(class='form-control') }}
                         </div>
                         <div class="col-sm-2">
                             {{ oform.numero(class='form-control') }}
@@ -36,8 +40,6 @@
                         </div>
                         <div class="col-sm-2">
                             {{ oform.datafim(class='form-control') }}
-                        </div>
-                        <div class="col-sm-2">
                         </div>
                     </div>
                 </div>
