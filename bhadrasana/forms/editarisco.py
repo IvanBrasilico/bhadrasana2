@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import SelectField, StringField
 
-from bhadrasana.models.mercantemanager import CAMPOS_RISCO
+from bhadrasana.models.riscomanager import CAMPOS_RISCO
 
 
 class EditaRiscoForm(FlaskForm):

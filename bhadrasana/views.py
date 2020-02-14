@@ -48,7 +48,7 @@ from bhadrasana.conf import APP_PATH
 from bhadrasana.forms.filtro_rvf import FiltroRVFForm
 from bhadrasana.forms.riscosativos import RiscosAtivosForm
 from bhadrasana.forms.rvf import RVFForm
-from bhadrasana.models.mercantemanager import mercanterisco, riscosativos, \
+from bhadrasana.models.riscomanager import mercanterisco, riscosativos, \
     insererisco, exclui_risco, CAMPOS_RISCO, get_lista_csv
 from bhadrasana.models.rvfmanager import get_marcas, exclui_marca_encontrada, cadastra_rvf, inclui_marca_encontrada, \
     get_rvf, get_ids_anexos, get_rvfs_filtro

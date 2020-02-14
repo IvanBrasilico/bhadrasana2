@@ -1,5 +1,6 @@
 import datetime
 
+from ajna_commons.flask.log import logger
 from bhadrasana.models.fma import FMA, HistoricoFMA
 from sqlalchemy import and_
 
@@ -84,26 +85,29 @@ def get_fma(session, id: int = None):
 def get_fma_filtro(session, pfiltro):
     filtro = and_()
     if pfiltro.get('datainicio'):
-        filtro = and_(FMA.datahora >= pfiltro.get('datainicio'))
+        filtro = and_(FMA.datahora >= pfiltro.get('datainicio'), filtro)
     if pfiltro.get('datafim'):
-        filtro = and_(FMA.datahora <= pfiltro.get('datafim'))
+        filtro = and_(FMA.datahora <= pfiltro.get('datafim'), filtro)
     if pfiltro.get('numeroCEmercante'):
         filtro = and_(FMA.numeroCEmercante.ilike(pfiltro.get('numeroCEmercante')),
                       filtro)
     if pfiltro.get('numero'):
         filtro = and_(FMA.numero.ilike(pfiltro.get('numero')), filtro)
-    # if pfiltro.get('status'):
-    #    filtro = and_(FMA.status == pfiltro.get('status'), filtro)
+    if pfiltro.get('status') and pfiltro.get('status') != 'None':
+        filtro = and_(FMA.status == int(pfiltro.get('status')), filtro)
+    if pfiltro.get('fase'):
+        filtro = and_(FMA.fase == int(pfiltro.get('fase')), filtro)
     fmas = session.query(FMA).filter(filtro).all()
+    logger.info(str(pfiltro))
+    logger.info(str(filtro))
     return [fma for fma in fmas]
 
 
 def fase_status(status_id):
     """Retorna fase correspondente ao status"""
     if status_id in (2, 3, 14):
-        return 2 # Suspensa
-    return 1 # Ativa
-
+        return 2  # Suspensa
+    return 1  # Ativa
 
 
 def movimenta_fma(session, params):
