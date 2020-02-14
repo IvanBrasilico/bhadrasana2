@@ -14,9 +14,14 @@
                         <div class="col-sm-12">
                             CE Mercante
                             {{ oform.numeroCEmercante(class='form-control')}}
+                            {% if conhecimento %}
+                            Embarcador: {{ conhecimento.embarcador }}<br>
+                            Consignatário: {{ conhecimento.consignatario }}<br>
+                            Descrição Mercadoria:{{ conhecimento.descricao }}<br>
+                            {% endif %}
                         </div>
                         <div class="col-sm-12">
-                            Descrição
+                            Observações
                             {{ oform.observacoes(class='form-control') }}
                         </div>
                         <div class="col-sm-12">
