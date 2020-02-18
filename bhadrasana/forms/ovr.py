@@ -7,6 +7,8 @@ from wtforms.fields.html5 import DateField, TimeField
 class OVRForm(FlaskForm):
     id = IntegerField('ID')
     tipooperacao = SelectField(u'Tipo de Operação', default=1)
+    tipoevento_id = SelectField(u'Tipo de Operação', render_kw={'disabled':''})
+    fase = SelectField(u'Fase', render_kw={'disabled':''})
     numero = StringField(u'Numero OVR',
                          default='')
     ano = StringField(u'Ano',
@@ -14,7 +16,7 @@ class OVRForm(FlaskForm):
     numeroCEmercante = StringField(u'CE Mercante',
                                    default='')
     observacoes = TextAreaField(u'Observações',
-                                render_kw={"rows": 5, "cols": 100},
+                                render_kw={"rows": 3, "cols": 100},
                                 default='')
     adata = DateField(u'Data')
     ahora = TimeField(u'Horário')
@@ -22,6 +24,9 @@ class OVRForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.tipooperacao.choices = Enumerado.tipoOperacao()
+        self.fase.choices = Enumerado.faseOVR()
+        if kwargs.get('tiposeventos'):
+            self.tipoevento_id.choices = kwargs.get('tiposeventos')
         datahora = kwargs.get('datahora')
         if datahora:
             self.adata.data = datahora.date()
@@ -32,7 +37,7 @@ class FiltroOVRForm(FlaskForm):
     id = IntegerField('ID')
     tipooperacao = SelectField('tipooperacao', default=0)
     fase = SelectField('fase', default=0)
-    tipoevento = SelectField('tipoevento', default=0)
+    tipoevento_id = SelectField('tipoevento', default=0)
     numero = StringField(u'Numero OVR',
                          default='')
     numeroCEmercante = StringField(u'CE Mercante',
@@ -45,7 +50,7 @@ class FiltroOVRForm(FlaskForm):
         self.tipooperacao.choices = [(None, 'Selecione'), *Enumerado.tipoOperacao()]
         self.fase.choices = Enumerado.faseOVR()
         if kwargs.get('tiposeventos'):
-            self.tipoevento.choices = [(None, 'Selecione'), *kwargs.get('tiposeventos')]
+            self.tipoevento_id.choices = [(None, 'Selecione'), *kwargs.get('tiposeventos')]
 
 
 class HistoricoOVRForm(FlaskForm):
