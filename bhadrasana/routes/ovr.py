@@ -1,19 +1,20 @@
 import datetime
 
 from ajna_commons.flask.log import logger
-from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, ProcessoOVRForm
+from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, ProcessoOVRForm, ItemTGForm
+from bhadrasana.models.ovr import ItemTG
 from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
-    get_ovr_filtro, gera_eventoovr, get_tipos_evento, delete_objeto, gera_processoovr, get_tipos_processo
+    get_ovr_filtro, gera_eventoovr, get_tipos_evento, delete_objeto, gera_processoovr, get_tipos_processo, lista_itemtg, \
+    get_itemtg
+from bhadrasana.models.rvfmanager import get_marcas_choice
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
-from virasana.integracao.mercante.mercantealchemy import Conhecimento
+from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, Item
 from werkzeug.utils import redirect
 
 
 def ovr_app(app):
-    @app.route('/ovr', methods=['POST', 'GET'])
-    @login_required
-    def ovr():
+    def trata_ovr(request, ovr_id):
         session = app.config.get('dbsession')
         listahistorico = []
         processos = []
@@ -23,6 +24,8 @@ def ovr_app(app):
         historico_form = HistoricoOVRForm(tiposeventos=tiposeventos)
         processo_form = ProcessoOVRForm(tiposprocesso=tiposprocesso)
         conhecimento = None
+        ncms = []
+        containers = []
         try:
             if request.method == 'POST':
                 ovr_form = OVRForm(request.form)
@@ -33,14 +36,22 @@ def ovr_app(app):
                                    dict(ovr_form.data.items()))
                 return redirect(url_for('ovr', id=ovr.id))
             else:
-                ovr_id = request.args.get('id')
                 if ovr_id is not None:
                     ovr = get_ovr(session, ovr_id)
                     if ovr is not None:
                         ovr_form = OVRForm(**ovr.__dict__)
+                        # TODO: Extrair visualização do conhecimento para uma função,
+                        # talvez um Endpoint para consulta JavaScript
+                        numeroCEmercante = ovr.numeroCEmercante
                         conhecimento = session.query(Conhecimento).filter(
-                            Conhecimento.numeroCEmercante == ovr.numeroCEmercante
+                            Conhecimento.numeroCEmercante == numeroCEmercante
                         ).one_or_none()
+                        ncms = session.query(NCMItem).filter(
+                            NCMItem.numeroCEMercante == numeroCEmercante
+                        ).all()
+                        containers = session.query(Item).filter(
+                            Item.numeroCEmercante == numeroCEmercante
+                        ).all()
                         ovr_form.id.data = ovr.id
                         listahistorico = ovr.historico
                         processos = ovr.processos
@@ -52,10 +63,23 @@ def ovr_app(app):
         return render_template('ovr.html',
                                oform=ovr_form,
                                conhecimento=conhecimento,
+                               ncms=ncms,
+                               containers=containers,
                                historico_form=historico_form,
                                processo_form=processo_form,
                                listahistorico=listahistorico,
                                processos=processos)
+
+    @app.route('/ovr/<id>', methods=['POST', 'GET'])
+    @login_required
+    def ovr_id(id):
+        return trata_ovr(request, id)
+
+    @app.route('/ovr', methods=['POST', 'GET'])
+    @login_required
+    def ovr():
+        id = request.args.get('id')
+        return trata_ovr(request, id)
 
     @app.route('/pesquisa_ovr', methods=['POST', 'GET'])
     @login_required
@@ -69,11 +93,9 @@ def ovr_app(app):
             datafim=datetime.date.today(),
             tiposeventos=tiposeventos
         )
-        filtro_form.tipoevento.choices = tiposeventos
         try:
             if request.method == 'POST':
                 filtro_form = FiltroOVRForm(request.form, tiposeventos=tiposeventos)
-                filtro_form.tipoevento.choices = tiposeventos
                 filtro_form.validate()
                 ovrs = get_ovr_filtro(session, dict(filtro_form.data.items()))
         except Exception as err:
@@ -100,8 +122,41 @@ def ovr_app(app):
         session = app.config.get('dbsession')
         ovr_id = request.form['ovr_id']
         processo_ovr_form = ProcessoOVRForm(request.form)
+        processo_ovr_form.validate()
         gera_processoovr(session, dict(processo_ovr_form.data.items()))
         return redirect(url_for('ovr', id=ovr_id))
+
+    @app.route('/lista_itemtg', methods=['GET'])
+    @login_required
+    def listaitemtg():
+        session = app.config.get('dbsession')
+        ovr_id = request.args.get('ovr_id')
+        listaitemtg = lista_itemtg(session, ovr_id)
+        # print(listaitemtg)
+        item_id = request.args.get('item_id')
+        itemtg = get_itemtg(session, item_id)
+        if itemtg:
+            marcas = get_marcas_choice(session)
+            oform = ItemTGForm(**itemtg.__dict__, marcas=marcas)
+        return render_template('lista_itemtg.html',
+                               listaitemtg=listaitemtg,
+                               oform=oform)
+
+    @app.route('/edita_itemtg', methods=['GET'])
+    @login_required
+    def itemtg():
+        session = app.config.get('dbsession')
+        id = request.args.get('id')
+        campo = request.args.get('campo')
+        valor = request.args.get('valor')
+        itemtg = session.query(ItemTG).filter(ItemTG.id == int(id)).one_or_none()
+        setattr(itemtg, campo, valor)
+        session.add(itemtg)
+        session.commit()
+        # itemtg_form = ItemTGForm(request.form)
+        # itemtg_form.validate()
+        # gera_itemtg(session, dict(itemtg_form.data.items()))
+        return {'msg': 'Modificado com sucesso'}, 200
 
     @app.route('/excluiobjeto/<classname>/<id>', methods=['POST'])
     @login_required

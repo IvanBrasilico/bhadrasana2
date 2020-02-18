@@ -1,75 +1,81 @@
 {% extends "layout.html" %} {% block content %} {{super()}}
 <div id="main" class="container-fluid">
-    <div id="top" class="row">
-        <div class="col-sm-12">
-            <form method="POST" id="formrvf" action="ovr">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                <input type="hidden" name="id" value="{{ oform.id.data }}"/>
-                <div class="row">
-                    <div class="form-group">
-                        <div class="col-sm-12">
-                            Número
-                            {{ oform.numero(class='form-control')}}
-                        </div>
-                        <div class="col-sm-12">
-                            CE Mercante
-                            {{ oform.numeroCEmercante(class='form-control')}}
-                        </div>
-                        <div class="col-sm-12">
-                            <div class="panel panel-primary rounded-pill">
-                                <div class="panel-heading rounded-pill">
+    <div class="row col-sm-12">
+        <form method="POST" id="formrvf" action="ovr">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <input type="hidden" name="id" value="{{ oform.id.data }}"/>
+            <div class="row">
+                <div class="form-group">
+                    <div class="col-sm-12">
+                        Número
+                        {{ oform.numero(class='form-control')}}
+                    </div>
+                    <div class="col-sm-12">
+                        Tipo
+                        {{ oform.tipooperacao(class='form-control')}}
+                    </div>
+                    <div class="col-sm-12">
+                        CE Mercante
+                        {{ oform.numeroCEmercante(class='form-control')}}
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="panel panel-primary rounded-pill">
+                            <div class="panel-heading rounded-pill">
                                 {% if conhecimento %}
                                 Embarcador: {{ conhecimento.embarcador }}<br>
                                 Consignatário: {{ conhecimento.consignatario }}<br>
                                 Descrição Mercadoria:{{ conhecimento.descricao }}<br>
+                                Contêineres: {% for container in containers %}{{ container.codigoConteiner }} {%
+                                endfor %}<br>
+                                NCMs: {% for ncm in ncms %}{{ ncm.identificacaoNCM }} {% endfor %}<br>
                                 {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-sm-12">
-                            Observações
-                            {{ oform.observacoes(class='form-control') }}
-                        </div>
-                        <div class="col-sm-12">
-                            <div class="col-sm-3">
-                                <label for="data">Dia da emissão</label>
-                            </div>
-                            <div class="col-sm-3">
-                                <label for="data">Hora da emissão</label>
-                            </div>
-                        </div>
-                        <div class="col-sm-12">
-                            <div class="col-sm-3">
-                                {{ oform.adata(class='form-control') }}
-                            </div>
-                            <div class="col-sm-3">
-                                {{ oform.ahora(class='form-control') }}
                             </div>
                         </div>
                     </div>
+                    <div class="col-sm-12">
+                        Observações
+                        {{ oform.observacoes(class='form-control') }}
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="col-sm-3">
+                            <label for="data">Dia da emissão</label>
+                        </div>
+                        <div class="col-sm-3">
+                            <label for="data">Hora da emissão</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="col-sm-3">
+                            {{ oform.adata(class='form-control') }}
+                        </div>
+                        <div class="col-sm-3">
+                            {{ oform.ahora(class='form-control') }}
+                        </div>
+                    </div>
                 </div>
-            </form>
-        </div>
-        <div class="row col-sm-12">
-            &nbsp;<br>
-            <div class="col-sm-5">
-                <button class="btn btn-default btn-primary form-control" onclick="submit">
-                    Salvar
-                </button>
             </div>
-            <div class="col-sm-1">
+            <div class="row col-sm-12">
+                &nbsp;<br>
+                <div class="col-sm-5">
+                    <button class="btn btn-default btn-primary form-control" onclick="submit">
+                        Salvar
+                    </button>
+                </div>
+                <div class="col-sm-1">
+                </div>
+                <div class="col-sm-3">
+                    <button id="btn_rvf" type="button" class="btn btn-primary btn-success form-control"
+                            onclick="window.open('rvf?ovr={{oform.id.data}}')">
+                        Informar RVF
+                    </button>
+                </div>
+                <div class="col-sm-3">
+                    <button id="btn_tg" type="button" class="btn btn-primary btn-success form-control"
+                            onclick="window.open('lista_itemtg?ovr_id={{oform.id.data}}')">
+                        Termo de Guarda
+                    </button>
+                </div>
             </div>
-            <div class="col-sm-3">
-                <button id="btn_rvf" type="button" class="btn btn-primary btn-success form-control">
-                    Informar RVF
-                </button>
-            </div>
-            <div class="col-sm-3">
-                <button id="btn_tg" type="button" class="btn btn-primary btn-success form-control">
-                    Informar TG
-                </button>
-            </div>
-        </div>
         </form>
     </div>
     <div class="row col-sm-12">

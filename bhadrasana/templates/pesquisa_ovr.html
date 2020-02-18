@@ -5,11 +5,14 @@
             <form method="POST" id="filtroformovr" action="pesquisa_ovr">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="row">
-                    <div class="col-sm-2">
-                        <label for="tipoevento">Status</label>
+                    <div class="col-sm-1">
+                        <label for="tipooperacao">Tipo</label>
+                    </div>
+                    <div class="col-sm-1">
+                        <label for="fase">Fase</label>
                     </div>
                     <div class="col-sm-2">
-                        <label for="fase">Fase</label>
+                        <label for="tipoevento">Status</label>
                     </div>
                     <div class="col-sm-2">
                         <label for="numero">Número OVR</label>
@@ -23,11 +26,14 @@
                 </div>
                 <div class="row">
                     <div class="form-group">
-                        <div class="col-sm-2">
-                            {{ oform.tipoevento(class='form-control') }}
+                        <div class="col-sm-1">
+                            {{ oform.tipooperacao(class='form-control') }}
+                        </div>
+                        <div class="col-sm-1">
+                            {{ oform.fase(class='form-control') }}
                         </div>
                         <div class="col-sm-2">
-                            {{ oform.fase(class='form-control') }}
+                            {{ oform.tipoevento(class='form-control') }}
                         </div>
                         <div class="col-sm-2">
                             {{ oform.numero(class='form-control') }}

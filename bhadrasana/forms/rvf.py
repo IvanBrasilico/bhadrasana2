@@ -5,6 +5,7 @@ from wtforms.fields.html5 import DateField, TimeField
 
 class RVFForm(FlaskForm):
     id = IntegerField('ID')
+    # ovr_id = IntegerField('ID da OVR relacionada, se houver' )
     numeroCEmercante = StringField(u'CE Mercante',
                                    default='')
     descricao = TextAreaField(u'Descrição',

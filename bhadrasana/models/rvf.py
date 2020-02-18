@@ -12,13 +12,14 @@ metadata = Base.metadata
 
 marcasencontradas_table = Table('marcasencontradas', metadata,
                                 Column('rvf_id', BigInteger(), ForeignKey('verificacoesfisicas.id')),
-                                Column('marca_id', BigInteger(), ForeignKey('marcas.id'))
+                                Column('marca_id', BigInteger(), ForeignKey('ovr_marcas.id'))
                                 )
 
 
 class RVF(Base):
     __tablename__ = 'verificacoesfisicas'
     id = Column(BigInteger(), primary_key=True)
+    ovr_id = Column(BigInteger(), index=True)
     numeroCEmercante = Column(VARCHAR(15), index=True)
     numeroDI = Column(VARCHAR(10), index=True)
     numeroDUE = Column(VARCHAR(10), index=True)
@@ -33,7 +34,7 @@ class RVF(Base):
 
 
 class Marca(Base):
-    __tablename__ = 'marcas'
+    __tablename__ = 'ovr_marcas'
     id = Column(BigInteger(), primary_key=True)
     nome = Column(VARCHAR(50), index=True)
 
