@@ -1,5 +1,6 @@
 import datetime
 
+from _collections import  defaultdict
 from ajna_commons.flask.log import logger
 from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, ProcessoOVRForm, ItemTGForm
 from bhadrasana.models.ovr import ItemTG
@@ -18,8 +19,8 @@ def ovr_app(app):
         session = app.config.get('dbsession')
         listahistorico = []
         processos = []
-        ovr_form = OVRForm()
         tiposeventos = get_tipos_evento(session)
+        ovr_form = OVRForm(tiposeventos=tiposeventos)
         tiposprocesso = get_tipos_processo(session)
         historico_form = HistoricoOVRForm(tiposeventos=tiposeventos)
         processo_form = ProcessoOVRForm(tiposprocesso=tiposprocesso)
@@ -28,7 +29,7 @@ def ovr_app(app):
         containers = []
         try:
             if request.method == 'POST':
-                ovr_form = OVRForm(request.form)
+                ovr_form = OVRForm(request.form, tiposeventos=tiposeventos)
                 ovr_form.adata.data = request.form.get('adata')
                 ovr_form.ahora.data = request.form.get('ahora')
                 ovr_form.validate()
@@ -39,7 +40,7 @@ def ovr_app(app):
                 if ovr_id is not None:
                     ovr = get_ovr(session, ovr_id)
                     if ovr is not None:
-                        ovr_form = OVRForm(**ovr.__dict__)
+                        ovr_form = OVRForm(**ovr.__dict__, tiposeventos=tiposeventos)
                         # TODO: Extrair visualização do conhecimento para uma função,
                         # talvez um Endpoint para consulta JavaScript
                         numeroCEmercante = ovr.numeroCEmercante
@@ -106,6 +107,25 @@ def ovr_app(app):
         return render_template('pesquisa_ovr.html',
                                oform=filtro_form,
                                ovrs=ovrs)
+
+    @app.route('/minhas_ovrs', methods=['GET'])
+    @login_required
+    def minhas_ovrs():
+        session = app.config.get('dbsession')
+        user_name = current_user.name
+        ovrs = []
+        listasovrs = defaultdict(list)
+        try:
+            ovrs = get_ovr_filtro(session, {})
+            for ovr in ovrs:
+                listasovrs[ovr.get_fase()].append(ovr)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(type(err))
+            flash(err)
+        return render_template('minhas_ovrs.html',
+                               listasovrs=listasovrs)
 
     @app.route('/movimentaovr', methods=['POST'])
     @login_required

@@ -6,13 +6,26 @@
             <input type="hidden" name="id" value="{{ oform.id.data }}"/>
             <div class="row">
                 <div class="form-group">
-                    <div class="col-sm-12">
-                        Número
+                    <div class="col-sm-2">
+                        <label for="numero">Número</label>
+                    </div>
+                    <div class="col-sm-3">
+                        <label for="tipooperacao">Tipo de Operação</label>
+                    </div>
+                    <div class="col-sm-7">
+                        <label for="numero">Status</label>
+                    </div>
+                    <div class="col-sm-2">
                         {{ oform.numero(class='form-control')}}
                     </div>
-                    <div class="col-sm-12">
-                        Tipo
+                    <div class="col-sm-3">
                         {{ oform.tipooperacao(class='form-control')}}
+                    </div>
+                    <div class="col-sm-3">
+                        {{ oform.fase(class='form-control', enabled=False)}}
+                    </div>
+                    <div class="col-sm-4">
+                        {{ oform.tipoevento_id(class='form-control', enabled=False)}}
                     </div>
                     <div class="col-sm-12">
                         CE Mercante

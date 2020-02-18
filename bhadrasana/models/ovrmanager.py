@@ -6,7 +6,6 @@ from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, Ti
 from sqlalchemy import and_
 
 
-
 def get_tipos_evento(session):
     tiposeventos = session.query(TipoEventoOVR).all()
     return [(tipo.id, tipo.nome) for tipo in tiposeventos]
@@ -58,8 +57,8 @@ def get_ovr_filtro(session, pfiltro):
         filtro = and_(OVR.tipooperacao == int(pfiltro.get('tipooperacao')), filtro)
     if pfiltro.get('fase'):
         filtro = and_(OVR.fase == int(pfiltro.get('fase')), filtro)
-    if pfiltro.get('tipoevento') and pfiltro.get('tipoevento') != 'None':
-        filtro = and_(OVR.tipoevento == int(pfiltro.get('tipoevento')), filtro)
+    if pfiltro.get('tipoevento_id') and pfiltro.get('tipoevento_id') != 'None':
+        filtro = and_(OVR.tipoevento_id == int(pfiltro.get('tipoevento_id')), filtro)
     if pfiltro.get('responsavel') and pfiltro.get('responsavel') != 'None':
         filtro = and_(OVR.responsavel == pfiltro.get('responsavel'), filtro)
     ovrs = session.query(OVR).filter(filtro).all()
@@ -80,7 +79,7 @@ def gera_eventoovr(session, params):
     try:
         ovr = get_ovr(session, evento.ovr_id)
         ovr.fase = evento.fase
-        ovr.tipoevento = evento.tipoevento_id
+        ovr.tipoevento_id = evento.tipoevento_id
         session.add(ovr)
         session.add(evento)
         session.commit()
@@ -102,14 +101,18 @@ def gera_itemtg(session, params):
 
 
 def lista_itemtg(session, ovr_id):
-    return session.query(ItemTG).filter(ItemTG.ovr_id == int(ovr_id)).all()
+    try:
+        ovr_id = int(ovr_id)
+    except ValueError:
+        return None
+    return session.query(ItemTG).filter(ItemTG.ovr_id == ovr_id).all()
+
 
 def get_itemtg(session, id: int = None):
     if id is None:
         itemtg = ItemTG()
         return itemtg
     return session.query(ItemTG).filter(ItemTG.id == id).one_or_none()
-
 
 
 def gera_objeto(object, session, params):
@@ -137,4 +140,3 @@ def delete_objeto(session, classname, id):
         logger.error(str(err), exc_info=True)
         return False
     return True
-

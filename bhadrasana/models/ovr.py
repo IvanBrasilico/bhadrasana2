@@ -55,7 +55,7 @@ class Enumerado:
 
     @classmethod
     def get_tipo(cls, listatipo: list, id: int = None):
-        if id:
+        if (id is not None) and isinstance(id, int):
             return listatipo[id]
         else:
             return [(id, item) for id, item in enumerate(listatipo)]
@@ -88,7 +88,8 @@ class OVR(Base):
     observacoes = Column(VARCHAR(200), index=True)
     datahora = Column(TIMESTAMP, index=True)
     fase = Column(Integer(), index=True)
-    tipoevento = Column(Integer(), index=True)
+    tipoevento_id = Column(BigInteger(), ForeignKey('ovr_tiposevento.id'))
+    tipoevento = relationship("TipoEventoOVR")
     responsavel = Column(VARCHAR(14), index=True)
     user_name = Column(VARCHAR(14), index=True)
     create_date = Column(TIMESTAMP, index=True,
@@ -98,6 +99,12 @@ class OVR(Base):
     historico = relationship("EventoOVR", back_populates="ovr")
     processos = relationship("ProcessoOVR", back_populates="ovr")
     itenstg = relationship("ItemTG", back_populates="ovr")
+
+    def get_fase(self):
+        return Enumerado.faseOVR(self.fase)
+
+    def get_tipooperacao(self):
+        return Enumerado.tipoOperacao(self.tipooperacao)
 
 
 class TipoEventoOVR(Base):
