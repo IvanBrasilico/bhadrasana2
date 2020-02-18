@@ -2,8 +2,15 @@ from datetime import timedelta
 
 from ajna_commons.flask.log import logger
 from bhadrasana.models import handle_datahora
-from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, TipoProcessoOVR, ItemTG
+from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR,\
+    TipoProcessoOVR, ItemTG, Recinto
 from sqlalchemy import and_
+
+
+def get_recintos(session):
+    recintos = session.query(Recinto).all()
+    recintos_list = [(recinto.id, recinto.nome) for recinto in recintos]
+    return sorted(recintos_list, key=lambda x: x[1])
 
 
 def get_tipos_evento(session):

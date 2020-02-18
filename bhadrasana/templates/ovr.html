@@ -9,22 +9,28 @@
                     <div class="col-sm-2">
                         <label for="numero">Número</label>
                     </div>
-                    <div class="col-sm-3">
+                    <div class="col-sm-2">
                         <label for="tipooperacao">Tipo de Operação</label>
                     </div>
-                    <div class="col-sm-7">
+                    <div class="col-sm-3">
+                        <label for="numero">Recinto</label>
+                    </div>
+                    <div class="col-sm-5">
                         <label for="numero">Status</label>
                     </div>
                     <div class="col-sm-2">
                         {{ oform.numero(class='form-control')}}
                     </div>
-                    <div class="col-sm-3">
+                    <div class="col-sm-2">
                         {{ oform.tipooperacao(class='form-control')}}
                     </div>
                     <div class="col-sm-3">
+                        {{ oform.recinto_id(class='form-control')}}
+                    </div>
+                    <div class="col-sm-2">
                         {{ oform.fase(class='form-control')}}
                     </div>
-                    <div class="col-sm-4">
+                    <div class="col-sm-3">
                         {{ oform.tipoevento_id(class='form-control')}}
                     </div>
                     <div class="col-sm-12">
@@ -49,21 +55,23 @@
                         Observações
                         {{ oform.observacoes(class='form-control') }}
                     </div>
-                    <div class="col-sm-12">
-                        <div class="col-sm-3">
-                            <label for="data">Dia da emissão</label>
-                        </div>
-                        <div class="col-sm-3">
-                            <label for="data">Hora da emissão</label>
-                        </div>
+                    <div class="col-sm-3">
+                        <label for="adata">Dia da emissão</label>
                     </div>
-                    <div class="col-sm-12">
-                        <div class="col-sm-3">
-                            {{ oform.adata(class='form-control') }}
-                        </div>
-                        <div class="col-sm-3">
-                            {{ oform.ahora(class='form-control') }}
-                        </div>
+                    <div class="col-sm-3">
+                        <label for="ahora">Hora da emissão</label>
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="responsavel">Responsável</label>
+                    </div>
+                    <div class="col-sm-3">
+                        {{ oform.adata(class='form-control') }}
+                    </div>
+                    <div class="col-sm-3">
+                        {{ oform.ahora(class='form-control') }}
+                    </div>
+                    <div class="col-sm-6">
+                        Responsável
                     </div>
                 </div>
             </div>

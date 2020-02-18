@@ -1,12 +1,12 @@
 import datetime
+from _collections import defaultdict
 
-from _collections import  defaultdict
 from ajna_commons.flask.log import logger
 from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, ProcessoOVRForm, ItemTGForm
 from bhadrasana.models.ovr import ItemTG
 from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_ovr_filtro, gera_eventoovr, get_tipos_evento, delete_objeto, gera_processoovr, get_tipos_processo, lista_itemtg, \
-    get_itemtg
+    get_itemtg, get_recintos
 from bhadrasana.models.rvfmanager import get_marcas_choice
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
@@ -20,7 +20,8 @@ def ovr_app(app):
         listahistorico = []
         processos = []
         tiposeventos = get_tipos_evento(session)
-        ovr_form = OVRForm(tiposeventos=tiposeventos)
+        recintos = get_recintos(session)
+        ovr_form = OVRForm(tiposeventos=tiposeventos, recintos=recintos)
         tiposprocesso = get_tipos_processo(session)
         historico_form = HistoricoOVRForm(tiposeventos=tiposeventos)
         processo_form = ProcessoOVRForm(tiposprocesso=tiposprocesso)
@@ -29,7 +30,7 @@ def ovr_app(app):
         containers = []
         try:
             if request.method == 'POST':
-                ovr_form = OVRForm(request.form, tiposeventos=tiposeventos)
+                ovr_form = OVRForm(request.form)
                 ovr_form.adata.data = request.form.get('adata')
                 ovr_form.ahora.data = request.form.get('ahora')
                 ovr_form.validate()
@@ -40,7 +41,9 @@ def ovr_app(app):
                 if ovr_id is not None:
                     ovr = get_ovr(session, ovr_id)
                     if ovr is not None:
-                        ovr_form = OVRForm(**ovr.__dict__, tiposeventos=tiposeventos)
+                        ovr_form = OVRForm(**ovr.__dict__,
+                                           tiposeventos=tiposeventos,
+                                           recintos=recintos)
                         # TODO: Extrair visualização do conhecimento para uma função,
                         # talvez um Endpoint para consulta JavaScript
                         numeroCEmercante = ovr.numeroCEmercante

@@ -6,8 +6,9 @@ from wtforms.fields.html5 import DateField, TimeField
 
 class OVRForm(FlaskForm):
     id = IntegerField('ID')
-    tipooperacao = SelectField(u'Tipo de Operação', default=1)
-    tipoevento_id = SelectField(u'Tipo de Operação', render_kw={'disabled':''})
+    tipooperacao = SelectField(u'Tipo de Operação')
+    recinto_id = SelectField(u'Recinto')
+    tipoevento_id = SelectField(u'Tipo de Evento', render_kw={'disabled':''})
     fase = SelectField(u'Fase', render_kw={'disabled':''})
     numero = StringField(u'Numero OVR',
                          default='')
@@ -25,8 +26,12 @@ class OVRForm(FlaskForm):
         super().__init__(*args, **kwargs)
         self.tipooperacao.choices = Enumerado.tipoOperacao()
         self.fase.choices = Enumerado.faseOVR()
+        self.tipoevento_id.choices = []
         if kwargs.get('tiposeventos'):
-            self.tipoevento_id.choices = kwargs.get('tiposeventos')
+            self.tipoevento_id.choices.extend(kwargs.get('tiposeventos'))
+        self.recinto_id.choices = []
+        if kwargs.get('recintos'):
+            self.recinto_id.choices.extend(kwargs.get('recintos'))
         datahora = kwargs.get('datahora')
         if datahora:
             self.adata.data = datahora.date()
@@ -37,6 +42,7 @@ class FiltroOVRForm(FlaskForm):
     id = IntegerField('ID')
     tipooperacao = SelectField('tipooperacao', default=0)
     fase = SelectField('fase', default=0)
+    recinto_id = SelectField('tipoevento', default=0)
     tipoevento_id = SelectField('tipoevento', default=0)
     numero = StringField(u'Numero OVR',
                          default='')
@@ -49,8 +55,12 @@ class FiltroOVRForm(FlaskForm):
         super().__init__(*args, **kwargs)
         self.tipooperacao.choices = [(None, 'Selecione'), *Enumerado.tipoOperacao()]
         self.fase.choices = Enumerado.faseOVR()
+        self.tipoevento_id.choices = [(None, 'Selecione')]
         if kwargs.get('tiposeventos'):
             self.tipoevento_id.choices = [(None, 'Selecione'), *kwargs.get('tiposeventos')]
+        self.recinto_id.choices = [(None, 'Selecione')]
+        if kwargs.get('recintos'):
+            self.recinto_id.choices.extend(kwargs.get('recintos'))
 
 
 class HistoricoOVRForm(FlaskForm):
