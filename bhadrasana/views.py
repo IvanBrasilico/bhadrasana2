@@ -52,7 +52,7 @@ from bhadrasana.forms.rvf import RVFForm
 from bhadrasana.models.riscomanager import mercanterisco, riscosativos, \
     insererisco, exclui_risco, CAMPOS_RISCO, get_lista_csv
 from bhadrasana.models.rvfmanager import get_marcas, exclui_marca_encontrada, cadastra_rvf, inclui_marca_encontrada, \
-    get_rvf, get_ids_anexos, get_rvfs_filtro
+    get_rvf, get_ids_anexos, get_rvfs_filtro, get_rvf_ovr
 
 app = Flask(__name__, static_url_path='/static')
 csrf = CSRFProtect(app)
@@ -298,25 +298,22 @@ def rvf():
             rvf_form.adata.data = request.form['adata']
             rvf_form.ahora.data = request.form['ahora']
             rvf_form.validate()
-            rvf = cadastra_rvf(session,
-                               rvf_form.id.data,
-                               rvf_form.descricao.data,
-                               rvf_form.numeroCEmercante.data,
-                               rvf_form.adata.data,
-                               rvf_form.ahora.data)
+            rvf = cadastra_rvf(session, dict(rvf_form.data.items()))
         else:
             rvf_id = request.args.get('id')
             if rvf_id is not None:
                 rvf = get_rvf(session, rvf_id)
-                if rvf is not None:
-                    rvf_form = RVFForm(**rvf.__dict__)
-                    if rvf.datahora:
-                        rvf_form.adata.data = rvf.datahora.date()
-                        rvf_form.ahora.data = rvf.datahora.time()
-                    # rvf_form.id.data = rvf.id
-                    # rvf_form.descricao.data = rvf.descricao
-                    # rvf_form.numeroCEmercante.data = rvf.numeroCEmercante
-                    marcas_encontradas = rvf.marcasencontradas
+            else:
+                ovr_id = request.args.get('ovr')
+                rvf = get_rvf_ovr(session, ovr_id=ovr_id)
+                if rvf is None:
+                    rvf = cadastra_rvf(session, ovr_id=ovr_id)
+            if rvf is not None:
+                rvf_form = RVFForm(**rvf.__dict__)
+                if rvf.datahora:
+                    rvf_form.adata.data = rvf.datahora.date()
+                    rvf_form.ahora.data = rvf.datahora.time()
+                marcas_encontradas = rvf.marcasencontradas
         marcas = get_marcas(session)
         if rvf:
             rvf_form.id.data = rvf.id

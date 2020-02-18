@@ -1,0 +1,106 @@
+{% extends "layout.html" %} {% block content %} {{super()}}
+<div id="main" class="container-fluid">
+    <div id="list" class="row col-sm-12">
+        &nbsp;<br>
+        <div class="table">
+            <table class="inlineTable table table-bordered table-hover table-responsive"
+                   id="filtro_personalizado_table" style="width:100%;">
+                <thead>
+                <tr>
+                    <th></th>
+                    <th style="word-wrap: break-word; max-width: 210px; min-width: 200px;">Descrição</th>
+                    <th style="max-width: 50px;">Qtde</th>
+                    <th style="max-width: 50px;">Unidade</th>
+                    <th style="max-width: 50px;">Valor</th>
+                    <th style="max-width: 50px;">NCM</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for itemtg in listaitemtg %}
+                <tr>
+                    <td><a href="lista_itemtg?ovr_id={{itemtg.ovr_id}}&item_id={{itemtg.id}}" >{{loop.index}}</a></td>
+                    <td style="word-wrap: break-word; max-width: 500px; min-width: 400px;">
+                        <input class="form-control" type="text"
+                               value="{{ itemtg.descricao }}"
+                               onkeydown="do_update(event, {{itemtg.id}}, 'descricao', this.value)">
+                    </td>
+                    <td style="max-width: 40px;">
+                        <input class="form-control" type="text"
+                               value="{{ itemtg.qtde }}"
+                               onkeydown="do_update(event, {{itemtg.id}}, 'qtde', this.value)">
+                    </td>
+                    <td style="max-width: 50px;">{{ itemtg.get_unidadedemedida() }}</td>
+                    <td style="max-width: 60px;"><input class="form-control" type="text"
+                               value="{{ itemtg.valor }}"
+                               onkeydown="do_update(event, {{itemtg.id}}, 'valor', this.value)">
+                    </td>
+                    <td style="max-width: 60px;"><input class="form-control" type="text"
+                               value="{{ itemtg.ncm }}"
+                               onkeydown="do_update(event, {{itemtg.id}}, 'ncm', this.value)">
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div id="form_div" class="row">
+        <form method="POST" id="formitemtg" action="itemtg">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <input type="hidden" name="id" value="{{ oform.id.data }}"/>
+            <div class="row">
+                <div class="form-group">
+                    <div class="col-sm-12">
+                        Descrição
+                        {{ oform.descricao(class='form-control')}}
+                    </div>
+                    <div class="col-sm-12">
+                        Unidade
+                        {{ oform.unidadedemedida(class='form-control')}}
+                    </div>
+                    <div class="col-sm-12">
+                        Qtde
+                        {{ oform.qtde(class='form-control')}}
+                    </div>
+                    <div class="col-sm-12">
+                        Valor unitário
+                        {{ oform.valor(class='form-control') }}
+                    </div>
+                    <div class="col-sm-12">
+                        Marca contrafeita (se houver)
+                        {{ oform.marca(class='form-control') }}
+                    </div>
+                </div>
+            </div>
+            <div class="row col-sm-12">
+                &nbsp;<br>
+                <div class="col-sm-5">
+                    <button class="btn btn-default btn-primary form-control" onclick="submit">
+                        Salvar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div id="bottom" class="row col-sm-12">
+        AJNA - Receita Federal do Brasil 2017
+    </div>
+</div>
+{% endblock %} {% block scripts %} {{super()}}
+<script>
+    function do_update(event, id, campo, value){
+      var key = event.which || event.keyCode;
+      if (key == 13){
+        console.log(value)
+        $.getJSON('edita_itemtg', {
+         id: id,
+         campo: campo,
+         valor: value
+        }, function(response) {
+            console.log(response)
+        });
+      }
+    }
+
+</script>
+{% endblock %}
