@@ -513,6 +513,7 @@ def mynavbar():
              View('RVF', 'pesquisa_rvf'),
              View('FMA', 'pesquisa_fma'),
              View('OVR', 'pesquisa_ovr'),
+             View('Minhas OVRs', 'minhas_ovrs'),
              ]
     if current_user.is_authenticated:
         items.append(View('Sair', 'commons.logout'))
