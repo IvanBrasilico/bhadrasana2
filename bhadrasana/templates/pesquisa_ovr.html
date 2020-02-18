@@ -73,18 +73,24 @@
                 <thead>
                 <tr>
                     <th></th>
+                    <th>Tipo Operação</th>
+                    <th>Recinto</th>
                     <th>Número</th>
                     <th>CE Mercante</th>
                     <th>Data</th>
+                    <th>Último Evento</th>
                 </tr>
                 </thead>
                 <tbody>
                 {% for ovr in ovrs %}
                 <tr>
                     <td><a href="ovr?id={{ ovr.id }}">{{ ovr.id }}</a></td>
+                    <td>{{ ovr.get_tipooperacao() }}</td>
+                    <td>{{ ovr.recinto.nome }}</td>
                     <td>{{ ovr.numero }}</td>
                     <td>{{ ovr.numeroCEmercante }}</td>
                     <td>{{ ovr.datahora }}</td>
+                    <td>{{ ovr.tipoevento.nome }}</td>
                 </tr>
                 {% endfor %}
                 </tbody>
