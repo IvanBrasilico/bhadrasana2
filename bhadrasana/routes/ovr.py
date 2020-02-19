@@ -6,7 +6,7 @@ from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, Proce
 from bhadrasana.models.ovr import ItemTG
 from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_ovr_filtro, gera_eventoovr, get_tipos_evento, delete_objeto, gera_processoovr, get_tipos_processo, lista_itemtg, \
-    get_itemtg, get_recintos
+    get_itemtg, get_recintos, cadastra_itemtg
 from bhadrasana.models.rvfmanager import get_marcas_choice
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
@@ -34,6 +34,7 @@ def ovr_app(app):
                 ovr_form.adata.data = request.form.get('adata')
                 ovr_form.ahora.data = request.form.get('ahora')
                 ovr_form.validate()
+                print(ovr_form.data.items())
                 ovr = cadastra_ovr(session,
                                    dict(ovr_form.data.items()))
                 return redirect(url_for('ovr', id=ovr.id))
@@ -154,20 +155,33 @@ def ovr_app(app):
     def listaitemtg():
         session = app.config.get('dbsession')
         ovr_id = request.args.get('ovr_id')
-        listaitemtg = lista_itemtg(session, ovr_id)
-        # print(listaitemtg)
         item_id = request.args.get('item_id')
-        itemtg = get_itemtg(session, item_id)
-        if itemtg:
+        listaitemtg = lista_itemtg(session, ovr_id)
+        marcas = get_marcas_choice(session)
+        if item_id:
+            itemtg = get_itemtg(session, item_id)
             marcas = get_marcas_choice(session)
             oform = ItemTGForm(**itemtg.__dict__, marcas=marcas)
+        else:
+            oform = ItemTGForm(ovr_id=ovr_id, marcas=marcas)
         return render_template('lista_itemtg.html',
                                listaitemtg=listaitemtg,
                                oform=oform)
 
-    @app.route('/edita_itemtg', methods=['GET'])
+    @app.route('/itemtg', methods=['POST'])
     @login_required
     def itemtg():
+        session = app.config.get('dbsession')
+        itemtg_form = ItemTGForm(request.form)
+        itemtg_form.validate()
+        print(request.form)
+        print(itemtg_form.data.items())
+        itemtg = cadastra_itemtg(session, dict(itemtg_form.data.items()))
+        return redirect(url_for('listaitemtg', ovr_id=itemtg.ovr_id))
+
+    @app.route('/edita_itemtg', methods=['GET'])
+    @login_required
+    def edita_itemtg():
         session = app.config.get('dbsession')
         id = request.args.get('id')
         campo = request.args.get('campo')

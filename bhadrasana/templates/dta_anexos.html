@@ -1,0 +1,74 @@
+{% extends "layout.html" %} {% block content %} {{super()}}
+<div id="main" class="container-fluid">
+    <div id="list" class="col-sm-4">
+        &nbsp;<br>
+        <div class="table">
+            <table class="inlineTable table table-bordered table-hover table-responsive"
+                   id="filtro_personalizado_table" style="width:100%;">
+                <thead>
+                <tr>
+                    <th></th>
+                    <th style="word-wrap: break-word; max-width: 210px; min-width: 200px;">Nome do arquivo</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for item in listaanexos %}
+                <tr>
+                    <td>
+                        <a href="transito?dta_id={{item.dta_id}}&item_id={{item.id}}">
+                            {{ item.nomearquivo}}
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div id="pdf" class="col-sm-6">
+    </div>
+    <div id="form_div" class="row">
+        <form method="POST" id="formanexo" action="anexo">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <input type="hidden" name="id" value="{{ oform.id.data }}"/>
+            <input type="hidden" name="dta_id" value="{{ oform.dta_id.data }}"/>
+            <div class="row">
+                <div class="form-group">
+                    <div class="col-sm-12">
+                        Tem alguma coisa no PDF ou está vazio????!
+                        {{ oform.temconteudo(class='form-control')}}
+                    </div>
+                    <div class="col-sm-12">
+                        Qualidade da digitalização/impressão PDF (0 a 10)
+                        {{ oform.qualidade(class='form-control')}}
+                    </div>
+                    <div class="col-sm-12">
+                        Qual o tipo de Conteúdo?
+                        {{ oform.tipoconteudo(class='form-control') }}
+                    </div>
+                    <div class="col-sm-12">
+                        Deixe suas observações
+                        {{ oform.observacoes(class='form-control')}}
+                    </div>
+                </div>
+            </div>
+            <div class="row col-sm-12">
+                &nbsp;<br>
+                <div class="col-sm-5">
+                    <button class="btn btn-default btn-primary form-control" onclick="submit">
+                        Salvar avaliação. Obrigado!!
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div id="bottom" class="row col-sm-12">
+        AJNA - Receita Federal do Brasil 2017
+    </div>
+</div>
+{% endblock %} {% block scripts %} {{super()}}
+<script>
+
+
+</script>
+{% endblock %}

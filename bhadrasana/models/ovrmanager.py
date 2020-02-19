@@ -26,7 +26,8 @@ def get_tipos_processo(session):
 def cadastra_ovr(session, params):
     ovr = get_ovr(session, params.get('id'))
     for key, value in params.items():
-        setattr(ovr, key, value)
+        if value and value != 'None':
+            setattr(ovr, key, value)
     ovr.datahora = handle_datahora(params)
     try:
         session.add(ovr)
@@ -35,7 +36,6 @@ def cadastra_ovr(session, params):
         session.rollback()
         raise err
         print(ovr)
-
     return ovr
 
 
@@ -102,29 +102,32 @@ def gera_processoovr(session, params):
                        session, params)
 
 
-def gera_itemtg(session, params):
-    return gera_objeto(ItemTG(),
+def cadastra_itemtg(session, params):
+    item_tg = get_itemtg(session, params.get('id'))
+    return gera_objeto(item_tg,
                        session, params)
 
 
 def lista_itemtg(session, ovr_id):
     try:
         ovr_id = int(ovr_id)
-    except ValueError:
+    except (ValueError, TypeError):
         return None
     return session.query(ItemTG).filter(ItemTG.ovr_id == ovr_id).all()
 
 
 def get_itemtg(session, id: int = None):
-    if id is None:
+    if id is None or id == 'None':
         itemtg = ItemTG()
+        print('Criando ItemTG zerado...')
         return itemtg
     return session.query(ItemTG).filter(ItemTG.id == id).one_or_none()
 
 
 def gera_objeto(object, session, params):
     for key, value in params.items():
-        setattr(object, key, value)
+        if value and value != 'None':
+            setattr(object, key, value)
     try:
         session.add(object)
         session.commit()

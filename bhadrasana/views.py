@@ -514,6 +514,7 @@ def mynavbar():
              View('FMA', 'pesquisa_fma'),
              View('OVR', 'pesquisa_ovr'),
              View('Minhas OVRs', 'minhas_ovrs'),
+             View('Avaliar PDFs trânsito', 'transito'),
              ]
     if current_user.is_authenticated:
         items.append(View('Sair', 'commons.logout'))

@@ -74,6 +74,7 @@ class HistoricoOVRForm(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.tipoevento_id.choices = []
         if kwargs.get('tiposeventos'):
             self.tipoevento_id.choices = kwargs.get('tiposeventos')
 
@@ -87,8 +88,9 @@ class ProcessoOVRForm(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.tipoprocesso_id.choices = []
         if kwargs.get('tiposprocesso'):
-            self.tipoprocesso_id.choices = kwargs.get('tiposprocesso')
+            self.tipoprocesso_id.choices.extend(kwargs.get('tiposprocesso'))
 
 
 class ItemTGForm(FlaskForm):
@@ -104,9 +106,11 @@ class ItemTGForm(FlaskForm):
                         default='')
     ncm = StringField(u'Código Subitem NCM',
                       default='')
-    marca = SelectField('Marca licenciada, se existir', default=0)
+    marca_id = SelectField('Marca licenciada, se existir', default=0)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.unidadedemedida.choices = Enumerado.unidadeMedida()
-        self.marca.choices = [(None, 'Nenhuma'), *kwargs.get('marcas')]
+        self.marca_id.choices = [(0, 'Nenhuma')]
+        if kwargs.get('marcas'):
+            self.marca_id.choices.extend(kwargs.get('marcas'))
