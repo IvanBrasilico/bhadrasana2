@@ -48,6 +48,7 @@
         <form method="POST" id="formitemtg" action="itemtg">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <input type="hidden" name="id" value="{{ oform.id.data }}"/>
+            <input type="hidden" name="ovr_id" value="{{ oform.ovr_id.data }}"/>
             <div class="row">
                 <div class="form-group">
                     <div class="col-sm-12">
@@ -67,8 +68,12 @@
                         {{ oform.valor(class='form-control') }}
                     </div>
                     <div class="col-sm-12">
+                        NCM
+                        {{ oform.ncm(class='form-control') }}
+                    </div>
+                    <div class="col-sm-12">
                         Marca contrafeita (se houver)
-                        {{ oform.marca(class='form-control') }}
+                        {{ oform.marca_id(class='form-control') }}
                     </div>
                 </div>
             </div>

@@ -22,6 +22,7 @@ from bhadrasana.routes.fma import fma_app
 from bhadrasana.routes.ovr import ovr_app
 from bhadrasana.views import configure_app
 from pymongo import MongoClient
+from bhadrasana.routes.dta import dta_app
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -34,6 +35,7 @@ session = Session()
 app = configure_app(mongodb, session, mongodb_risco)
 fma_app(app)
 ovr_app(app)
+dta_app(app)
 
 if __name__ == '__main__':
     print('Iniciando Servidor Bhadrasana...')
