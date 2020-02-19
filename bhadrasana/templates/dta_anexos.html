@@ -1,31 +1,34 @@
 {% extends "layout.html" %} {% block content %} {{super()}}
 <div id="main" class="container-fluid">
-    <div id="list" class="col-sm-4">
-        &nbsp;<br>
-        <div class="table">
-            <table class="inlineTable table table-bordered table-hover table-responsive"
-                   id="filtro_personalizado_table" style="width:100%;">
-                <thead>
-                <tr>
-                    <th></th>
-                    <th style="word-wrap: break-word; max-width: 210px; min-width: 200px;">Nome do arquivo</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for item in listaanexos %}
-                <tr>
-                    <td>
-                        <a href="transito?dta_id={{item.dta_id}}&item_id={{item.id}}">
-                            {{ item.nomearquivo}}
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+    <div id="pdf_view" class="row">
+        <div id="list" class="col-sm-4">
+            &nbsp;<br>
+            <div class="table">
+                <table class="inlineTable table table-bordered table-hover table-responsive"
+                       id="filtro_personalizado_table" style="width:100%;">
+                    <thead>
+                    <tr>
+                        <th></th>
+                        <th style="word-wrap: break-word; max-width: 210px; min-width: 200px;">Nome do arquivo</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in listaanexos %}
+                    <tr>
+                        <td>
+                            <a href="transito?dta_id={{item.dta_id}}&item_id={{item.id}}">
+                                {{ item.nomearquivo}}
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
-    <div id="pdf" class="col-sm-6">
+        <div id="pdf" class="col-sm-6">
+            <embed src="static/anexo.pdf" width="400px" height="500px">
+        </div>
     </div>
     <div id="form_div" class="row">
         <form method="POST" id="formanexo" action="anexo">
