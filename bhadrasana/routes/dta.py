@@ -13,6 +13,7 @@ def dta_app(app):
         session = app.config.get('dbsession')
         dta_id = request.args.get('dta_id', 1)
         anexo_id = request.args.get('item_id')
+        oform = AnexoForm()
         try:
             listaanexos = lista_anexos(session, dta_id)
             if anexo_id and anexo_id is not None:
