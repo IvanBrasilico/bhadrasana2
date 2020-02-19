@@ -18,6 +18,3 @@ class AnexoForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.tipoconteudo.choices = Enumerado.tipoConteudo()
-        self.marca_id.choices = [(0, 'Nenhuma')]
-        if kwargs.get('marcas'):
-            self.marca_id.choices.extend(kwargs.get('marcas'))
