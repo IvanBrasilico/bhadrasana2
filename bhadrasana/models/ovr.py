@@ -87,8 +87,10 @@ class OVR(Base):
     recinto = Column(VARCHAR(50), index=True)
     observacoes = Column(VARCHAR(200), index=True)
     datahora = Column(TIMESTAMP, index=True)
-    fase = Column(Integer(), index=True)
-    tipoevento_id = Column(BigInteger(), ForeignKey('ovr_tiposevento.id'))
+    fase = Column(Integer(), index=True, default=0)
+    tipoevento_id = Column(BigInteger(),
+                           ForeignKey('ovr_tiposevento.id'),
+                           default=1)
     tipoevento = relationship("TipoEventoOVR")
     recinto_id = Column(BigInteger(), ForeignKey('ovr_recintos.id'))
     recinto = relationship("Recinto")
@@ -117,6 +119,7 @@ class TipoEventoOVR(Base):
     fase = Column(Integer(), index=True, default=0)
     create_date = Column(TIMESTAMP, index=True,
                          server_default=func.current_timestamp())
+
 
 class Recinto(Base):
     __tablename__ = 'ovr_recintos'
