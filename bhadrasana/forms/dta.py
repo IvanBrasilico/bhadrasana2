@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from bhadrasana.models.dta import Enumerado
-from wtforms import IntegerField, TextAreaField, SelectField, BooleanField
+from wtforms import IntegerField, TextAreaField, SelectField, BooleanField, StringField
 
 
 class AnexoForm(FlaskForm):
@@ -14,6 +14,7 @@ class AnexoForm(FlaskForm):
     qualidade = IntegerField(u'Qualidade da digitalização (0 a 10)',
                              default='')
     tipoconteudo = SelectField('Enumerado de Tipo do Conteúdo', default=0)
+    nomearquivo = StringField()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

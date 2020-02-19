@@ -8,7 +8,6 @@
                        id="filtro_personalizado_table" style="width:100%;">
                     <thead>
                     <tr>
-                        <th></th>
                         <th style="word-wrap: break-word; max-width: 210px; min-width: 200px;">Nome do arquivo</th>
                     </tr>
                     </thead>
@@ -27,7 +26,7 @@
             </div>
         </div>
         <div id="pdf" class="col-sm-6">
-            <embed src="static/anexo.pdf" width="400px" height="500px">
+            <embed src="static/{{ oform.nomearquivo.data }}" width="600px" height="500px">
         </div>
     </div>
     <div id="form_div" class="row">

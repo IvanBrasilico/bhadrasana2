@@ -27,6 +27,7 @@ def cadastra_ovr(session, params):
     ovr = get_ovr(session, params.get('id'))
     for key, value in params.items():
         if value and value != 'None':
+            print(key, value)
             setattr(ovr, key, value)
     ovr.datahora = handle_datahora(params)
     try:
