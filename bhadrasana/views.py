@@ -511,10 +511,10 @@ def mynavbar():
              View('Risco', 'risco'),
              View('Editar Riscos', 'edita_risco'),
              View('RVF', 'pesquisa_rvf'),
-             View('FMA', 'pesquisa_fma'),
+             # View('FMA', 'pesquisa_fma'),
              View('OVR', 'pesquisa_ovr'),
              View('Minhas OVRs', 'minhas_ovrs'),
-             View('Avaliar PDFs trânsito', 'transito'),
+             # View('Avaliar PDFs trânsito', 'transito'),
              ]
     if current_user.is_authenticated:
         items.append(View('Sair', 'commons.logout'))
