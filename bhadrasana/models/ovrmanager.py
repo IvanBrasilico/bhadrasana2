@@ -2,9 +2,15 @@ from datetime import timedelta
 
 from ajna_commons.flask.log import logger
 from bhadrasana.models import handle_datahora
-from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR,\
-    TipoProcessoOVR, ItemTG, Recinto
+from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
+    TipoProcessoOVR, ItemTG, Recinto, Usuario
 from sqlalchemy import and_
+
+
+def get_usuarios(session, user_name: str=None):
+    usuarios = session.query(Usuario).all()
+    recintos_list = [(usuario.cpf, usuario.nome) for usuario in usuarios]
+    return sorted(recintos_list, key=lambda x: x[1])
 
 
 def get_recintos(session):
@@ -68,11 +74,29 @@ def get_ovr_filtro(session, pfiltro):
     if pfiltro.get('tipoevento_id') and pfiltro.get('tipoevento_id') != 'None':
         filtro = and_(OVR.tipoevento_id == int(pfiltro.get('tipoevento_id')), filtro)
     if pfiltro.get('responsavel') and pfiltro.get('responsavel') != 'None':
-        filtro = and_(OVR.responsavel == pfiltro.get('responsavel'), filtro)
+        filtro = and_(OVR.responsavel_cpf == pfiltro.get('responsavel'), filtro)
     ovrs = session.query(OVR).filter(filtro).all()
     logger.info(str(pfiltro))
     logger.info(str(filtro))
     return [ovr for ovr in ovrs]
+
+
+def atribui_responsavel_ovr(session, params):
+    try:
+        ovr = get_ovr(session, params.get('ovr_id'))
+        evento = EventoOVR()
+        evento.tipoevento_id = 16
+        evento.motivo = ovr.responsavel_cpf # Responsável anterior
+        evento.ovr_id = ovr.id
+        ovr.responsavel_cpf = params.get('responsavel')
+        evento.user_name = ovr.responsavel_cpf
+        session.add(evento)
+        session.add(ovr)
+        session.commit()
+    except Exception as err:
+        session.rollback()
+        raise err
+    return ovr
 
 
 def gera_eventoovr(session, params):

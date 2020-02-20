@@ -2,8 +2,8 @@
 <div id="main" class="container-fluid">
     <div id="list" class="row col-sm-12">
         &nbsp;<br>
-        {% for fase, ovrs in listasovrs.items() %}
-        <h2>{{ fase }}</h2>
+        {% for fase in listasovrs.keys()|sort() %}
+        <h2 class="{{listasovrs[fase][0].get_class()}}">{{ fase }}</h2>
         <div class="table">
             <table class="inlineTable table table-bordered table-hover table-responsive"
                    id="filtro_personalizado_table">
@@ -19,7 +19,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                {% for ovr in ovrs %}
+                {% for ovr in listasovrs[fase] %}
                 <tr>
                     <td><a href="ovr?id={{ ovr.id }}">{{ ovr.id }}</a></td>
                     <td>{{ ovr.get_tipooperacao() }}</td>
@@ -32,8 +32,8 @@
                 {% endfor %}
                 </tbody>
             </table>
-            {% endfor %}
         </div>
+        {% endfor %}
     </div>
     <div id="bottom" class="row col-sm-12">
         AJNA - Receita Federal do Brasil 2017

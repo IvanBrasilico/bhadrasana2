@@ -2,11 +2,12 @@ import datetime
 from _collections import defaultdict
 
 from ajna_commons.flask.log import logger
-from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, ProcessoOVRForm, ItemTGForm
-from bhadrasana.models.ovr import ItemTG
+from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, ProcessoOVRForm, ItemTGForm, \
+    ResponsavelOVRForm
+from bhadrasana.models.ovr import ItemTG, OVR
 from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_ovr_filtro, gera_eventoovr, get_tipos_evento, delete_objeto, gera_processoovr, get_tipos_processo, lista_itemtg, \
-    get_itemtg, get_recintos, cadastra_itemtg
+    get_itemtg, get_recintos, cadastra_itemtg, get_usuarios, atribui_responsavel_ovr
 from bhadrasana.models.rvfmanager import get_marcas_choice
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
@@ -21,13 +22,16 @@ def ovr_app(app):
         processos = []
         tiposeventos = get_tipos_evento(session)
         recintos = get_recintos(session)
+        responsaveis = get_usuarios(session, current_user.name)
         ovr_form = OVRForm(tiposeventos=tiposeventos, recintos=recintos)
         tiposprocesso = get_tipos_processo(session)
         historico_form = HistoricoOVRForm(tiposeventos=tiposeventos)
         processo_form = ProcessoOVRForm(tiposprocesso=tiposprocesso)
+        responsavel_form = ResponsavelOVRForm(responsaveis=responsaveis)
         conhecimento = None
         ncms = []
         containers = []
+        ovr = OVR()
         try:
             if request.method == 'POST':
                 ovr_form = OVRForm(request.form)
@@ -66,12 +70,14 @@ def ovr_app(app):
             flash(type(err))
             flash(err)
         return render_template('ovr.html',
+                               ovr=ovr,
                                oform=ovr_form,
                                conhecimento=conhecimento,
                                ncms=ncms,
                                containers=containers,
                                historico_form=historico_form,
                                processo_form=processo_form,
+                               responsavel_form=responsavel_form,
                                listahistorico=listahistorico,
                                processos=processos)
 
@@ -122,7 +128,7 @@ def ovr_app(app):
         try:
             ovrs = get_ovr_filtro(session, {})
             for ovr in ovrs:
-                listasovrs[ovr.get_fase()].append(ovr)
+                listasovrs[str(ovr.fase) + '-' + ovr.get_fase()].append(ovr)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
@@ -130,6 +136,17 @@ def ovr_app(app):
             flash(err)
         return render_template('minhas_ovrs.html',
                                listasovrs=listasovrs)
+
+    @app.route('/responsavelovr', methods=['POST'])
+    @login_required
+    def atribuirresponsavel():
+        session = app.config.get('dbsession')
+        ovr_id = request.form['ovr_id']
+        print(ovr_id)
+        responsavel_ovr_form = ResponsavelOVRForm(request.form)
+        atribui_responsavel_ovr(session, dict(responsavel_ovr_form.data.items()))
+        return redirect(url_for('ovr', id=ovr_id))
+
 
     @app.route('/movimentaovr', methods=['POST'])
     @login_required
