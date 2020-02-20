@@ -10,8 +10,8 @@ tipoConteudo = [
     'Nada',
     'Fatura',
     'Planilha',
-    'SoftPorn',
-    'Mangá'
+    'Termo',
+    'Outro'
 ]
 
 

@@ -14,7 +14,7 @@ def handle_datahora(params):
         logger.error('handle_datahora: %s' % err)
     try:
         if isinstance(hora, str):
-            hora = datetime.datetime.strptime(hora, '%H:%M')
+            hora = datetime.datetime.strptime(hora, '%H:%M').time()
     except Exception as err:
         hora = datetime.datetime.now().time()
         logger.error('handle_datahora: %s' % err)

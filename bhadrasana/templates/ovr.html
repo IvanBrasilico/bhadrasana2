@@ -28,17 +28,25 @@
                         {{ oform.recinto_id(class='form-control')}}
                     </div>
                     <div class="col-sm-2">
-                        {{ oform.fase(class='form-control')}}
+                        <div class="form-control">
+                            <span class="{{ ovr.get_class() }}">
+                                {{ ovr.get_fase() }}
+                            </span>
+                        </div>
                     </div>
                     <div class="col-sm-3">
-                        {{ oform.tipoevento_id(class='form-control')}}
+                        <div class="form-control">
+                            <span class="{{ ovr.get_class() }}">
+                                {{ ovr.tipoevento.nome }}
+                            </span>
+                        </div>
                     </div>
                     <div class="col-sm-12">
                         CE Mercante
                         {{ oform.numeroCEmercante(class='form-control')}}
                     </div>
                     <div class="col-sm-12">
-                        <div class="panel panel-primary rounded-pill">
+                        <div class="panel panel-info rounded-pill">
                             <div class="panel-heading rounded-pill">
                                 {% if conhecimento %}
                                 Embarcador: {{ conhecimento.embarcador }}<br>
@@ -70,8 +78,16 @@
                     <div class="col-sm-3">
                         {{ oform.ahora(class='form-control') }}
                     </div>
-                    <div class="col-sm-6">
-                        Responsável
+                    <div class="col-sm-3">
+                        <div class="form-control ">
+                            {{ ovr.responsavel.nome }}
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <button id="btn_responsavel" type="button" class="btn btn-warning form-control"
+                                data-toggle="modal" data-target="#responsavel">
+                            Atribuir responsável
+                        </button>
                     </div>
                 </div>
             </div>
@@ -195,6 +211,35 @@
 <div id="bottom" class="row">
     AJNA - Receita Federal do Brasil 2017
 </div>
+<div class="modal fade" id="responsavel" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title" id="ModalLabel0">Registra responsável da OVR</h1>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="responsavelovr" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <input type="hidden" name="ovr_id" value="{{ oform.id.data }}"/>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label for="tipoprocesso">Nome Responsável</label>
+                        </div>
+                        <div class="col-sm-9">
+                            {{ responsavel_form.responsavel(class='form-control') }}
+                        </div>
+                    </div>
+                    <input class="btn btn-primary" type="submit" value="Atribuir"/>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="historico" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
      aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -274,8 +319,6 @@
             </div>
         </div>
     </div>
-</div>
-
 </div>
 {% endblock %} {% block scripts %} {{super()}}
 <script>
