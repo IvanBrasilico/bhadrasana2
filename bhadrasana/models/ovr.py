@@ -196,10 +196,12 @@ class Marca(Base):
     id = Column(BigInteger(), primary_key=True)
     nome = Column(VARCHAR(50), index=True)
 
+
 class TipoMercadoria(Base):
     __tablename__ = 'ovr_tiposmercadoria'
     id = Column(BigInteger(), primary_key=True)
     nome = Column(VARCHAR(50), index=True)
+
 
 class TGOVR(Base):
     __tablename__ = 'ovr_tgovr'
@@ -217,14 +219,12 @@ class TGOVR(Base):
     create_date = Column(TIMESTAMP, index=True,
                          server_default=func.current_timestamp())
 
-    def get_unidadedemedida(self):
-        return Enumerado.unidadeMedida(self.unidadedemedida)
 
 class ItemTG(Base):
     __tablename__ = 'ovr_itenstg'
     id = Column(BigInteger(), primary_key=True)
-    tg_id = Column(BigInteger(), ForeignKey('ovr_ovrs.id'))
-    tg = relationship("TG", back_populates="itenstg")
+    tg_id = Column(BigInteger(), ForeignKey('ovr_tgovr.id'))
+    tg = relationship("TGOVR", back_populates="itenstg")
     descricao = Column(VARCHAR(200), index=True, nullable=False)
     qtde = Column(Numeric())
     unidadedemedida = Column(Integer(), index=True)
@@ -239,19 +239,19 @@ class ItemTG(Base):
         return Enumerado.unidadeMedida(self.unidadedemedida)
 
 
-
 class Setor(Base):
     __tablename__ = 'ovr_setores'
     id = Column(CHAR(15), primary_key=True)
     nome = Column(CHAR(50), index=True)
-    pai_id = Column(BigInteger(), ForeignKey('ovr_setores.id'))
+    pai_id = Column(CHAR(15), ForeignKey('ovr_setores.id'))
     pai = relationship("Setor")
+
 
 class Usuario(Base):
     __tablename__ = 'ovr_usuarios'
     cpf = Column(CHAR(15), primary_key=True)
     nome = Column(CHAR(50), index=True)
-    setor_id = Column(BigInteger(), ForeignKey('ovr_setores.id'))
+    setor_id = Column(CHAR(15), ForeignKey('ovr_setores.id'))
     setor = relationship("Setor")
 
 
@@ -264,19 +264,19 @@ if __name__ == '__main__':
     from bhadrasana.main import engine
 
     metadata.drop_all(engine,
-                        [
-                            # metadata.tables['ovr_ovrs'],
-                            # metadata.tables['ovr_tiposevento'],
-                            # metadata.tables['ovr_tiposprocesso'],
-                            # metadata.tables['ovr_eventos'],
-                            # metadata.tables['ovr_processos'],
-                            metadata.tables['ovr_tgs'],
-                            metadata.tables['ovr_itenstg'],
-                            metadata.tables['ovr_usuarios'],
-                            metadata.tables['ovr_setores'],
-                            metadata.tables['ovr_tiposmercadoria'],
+                      [
+                          # metadata.tables['ovr_ovrs'],
+                          # metadata.tables['ovr_tiposevento'],
+                          # metadata.tables['ovr_tiposprocesso'],
+                          # metadata.tables['ovr_eventos'],
+                          # metadata.tables['ovr_processos'],
+                          metadata.tables['ovr_tgovr'],
+                          metadata.tables['ovr_itenstg'],
+                          # metadata.tables['ovr_setores'],
+                          # metadata.tables['ovr_usuarios'],
+                          # metadata.tables['ovr_tiposmercadoria'],
 
-                        ])
+                      ])
 
     metadata.create_all(engine,
                         [
@@ -285,10 +285,10 @@ if __name__ == '__main__':
                             # metadata.tables['ovr_tiposprocesso'],
                             # metadata.tables['ovr_eventos'],
                             # metadata.tables['ovr_processos'],
-                            metadata.tables['ovr_tgs'],
-                            metadata.tables['ovr_itenstg'],
-                            metadata.tables['ovr_usuarios'],
-                            metadata.tables['ovr_setores'],
                             metadata.tables['ovr_tiposmercadoria'],
+                            metadata.tables['ovr_tgovr'],
+                            metadata.tables['ovr_itenstg'],
+                            metadata.tables['ovr_setores'],
+                            metadata.tables['ovr_usuarios'],
 
                         ])
