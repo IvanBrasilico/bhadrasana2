@@ -1,4 +1,5 @@
-from sqlalchemy import BigInteger, Column, DateTime, func, VARCHAR, Integer, ForeignKey, Numeric
+from flask_login import current_user
+from sqlalchemy import BigInteger, Column, DateTime, func, VARCHAR, Integer, ForeignKey, Numeric, CHAR
 from sqlalchemy.dialects.mysql import TIMESTAMP
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -37,6 +38,14 @@ faseOVR = [
     'Arquivada'
 ]
 
+classOVR = [
+    'text-warning',
+    'text-primary',
+    'text-danger',
+    'text-success',
+    'text-secondary',
+]
+
 tipoProcesso = [
     'Perdimento',
     'Crédito',
@@ -65,6 +74,10 @@ class Enumerado:
         return cls.get_tipo(faseOVR, id)
 
     @classmethod
+    def classOVR(cls, id=None):
+        return cls.get_tipo(classOVR, id)
+
+    @classmethod
     def tipoOperacao(cls, id=None):
         return cls.get_tipo(tipoOperacao, id)
 
@@ -75,6 +88,16 @@ class Enumerado:
     @classmethod
     def unidadeMedida(cls, id=None):
         return cls.get_tipo(unidadeMedida, id)
+
+
+class BaseRastreavel(Base):
+    __abstract__ = True
+    user_name = Column(VARCHAR(14), index=True)
+    create_date = Column(TIMESTAMP, index=True,
+                         server_default=func.current_timestamp())
+
+    def __init__(self):
+        self.user_name = current_user.name
 
 
 class OVR(Base):
@@ -94,7 +117,8 @@ class OVR(Base):
     tipoevento = relationship("TipoEventoOVR")
     recinto_id = Column(BigInteger(), ForeignKey('ovr_recintos.id'))
     recinto = relationship("Recinto")
-    responsavel = Column(VARCHAR(14), index=True)
+    responsavel_cpf = Column(VARCHAR(15), ForeignKey('ovr_usuarios.cpf'))
+    responsavel = relationship("Usuario")
     user_name = Column(VARCHAR(14), index=True)
     create_date = Column(TIMESTAMP, index=True,
                          server_default=func.current_timestamp())
@@ -106,6 +130,9 @@ class OVR(Base):
 
     def get_fase(self):
         return Enumerado.faseOVR(self.fase)
+
+    def get_class(self):
+        return Enumerado.classOVR(self.fase)
 
     def get_tipooperacao(self):
         return Enumerado.tipoOperacao(self.tipooperacao)
@@ -189,6 +216,12 @@ class ItemTG(Base):
         return Enumerado.unidadeMedida(self.unidadedemedida)
 
 
+class Usuario(Base):
+    __tablename__ = 'ovr_usuarios'
+    cpf = Column(CHAR(15), primary_key=True)
+    nome = Column(CHAR(50), index=True)
+
+
 if __name__ == '__main__':
     import sys
 
@@ -204,6 +237,7 @@ if __name__ == '__main__':
                             # metadata.tables['ovr_tiposprocesso'],
                             # metadata.tables['ovr_eventos'],
                             # metadata.tables['ovr_processos'],
-                            metadata.tables['ovr_itenstg'],
+                            # metadata.tables['ovr_itenstg'],
+                            metadata.tables['ovr_usuarios'],
 
                         ])
