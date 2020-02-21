@@ -42,7 +42,7 @@ class FiltroOVRForm(FlaskForm):
     id = IntegerField('ID')
     tipooperacao = SelectField('tipooperacao', default=-1)
     fase = SelectField('fase', default=-1)
-    recinto_id = SelectField('tipoevento', default=0)
+    recinto_id = SelectField('recinto_id', default=0)
     tipoevento_id = SelectField('tipoevento', default=0)
     numero = StringField(u'Numero OVR',
                          default='')
@@ -60,8 +60,8 @@ class FiltroOVRForm(FlaskForm):
         if kwargs.get('tiposeventos'):
             self.tipoevento_id.choices = [(None, 'Selecione'), *kwargs.get('tiposeventos')]
         self.recinto_id.choices = [(None, 'Selecione')]
-        if kwargs.get('recintos'):
-            self.recinto_id.choices.extend(kwargs.get('recintos'))
+        if kwargs.get('recinto_id'):
+            self.recinto_id.choices.extend(kwargs.get('recinto_id'))
 
 
 class HistoricoOVRForm(FlaskForm):
