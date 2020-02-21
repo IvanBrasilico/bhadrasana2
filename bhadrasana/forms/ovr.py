@@ -40,8 +40,8 @@ class OVRForm(FlaskForm):
 
 class FiltroOVRForm(FlaskForm):
     id = IntegerField('ID')
-    tipooperacao = SelectField('tipooperacao', default=0)
-    fase = SelectField('fase', default=0)
+    tipooperacao = SelectField('tipooperacao', default=-1)
+    fase = SelectField('fase', default=-1)
     recinto_id = SelectField('tipoevento', default=0)
     tipoevento_id = SelectField('tipoevento', default=0)
     numero = StringField(u'Numero OVR',
@@ -54,7 +54,8 @@ class FiltroOVRForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.tipooperacao.choices = [(None, 'Selecione'), *Enumerado.tipoOperacao()]
-        self.fase.choices = Enumerado.faseOVR()
+        # self.fase.choices = Enumerado.faseOVR()
+        self.fase.choices = [(None, 'Selecione'), *Enumerado.faseOVR()]
         self.tipoevento_id.choices = [(None, 'Selecione')]
         if kwargs.get('tiposeventos'):
             self.tipoevento_id.choices = [(None, 'Selecione'), *kwargs.get('tiposeventos')]
