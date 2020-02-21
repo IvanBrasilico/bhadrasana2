@@ -75,6 +75,8 @@ def get_ovr_filtro(session, pfiltro):
         filtro = and_(OVR.tipoevento_id == int(pfiltro.get('tipoevento_id')), filtro)
     if pfiltro.get('responsavel') and pfiltro.get('responsavel') != 'None':
         filtro = and_(OVR.responsavel_cpf == pfiltro.get('responsavel'), filtro)
+    if pfiltro.get('recinto_id') and pfiltro.get('recinto_id') != 'None':
+        filtro = and_(OVR.recinto_id == int(pfiltro.get('recinto_id')), filtro)
     ovrs = session.query(OVR).filter(filtro).all()
     logger.info(str(pfiltro))
     logger.info(str(filtro))
