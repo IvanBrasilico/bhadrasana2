@@ -11,8 +11,9 @@
                 <tr>
                     <th></th>
                     <th>Tipo Operação</th>
-                    <th>Recinto</th>
+                    <th>Ano</th>
                     <th>Número</th>
+                    <th>Recinto</th>
                     <th>CE Mercante</th>
                     <th>Data</th>
                     <th>Último Evento</th>
@@ -23,8 +24,9 @@
                 <tr>
                     <td><a href="ovr?id={{ ovr.id }}">{{ ovr.id }}</a></td>
                     <td>{{ ovr.get_tipooperacao() }}</td>
-                    <td>{{ ovr.recinto.nome }}</td>
+                    <td>{{ ovr.ano }}</td>
                     <td>{{ ovr.numero }}</td>
+                    <td>{{ ovr.recinto.nome }}</td>
                     <td>{{ ovr.numeroCEmercante }}</td>
                     <td>{{ ovr.datahora }}</td>
                     <td>{{ ovr.tipoevento.nome }}</td>
