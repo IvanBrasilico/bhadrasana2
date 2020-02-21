@@ -4,64 +4,65 @@
         <div class="form-group">
             <form method="POST" id="filtroformovr" action="pesquisa_ovr">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                <div class="row">
-                    <div class="col-sm-1">
+            <div class="row">
+                <div class="row col-sm-12">
+                    <div class="col-sm-2">
                         <label for="tipooperacao">Tipo</label>
+                        {{ oform.tipooperacao(class='form-control') }}
                     </div>
-                    <div class="col-sm-1">
+                    <div class="col-sm-2">
                         <label for="fase">Fase</label>
+                        {{ oform.fase(class='form-control') }}
                     </div>
                     <div class="col-sm-2">
                         <label for="tipoevento">Status</label>
+                        {{ oform.tipoevento_id(class='form-control') }}
                     </div>
                     <div class="col-sm-2">
                         <label for="numero">Número OVR</label>
+                         {{ oform.numero(class='form-control') }}
                     </div>
                     <div class="col-sm-2">
                         <label for="numeroCEmercante">Número CE-Mercante</label>
+                        {{ oform.numeroCEmercante(class='form-control') }}
                     </div>
-                    <div class="col-sm-4">
-                        <label for="datainicio">Início e fim de período de pesquisa</label>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="form-group">
-                        <div class="col-sm-1">
-                            {{ oform.tipooperacao(class='form-control') }}
-                        </div>
-                        <div class="col-sm-1">
-                            {{ oform.fase(class='form-control') }}
-                        </div>
-                        <div class="col-sm-2">
-                            {{ oform.tipoevento_id(class='form-control') }}
-                        </div>
-                        <div class="col-sm-2">
-                            {{ oform.numero(class='form-control') }}
-                        </div>
-                        <div class="col-sm-2">
-                            {{ oform.numeroCEmercante(class='form-control') }}
-                        </div>
-                        <div class="col-sm-2">
-                            {{ oform.datainicio(class='form-control') }}
-                        </div>
-                        <div class="col-sm-2">
-                            {{ oform.datafim(class='form-control') }}
-                        </div>
+                    <div class="col-sm-2">
+                        <label for="recinto_id">Recinto</label>
+                        {{ oform.recinto_id(class='form-control') }}
                     </div>
                 </div>
                 <div class="row col-sm-12">
-                    &nbsp;<br>
-                    <div class="col-sm-2">
-                        <button class="btn btn-default btn-info form-control" onclick="submit">
-                            Pesquisar
-                        </button>
-                    </div>
-                    <div class="col-sm-2">
-                        <button class="btn btn-default btn-info form-control" onclick="window.open('ovr')">
-                            Nova OVR
-                        </button>
+                    <br>
+                    <div class="col-sm-12">
+                        <div class="col-sm-4">
+                            <div class="row">
+                                <label for="datainicio">Início e fim de período de pesquisa</label>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    {{ oform.datainicio(class='form-control') }}
+                                </div>
+                                <div class="col-sm-4">
+                                    {{ oform.datafim(class='form-control') }}
+                                </div>
+                            </div>
+
+                        </div>
+                            <div class="col-sm-3">
+                                <br>
+                                <button class="btn btn-default btn-info form-control" onclick="submit">
+                                    Pesquisar
+                                </button>
+                            </div>
+                            <div class="col-sm-3">
+                                <br>
+                                <button class="btn btn-default btn-info form-control" onclick="window.open('ovr')">
+                                    Nova OVR
+                                </button>
+                        </div>
                     </div>
                 </div>
+            </div>
             </form>
         </div>
     </div>
