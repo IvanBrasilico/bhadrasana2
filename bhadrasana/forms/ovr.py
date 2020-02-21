@@ -8,8 +8,8 @@ class OVRForm(FlaskForm):
     id = IntegerField('ID')
     tipooperacao = SelectField(u'Tipo de Operação')
     recinto_id = SelectField(u'Recinto')
-    tipoevento_id = SelectField(u'Tipo de Evento', render_kw={'disabled':''})
-    fase = SelectField(u'Fase', render_kw={'disabled':''})
+    tipoevento_id = SelectField(u'Tipo de Evento', render_kw={'disabled': ''})
+    fase = SelectField(u'Fase', render_kw={'disabled': ''})
     numero = StringField(u'Numero OVR',
                          default='')
     ano = StringField(u'Ano',
@@ -92,6 +92,17 @@ class ProcessoOVRForm(FlaskForm):
         self.tipoprocesso_id.choices = []
         if kwargs.get('tiposprocesso'):
             self.tipoprocesso_id.choices.extend(kwargs.get('tiposprocesso'))
+
+
+class ResponsavelOVRForm(FlaskForm):
+    ovr_id = IntegerField('OVR')
+    responsavel = SelectField('CPF do Responsável')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.responsavel.choices = []
+        if kwargs.get('responsaveis'):
+            self.responsavel.choices.extend(kwargs.get('responsaveis'))
 
 
 class ItemTGForm(FlaskForm):
