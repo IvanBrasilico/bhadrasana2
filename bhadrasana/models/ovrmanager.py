@@ -3,7 +3,7 @@ from datetime import timedelta
 from ajna_commons.flask.log import logger
 from bhadrasana.models import handle_datahora
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
-    TipoProcessoOVR, ItemTG, Recinto, Usuario
+    TipoProcessoOVR, ItemTG, Recinto, Usuario, TGOVR
 from sqlalchemy import and_
 
 
@@ -128,6 +128,27 @@ def gera_processoovr(session, params):
     return gera_objeto(ProcessoOVR(),
                        session, params)
 
+def cadastra_tgovr(session, params):
+    tgovr = get_tgovr(session, params.get('id'))
+    return gera_objeto(tgovr,
+                       session, params)
+
+
+def lista_tgovr(session, ovr_id):
+    try:
+        ovr_id = int(ovr_id)
+    except (ValueError, TypeError):
+        return None
+    return session.query(TGOVR).filter(TGOVR.ovr_id == ovr_id).all()
+
+
+def get_tgovr(session, id: int = None):
+    if id is None or id == 'None':
+        tgovr = TGOVR()
+        print('Criando TGOVR zerado...')
+        return tgovr
+    return session.query(TGOVR).filter(TGOVR.id == id).one_or_none()
+
 
 def cadastra_itemtg(session, params):
     item_tg = get_itemtg(session, params.get('id'))
@@ -135,12 +156,12 @@ def cadastra_itemtg(session, params):
                        session, params)
 
 
-def lista_itemtg(session, ovr_id):
+def lista_itemtg(session, tg_id):
     try:
-        ovr_id = int(ovr_id)
+        tg_id = int(tg_id)
     except (ValueError, TypeError):
         return None
-    return session.query(ItemTG).filter(ItemTG.ovr_id == ovr_id).all()
+    return session.query(ItemTG).filter(ItemTG.tg_id == tg_id).all()
 
 
 def get_itemtg(session, id: int = None):

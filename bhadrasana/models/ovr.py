@@ -1,5 +1,5 @@
 from flask_login import current_user
-from sqlalchemy import BigInteger, Column, DateTime, func, VARCHAR, Integer, ForeignKey, Numeric, CHAR
+from sqlalchemy import BigInteger, Column, DateTime, func, VARCHAR, Integer, ForeignKey, Numeric, CHAR, Table
 from sqlalchemy.dialects.mysql import TIMESTAMP
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -203,21 +203,38 @@ class TipoMercadoria(Base):
     nome = Column(VARCHAR(50), index=True)
 
 
+marcas_table = Table('ovr_tgvor_marcas', metadata,
+                     Column('tg_id', BigInteger(), ForeignKey('ovr_tgovr.id')),
+                     Column('marca_id', BigInteger(), ForeignKey('ovr_marcas.id'))
+                     )
+
+mercadorias_table = Table('ovr_tgvor_mercadorias', metadata,
+                          Column('tg_id', BigInteger(), ForeignKey('ovr_tgovr.id')),
+                          Column('marca_id', BigInteger(), ForeignKey('ovr_tiposmercadoria.id'))
+                          )
+
+
 class TGOVR(Base):
     __tablename__ = 'ovr_tgovr'
     id = Column(BigInteger(), primary_key=True)
     ovr_id = Column(BigInteger(), ForeignKey('ovr_ovrs.id'))
     ovr = relationship("OVR", back_populates="tgs")
+    # Número do contêiner ou de lote
+    numerolote = Column(VARCHAR(20), index=True, nullable=False)
     descricao = Column(VARCHAR(200), index=True, nullable=False)
-    qtde = Column(Numeric())
-    valor = Column(Numeric())
-    tipomercadoria_id = Column(BigInteger(), ForeignKey('ovr_tiposmercadoria.id'))
-    tipomercadoria = relationship(TipoMercadoria)
-    marca_id = Column(BigInteger(), ForeignKey('ovr_marcas.id'))
-    marca = relationship(Marca)
+    unidadedemedida = Column(Integer(), index=True)
+    qtde = Column(Numeric(10, 4))
+    valor = Column(Numeric(10, 4))
+    marcas = relationship("Marca",
+                          secondary=marcas_table)
+    mercadorias = relationship("Marca",
+                               secondary=mercadorias_table)
     itenstg = relationship("ItemTG", back_populates="tg")
     create_date = Column(TIMESTAMP, index=True,
                          server_default=func.current_timestamp())
+
+    def get_unidadedemedida(self):
+        return Enumerado.unidadeMedida(self.unidadedemedida)
 
 
 class ItemTG(Base):
@@ -226,9 +243,9 @@ class ItemTG(Base):
     tg_id = Column(BigInteger(), ForeignKey('ovr_tgovr.id'))
     tg = relationship("TGOVR", back_populates="itenstg")
     descricao = Column(VARCHAR(200), index=True, nullable=False)
-    qtde = Column(Numeric())
+    qtde = Column(Numeric(10, 4))
     unidadedemedida = Column(Integer(), index=True)
-    valor = Column(Numeric())
+    valor = Column(Numeric(10, 4))
     ncm = Column(VARCHAR(8), index=True)
     marca_id = Column(BigInteger(), ForeignKey('ovr_marcas.id'))
     marca = relationship(Marca)
@@ -256,39 +273,44 @@ class Usuario(Base):
 
 
 if __name__ == '__main__':
-    import sys
+    confirma = input('Revisar o código... Esta ação pode apagar TODAS as tabelas. Confirma??')
+    if confirma == 'S':
+        import sys
 
-    sys.path.insert(0, '.')
-    sys.path.insert(0, '../ajna_docs/commons')
-    sys.path.insert(0, '../virasana')
-    from bhadrasana.main import engine
+        sys.path.insert(0, '.')
+        sys.path.insert(0, '../ajna_docs/commons')
+        sys.path.insert(0, '../virasana')
+        from bhadrasana.main import engine
 
-    metadata.drop_all(engine,
-                      [
-                          # metadata.tables['ovr_ovrs'],
-                          # metadata.tables['ovr_tiposevento'],
-                          # metadata.tables['ovr_tiposprocesso'],
-                          # metadata.tables['ovr_eventos'],
-                          # metadata.tables['ovr_processos'],
-                          metadata.tables['ovr_tgovr'],
-                          metadata.tables['ovr_itenstg'],
-                          # metadata.tables['ovr_setores'],
-                          # metadata.tables['ovr_usuarios'],
-                          # metadata.tables['ovr_tiposmercadoria'],
+        # metadata.create_all(engine, [ metadata.tables['ovr_tiposevento']])
+        metadata.drop_all(engine)
+        metadata.create_all(engine)
 
-                      ])
+        metadata.drop_all(engine,
+                          [
+                             # metadata.tables['ovr_ovrs'],
+                             # metadata.tables['ovr_tiposevento'],
+                             # metadata.tables['ovr_tiposprocesso'],
+                             # metadata.tables['ovr_eventos'],
+                             # metadata.tables['ovr_processos'],
+                             # metadata.tables['ovr_tgovr'],
+                             # metadata.tables['ovr_itenstg'],
+                             # metadata.tables['ovr_setores'],
+                             # metadata.tables['ovr_usuarios'],
+                             # metadata.tables['ovr_tiposmercadoria'],
+                          ])
 
-    metadata.create_all(engine,
-                        [
-                            # metadata.tables['ovr_ovrs'],
-                            # metadata.tables['ovr_tiposevento'],
-                            # metadata.tables['ovr_tiposprocesso'],
-                            # metadata.tables['ovr_eventos'],
-                            # metadata.tables['ovr_processos'],
-                            metadata.tables['ovr_tiposmercadoria'],
-                            metadata.tables['ovr_tgovr'],
-                            metadata.tables['ovr_itenstg'],
-                            metadata.tables['ovr_setores'],
-                            metadata.tables['ovr_usuarios'],
-
-                        ])
+        metadata.create_all(engine,
+                            [
+                              #  metadata.tables['ovr_ovrs'],
+                              #  metadata.tables['ovr_tiposevento'],
+                              #  metadata.tables['ovr_tiposprocesso'],
+                              #  metadata.tables['ovr_eventos'],
+                              #  metadata.tables['ovr_processos'],
+                              #  metadata.tables['ovr_tiposmercadoria'],
+                              #  metadata.tables['ovr_tgovr'],
+                              #  metadata.tables['ovr_itenstg'],
+                              #  metadata.tables['ovr_setores'],
+                              #  metadata.tables['ovr_usuarios'],
+                              #  metadata.tables['ovr_recintos'],
+                            ])

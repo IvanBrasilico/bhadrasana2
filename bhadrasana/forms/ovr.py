@@ -105,9 +105,28 @@ class ResponsavelOVRForm(FlaskForm):
             self.responsavel.choices.extend(kwargs.get('responsaveis'))
 
 
+class TGOVRForm(FlaskForm):
+    id = IntegerField('ID')
+    tg_id = IntegerField('TG')
+    numerolote = StringField(u'Número do contêiner, ou do lote do terminal'
+                             u' se não houver contêiner', default='')
+    descricao = TextAreaField(u'Descrição',
+                              render_kw={"rows": 5, "cols": 100},
+                              default='')
+    unidadedemedida = SelectField('Unidade de Medida', default=1)
+    qtde = StringField(u'Quantidade',
+                       default='')
+    valor = StringField(u'Valor unitário',
+                        default='')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.unidadedemedida.choices = Enumerado.unidadeMedida()
+
+
 class ItemTGForm(FlaskForm):
     id = IntegerField('ID')
-    ovr_id = IntegerField('OVR')
+    tg_id = IntegerField('TG')
     descricao = TextAreaField(u'Descrição',
                               render_kw={"rows": 5, "cols": 100},
                               default='')

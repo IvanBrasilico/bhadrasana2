@@ -3,11 +3,12 @@ from _collections import defaultdict
 
 from ajna_commons.flask.log import logger
 from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, ProcessoOVRForm, ItemTGForm, \
-    ResponsavelOVRForm
+    ResponsavelOVRForm, TGOVRForm
 from bhadrasana.models.ovr import ItemTG, OVR
 from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_ovr_filtro, gera_eventoovr, get_tipos_evento, delete_objeto, gera_processoovr, get_tipos_processo, lista_itemtg, \
-    get_itemtg, get_recintos, cadastra_itemtg, get_usuarios, atribui_responsavel_ovr
+    get_itemtg, get_recintos, cadastra_itemtg, get_usuarios, atribui_responsavel_ovr, lista_tgovr, get_tgovr, \
+    cadastra_tgovr
 from bhadrasana.models.rvfmanager import get_marcas_choice
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
@@ -147,7 +148,6 @@ def ovr_app(app):
         atribui_responsavel_ovr(session, dict(responsavel_ovr_form.data.items()))
         return redirect(url_for('ovr', id=ovr_id))
 
-
     @app.route('/movimentaovr', methods=['POST'])
     @login_required
     def movimentaovr():
@@ -166,6 +166,33 @@ def ovr_app(app):
         processo_ovr_form.validate()
         gera_processoovr(session, dict(processo_ovr_form.data.items()))
         return redirect(url_for('ovr', id=ovr_id))
+
+    @app.route('/lista_tgovr', methods=['GET'])
+    @login_required
+    def listatgovr():
+        session = app.config.get('dbsession')
+        ovr_id = request.args.get('ovr_id')
+        item_id = request.args.get('item_id')
+        listatgovr = lista_tgovr(session, ovr_id)
+        marcas = get_marcas_choice(session)
+        if item_id:
+            tgovr = get_tgovr(session, item_id)
+            marcas = get_marcas_choice(session)
+            oform = TGOVRForm(**tgovr.__dict__, marcas=marcas)
+        else:
+            oform = TGOVRForm(ovr_id=ovr_id, marcas=marcas)
+        return render_template('lista_tgovr.html',
+                               listatgovr=listatgovr,
+                               oform=oform)
+
+    @app.route('/tgovr', methods=['POST'])
+    @login_required
+    def tgovr():
+        session = app.config.get('dbsession')
+        tgovr_form = TGOVRForm(request.form)
+        tgovr_form.validate()
+        tgovr = cadastra_tgovr(session, dict(tgovr_form.data.items()))
+        return redirect(url_for('listaitemtg', ovr_id=tgovr.ovr_id))
 
     @app.route('/lista_itemtg', methods=['GET'])
     @login_required
