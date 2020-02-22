@@ -210,7 +210,7 @@ marcas_table = Table('ovr_tgvor_marcas', metadata,
 
 mercadorias_table = Table('ovr_tgvor_mercadorias', metadata,
                           Column('tg_id', BigInteger(), ForeignKey('ovr_tgovr.id')),
-                          Column('marca_id', BigInteger(), ForeignKey('ovr_tiposmercadoria.id'))
+                          Column('tipomercadoria_id', BigInteger(), ForeignKey('ovr_tiposmercadoria.id'))
                           )
 
 
@@ -227,7 +227,7 @@ class TGOVR(Base):
     valor = Column(Numeric(10, 4))
     marcas = relationship("Marca",
                           secondary=marcas_table)
-    mercadorias = relationship("Marca",
+    mercadorias = relationship("TipoMercadoria",
                                secondary=mercadorias_table)
     itenstg = relationship("ItemTG", back_populates="tg")
     create_date = Column(TIMESTAMP, index=True,
@@ -282,35 +282,34 @@ if __name__ == '__main__':
         sys.path.insert(0, '../virasana')
         from bhadrasana.main import engine
 
-        # metadata.create_all(engine, [ metadata.tables['ovr_tiposevento']])
-        metadata.drop_all(engine)
-        metadata.create_all(engine)
+        # metadata.drop_all(engine)
+        # metadata.create_all(engine)
 
         metadata.drop_all(engine,
                           [
-                             # metadata.tables['ovr_ovrs'],
-                             # metadata.tables['ovr_tiposevento'],
-                             # metadata.tables['ovr_tiposprocesso'],
-                             # metadata.tables['ovr_eventos'],
-                             # metadata.tables['ovr_processos'],
-                             # metadata.tables['ovr_tgovr'],
-                             # metadata.tables['ovr_itenstg'],
-                             # metadata.tables['ovr_setores'],
-                             # metadata.tables['ovr_usuarios'],
-                             # metadata.tables['ovr_tiposmercadoria'],
+                              # metadata.tables['ovr_ovrs'],
+                              # metadata.tables['ovr_tiposevento'],
+                              # metadata.tables['ovr_tiposprocesso'],
+                              # metadata.tables['ovr_eventos'],
+                              # metadata.tables['ovr_processos'],
+                              # metadata.tables['ovr_tgovr'],
+                              # metadata.tables['ovr_itenstg'],
+                              # metadata.tables['ovr_setores'],
+                              # metadata.tables['ovr_usuarios'],
+                              # metadata.tables['ovr_tiposmercadoria'],
                           ])
 
         metadata.create_all(engine,
                             [
-                              #  metadata.tables['ovr_ovrs'],
-                              #  metadata.tables['ovr_tiposevento'],
-                              #  metadata.tables['ovr_tiposprocesso'],
-                              #  metadata.tables['ovr_eventos'],
-                              #  metadata.tables['ovr_processos'],
-                              #  metadata.tables['ovr_tiposmercadoria'],
-                              #  metadata.tables['ovr_tgovr'],
-                              #  metadata.tables['ovr_itenstg'],
-                              #  metadata.tables['ovr_setores'],
-                              #  metadata.tables['ovr_usuarios'],
-                              #  metadata.tables['ovr_recintos'],
+                                #  metadata.tables['ovr_ovrs'],
+                                #  metadata.tables['ovr_tiposevento'],
+                                #  metadata.tables['ovr_tiposprocesso'],
+                                #  metadata.tables['ovr_eventos'],
+                                #  metadata.tables['ovr_processos'],
+                                #  metadata.tables['ovr_tiposmercadoria'],
+                                #  metadata.tables['ovr_tgovr'],
+                                #  metadata.tables['ovr_itenstg'],
+                                #  metadata.tables['ovr_setores'],
+                                #  metadata.tables['ovr_usuarios'],
+                                #  metadata.tables['ovr_recintos'],
                             ])
