@@ -184,7 +184,7 @@ class ProcessoOVR(Base):
     id = Column(BigInteger(), primary_key=True)
     ovr_id = Column(BigInteger(), ForeignKey('ovr_ovrs.id'))
     ovr = relationship("OVR", back_populates="processos")
-    tipoprocesso_id = Column(Integer(), ForeignKey('ovr_tiposprocesso.id'))
+    tipoprocesso_id = Column(BigInteger(), ForeignKey('ovr_tiposprocesso.id'))
     tipoprocesso = relationship("TipoProcessoOVR")
     numero = Column(VARCHAR(50), index=True)
     create_date = Column(TIMESTAMP, index=True,
