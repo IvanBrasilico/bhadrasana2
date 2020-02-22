@@ -69,7 +69,7 @@ def get_ovr_filtro(session, pfiltro):
         filtro = and_(OVR.numero.ilike(pfiltro.get('numero')), filtro)
     if pfiltro.get('tipooperacao') and pfiltro.get('tipooperacao') != 'None':
         filtro = and_(OVR.tipooperacao == int(pfiltro.get('tipooperacao')), filtro)
-    if pfiltro.get('fase'):
+    if pfiltro.get('fase') and pfiltro.get('fase') != 'None':
         filtro = and_(OVR.fase == int(pfiltro.get('fase')), filtro)
     if pfiltro.get('tipoevento_id') and pfiltro.get('tipoevento_id') != 'None':
         filtro = and_(OVR.tipoevento_id == int(pfiltro.get('tipoevento_id')), filtro)
