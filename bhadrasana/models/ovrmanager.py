@@ -9,8 +9,8 @@ from sqlalchemy import and_
 
 def get_usuarios(session, user_name: str=None):
     usuarios = session.query(Usuario).all()
-    recintos_list = [(usuario.cpf, usuario.nome) for usuario in usuarios]
-    return sorted(recintos_list, key=lambda x: x[1])
+    usuarios_list = [(usuario.cpf, usuario.nome) for usuario in usuarios]
+    return sorted(usuarios_list, key=lambda x: x[1])
 
 
 def get_recintos(session):
@@ -29,7 +29,7 @@ def get_tipos_processo(session):
     return [(tipo.id, tipo.descricao) for tipo in tiposprocesso]
 
 
-def cadastra_ovr(session, params):
+def cadastra_ovr(session, params: dict)-> OVR:
     ovr = get_ovr(session, params.get('id'))
     for key, value in params.items():
         if value and value != 'None':
@@ -46,7 +46,7 @@ def cadastra_ovr(session, params):
     return ovr
 
 
-def get_ovr(session, id: int = None):
+def get_ovr(session, id: int = None)-> OVR:
     if id is None:
         ovr = OVR()
         ovr.status = 1
@@ -101,7 +101,7 @@ def atribui_responsavel_ovr(session, params):
     return ovr
 
 
-def gera_eventoovr(session, params):
+def gera_eventoovr(session, params)-> EventoOVR:
     evento = EventoOVR()
     for key, value in params.items():
         print(key, value)

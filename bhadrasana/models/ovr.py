@@ -103,7 +103,8 @@ class BaseRastreavel(Base):
 
 class OVR(Base):
     __tablename__ = 'ovr_ovrs'
-    id = Column(BigInteger(), primary_key=True)
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'),
+                primary_key=True)
     numero = Column(VARCHAR(10), index=True)
     tipooperacao = Column(Integer(), index=True)
     ano = Column(VARCHAR(4), index=True)
@@ -112,11 +113,11 @@ class OVR(Base):
     observacoes = Column(VARCHAR(200), index=True)
     datahora = Column(TIMESTAMP, index=True)
     fase = Column(Integer(), index=True, default=0)
-    tipoevento_id = Column(BigInteger(),
+    tipoevento_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                            ForeignKey('ovr_tiposevento.id'),
                            default=1)
     tipoevento = relationship("TipoEventoOVR")
-    recinto_id = Column(BigInteger(), ForeignKey('ovr_recintos.id'))
+    recinto_id = Column(BigInteger().with_variant(Integer, 'sqlite'), ForeignKey('ovr_recintos.id'))
     recinto = relationship("Recinto")
     responsavel_cpf = Column(VARCHAR(15), ForeignKey('ovr_usuarios.cpf'))
     responsavel = relationship("Usuario")
@@ -145,7 +146,7 @@ class OVR(Base):
 
 class TipoEventoOVR(Base):
     __tablename__ = 'ovr_tiposevento'
-    id = Column(BigInteger(), primary_key=True)
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
     nome = Column(VARCHAR(50), index=True)
     descricao = Column(VARCHAR(100), index=True)
     fase = Column(Integer(), index=True, default=0)
@@ -155,7 +156,7 @@ class TipoEventoOVR(Base):
 
 class Recinto(Base):
     __tablename__ = 'ovr_recintos'
-    id = Column(BigInteger(), primary_key=True)
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
     nome = Column(VARCHAR(50), index=True)
     descricao = Column(VARCHAR(100), index=True)
     create_date = Column(TIMESTAMP, index=True,
@@ -164,7 +165,7 @@ class Recinto(Base):
 
 class TipoProcessoOVR(Base):
     __tablename__ = 'ovr_tiposprocesso'
-    id = Column(BigInteger(), primary_key=True)
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
     descricao = Column(VARCHAR(50), index=True)
     create_date = Column(TIMESTAMP, index=True,
                          server_default=func.current_timestamp())
@@ -172,10 +173,10 @@ class TipoProcessoOVR(Base):
 
 class EventoOVR(Base):
     __tablename__ = 'ovr_eventos'
-    id = Column(BigInteger(), primary_key=True)
-    ovr_id = Column(BigInteger(), ForeignKey('ovr_ovrs.id'))
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
+    ovr_id = Column(BigInteger().with_variant(Integer, 'sqlite'), ForeignKey('ovr_ovrs.id'))
     ovr = relationship("OVR", back_populates="historico")
-    tipoevento_id = Column(BigInteger(), ForeignKey('ovr_tiposevento.id'))
+    tipoevento_id = Column(BigInteger().with_variant(Integer, 'sqlite'), ForeignKey('ovr_tiposevento.id'))
     tipoevento = relationship("TipoEventoOVR")
     fase = Column(Integer(), index=True, default=0)
     user_name = Column(VARCHAR(50), index=True)
@@ -186,10 +187,10 @@ class EventoOVR(Base):
 
 class ProcessoOVR(Base):
     __tablename__ = 'ovr_processos'
-    id = Column(BigInteger(), primary_key=True)
-    ovr_id = Column(BigInteger(), ForeignKey('ovr_ovrs.id'))
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
+    ovr_id = Column(BigInteger().with_variant(Integer, 'sqlite'), ForeignKey('ovr_ovrs.id'))
     ovr = relationship("OVR", back_populates="processos")
-    tipoprocesso_id = Column(BigInteger(), ForeignKey('ovr_tiposprocesso.id'))
+    tipoprocesso_id = Column(BigInteger().with_variant(Integer, 'sqlite'), ForeignKey('ovr_tiposprocesso.id'))
     tipoprocesso = relationship("TipoProcessoOVR")
     numero = Column(VARCHAR(50), index=True)
     create_date = Column(TIMESTAMP, index=True,
@@ -198,31 +199,31 @@ class ProcessoOVR(Base):
 
 class Marca(Base):
     __tablename__ = 'ovr_marcas'
-    id = Column(BigInteger(), primary_key=True)
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
     nome = Column(VARCHAR(50), index=True)
 
 
 class TipoMercadoria(Base):
     __tablename__ = 'ovr_tiposmercadoria'
-    id = Column(BigInteger(), primary_key=True)
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
     nome = Column(VARCHAR(50), index=True)
 
 
 marcas_table = Table('ovr_tgvor_marcas', metadata,
-                     Column('tg_id', BigInteger(), ForeignKey('ovr_tgovr.id')),
-                     Column('marca_id', BigInteger(), ForeignKey('ovr_marcas.id'))
+                     Column('tg_id', BigInteger().with_variant(Integer, 'sqlite'), ForeignKey('ovr_tgovr.id')),
+                     Column('marca_id', BigInteger().with_variant(Integer, 'sqlite'), ForeignKey('ovr_marcas.id'))
                      )
 
 mercadorias_table = Table('ovr_tgvor_mercadorias', metadata,
-                          Column('tg_id', BigInteger(), ForeignKey('ovr_tgovr.id')),
-                          Column('tipomercadoria_id', BigInteger(), ForeignKey('ovr_tiposmercadoria.id'))
+                          Column('tg_id', BigInteger().with_variant(Integer, 'sqlite'), ForeignKey('ovr_tgovr.id')),
+                          Column('tipomercadoria_id', BigInteger().with_variant(Integer, 'sqlite'), ForeignKey('ovr_tiposmercadoria.id'))
                           )
 
 
 class TGOVR(Base):
     __tablename__ = 'ovr_tgovr'
-    id = Column(BigInteger(), primary_key=True)
-    ovr_id = Column(BigInteger(), ForeignKey('ovr_ovrs.id'))
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
+    ovr_id = Column(BigInteger().with_variant(Integer, 'sqlite'), ForeignKey('ovr_ovrs.id'))
     ovr = relationship("OVR", back_populates="tgs")
     # Número do contêiner ou de lote
     numerolote = Column(VARCHAR(20), index=True, nullable=False)
@@ -244,15 +245,15 @@ class TGOVR(Base):
 
 class ItemTG(Base):
     __tablename__ = 'ovr_itenstg'
-    id = Column(BigInteger(), primary_key=True)
-    tg_id = Column(BigInteger(), ForeignKey('ovr_tgovr.id'))
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
+    tg_id = Column(BigInteger().with_variant(Integer, 'sqlite'), ForeignKey('ovr_tgovr.id'))
     tg = relationship("TGOVR", back_populates="itenstg")
     descricao = Column(VARCHAR(200), index=True, nullable=False)
     qtde = Column(Numeric(10, 4))
     unidadedemedida = Column(Integer(), index=True)
     valor = Column(Numeric(10, 4))
     ncm = Column(VARCHAR(8), index=True)
-    marca_id = Column(BigInteger(), ForeignKey('ovr_marcas.id'))
+    marca_id = Column(BigInteger().with_variant(Integer, 'sqlite'), ForeignKey('ovr_marcas.id'))
     marca = relationship(Marca)
     create_date = Column(TIMESTAMP, index=True,
                          server_default=func.current_timestamp())
