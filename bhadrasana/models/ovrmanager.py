@@ -87,7 +87,7 @@ def atribui_responsavel_ovr(session, params):
     try:
         ovr = get_ovr(session, params.get('ovr_id'))
         evento = EventoOVR()
-        evento.tipoevento_id = 16
+        evento.tipoevento_id = 16 # TODO: Ver como mapear de forma melhor
         evento.motivo = ovr.responsavel_cpf # Responsável anterior
         evento.ovr_id = ovr.id
         ovr.responsavel_cpf = params.get('responsavel')
@@ -160,7 +160,7 @@ def lista_itemtg(session, tg_id):
     try:
         tg_id = int(tg_id)
     except (ValueError, TypeError):
-        return None
+        return []
     return session.query(ItemTG).filter(ItemTG.tg_id == tg_id).all()
 
 

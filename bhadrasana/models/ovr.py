@@ -96,7 +96,8 @@ class BaseRastreavel(Base):
     create_date = Column(TIMESTAMP, index=True,
                          server_default=func.current_timestamp())
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.user_name = current_user.name
 
 
@@ -136,6 +137,10 @@ class OVR(Base):
 
     def get_tipooperacao(self):
         return Enumerado.tipoOperacao(self.tipooperacao)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fase = 0
 
 
 class TipoEventoOVR(Base):
