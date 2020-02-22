@@ -18,12 +18,12 @@
                 <tbody>
                 {% for tgovr in listatgovr %}
                 <tr>
-                    <td><a href="lista_tgovr?ovr_id={{tgov.ovr_id}}&item_id={{tgovr.id}}" >{{tgovr.id}}</a></td>
+                    <td><a href="lista_tgovr?ovr_id={{tgovr.ovr_id}}&item_id={{tgovr.id}}">{{tgovr.id}}</a></td>
                     <td style="max-width: 40px;">
                         {{ tgovr.numerolote }}
                     </td>
                     <td style="word-wrap: break-word; max-width: 500px; min-width: 400px;">
-                               {{ tgovr.descricao }}
+                        {{ tgovr.descricao }}
                     </td>
                     <td style="max-width: 40px;">
                         {{ tgovr.qtde }}
@@ -38,13 +38,24 @@
             </table>
         </div>
     </div>
+    <div class="row col-sm-12">
+        <br>
+        <button id="btn_novotg" type="button" class="btn btn-primary btn-success form-control"
+                onclick="window.open('lista_tgovr?ovr_id={{oform.ovr_id.data}}')">
+            Novo TG
+        </button>
+    </div>
     <div id="form_div" class="row">
-        <form method="POST" id="formitemtg" action="itemtg">
+        <form method="POST" id="formtgovr" action="tgovr">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <input type="hidden" name="id" value="{{ oform.id.data }}"/>
             <input type="hidden" name="ovr_id" value="{{ oform.ovr_id.data }}"/>
             <div class="row">
                 <div class="form-group">
+                    <div class="col-sm-12">
+                        Número do contêiner ou Lote
+                        {{ oform.numerolote(class='form-control') }}
+                    </div>
                     <div class="col-sm-12">
                         Descrição
                         {{ oform.descricao(class='form-control')}}
@@ -61,21 +72,19 @@
                         Valor unitário
                         {{ oform.valor(class='form-control') }}
                     </div>
-                    <div class="col-sm-12">
-                        NCM
-                        {{ oform.ncm(class='form-control') }}
-                    </div>
-                    <div class="col-sm-12">
-                        Marca contrafeita (se houver)
-                        {{ oform.marca_id(class='form-control') }}
-                    </div>
                 </div>
             </div>
             <div class="row col-sm-12">
-                &nbsp;<br>
-                <div class="col-sm-5">
+                <br>
+                <div class="col-sm-6">
                     <button class="btn btn-default btn-primary form-control" onclick="submit">
                         Salvar
+                    </button>
+                </div>
+                <div class="col-sm-6">
+                    <button id="btn_tg" type="button" class="btn btn-primary btn-success form-control"
+                            onclick="window.open('lista_itemtg?tg_id={{oform.id.data}}')">
+                        Itens
                     </button>
                 </div>
             </div>
@@ -100,6 +109,7 @@
         });
       }
     }
+
 
 </script>
 {% endblock %}

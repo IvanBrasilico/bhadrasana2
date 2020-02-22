@@ -189,10 +189,20 @@ def ovr_app(app):
     @login_required
     def tgovr():
         session = app.config.get('dbsession')
-        tgovr_form = TGOVRForm(request.form)
-        tgovr_form.validate()
-        tgovr = cadastra_tgovr(session, dict(tgovr_form.data.items()))
-        return redirect(url_for('listaitemtg', ovr_id=tgovr.ovr_id))
+        item_id = None
+        try:
+            tgovr_form = TGOVRForm(request.form)
+            tgovr_form.validate()
+            tgovr = cadastra_tgovr(session, dict(tgovr_form.data.items()))
+            ovr_id = tgovr.ovr_id
+            # item_id = tgovr.id
+        except Exception as err:
+            flash(str(err))
+            logger.error(err, exc_info=True)
+            ovr_id = request.form.get('ovr_id')
+        return redirect(url_for('listatgovr',
+                                ovr_id=ovr_id,
+                                item_id=item_id))
 
     @app.route('/lista_itemtg', methods=['GET'])
     @login_required

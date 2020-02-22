@@ -107,7 +107,7 @@ class ResponsavelOVRForm(FlaskForm):
 
 class TGOVRForm(FlaskForm):
     id = IntegerField('ID')
-    tg_id = IntegerField('TG')
+    ovr_id = IntegerField('OVR')
     numerolote = StringField(u'Número do contêiner, ou do lote do terminal'
                              u' se não houver contêiner', default='')
     descricao = TextAreaField(u'Descrição',
