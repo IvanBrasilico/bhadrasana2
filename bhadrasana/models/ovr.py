@@ -51,7 +51,8 @@ tipoProcesso = [
     'Crédito',
     'Sanção',
     'RFFP',
-    'Dossiê'
+    'Dossiê',
+    'Radar'
 ]
 
 unidadeMedida = [
@@ -67,7 +68,7 @@ class Enumerado:
         if (id is not None) and isinstance(id, int):
             return listatipo[id]
         else:
-            return [(id, item) for id, item in enumerate(listatipo)]
+            return [(id, item) for id, item in enumerate(listatipo, 1)]
 
     @classmethod
     def faseOVR(cls, id=None):
