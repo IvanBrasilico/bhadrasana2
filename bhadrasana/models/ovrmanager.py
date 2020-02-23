@@ -7,7 +7,7 @@ from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
 from sqlalchemy import and_
 
 
-def get_usuarios(session, user_name: str=None):
+def get_usuarios(session, user_name: str = None):
     usuarios = session.query(Usuario).all()
     usuarios_list = [(usuario.cpf, usuario.nome) for usuario in usuarios]
     return sorted(usuarios_list, key=lambda x: x[1])
@@ -29,11 +29,10 @@ def get_tipos_processo(session):
     return [(tipo.id, tipo.descricao) for tipo in tiposprocesso]
 
 
-def cadastra_ovr(session, params: dict)-> OVR:
+def cadastra_ovr(session, params: dict) -> OVR:
     ovr = get_ovr(session, params.get('id'))
     for key, value in params.items():
         if value and value != 'None':
-            print(key, value)
             setattr(ovr, key, value)
     ovr.datahora = handle_datahora(params)
     try:
@@ -41,12 +40,13 @@ def cadastra_ovr(session, params: dict)-> OVR:
         session.commit()
     except Exception as err:
         session.rollback()
+        logger.error('Erro cadastra_ovr: %s' % str(err))
+        logger.error(ovr.__dict__)
         raise err
-        print(ovr)
     return ovr
 
 
-def get_ovr(session, id: int = None)-> OVR:
+def get_ovr(session, id: int = None) -> OVR:
     if id is None:
         ovr = OVR()
         ovr.status = 1
@@ -87,8 +87,8 @@ def atribui_responsavel_ovr(session, params):
     try:
         ovr = get_ovr(session, params.get('ovr_id'))
         evento = EventoOVR()
-        evento.tipoevento_id = 16 # TODO: Ver como mapear de forma melhor
-        evento.motivo = ovr.responsavel_cpf # Responsável anterior
+        evento.tipoevento_id = 16  # TODO: Ver como mapear de forma melhor
+        evento.motivo = ovr.responsavel_cpf  # Responsável anterior
         evento.ovr_id = ovr.id
         ovr.responsavel_cpf = params.get('responsavel')
         evento.user_name = ovr.responsavel_cpf
@@ -101,10 +101,9 @@ def atribui_responsavel_ovr(session, params):
     return ovr
 
 
-def gera_eventoovr(session, params)-> EventoOVR:
+def gera_eventoovr(session, params) -> EventoOVR:
     evento = EventoOVR()
     for key, value in params.items():
-        print(key, value)
         setattr(evento, key, value)
     tipoevento = session.query(TipoEventoOVR).filter(
         TipoEventoOVR.id == int(evento.tipoevento_id)
@@ -124,9 +123,10 @@ def gera_eventoovr(session, params)-> EventoOVR:
     return evento
 
 
-def gera_processoovr(session, params):
+def gera_processoovr(session, params) -> ProcessoOVR:
     return gera_objeto(ProcessoOVR(),
                        session, params)
+
 
 def cadastra_tgovr(session, params):
     tgovr = get_tgovr(session, params.get('id'))
@@ -172,17 +172,20 @@ def get_itemtg(session, id: int = None):
     return session.query(ItemTG).filter(ItemTG.id == id).one_or_none()
 
 
-def gera_objeto(object, session, params):
+def gera_objeto(instance: object, session, params):
     for key, value in params.items():
-        if value and value != 'None':
-            setattr(object, key, value)
+        if value is not None and value != 'None':
+            setattr(instance, key, value)
     try:
-        session.add(object)
+        session.add(instance)
         session.commit()
     except Exception as err:
         session.rollback()
+        logger.error('Erro gera_objeto %s: %s' %
+                     (instance.__class__.__name__, str(err)))
+        logger.error(instance.__dict__)
         raise err
-    return object
+    return instance
 
 
 def delete_objeto(session, classname, id):

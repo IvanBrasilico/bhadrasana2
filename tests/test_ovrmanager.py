@@ -9,7 +9,7 @@ sys.path.append('.')
 
 from bhadrasana.models.ovr import metadata, Usuario, OVR, TipoEventoOVR, Enumerado
 
-from bhadrasana.models.ovrmanager import get_usuarios, cadastra_ovr, gera_eventoovr, get_ovr
+from bhadrasana.models.ovrmanager import get_usuarios, cadastra_ovr, gera_eventoovr, get_ovr, gera_processoovr
 
 engine = create_engine('sqlite://')
 Session = sessionmaker(bind=engine)
@@ -21,7 +21,6 @@ class TestCase(unittest.TestCase):
 
     def setUp(self) -> None:
         pass
-
 
     def debug(self) -> None:
         pass
@@ -60,17 +59,38 @@ class TestCase(unittest.TestCase):
 
     def test_OVR_Evento(self):
         ovr = self.create_OVR_valido()
+        session.refresh(ovr)
         self.create_tipos_evento()
         params = {
             'motivo': 'teste',
-            'tipoevento_id': 1
+            'tipoevento_id': 1,
+            'ovr_id': ovr.id
         }
         evento = gera_eventoovr(session, params)
         assert evento.motivo == params['motivo']
         assert evento.tipoevento_id == 1
-        ovr_modificada = get_ovr(session, id=1)
-        assert ovr_modificada.fase == evento.fase
+        assert ovr.fase == evento.fase
+        params['tipoevento_id'] = 2
+        evento2 = gera_eventoovr(session, params)
+        assert ovr.fase == evento2.fase
+        session.refresh(ovr)
+        assert len(ovr.historico) == 2
 
+    def test_OVR_Processo(self):
+        ovr = self.create_OVR_valido()
+        session.refresh(ovr)
+        for tipo in Enumerado.tipoProcesso():
+            params = {
+                'numero': tipo[1],
+                'tipoprocesso_id': tipo[0],
+                'ovr_id': ovr.id
+            }
+            processo = gera_processoovr(session, params)
+            session.refresh(processo)
+            assert processo.numero == params['numero']
+            assert processo.tipoprocesso_id == params['tipoprocesso_id']
+        session.refresh(ovr)
+        assert len(ovr.processos) == len(Enumerado.tipoProcesso())
 
     if __name__ == '__main__':
         unittest.main()
