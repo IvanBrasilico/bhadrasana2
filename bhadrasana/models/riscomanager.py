@@ -17,11 +17,13 @@ CAMPOS_RISCO = [('0', 'Selecione'),
                 ('7', 'portoDestFinal')
                 ]
 
+
 def myconverter(o):
     if isinstance(o, datetime):
-        return o.__str__() # datetime.strftime(o, '%Y%m%d %x')
+        return o.__str__()  # datetime.strftime(o, '%Y%m%d %x')
     if isinstance(o, date):
-        return o.__str__() # datetime.strftime(o, '%Y%m%d %x')
+        return o.__str__()  # datetime.strftime(o, '%Y%m%d %x')
+
 
 def mercanterisco(session, pfiltros: dict, limit=1000):
     # conhecimentos = session.query(Conhecimento).\
@@ -61,7 +63,7 @@ def mercanterisco(session, pfiltros: dict, limit=1000):
         limit(limit)
     logger.info(str(s))
     logger.info(str(pfiltros))
-    str_filtros = str(s) + '\n' + json.dumps(pfiltros, default = myconverter)
+    str_filtros = str(s) + '\n' + json.dumps(pfiltros, default=myconverter)
     logger.info(str_filtros)
     resultproxy = session.execute(s)
 
@@ -106,8 +108,7 @@ def get_lista_csv(csvpath):
                  for f in lista_csv
                  if '.csv' in f]
     lista_csv.sort(key=lambda x: os.path.getmtime(x), reverse=True)
-    for arquivo in lista_csv[4:]: # Somente manter cinco resultados
+    for arquivo in lista_csv[4:]:  # Somente manter cinco resultados
         print('Excluir... %s' % arquivo)
         os.remove(arquivo)
     return os.listdir(csvpath)
-

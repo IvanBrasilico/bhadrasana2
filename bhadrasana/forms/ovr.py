@@ -17,7 +17,7 @@ class OVRForm(FlaskForm):
     numeroCEmercante = StringField(u'CE Mercante',
                                    default='')
     observacoes = TextAreaField(u'Observações',
-                                render_kw={"rows": 3, "cols": 100},
+                                render_kw={'rows': 3, 'cols': 100},
                                 default='')
     adata = DateField(u'Data')
     ahora = TimeField(u'Horário')
@@ -53,12 +53,14 @@ class FiltroOVRForm(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.tipooperacao.choices = [(None, 'Selecione'), *Enumerado.tipoOperacao()]
+        self.tipooperacao.choices = [(None, 'Selecione'),
+                                     *Enumerado.tipoOperacao()]
         # self.fase.choices = Enumerado.faseOVR()
         self.fase.choices = [(None, 'Selecione'), *Enumerado.faseOVR()]
         self.tipoevento_id.choices = [(None, 'Selecione')]
         if kwargs.get('tiposeventos'):
-            self.tipoevento_id.choices = [(None, 'Selecione'), *kwargs.get('tiposeventos')]
+            self.tipoevento_id.choices = [(None, 'Selecione'),
+                                          *kwargs.get('tiposeventos')]
         self.recinto_id.choices = [(None, 'Selecione')]
         if kwargs.get('recinto_id'):
             self.recinto_id.choices.extend(kwargs.get('recinto_id'))
@@ -111,7 +113,7 @@ class TGOVRForm(FlaskForm):
     numerolote = StringField(u'Número do contêiner, ou do lote do terminal'
                              u' se não houver contêiner', default='')
     descricao = TextAreaField(u'Descrição',
-                              render_kw={"rows": 5, "cols": 100},
+                              render_kw={'rows': 5, 'cols': 100},
                               default='')
     unidadedemedida = SelectField('Unidade de Medida', default=1)
     qtde = StringField(u'Quantidade',
@@ -128,7 +130,7 @@ class ItemTGForm(FlaskForm):
     id = IntegerField('ID')
     tg_id = IntegerField('TG')
     descricao = TextAreaField(u'Descrição',
-                              render_kw={"rows": 5, "cols": 100},
+                              render_kw={'rows': 5, 'cols': 100},
                               default='')
     unidadedemedida = SelectField('Unidade de Medida', default=1)
     qtde = StringField(u'Quantidade',
