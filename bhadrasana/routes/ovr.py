@@ -2,12 +2,13 @@ import datetime
 from _collections import defaultdict
 
 from ajna_commons.flask.log import logger
-from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, ProcessoOVRForm, ItemTGForm, \
-    ResponsavelOVRForm, TGOVRForm
+from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
+    ProcessoOVRForm, ItemTGForm, ResponsavelOVRForm, TGOVRForm
 from bhadrasana.models.ovr import ItemTG, OVR
 from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
-    get_ovr_filtro, gera_eventoovr, get_tipos_evento, delete_objeto, gera_processoovr, get_tipos_processo, lista_itemtg, \
-    get_itemtg, get_recintos, cadastra_itemtg, get_usuarios, atribui_responsavel_ovr, lista_tgovr, get_tgovr, \
+    get_ovr_filtro, gera_eventoovr, get_tipos_evento, delete_objeto, \
+    gera_processoovr, get_tipos_processo, lista_itemtg, get_itemtg, get_recintos, \
+    cadastra_itemtg, get_usuarios, atribui_responsavel_ovr, lista_tgovr, get_tgovr, \
     cadastra_tgovr
 from bhadrasana.models.rvfmanager import get_marcas_choice
 from flask import request, flash, render_template, url_for, jsonify
@@ -97,7 +98,6 @@ def ovr_app(app):
     @login_required
     def pesquisa_ovr():
         session = app.config.get('dbsession')
-        user_name = current_user.name
         ovrs = []
         tiposeventos = get_tipos_evento(session)
         filtro_form = FiltroOVRForm(
@@ -123,7 +123,6 @@ def ovr_app(app):
     @login_required
     def minhas_ovrs():
         session = app.config.get('dbsession')
-        user_name = current_user.name
         ovrs = []
         listasovrs = defaultdict(list)
         try:

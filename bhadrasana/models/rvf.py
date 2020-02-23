@@ -11,8 +11,10 @@ metadata = Base.metadata
 
 
 marcasencontradas_table = Table('marcasencontradas', metadata,
-                                Column('rvf_id', BigInteger(), ForeignKey('verificacoesfisicas.id')),
-                                Column('marca_id', BigInteger(), ForeignKey('ovr_marcas.id'))
+                                Column('rvf_id', BigInteger(),
+                                       ForeignKey('verificacoesfisicas.id')),
+                                Column('marca_id', BigInteger(),
+                                       ForeignKey('ovr_marcas.id'))
                                 )
 
 
@@ -24,7 +26,7 @@ class RVF(Base):
     numeroDI = Column(VARCHAR(10), index=True)
     numeroDUE = Column(VARCHAR(10), index=True)
     descricao = Column(VARCHAR(40), index=True)
-    marcasencontradas = relationship("Marca",
+    marcasencontradas = relationship('Marca',
                                      secondary=marcasencontradas_table)
     datahora = Column(TIMESTAMP, index=True)
     create_date = Column(TIMESTAMP, index=True,

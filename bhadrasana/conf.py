@@ -1,6 +1,5 @@
 """Configurações específicas do Bhadrasana."""
 import os
-import pickle
 import tempfile
 
 from ajna_commons.conf import ENCODE
@@ -14,4 +13,3 @@ CSV_DOWNLOAD = CSV_FOLDER
 CSV_FOLDER_TEST = os.path.join(APP_PATH, 'tests/CSV')
 ALLOWED_EXTENSIONS = set(['txt', 'csv', 'zip'])
 tmpdir = tempfile.mkdtemp()
-

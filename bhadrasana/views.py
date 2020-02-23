@@ -23,17 +23,6 @@ from datetime import date, datetime, timedelta
 
 import pandas as pd
 import requests
-from bhadrasana.forms.editarisco import get_edita_risco_form
-from werkzeug.utils import secure_filename
-
-tmpdir = tempfile.mkdtemp()
-
-import ajna_commons.flask.login as login_ajna
-from ajna_commons.flask.conf import ALLOWED_EXTENSIONS, SECRET, logo
-from ajna_commons.flask.log import logger
-from ajna_commons.flask.user import DBUser
-from ajna_commons.models.bsonimage import BsonImage
-from ajna_commons.utils.images import mongo_image
 from bson import ObjectId
 from flask import (Flask, flash, redirect, render_template, request,
                    url_for, jsonify, Response)
@@ -44,15 +33,26 @@ from flask_nav import Nav
 from flask_nav.elements import Navbar, View
 from flask_wtf.csrf import CSRFProtect
 from gridfs import GridFS
+from werkzeug.utils import secure_filename
 
+import ajna_commons.flask.login as login_ajna
+from ajna_commons.flask.conf import ALLOWED_EXTENSIONS, SECRET, logo
+from ajna_commons.flask.log import logger
+from ajna_commons.flask.user import DBUser
+from ajna_commons.models.bsonimage import BsonImage
+from ajna_commons.utils.images import mongo_image
 from bhadrasana.conf import APP_PATH
+from bhadrasana.forms.editarisco import get_edita_risco_form
 from bhadrasana.forms.filtro_rvf import FiltroRVFForm
 from bhadrasana.forms.riscosativos import RiscosAtivosForm
 from bhadrasana.forms.rvf import RVFForm
 from bhadrasana.models.riscomanager import mercanterisco, riscosativos, \
     insererisco, exclui_risco, CAMPOS_RISCO, get_lista_csv
-from bhadrasana.models.rvfmanager import get_marcas, exclui_marca_encontrada, cadastra_rvf, inclui_marca_encontrada, \
+from bhadrasana.models.rvfmanager import get_marcas, exclui_marca_encontrada, \
+    cadastra_rvf, inclui_marca_encontrada, \
     get_rvf, get_ids_anexos, get_rvfs_filtro, get_rvf_ovr
+
+tmpdir = tempfile.mkdtemp()
 
 app = Flask(__name__, static_url_path='/static')
 csrf = CSRFProtect(app)
@@ -122,7 +122,8 @@ def append_images(lista_risco):
                            'metadata.numeroinformado': conteiner},
                       'projection': {'_id': 1}
                       }
-            r = requests.post('https://ajna.labin.rf08.srf/virasana/grid_data', json=params, verify=False)
+            r = requests.post('https://ajna.labin.rf08.srf/virasana/grid_data',
+                              json=params, verify=False)
             lista = r.json()
             _id = ''
             if lista and len(lista) > 0:
@@ -168,7 +169,7 @@ def risco():
             # print('***********', lista_risco)
         except Exception as err:
             logger.error(err, exc_info=True)
-            flash('Erro ao aplicar risco! ' +
+            flash('Erro ao aplicar risco! '
                   'Detalhes no log da aplicação.')
             flash(str(type(err)))
             flash(str(err))
@@ -234,7 +235,7 @@ def inclui_risco():
                     motivo=motivo)
     except Exception as err:
         logger.error(err, exc_info=True)
-        flash('Erro ao incluir risco! ' +
+        flash('Erro ao incluir risco! '
               'Detalhes no log da aplicação.')
         flash(str(type(err)))
         flash(str(err))
@@ -250,7 +251,7 @@ def excluir_risco(id):
         exclui_risco(session, id)
     except Exception as err:
         logger.error(err, exc_info=True)
-        flash('Erro ao incluir risco! ' +
+        flash('Erro ao incluir risco! '
               'Detalhes no log da aplicação.')
         flash(str(type(err)))
         flash(str(err))
@@ -261,7 +262,6 @@ def excluir_risco(id):
 @login_required
 def pesquisa_rvf():
     session = app.config.get('dbsession')
-    user_name = current_user.name
     rvfs = []
     filtro_form = FiltroRVFForm(datainicio=date.today() - timedelta(days=10),
                                 datafim=date.today())
@@ -285,7 +285,6 @@ def pesquisa_rvf():
 def rvf():
     session = app.config.get('dbsession')
     db = app.config['mongo_risco']
-    user_name = current_user.name
     marcas = []
     marcas_encontradas = []
     anexos = []
@@ -336,14 +335,12 @@ def rvf():
 def rvf_impressao(id):
     session = app.config.get('dbsession')
     db = app.config['mongo_risco']
-    user_name = current_user.name
     marcas_encontradas = []
     anexos = []
     rvf = None
-    rvf_form = RVFForm()
     rvf = get_rvf(session, id)
     if rvf is None:
-        flash("rvf %s não encontrado." % id)
+        flash('rvf %s não encontrado.' % id)
         return redirect(url_for('pesquisa_rvf'))
     marcas_encontradas = rvf.marcasencontradas
     anexos = get_ids_anexos(db, rvf)
@@ -436,7 +433,8 @@ def exporta_csv():
                               datetime.strftime(datetime.now(), '%Y-%m%dT%H%M%S') + \
                               '.csv'
         riscos_ativos = riscosativos(session, current_user.name)
-        with open(os.path.join(get_user_save_path(), riscos_out_filename), 'w') as riscos_out:
+        with open(os.path.join(get_user_save_path(),
+                               riscos_out_filename), 'w') as riscos_out:
             for risco in riscos_ativos:
                 linha_out = ';'.join((risco.campo, risco.valor, risco.motivo))
                 riscos_out.write(linha_out + '\n')
@@ -456,8 +454,7 @@ def get_csv_valido(request):
         flash('Nome de arquivo vazio')
         return False
     logger.info('FILE***' + csvf.filename)
-    if ('.' in csvf.filename and
-            csvf.filename.rsplit('.', 1)[1].lower() == 'csv'):
+    if '.' in csvf.filename and csvf.filename.rsplit('.', 1)[1].lower() == 'csv':
         return csvf
     return False
 
