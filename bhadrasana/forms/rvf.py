@@ -9,7 +9,7 @@ class RVFForm(FlaskForm):
     numeroCEmercante = StringField(u'CE Mercante',
                                    default='')
     descricao = TextAreaField(u'Descrição',
-                              render_kw={"rows": 5, "cols": 100},
+                              render_kw={'rows': 5, 'cols': 100},
                               default='')
     adata = DateField(u'Data')
     ahora = TimeField(u'Horário')

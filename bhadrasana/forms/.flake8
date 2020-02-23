@@ -1,5 +1,0 @@
-[flake8]
-ignore = T000,D,RST
-max-line-length = 90
-exclude = tests/*
-max-complexity = 10

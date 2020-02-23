@@ -2,14 +2,13 @@ from ajna_commons.flask.log import logger
 from bhadrasana.forms.dta import AnexoForm
 from bhadrasana.models.dtamanager import lista_anexos, get_anexo, edita_anexo
 from flask import request, render_template, url_for, flash
-from flask_login import login_required, current_user
+from flask_login import login_required
 from werkzeug.utils import redirect
 
 
 def dta_app(app):
     @app.route('/transito', methods=['GET', 'POST'])
     def transito():
-        user_name = current_user.name
         session = app.config.get('dbsession')
         dta_id = request.args.get('dta_id', 1)
         anexo_id = request.args.get('item_id')

@@ -41,22 +41,27 @@ def mercanterisco(session, pfiltros: dict, limit=1000):
     for key in keys:
         lista = pfiltros.get(key)
         if lista is not None:
-            filtro = or_(*
-                         [and_(getattr(Conhecimento, key).ilike(porto + '%'))
-                          for porto in lista])
+            filtro = or_(
+                *[and_(getattr(Conhecimento, key).ilike(porto + '%')) for porto in lista]
+            )
             filtros = and_(filtros, filtro)
     destinos = pfiltros.get('portoDestFinal')
     if destinos:
-        filtro = or_(*
-                     [and_(Conhecimento.portoDestFinal.ilike(destino + '%'))
-                      for destino in destinos])
+        filtro = or_(
+            *[and_(Conhecimento.portoDestFinal.ilike(destino + '%'))
+              for destino in destinos]
+        )
         filtros = and_(filtro, filtros)
     if pfiltros.get('ncm'):
-        filtro = or_(*
-                     [and_(NCMItem.identificacaoNCM.ilike(ncm + '%'))
-                      for ncm in pfiltros.get('ncm')])
+        filtro = or_(
+            *[and_(NCMItem.identificacaoNCM.ilike(ncm + '%'))
+              for ncm in pfiltros.get('ncm')]
+        )
         filtros = and_(filtros, filtro)
-    j = join(Conhecimento, NCMItem, Conhecimento.numeroCEmercante == NCMItem.numeroCEMercante)
+    j = join(
+        Conhecimento, NCMItem,
+        Conhecimento.numeroCEmercante == NCMItem.numeroCEMercante
+    )
     s = select([Conhecimento, NCMItem]).select_from(j). \
         where(filtros). \
         order_by(Conhecimento.numeroCEmercante). \

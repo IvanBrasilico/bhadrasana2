@@ -8,6 +8,7 @@ def get_marcas(session):
     marcas = session.query(Marca).all()
     return [marca for marca in marcas]
 
+
 def get_marcas_choice(session):
     marcas = session.query(Marca).all()
     return [(marca.id, marca.nome) for marca in marcas]
