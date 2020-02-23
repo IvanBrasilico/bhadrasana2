@@ -7,7 +7,7 @@ class AnexoForm(FlaskForm):
     id = IntegerField('ID')
     dta_id = IntegerField('OVR')
     observacoes = TextAreaField(u'Observações',
-                                render_kw={"rows": 5, "cols": 100},
+                                render_kw={'rows': 5, 'cols': 100},
                                 default='')
     temconteudo = BooleanField(u'Desmarcar se arquivo vazio',
                                default=1)

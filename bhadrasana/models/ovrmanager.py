@@ -128,7 +128,7 @@ def gera_processoovr(session, params) -> ProcessoOVR:
                        session, params)
 
 
-def cadastra_tgovr(session, params):
+def cadastra_tgovr(session, params) -> TGOVR:
     tgovr = get_tgovr(session, params.get('id'))
     return gera_objeto(tgovr,
                        session, params)

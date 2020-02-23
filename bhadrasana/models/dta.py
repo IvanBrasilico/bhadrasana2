@@ -33,14 +33,14 @@ class DTA(Base):
     __tablename__ = 'dta_dtas'
     id = Column(BigInteger(), primary_key=True)
     numero = Column(VARCHAR(10), index=True, nullable=False)
-    anexos = relationship("Anexo", back_populates="dta")
+    anexos = relationship('Anexo', back_populates='dta')
 
 
 class Anexo(Base):
     __tablename__ = 'dta_anexos'
     id = Column(BigInteger(), primary_key=True)
     dta_id = Column(BigInteger(), ForeignKey('dta_dtas.id'))
-    dta = relationship("DTA", back_populates="anexos")
+    dta = relationship('DTA', back_populates='anexos')
     nomearquivo = Column(VARCHAR(200), index=True, nullable=False)
     observacoes = Column(VARCHAR(200), index=True, nullable=False)
     temconteudo = Column(Boolean(), index=True)

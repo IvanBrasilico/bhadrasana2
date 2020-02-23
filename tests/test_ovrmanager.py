@@ -9,7 +9,8 @@ sys.path.append('.')
 
 from bhadrasana.models.ovr import metadata, Usuario, OVR, TipoEventoOVR, Enumerado
 
-from bhadrasana.models.ovrmanager import get_usuarios, cadastra_ovr, gera_eventoovr, get_ovr, gera_processoovr
+from bhadrasana.models.ovrmanager import get_usuarios, cadastra_ovr, gera_eventoovr, get_ovr, gera_processoovr, \
+    cadastra_tgovr
 
 engine = create_engine('sqlite://')
 Session = sessionmaker(bind=engine)
@@ -91,6 +92,22 @@ class TestCase(unittest.TestCase):
             assert processo.tipoprocesso_id == params['tipoprocesso_id']
         session.refresh(ovr)
         assert len(ovr.processos) == len(Enumerado.tipoProcesso())
+
+    def test_TGOVR(self):
+        ovr = self.create_OVR_valido()
+        session.refresh(ovr)
+        params = {
+            'descricao': 'teste',
+            'qtde': 10,
+            'ovr_id': ovr.id,
+            'numerolote': 'CCNU1234567'
+        }
+        tgovr = cadastra_tgovr(session, params)
+        session.refresh(tgovr)
+        for key, param in params.items():
+            assert getattr(tgovr, key) == param
+        session.refresh(ovr)
+        assert len(ovr.tgs) == 1
 
     if __name__ == '__main__':
         unittest.main()
