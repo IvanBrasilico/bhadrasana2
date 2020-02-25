@@ -1,6 +1,10 @@
 import datetime
 from _collections import defaultdict
 
+from flask import request, flash, render_template, url_for, jsonify
+from flask_login import login_required, current_user
+from werkzeug.utils import redirect
+
 from ajna_commons.flask.log import logger
 from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
     ProcessoOVRForm, ItemTGForm, ResponsavelOVRForm, TGOVRForm
@@ -11,10 +15,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     cadastra_itemtg, get_usuarios, atribui_responsavel_ovr, lista_tgovr, get_tgovr, \
     cadastra_tgovr
 from bhadrasana.models.rvfmanager import get_marcas_choice
-from flask import request, flash, render_template, url_for, jsonify
-from flask_login import login_required, current_user
 from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, Item
-from werkzeug.utils import redirect
 
 
 def ovr_app(app):
@@ -141,11 +142,12 @@ def ovr_app(app):
     @login_required
     def atribuirresponsavel():
         session = app.config.get('dbsession')
-        ovr_id = request.form['ovr_id']
-        print(ovr_id)
         responsavel_ovr_form = ResponsavelOVRForm(request.form)
-        atribui_responsavel_ovr(session, dict(responsavel_ovr_form.data.items()))
-        return redirect(url_for('ovr', id=ovr_id))
+        atribui_responsavel_ovr(session,
+                                ovr_id=responsavel_ovr_form.ovr_id,
+                                responsavel=responsavel_ovr_form.responsavel
+                                )
+        return redirect(url_for('ovr', id=responsavel_ovr_form.ovr_id))
 
     @app.route('/movimentaovr', methods=['POST'])
     @login_required

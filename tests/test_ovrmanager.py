@@ -9,8 +9,8 @@ sys.path.append('.')
 
 from bhadrasana.models.ovr import metadata, Usuario, OVR, TipoEventoOVR, Enumerado
 
-from bhadrasana.models.ovrmanager import get_usuarios, cadastra_ovr, gera_eventoovr, get_ovr, gera_processoovr, \
-    cadastra_tgovr
+from bhadrasana.models.ovrmanager import get_usuarios, cadastra_ovr, gera_eventoovr, \
+    get_ovr, gera_processoovr, cadastra_tgovr, atribui_responsavel_ovr
 
 engine = create_engine('sqlite://')
 Session = sessionmaker(bind=engine)
@@ -48,15 +48,17 @@ class TestCase(unittest.TestCase):
         assert ovr.datahora == datetime(2020, 1, 1, 13, 13)
         return ovr
 
-    def test_usuarios(self):
+    def create_usuario(self, cpf, nome):
         usuarios = get_usuarios(session)
-        assert usuarios == []
+        numeroatual = len(usuarios)
         usuario = Usuario()
-        usuario.cpf = '1'
+        usuario.cpf = cpf
+        usuario.nome = nome
         session.add(usuario)
         session.commit()
         usuarios = get_usuarios(session)
-        assert usuarios[0][0] == usuario.cpf
+        assert usuarios[numeroatual][0] == usuario.cpf
+        return usuario
 
     def test_OVR_Evento(self):
         ovr = self.create_OVR_valido()
@@ -108,6 +110,30 @@ class TestCase(unittest.TestCase):
             assert getattr(tgovr, key) == param
         session.refresh(ovr)
         assert len(ovr.tgs) == 1
+
+    def test_Responsavel(self):
+        # Atribui responsável válido
+        ovr = self.create_OVR_valido()
+        session.refresh(ovr)
+        assert ovr.responsavel_cpf is None
+        assert ovr.fase == 0
+        usuario = self.create_usuario('123', 'user1')
+        usuario2 = self.create_usuario('456', 'user2')
+        ovr = atribui_responsavel_ovr(session, ovr.id, usuario.cpf, 1)
+        session.refresh(ovr)
+        assert ovr.responsavel_cpf == usuario.cpf
+        assert ovr.fase == 1
+        # Atribui outro responsável
+        ovr = atribui_responsavel_ovr(session, ovr.id, usuario2.cpf, 1)
+        session.refresh(ovr)
+        assert ovr.responsavel_cpf == usuario2.cpf
+        eventos = ovr.historico
+        assert len(eventos) == 2
+        evento = eventos[0]
+        assert evento.fase == 1
+        assert evento.motivo == usuario.cpf
+
+
 
     if __name__ == '__main__':
         unittest.main()
