@@ -1,10 +1,11 @@
 from datetime import timedelta
 
+from sqlalchemy import and_
+
 from ajna_commons.flask.log import logger
 from bhadrasana.models import handle_datahora
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
     TipoProcessoOVR, ItemTG, Recinto, Usuario, TGOVR
-from sqlalchemy import and_
 
 
 def get_usuarios(session, user_name: str = None):
@@ -83,15 +84,27 @@ def get_ovr_filtro(session, pfiltro):
     return [ovr for ovr in ovrs]
 
 
-def atribui_responsavel_ovr(session, params):
+def atribui_responsavel_ovr(session, ovr_id: int,
+                            responsavel: str,
+                            id_tipo_evento_atribuicao=16
+                            ) -> OVR:
+    """Atualiza campo responsável na OVR. Gera evento correspondente.
+
+    :param session: Conexão com banco SQLAlchemy
+    :param ovr_id: ID da OVR a atribuir responsável
+    :param responsavel: CPF do novo responsável
+    :return: OVR modificado
+    """
     try:
-        ovr = get_ovr(session, params.get('ovr_id'))
-        evento = EventoOVR()
-        evento.tipoevento_id = 16  # TODO: Ver como mapear de forma melhor
-        evento.motivo = ovr.responsavel_cpf  # Responsável anterior
-        evento.ovr_id = ovr.id
-        ovr.responsavel_cpf = params.get('responsavel')
-        evento.user_name = ovr.responsavel_cpf
+        ovr = get_ovr(session, ovr_id)
+        # TODO: Ver como mapear id_tipoevento de forma melhor
+        params = {'tipoevento_id': id_tipo_evento_atribuicao,
+                  'motivo': responsavel,  # Novo Responsável
+                  'user_name': ovr.responsavel_cpf,  # Responsável anterior
+                  'ovr_id': ovr.id
+                  }
+        evento = gera_eventoovr(session, params, commit=False)
+        ovr.responsavel_cpf = responsavel  # Novo responsavel
         session.add(evento)
         session.add(ovr)
         session.commit()
@@ -101,7 +114,7 @@ def atribui_responsavel_ovr(session, params):
     return ovr
 
 
-def gera_eventoovr(session, params) -> EventoOVR:
+def gera_eventoovr(session, params: dict, commit=True) -> EventoOVR:
     evento = EventoOVR()
     for key, value in params.items():
         setattr(evento, key, value)
@@ -115,7 +128,8 @@ def gera_eventoovr(session, params) -> EventoOVR:
         ovr.tipoevento_id = evento.tipoevento_id
         session.add(ovr)
         session.add(evento)
-        session.commit()
+        if commit:
+            session.commit()
     except Exception as err:
         session.rollback()
         raise err
