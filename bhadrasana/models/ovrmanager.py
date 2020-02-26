@@ -5,13 +5,7 @@ from sqlalchemy import and_
 from ajna_commons.flask.log import logger
 from bhadrasana.models import handle_datahora
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
-    TipoProcessoOVR, ItemTG, Recinto, Usuario, TGOVR
-
-
-def get_usuarios(session, user_name: str = None):
-    usuarios = session.query(Usuario).all()
-    usuarios_list = [(usuario.cpf, usuario.nome) for usuario in usuarios]
-    return sorted(usuarios_list, key=lambda x: x[1])
+    TipoProcessoOVR, ItemTG, Recinto, Usuario, TGOVR, Setor
 
 
 def get_recintos(session):
@@ -215,3 +209,54 @@ def delete_objeto(session, classname, id):
         logger.error(str(err), exc_info=True)
         return False
     return True
+
+
+# TODO: mover Setores e Usuários daqui e do models/ovr para módulos específicos
+def get_usuarios(session):
+    usuarios = session.query(Usuario).all()
+    usuarios_list = [(usuario.cpf, usuario.nome) for usuario in usuarios]
+    return sorted(usuarios_list, key=lambda x: x[1])
+
+
+def get_setores_filhos(session, setor: Setor) -> list:
+    return session.query(Setor).filter(Setor.pai_id == setor.id).all()
+
+
+def get_setores_filhos_recursivo(session, setor: Setor) -> list:
+    setores_total = []
+    setores_filhos = get_setores_filhos(session, setor)
+    print([setor.nome for setor in setores_filhos])
+    setores_total.extend(setores_filhos)
+    for setor in setores_filhos:
+        setores_filhos = get_setores_filhos_recursivo(session, setor)
+        setores_total.extend(setores_filhos)
+
+    return setores_total
+
+
+def get_setores(session) -> list:
+    setores = session.query(Setor).all()
+    setores_list = [(setor.id, setor.nome) for setor in setores]
+    return sorted(setores_list, key=lambda x: x[1])
+
+
+def get_setores_usuario(session, usuario: Usuario) -> list:
+    setores = [usuario.setor]
+    setores_filhos = get_setores_filhos_recursivo(session, usuario.setor)
+    setores.extend(setores_filhos)
+    setores_list = [(setor.id, setor.nome) for setor in setores]
+    return sorted(setores_list, key=lambda x: x[1])
+
+
+def get_setores_cpf(session, cpf_usuario: str) -> list:
+    usuario = session.query(Usuario).filter(Usuario.cpf == cpf_usuario).one_or_none()
+    if usuario is None:
+        return []
+    return get_setores_usuario(session, usuario)
+
+
+def get_ovrs_setor(session, setor: Setor) -> list:
+    setores = get_setores_filhos_recursivo(session, setor)
+    ids_setores = [setor.id for setor in setores]
+    ovrs = session.query(OVR).filter(OVR.setor_id.in_(ids_setores)).all()
+    return [ovr for ovr in ovrs]

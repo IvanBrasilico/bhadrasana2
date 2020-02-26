@@ -1,5 +1,5 @@
-import unittest
 import sys
+import unittest
 from datetime import datetime
 
 from sqlalchemy import create_engine
@@ -7,10 +7,10 @@ from sqlalchemy.orm import sessionmaker
 
 sys.path.append('.')
 
-from bhadrasana.models.ovr import metadata, Usuario, OVR, TipoEventoOVR, Enumerado
+from bhadrasana.models.ovr import metadata, Usuario, OVR, TipoEventoOVR, Enumerado, Recinto, Setor
 
 from bhadrasana.models.ovrmanager import get_usuarios, cadastra_ovr, gera_eventoovr, \
-    get_ovr, gera_processoovr, cadastra_tgovr, atribui_responsavel_ovr
+    gera_processoovr, cadastra_tgovr, atribui_responsavel_ovr, get_recintos, get_setores_filhos_recursivo
 
 engine = create_engine('sqlite://')
 Session = sessionmaker(bind=engine)
@@ -35,19 +35,6 @@ class TestCase(unittest.TestCase):
             session.add(tipo)
         session.commit()
 
-    def create_OVR_valido(self) -> OVR:
-        params = {}
-        # params['id'] = 0
-        params['fase'] = 0
-        params['numero'] = 1
-        params['numeroCEmercante'] = 11
-        params['adata'] = '2020-01-01'
-        params['ahora'] = '13:13'
-        ovr = cadastra_ovr(session, params)
-        assert ovr.id is not None
-        assert ovr.datahora == datetime(2020, 1, 1, 13, 13)
-        return ovr
-
     def create_usuario(self, cpf, nome):
         usuarios = get_usuarios(session)
         numeroatual = len(usuarios)
@@ -59,6 +46,34 @@ class TestCase(unittest.TestCase):
         usuarios = get_usuarios(session)
         assert usuarios[numeroatual][0] == usuario.cpf
         return usuario
+
+    def create_recinto(self, nome):
+        recintos = get_recintos(session)
+        numeroatual = len(recintos)
+        recinto = Recinto()
+        recinto.nome = nome
+        session.add(recinto)
+        session.commit()
+        recintos = get_recintos(session)
+        assert recintos[numeroatual][1] == recinto.nome
+        return recinto
+
+    def create_OVR_valido(self) -> OVR:
+        params = {}
+        # params['id'] = 0
+        recinto = self.create_recinto('Teste OVR')
+        session.refresh(recinto)
+        params['fase'] = 0
+        params['numero'] = 1
+        params['numeroCEmercante'] = 11
+        params['adata'] = '2020-01-01'
+        params['ahora'] = '13:13'
+        params['recinto_id'] = recinto.id
+        ovr = cadastra_ovr(session, params)
+        assert ovr.id is not None
+        assert ovr.datahora == datetime(2020, 1, 1, 13, 13)
+        assert ovr.recinto_id == recinto.id
+        return ovr
 
     def test_OVR_Evento(self):
         ovr = self.create_OVR_valido()
@@ -133,7 +148,41 @@ class TestCase(unittest.TestCase):
         assert evento.fase == 1
         assert evento.motivo == usuario.cpf
 
+    def test_Setores_Filhos(self):
+        setorpai = Setor()
+        setorpai.id = 1
+        setorpai.nome = 'Pai de Todos'
+        session.add(setorpai)
+        setor1 = Setor()
+        setor1.id = 2
+        setor1.pai_id = 1
+        setor1.nome = 'Filho 1'
+        session.add(setor1)
+        setor12 = Setor()
+        setor12.id = 21
+        setor12.pai_id = 2
+        setor12.nome = 'Sub Filho 1 do Filho 1'
+        session.add(setor12)
+        setor2 = Setor()
+        setor2.id = 3
+        setor2.pai_id = 1
+        setor2.nome = 'Filho 2'
+        session.add(setor2)
+        setor3 = Setor()
+        setor3.id = 4
+        setor3.pai_id = 1
+        setor3.nome = 'Filho 3'
+        session.add(setor3)
+        setor31 = Setor()
+        setor31.id = 41
+        setor31.pai_id = 4
+        setor31.nome = 'Sub Filho 1 do filho 3'
+        session.add(setor31)
+        session.commit()
+        setores = get_setores_filhos_recursivo(session, setorpai)
+        print([(setor.id, setor.nome) for setor in setores])
+        assert len(setores) == 5
 
 
-    if __name__ == '__main__':
-        unittest.main()
+if __name__ == '__main__':
+    unittest.main()
