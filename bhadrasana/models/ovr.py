@@ -122,6 +122,9 @@ class OVR(Base):
     recinto_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                         ForeignKey('ovr_recintos.id'))
     recinto = relationship('Recinto')
+    setor_id = Column(CHAR(15),
+                      ForeignKey('ovr_setores.id'))
+    setor = relationship('Setor')
     responsavel_cpf = Column(VARCHAR(15), ForeignKey('ovr_usuarios.cpf'))
     responsavel = relationship('Usuario')
     user_name = Column(VARCHAR(14), index=True)
@@ -295,7 +298,7 @@ class Usuario(Base):
     setor = relationship('Setor')
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no-cover
     confirma = input('Revisar o código... '
                      'Esta ação pode apagar TODAS as tabelas. Confirma??')
     if confirma == 'S':
@@ -306,8 +309,8 @@ if __name__ == '__main__':
         sys.path.insert(0, '../virasana')
         from bhadrasana.main import engine
 
-        # metadata.drop_all(engine)
-        # metadata.create_all(engine)
+        metadata.drop_all(engine)
+        metadata.create_all(engine)
 
         metadata.drop_all(engine,
                           [
