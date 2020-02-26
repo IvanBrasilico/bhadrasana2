@@ -69,6 +69,7 @@ class TestCase(unittest.TestCase):
         params['adata'] = '2020-01-01'
         params['ahora'] = '13:13'
         params['recinto_id'] = recinto.id
+        params['user_name'] = 'user1'
         ovr = cadastra_ovr(session, params)
         assert ovr.id is not None
         assert ovr.datahora == datetime(2020, 1, 1, 13, 13)

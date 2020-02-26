@@ -1,6 +1,5 @@
 from datetime import timedelta
 
-from flask_login import current_user
 from sqlalchemy import and_
 
 from ajna_commons.flask.log import logger
@@ -25,19 +24,19 @@ def get_tipos_processo(session):
     return [(tipo.id, tipo.descricao) for tipo in tiposprocesso]
 
 
-def cadastra_ovr(session, params: dict) -> OVR:
+def cadastra_ovr(session, params: dict, user_name: str) -> OVR:
     ovr = get_ovr(session, params.get('id'))
     for key, value in params.items():
         if value and value != 'None':
             setattr(ovr, key, value)
     ovr.datahora = handle_datahora(params)
-    # TODO: Ver este acoplamento
-    # A priori, está sendo acoplada a criação e a consulta apenas ao Setor do Usuário
-    # No caso da consulta, exibe também os filhos
-    usuario = session.query(Usuario).filter(Usuario.cpf == current_user.user_name).one_on_none()
-    if usuario:
-        ovr.setor_id = usuario.setor_id
     try:
+        usuario = session.query(Usuario).filter(
+            Usuario.cpf == user_name).one_or_none()
+        if not usuario:
+            raise Exception('Usuário inválido ou não informado.'
+                            'Somente Usuários habilitados podem salvar.')
+            ovr.setor_id = usuario.setor_id
         session.add(ovr)
         session.commit()
     except Exception as err:
@@ -53,37 +52,37 @@ def get_ovr(session, id: int = None) -> OVR:
         ovr = OVR()
         ovr.status = 1
         return ovr
-    return session.query(OVR).filter(OVR.id == id).one_or_none()
+    ovr = session.query(OVR).filter(OVR.id == id).one_or_none()
+    if ovr is None:
+        return get_ovr(session)
+    return ovr
 
 
-def get_ovr_filtro(session, pfiltro):
-    filtro = and_()
-    if pfiltro.get('datainicio'):
-        filtro = and_(OVR.datahora >= pfiltro.get('datainicio'), filtro)
-    datafim = pfiltro.get('datafim')
-    if datafim:
-        datafim = datafim + timedelta(days=1)
-        filtro = and_(OVR.datahora <= datafim, filtro)
-    if pfiltro.get('numeroCEmercante'):
-        filtro = and_(OVR.numeroCEmercante.ilike(pfiltro.get('numeroCEmercante')),
-                      filtro)
-    if pfiltro.get('numero'):
-        filtro = and_(OVR.numero.ilike(pfiltro.get('numero')), filtro)
-    if pfiltro.get('tipooperacao') and pfiltro.get('tipooperacao') != 'None':
-        filtro = and_(OVR.tipooperacao == int(pfiltro.get('tipooperacao')), filtro)
-    if pfiltro.get('fase') and pfiltro.get('fase') != 'None':
-        filtro = and_(OVR.fase == int(pfiltro.get('fase')), filtro)
-    if pfiltro.get('tipoevento_id') and pfiltro.get('tipoevento_id') != 'None':
-        filtro = and_(OVR.tipoevento_id == int(pfiltro.get('tipoevento_id')), filtro)
-    if pfiltro.get('responsavel') and pfiltro.get('responsavel') != 'None':
-        filtro = and_(OVR.responsavel_cpf == pfiltro.get('responsavel'), filtro)
-    if pfiltro.get('recinto_id') and pfiltro.get('recinto_id') != 'None':
-        filtro = and_(OVR.recinto_id == int(pfiltro.get('recinto_id')), filtro)
-
-    # TODO: Ver este acoplamento
-    # A priori, é melhor garantir que Usuário só vë por padrão OVRs do Setor
-    user_name = current_user.user_name
-    filtro=and_(filtro, get_filtro_setor_usuario(session, user_name))
+def get_ovr_filtro(session, user_name: str, pfiltro: dict = None):
+    ids_setores = [setor.id for setor in get_setores_cpf(session, user_name)]
+    filtro = and_(OVR.setor_id.in_(ids_setores))
+    if pfiltro and isinstance(pfiltro, dict):
+        if pfiltro.get('datainicio'):
+            filtro = and_(OVR.datahora >= pfiltro.get('datainicio'), filtro)
+        datafim = pfiltro.get('datafim')
+        if datafim:
+            datafim = datafim + timedelta(days=1)
+            filtro = and_(OVR.datahora <= datafim, filtro)
+        if pfiltro.get('numeroCEmercante'):
+            filtro = and_(OVR.numeroCEmercante.ilike(pfiltro.get('numeroCEmercante')),
+                          filtro)
+        if pfiltro.get('numero'):
+            filtro = and_(OVR.numero.ilike(pfiltro.get('numero')), filtro)
+        if pfiltro.get('tipooperacao') and pfiltro.get('tipooperacao') != 'None':
+            filtro = and_(OVR.tipooperacao == int(pfiltro.get('tipooperacao')), filtro)
+        if pfiltro.get('fase') and pfiltro.get('fase') != 'None':
+            filtro = and_(OVR.fase == int(pfiltro.get('fase')), filtro)
+        if pfiltro.get('tipoevento_id') and pfiltro.get('tipoevento_id') != 'None':
+            filtro = and_(OVR.tipoevento_id == int(pfiltro.get('tipoevento_id')), filtro)
+        if pfiltro.get('responsavel') and pfiltro.get('responsavel') != 'None':
+            filtro = and_(OVR.responsavel_cpf == pfiltro.get('responsavel'), filtro)
+        if pfiltro.get('recinto_id') and pfiltro.get('recinto_id') != 'None':
+            filtro = and_(OVR.recinto_id == int(pfiltro.get('recinto_id')), filtro)
 
     ovrs = session.query(OVR).filter(filtro).all()
     logger.info(str(pfiltro))
@@ -257,21 +256,17 @@ def get_setores_usuario(session, usuario: Usuario) -> list:
     setores = [usuario.setor]
     setores_filhos = get_setores_filhos_recursivo(session, usuario.setor)
     setores.extend(setores_filhos)
-    setores_list = [(setor.id, setor.nome) for setor in setores]
-    return sorted(setores_list, key=lambda x: x[1])
+    return setores
+    # setores_list = [(setor.id, setor.nome) for setor in setores]
+    # return sorted(setores_list, key=lambda x: x[1])
 
 
 def get_setores_cpf(session, cpf_usuario: str) -> list:
     usuario = session.query(Usuario).filter(Usuario.cpf == cpf_usuario).one_or_none()
+    print(usuario, type(usuario))
     if usuario is None:
         return []
     return get_setores_usuario(session, usuario)
-
-
-def get_filtro_setor_usuario(session, user_name):
-    setores = get_setores_filhos_recursivo(session, get_setores_cpf(session, user_name))
-    ids_setores = [setor.id for setor in setores]
-    return and_(OVR.setor_id.in_(ids_setores))
 
 
 def get_ovrs_setor(session, setor: Setor) -> list:
