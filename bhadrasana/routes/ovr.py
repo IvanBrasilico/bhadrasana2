@@ -25,7 +25,7 @@ def ovr_app(app):
         processos = []
         tiposeventos = get_tipos_evento(session)
         recintos = get_recintos(session)
-        responsaveis = get_usuarios(session, current_user.name)
+        responsaveis = get_usuarios(session)
         ovr_form = OVRForm(tiposeventos=tiposeventos, recintos=recintos)
         tiposprocesso = get_tipos_processo(session)
         historico_form = HistoricoOVRForm(tiposeventos=tiposeventos)
@@ -43,7 +43,8 @@ def ovr_app(app):
                 ovr_form.validate()
                 print(ovr_form.data.items())
                 ovr = cadastra_ovr(session,
-                                   dict(ovr_form.data.items()))
+                                   dict(ovr_form.data.items()),
+                                   user_name=current_user.name)
                 return redirect(url_for('ovr', id=ovr.id))
             else:
                 if ovr_id is not None:
@@ -110,7 +111,8 @@ def ovr_app(app):
             if request.method == 'POST':
                 filtro_form = FiltroOVRForm(request.form, tiposeventos=tiposeventos)
                 filtro_form.validate()
-                ovrs = get_ovr_filtro(session, dict(filtro_form.data.items()))
+                ovrs = get_ovr_filtro(session, current_user.name,
+                                      dict(filtro_form.data.items()))
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
@@ -127,7 +129,7 @@ def ovr_app(app):
         ovrs = []
         listasovrs = defaultdict(list)
         try:
-            ovrs = get_ovr_filtro(session, {})
+            ovrs = get_ovr_filtro(session, current_user.name)
             for ovr in ovrs:
                 listasovrs[str(ovr.fase) + '-' + ovr.get_fase()].append(ovr)
         except Exception as err:
@@ -144,10 +146,10 @@ def ovr_app(app):
         session = app.config.get('dbsession')
         responsavel_ovr_form = ResponsavelOVRForm(request.form)
         atribui_responsavel_ovr(session,
-                                ovr_id=responsavel_ovr_form.ovr_id,
-                                responsavel=responsavel_ovr_form.responsavel
+                                ovr_id=responsavel_ovr_form.ovr_id.data,
+                                responsavel=responsavel_ovr_form.responsavel.data
                                 )
-        return redirect(url_for('ovr', id=responsavel_ovr_form.ovr_id))
+        return redirect(url_for('ovr', id=responsavel_ovr_form.ovr_id.data))
 
     @app.route('/movimentaovr', methods=['POST'])
     @login_required
