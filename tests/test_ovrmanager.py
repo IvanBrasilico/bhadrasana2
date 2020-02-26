@@ -36,6 +36,9 @@ class TestCase(unittest.TestCase):
         session.commit()
 
     def create_usuario(self, cpf, nome):
+        usuario = session.query(Usuario).filter(Usuario.cpf == cpf).one_or_none()
+        if usuario:
+            return usuario
         usuarios = get_usuarios(session)
         numeroatual = len(usuarios)
         usuario = Usuario()
@@ -62,6 +65,7 @@ class TestCase(unittest.TestCase):
         params = {}
         # params['id'] = 0
         recinto = self.create_recinto('Teste OVR')
+        usuario = self.create_usuario('123', 'user1')
         session.refresh(recinto)
         params['fase'] = 0
         params['numero'] = 1
@@ -69,8 +73,7 @@ class TestCase(unittest.TestCase):
         params['adata'] = '2020-01-01'
         params['ahora'] = '13:13'
         params['recinto_id'] = recinto.id
-        params['user_name'] = 'user1'
-        ovr = cadastra_ovr(session, params)
+        ovr = cadastra_ovr(session, params, '123')
         assert ovr.id is not None
         assert ovr.datahora == datetime(2020, 1, 1, 13, 13)
         assert ovr.recinto_id == recinto.id
