@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from flask_login import current_user
 from sqlalchemy import and_
 
 from ajna_commons.flask.log import logger
@@ -30,6 +31,12 @@ def cadastra_ovr(session, params: dict) -> OVR:
         if value and value != 'None':
             setattr(ovr, key, value)
     ovr.datahora = handle_datahora(params)
+    # TODO: Ver este acoplamento
+    # A priori, está sendo acoplada a criação e a consulta apenas ao Setor do Usuário
+    # No caso da consulta, exibe também os filhos
+    usuario = session.query(Usuario).filter(Usuario.cpf == current_user.user_name).one_on_none()
+    if usuario:
+        ovr.setor_id = usuario.setor_id
     try:
         session.add(ovr)
         session.commit()
@@ -72,6 +79,12 @@ def get_ovr_filtro(session, pfiltro):
         filtro = and_(OVR.responsavel_cpf == pfiltro.get('responsavel'), filtro)
     if pfiltro.get('recinto_id') and pfiltro.get('recinto_id') != 'None':
         filtro = and_(OVR.recinto_id == int(pfiltro.get('recinto_id')), filtro)
+
+    # TODO: Ver este acoplamento
+    # A priori, é melhor garantir que Usuário só vë por padrão OVRs do Setor
+    user_name = current_user.user_name
+    filtro=and_(filtro, get_filtro_setor_usuario(session, user_name))
+
     ovrs = session.query(OVR).filter(filtro).all()
     logger.info(str(pfiltro))
     logger.info(str(filtro))
@@ -253,6 +266,12 @@ def get_setores_cpf(session, cpf_usuario: str) -> list:
     if usuario is None:
         return []
     return get_setores_usuario(session, usuario)
+
+
+def get_filtro_setor_usuario(session, user_name):
+    setores = get_setores_filhos_recursivo(session, get_setores_cpf(session, user_name))
+    ids_setores = [setor.id for setor in setores]
+    return and_(OVR.setor_id.in_(ids_setores))
 
 
 def get_ovrs_setor(session, setor: Setor) -> list:
