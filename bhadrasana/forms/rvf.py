@@ -1,9 +1,10 @@
-from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, TextAreaField
 from wtforms.fields.html5 import DateField, TimeField, DecimalField
 
+from bhadrasana.forms import RastreavelForm
 
-class RVFForm(FlaskForm):
+
+class RVFForm(RastreavelForm):
     id = IntegerField('ID')
     # ovr_id = IntegerField('ID da OVR relacionada, se houver' )
     numeroCEmercante = StringField(u'CE Mercante',

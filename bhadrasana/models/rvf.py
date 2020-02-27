@@ -1,10 +1,10 @@
 from sqlalchemy import BigInteger, Column, DateTime, func, VARCHAR, Table, Numeric
 from sqlalchemy import ForeignKey
 from sqlalchemy.dialects.mysql import TIMESTAMP
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
-Base = declarative_base()
+from bhadrasana.models import Base, BaseRastreavel
+
 metadata = Base.metadata
 
 marcasencontradas_table = Table('ovr_marcasencontradas', metadata,
@@ -22,7 +22,7 @@ infracoesencontradas_table = Table('ovr_infracoesencontradas', metadata,
                                    )
 
 
-class RVF(Base):
+class RVF(BaseRastreavel):
     __tablename__ = 'ovr_verificacoesfisicas'
     id = Column(BigInteger(), primary_key=True)
     ovr_id = Column(BigInteger(), index=True)
@@ -37,9 +37,6 @@ class RVF(Base):
     infracoesencontradas = relationship('Infracao',
                                         secondary=infracoesencontradas_table)
     datahora = Column(TIMESTAMP, index=True)
-    username = Column(VARCHAR(14), index=True)
-    create_date = Column(TIMESTAMP, index=True,
-                         server_default=func.current_timestamp())
     last_modified = Column(DateTime, index=True,
                            onupdate=func.current_timestamp())
 
@@ -66,7 +63,7 @@ if __name__ == '__main__':
         sys.path.insert(0, '.')
         sys.path.insert(0, '../ajna_docs/commons')
         sys.path.insert(0, '../virasana')
-        from bhadrasana.main import engine, session
+        from bhadrasana.main import engine
 
         metadata.drop_all(engine,
                           [

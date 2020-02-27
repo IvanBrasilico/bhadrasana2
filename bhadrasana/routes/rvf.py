@@ -54,7 +54,9 @@ def rvf_app(app):
                 rvf_form = RVFForm(request.form)
                 rvf_form.adata.data = request.form['adata']
                 rvf_form.ahora.data = request.form['ahora']
+                print(dict(rvf_form.data.items()))
                 rvf_form.validate()
+                print(dict(rvf_form.data.items()))
                 rvf = cadastra_rvf(session, dict(rvf_form.data.items()))
                 return redirect(url_for('rvf', id=rvf.id))
             # ELSE

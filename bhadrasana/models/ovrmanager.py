@@ -192,35 +192,6 @@ def get_itemtg(session, id: int = None):
     return session.query(ItemTG).filter(ItemTG.id == id).one_or_none()
 
 
-def gera_objeto(instance: object, session, params):
-    for key, value in params.items():
-        if value is not None and value != 'None':
-            setattr(instance, key, value)
-    try:
-        session.add(instance)
-        session.commit()
-    except Exception as err:
-        session.rollback()
-        logger.error('Erro gera_objeto %s: %s' %
-                     (instance.__class__.__name__, str(err)))
-        logger.error(instance.__dict__)
-        raise err
-    return instance
-
-
-def delete_objeto(session, classname, id):
-    try:
-        klass = globals()[classname]
-        instance = session.query(klass).filter(klass.id == id).one_or_none()
-        if instance is None:
-            return False
-        session.delete(instance)
-        session.commit()
-    except Exception as err:
-        session.rollback()
-        logger.error(str(err), exc_info=True)
-        return False
-    return True
 
 
 # TODO: mover Setores e Usuários daqui e do models/ovr para módulos específicos
