@@ -9,5 +9,3 @@ class RastreavelForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.user_name.data = current_user.name
-        print('*******',  self.user_name.data)
-        print('***', dict(self.data.items()))

@@ -58,6 +58,9 @@ def get_ovr(session, id: int = None) -> OVR:
     return ovr
 
 
+def get_ovr_responsavel(session, user_name: str):
+    return session.query(OVR).filter(OVR.responsavel_cpf == user_name).all()
+
 def get_ovr_filtro(session, user_name: str, pfiltro: dict = None):
     ids_setores = [setor.id for setor in get_setores_cpf(session, user_name)]
     filtro = and_(OVR.setor_id.in_(ids_setores))
