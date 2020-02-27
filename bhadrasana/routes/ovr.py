@@ -147,8 +147,6 @@ def ovr_app(app):
                                listasovrs=listasovrs,
                                active_tab=active_tab)
 
-
-
     @app.route('/responsavelovr', methods=['POST'])
     @login_required
     def atribuirresponsavel():
