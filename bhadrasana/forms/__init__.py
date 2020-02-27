@@ -1,0 +1,13 @@
+from flask_login import current_user
+from flask_wtf import FlaskForm
+from wtforms import StringField
+
+
+class RastreavelForm(FlaskForm):
+    user_name = StringField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user_name.data = current_user.name
+        print('*******',  self.user_name.data)
+        print('***', dict(self.data.items()))

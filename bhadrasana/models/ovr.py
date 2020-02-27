@@ -1,4 +1,3 @@
-from flask_login import current_user
 from sqlalchemy import BigInteger, Column, DateTime, func, VARCHAR, Integer, \
     ForeignKey, Numeric, CHAR, Table
 from sqlalchemy.dialects.mysql import TIMESTAMP
@@ -90,17 +89,6 @@ class Enumerado:
     @classmethod
     def unidadeMedida(cls, id=None):
         return cls.get_tipo(unidadeMedida, id)
-
-
-class BaseRastreavel(Base):
-    __abstract__ = True
-    user_name = Column(VARCHAR(14), index=True)
-    create_date = Column(TIMESTAMP, index=True,
-                         server_default=func.current_timestamp())
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.user_name = current_user.name
 
 
 class OVR(Base):

@@ -1,7 +1,7 @@
 from sqlalchemy import and_
 
 from ajna_commons.flask.log import logger
-from bhadrasana.models import handle_datahora
+from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario
 from bhadrasana.models.ovrmanager import get_ovr
 from bhadrasana.models.rvf import Marca, RVF, Infracao
 
@@ -54,9 +54,10 @@ def cadastra_rvf(session, params=None,
         rvf = RVF()
         rvf.ovr_id = ovr.id
         rvf.numeroCEmercante = ovr.numeroCEmercante
-        print(ovr.id, ovr.numeroCEmercante)
     elif params:
         rvf = get_rvf(session, params.get('id'))
+        if rvf.user_name and rvf.user_name != params['user_name']:
+            raise ESomenteMesmoUsuario()
         for key, value in params.items():
             setattr(rvf, key, value)
         rvf.datahora = handle_datahora(params)
