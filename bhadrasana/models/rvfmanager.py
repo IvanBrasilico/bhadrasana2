@@ -1,7 +1,18 @@
-from bhadrasana.models.ovrmanager import get_ovr
-from bhadrasana.models.rvf import Marca, RVF
-from bhadrasana.models import handle_datahora
 from sqlalchemy import and_
+
+from bhadrasana.models import handle_datahora
+from bhadrasana.models.ovrmanager import get_ovr
+from bhadrasana.models.rvf import Marca, RVF, Infracao
+
+
+def get_infracoes(session):
+    infracoes = session.query(Infracao).all()
+    return [infracao for infracao in infracoes]
+
+
+def get_infracoes_choice(session):
+    infracoes = session.query(Infracao).all()
+    return [(infracao.id, infracao.nome) for infracao in infracoes]
 
 
 def get_marcas(session):
@@ -59,13 +70,41 @@ def cadastra_rvf(session, params=None,
     return rvf
 
 
+def gerencia_infracao_encontrada(session, rvf_id, infracao_id, inclui=True):
+    rvf = session.query(RVF).filter(RVF.id == rvf_id).one_or_none()
+    if rvf:
+        infracao = session.query(Infracao).filter(
+            Infracao.id == infracao_id).one_or_none()
+        if infracao:
+            if inclui:
+                rvf.infracoesencontradas.append(infracao)
+            else:
+                rvf.infracoesencontradas.remove(infracao)
+            session.commit()
+            return rvf.infracoesencontradas
+    return None
+
+
+def inclui_infracao_encontrada(session, rvf_id, infracao_nome):
+    infracao = session.query(Infracao).filter(
+        Infracao.nome == infracao_nome).one_or_none()
+    if infracao:
+        return gerencia_infracao_encontrada(session, rvf_id,
+                                            infracao.id,
+                                            inclui=True)
+    return None
+
+
+def exclui_infracao_encontrada(session, rvf_id, infracao_id):
+    return gerencia_infracao_encontrada(session, rvf_id, infracao_id, inclui=False)
+
+
 def gerencia_marca_encontrada(session, rvf_id, marca_id, inclui=True):
     rvf = session.query(RVF).filter(RVF.id == rvf_id).one_or_none()
     if rvf:
         marca = session.query(Marca).filter(Marca.id == marca_id).one_or_none()
         if marca:
             if inclui:
-                print('Incluindo MARCA...', marca)
                 rvf.marcasencontradas.append(marca)
             else:
                 rvf.marcasencontradas.remove(marca)
