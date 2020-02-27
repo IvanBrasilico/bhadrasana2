@@ -78,7 +78,7 @@
                 {% for infracao in infracoes_encontradas %}
                 <button type="button" class="btn btn-primary">
                     {{ infracao.nome }} <span class="badge"
-                                           onclick="exclui_infracao_encontrada({{oform.id.data}}, {{ infracao.id }})">X</span>
+                                              onclick="exclui_infracao_encontrada({{oform.id.data}}, {{ infracao.id }})">X</span>
                 </button>
                 {% endfor %}
             </div>
@@ -169,13 +169,19 @@
         {% endfor %}
         ];
         $( "#infracoes" ).autocomplete({
-          source: infracoes
+
+          source: infracoes,
+
+          select: function(event, ui){
+            var newTag = $(this).val();
+            $(this).val("");
+            event.preventDefault();
+          }
         });
     } );
     $('input#infracoes').bind('keydown', function(e) {
       if (e.keyCode == 13) {
         inclui_infracao_encontrada({{oform.id.data}}, $('input#infracoes').val());
-        $('input#infracoes').val('');
       }
     });
 
@@ -208,7 +214,13 @@
         {% endfor %}
         ];
         $( "#marcas" ).autocomplete({
-          source: marcas
+          source: marcas,
+
+          select: function(event, ui){
+            var newTag = $(this).val();
+            $(this).val("");
+            event.preventDefault();
+          }
         });
     } );
     $('input#marcas').bind('keydown', function(e) {
@@ -289,6 +301,7 @@
         }
 
     }
+
 
 
 
