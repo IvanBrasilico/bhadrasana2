@@ -57,51 +57,59 @@ class Infracao(Base):
 
 
 if __name__ == '__main__':
-    import sys
+    # Código para criar/recriar tabelas atualizadas já com alguns dados mínimos
+    confirma = input('Revisar o código... '
+                     'Esta ação pode apagar TODAS as tabelas. Confirma??')
+    if confirma == 'S':
+        import sys
 
-    sys.path.insert(0, '.')
-    sys.path.insert(0, '../ajna_docs/commons')
-    sys.path.insert(0, '../virasana')
-    from bhadrasana.main import engine, session
+        sys.path.insert(0, '.')
+        sys.path.insert(0, '../ajna_docs/commons')
+        sys.path.insert(0, '../virasana')
+        from bhadrasana.main import engine, session
 
-    metadata.drop_all(engine,
-                      [
-                          metadata.tables['ovr_marcasencontradas'],
-                          metadata.tables['ovr_marcas'],
-                          metadata.tables['ovr_infracoesencontradas'],
-                          metadata.tables['ovr_infracoes'],
-                          metadata.tables['ovr_verificacoesfisicas']
-                      ])
-    metadata.create_all(engine,
-                        [
-                            metadata.tables['ovr_marcasencontradas'],
-                            metadata.tables['ovr_marcas'],
-                            metadata.tables['ovr_infracoesencontradas'],
-                            metadata.tables['ovr_infracoes'],
-                            metadata.tables['ovr_verificacoesfisicas']
-                        ])
+        metadata.drop_all(engine,
+                          [
+                              # metadata.tables['ovr_marcasencontradas'],
+                              # metadata.tables['ovr_marcas'],
+                              # metadata.tables['ovr_infracoesencontradas'],
+                              # metadata.tables['ovr_infracoes'],
+                              # metadata.tables['ovr_verificacoesfisicas']
+                          ])
+        metadata.create_all(engine,
+                            [
+                                # metadata.tables['ovr_marcasencontradas'],
+                                # metadata.tables['ovr_marcas'],
+                                # metadata.tables['ovr_infracoesencontradas'],
+                                # metadata.tables['ovr_infracoes'],
+                                # metadata.tables['ovr_verificacoesfisicas']
+                            ])
 
-    for nome in ('Falsa declaração de conteúdo',
-                 'Interposição',
-                 'Contrafação',
-                 'Quantidade divergente',
-                 'Fraude de valor',
-                 'Mercadoria não declarada',
-                 'Contrabando - produto proibido',
-                 'Drogas',
-                 'Armas',
-                 'Cigarros'):
-        infracao = Infracao()
-        infracao.nome = nome
-        session.add(infracao)
-    session.commit()
-    for nome in ('Adidas',
-                 'Burberry',
-                 'Tag Hauer',
-                 'Nike',
-                 'Apple',
-                 'Disney'):
-        marca = Marca()
-        marca.nome = nome
-        session.add(marca)
-    session.commit()
+        """
+        for nome in ('Falsa declaração de conteúdo',
+                     'Interposição',
+                     'Contrafação',
+                     'Quantidade divergente',
+                     'Fraude de valor',
+                     'Mercadoria não declarada',
+                     'Contrabando - produto proibido',
+                     'Drogas',
+                     'Armas',
+                     'Cigarros'):
+            infracao = Infracao()
+            infracao.nome = nome
+            session.add(infracao)
+        session.commit()
+        """
+        """
+        for nome in ('Adidas',
+                     'Burberry',
+                     'Tag Hauer',
+                     'Nike',
+                     'Apple',
+                     'Disney'):
+            marca = Marca()
+            marca.nome = nome
+            session.add(marca)
+        session.commit()
+        """

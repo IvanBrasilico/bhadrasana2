@@ -1,5 +1,6 @@
 from sqlalchemy import and_
 
+from ajna_commons.flask.log import logger
 from bhadrasana.models import handle_datahora
 from bhadrasana.models.ovrmanager import get_ovr
 from bhadrasana.models.rvf import Marca, RVF, Infracao
@@ -45,6 +46,7 @@ def get_rvf_ovr(session, ovr_id):
 
 def cadastra_rvf(session, params=None,
                  ovr_id=None):
+    rvf = None
     if ovr_id:
         ovr = get_ovr(session, ovr_id)
         if not ovr:
@@ -62,11 +64,10 @@ def cadastra_rvf(session, params=None,
         try:
             session.add(rvf)
             session.commit()
-            print(rvf)
         except Exception as err:
             session.rollback()
+            logger.error(err, exc_info=True)
             raise err
-            print(rvf)
     return rvf
 
 

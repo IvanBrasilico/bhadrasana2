@@ -42,7 +42,8 @@ def rvf_app(app):
     @login_required
     def rvf():
         session = app.config.get('dbsession')
-        db = app.config['mongo_risco']
+        infracoes = []
+        infracoes_encontradas = []
         marcas = []
         marcas_encontradas = []
         anexos = []
@@ -51,32 +52,32 @@ def rvf_app(app):
         try:
             if request.method == 'POST':
                 rvf_form = RVFForm(request.form)
-                print(request.form.values())
                 rvf_form.adata.data = request.form['adata']
                 rvf_form.ahora.data = request.form['ahora']
                 rvf_form.validate()
                 rvf = cadastra_rvf(session, dict(rvf_form.data.items()))
+                return redirect(url_for('rvf', id=rvf.id))
+            # ELSE
+            db = app.config['mongo_risco']
+            marcas = get_marcas(session)
+            infracoes = get_infracoes(session)
+            rvf_id = request.args.get('id')
+            if rvf_id is not None:
+                rvf = get_rvf(session, rvf_id)
             else:
-                rvf_id = request.args.get('id')
-                if rvf_id is not None:
-                    rvf = get_rvf(session, rvf_id)
-                else:
-                    ovr_id = request.args.get('ovr')
+                ovr_id = request.args.get('ovr')
+                if ovr_id is not None:
                     rvf = get_rvf_ovr(session, ovr_id=ovr_id)
                     if rvf is None:
                         rvf = cadastra_rvf(session, ovr_id=ovr_id)
-                if rvf is not None:
-                    rvf_form = RVFForm(**rvf.__dict__)
-                    if rvf.datahora:
-                        rvf_form.adata.data = rvf.datahora.date()
-                        rvf_form.ahora.data = rvf.datahora.time()
-                    marcas_encontradas = rvf.marcasencontradas
-            marcas = get_marcas(session)
-            infracoes = get_infracoes(session)
-            if rvf:
+            if rvf is not None:
+                rvf_form = RVFForm(**rvf.__dict__)
+                if rvf.datahora:
+                    rvf_form.adata.data = rvf.datahora.date()
+                    rvf_form.ahora.data = rvf.datahora.time()
                 rvf_form.id.data = rvf.id
-                marcas_encontradas = rvf.marcasencontradas
                 infracoes_encontradas = rvf.infracoesencontradas
+                marcas_encontradas = rvf.marcasencontradas
                 anexos = get_ids_anexos(db, rvf)
         except Exception as err:
             logger.error(err, exc_info=True)
