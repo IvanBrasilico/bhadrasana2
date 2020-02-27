@@ -3,7 +3,7 @@ from datetime import timedelta
 from sqlalchemy import and_
 
 from ajna_commons.flask.log import logger
-from bhadrasana.models import handle_datahora
+from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
     TipoProcessoOVR, ItemTG, Recinto, Usuario, TGOVR, Setor
 
@@ -26,6 +26,8 @@ def get_tipos_processo(session):
 
 def cadastra_ovr(session, params: dict, user_name: str) -> OVR:
     ovr = get_ovr(session, params.get('id'))
+    if ovr.user_name and ovr.user_name != params['user_name']:
+        raise ESomenteMesmoUsuario()
     for key, value in params.items():
         if value and value != 'None':
             setattr(ovr, key, value)

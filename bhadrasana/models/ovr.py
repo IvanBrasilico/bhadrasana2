@@ -4,6 +4,8 @@ from sqlalchemy.dialects.mysql import TIMESTAMP
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
+from bhadrasana.models import BaseRastreavel
+
 Base = declarative_base()
 metadata = Base.metadata
 
@@ -91,7 +93,7 @@ class Enumerado:
         return cls.get_tipo(unidadeMedida, id)
 
 
-class OVR(Base):
+class OVR(BaseRastreavel):
     __tablename__ = 'ovr_ovrs'
     id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                 primary_key=True)
@@ -115,9 +117,6 @@ class OVR(Base):
     setor = relationship('Setor')
     responsavel_cpf = Column(VARCHAR(15), ForeignKey('ovr_usuarios.cpf'))
     responsavel = relationship('Usuario')
-    user_name = Column(VARCHAR(14), index=True)
-    create_date = Column(TIMESTAMP, index=True,
-                         server_default=func.current_timestamp())
     last_modified = Column(DateTime, index=True,
                            onupdate=func.current_timestamp())
     historico = relationship('EventoOVR', back_populates='ovr')
