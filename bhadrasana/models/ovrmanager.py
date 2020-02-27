@@ -3,7 +3,7 @@ from datetime import timedelta
 from sqlalchemy import and_
 
 from ajna_commons.flask.log import logger
-from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario
+from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
     TipoProcessoOVR, ItemTG, Recinto, Usuario, TGOVR, Setor
 
@@ -62,6 +62,7 @@ def get_ovr(session, id: int = None) -> OVR:
 
 def get_ovr_responsavel(session, user_name: str):
     return session.query(OVR).filter(OVR.responsavel_cpf == user_name).all()
+
 
 def get_ovr_filtro(session, user_name: str, pfiltro: dict = None):
     ids_setores = [setor.id for setor in get_setores_cpf(session, user_name)]
@@ -195,8 +196,6 @@ def get_itemtg(session, id: int = None):
         print('Criando ItemTG zerado...')
         return itemtg
     return session.query(ItemTG).filter(ItemTG.id == id).one_or_none()
-
-
 
 
 # TODO: mover Setores e Usuários daqui e do models/ovr para módulos específicos

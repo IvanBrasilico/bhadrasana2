@@ -1,12 +1,10 @@
 from sqlalchemy import BigInteger, Column, DateTime, func, VARCHAR, Integer, \
     ForeignKey, Numeric, CHAR, Table
 from sqlalchemy.dialects.mysql import TIMESTAMP
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
-from bhadrasana.models import BaseRastreavel
+from bhadrasana.models import Base, BaseRastreavel
 
-Base = declarative_base()
 metadata = Base.metadata
 
 tipoStatusOVR = [

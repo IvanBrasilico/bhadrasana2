@@ -8,13 +8,16 @@ from ajna_commons.flask.log import logger
 
 Base = declarative_base()
 
+
 class ENaoAutorizado(Exception):
     def __init__(self):
         Exception.__init__(self, 'Usuário não autorizado.')
 
+
 class ESomenteMesmoUsuario(Exception):
     def __init__(self):
         Exception.__init__(self, 'Somente o Usuário que cadastra pode editar.')
+
 
 class BaseRastreavel(Base):
     __abstract__ = True
