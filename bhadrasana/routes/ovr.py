@@ -14,7 +14,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_ovr_filtro, gera_eventoovr, get_tipos_evento, \
     gera_processoovr, get_tipos_processo, lista_itemtg, get_itemtg, get_recintos, \
     cadastra_itemtg, get_usuarios, atribui_responsavel_ovr, lista_tgovr, get_tgovr, \
-    cadastra_tgovr
+    cadastra_tgovr, get_ovr_responsavel
 from bhadrasana.models.rvfmanager import get_marcas_choice
 from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, Item
 
@@ -124,13 +124,18 @@ def ovr_app(app):
                                ovrs=ovrs)
 
     @app.route('/minhas_ovrs', methods=['GET'])
+    @app.route('/ovrs_meus_setores', methods=['GET'])
     @login_required
     def minhas_ovrs():
         session = app.config.get('dbsession')
-        ovrs = []
         listasovrs = defaultdict(list)
         try:
-            ovrs = get_ovr_filtro(session, current_user.name)
+            if 'minhas_ovrs' in request.url:
+                active_tab = 'minhas_ovrs'
+                ovrs = get_ovr_responsavel(session, current_user.name)
+            else:
+                active_tab = 'ovrs_meus_setores'
+                ovrs = get_ovr_filtro(session, current_user.name)
             for ovr in ovrs:
                 listasovrs[str(ovr.fase) + '-' + ovr.get_fase()].append(ovr)
         except Exception as err:
@@ -139,7 +144,10 @@ def ovr_app(app):
             flash(type(err))
             flash(err)
         return render_template('minhas_ovrs.html',
-                               listasovrs=listasovrs)
+                               listasovrs=listasovrs,
+                               active_tab=active_tab)
+
+
 
     @app.route('/responsavelovr', methods=['POST'])
     @login_required
