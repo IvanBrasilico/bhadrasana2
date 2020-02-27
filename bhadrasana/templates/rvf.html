@@ -7,9 +7,19 @@
                 <input type="hidden" name="id" value="{{ oform.id.data }}"/>
                 <div class="row">
                     <div class="form-group">
-                        <div class="col-sm-12">
+                        <div class="col-sm-3">
                             CE Mercante
                             {{ oform.numeroCEmercante(class='form-control')}}
+                        </div>
+                        <div class="col-sm-3">
+                            Peso verificado em Kg
+                            {{ oform.peso(class='form-control')}}
+                        </div>
+                        <div class="col-sm-3">
+                            Volume verificado em m3
+                            {{ oform.volume(class='form-control')}}
+                        </div>
+                        <div class="col-sm-3">
                         </div>
                         <div class="col-sm-12">
                             Descrição
@@ -51,6 +61,27 @@
                     </div>
                 </div>
             </form>
+        </div>
+        <div class="row col-sm-12">
+            <div class="col-sm-3">
+                <h3>Possíveis infrações detectadas</h3>
+            </div>
+            <div class="col-sm-9">
+                <br>
+                <div class="ui-widget">
+                    <input id="infracoes" class="form-control">
+                </div>
+            </div>
+        </div>
+        <div class="row col-sm-12">
+            <div class="col-sm-12" id="div_infracoes_encontradas" border="1">
+                {% for infracao in infracoes_encontradas %}
+                <button type="button" class="btn btn-primary">
+                    {{ infracao.nome }} <span class="badge"
+                                           onclick="exclui_infracao_encontrada({{oform.id.data}}, {{ infracao.id }})">X</span>
+                </button>
+                {% endfor %}
+            </div>
         </div>
         <div class="row col-sm-12">
             <div class="col-sm-3">
@@ -109,6 +140,45 @@
 </div>
 {% endblock %} {% block scripts %} {{super()}}
 <script>
+    function mostra_infracoes(infracoes_encontradas){
+        $('#div_infracoes_encontradas').empty();
+        $.each(infracoes_encontradas, function(i, infracao) {
+            $('<button type="button" class="btn btn-primary">').text(infracao.nome+ ' ').append(
+            $('<span class="badge" onclick="exclui_infracao_encontrada({{oform.id.data}}, ' + infracao.id + ')">').text('X')
+            ).appendTo('#div_infracoes_encontradas');
+        });
+    }
+    function exclui_infracao_encontrada(rvf_id, infracao_id){
+        $.getJSON('exclui_infracao_encontrada', {
+          rvf_id: rvf_id, infracao_id: infracao_id
+        }, function(infracoes_encontradas) {
+          mostra_infracoes(infracoes_encontradas);
+        });
+    }
+    function inclui_infracao_encontrada(rvf_id, infracao_nome){
+        $.getJSON('inclui_infracao_encontrada', {
+          rvf_id: rvf_id, infracao_nome: infracao_nome
+        }, function(infracoes_encontradas) {
+          mostra_infracoes(infracoes_encontradas);
+        });
+    }
+    $( function() {
+        var infracoes = [
+        {% for infracao in infracoes %}
+        "{{ infracao.nome }}",
+        {% endfor %}
+        ];
+        $( "#infracoes" ).autocomplete({
+          source: infracoes
+        });
+    } );
+    $('input#infracoes').bind('keydown', function(e) {
+      if (e.keyCode == 13) {
+        inclui_infracao_encontrada({{oform.id.data}}, $('input#infracoes').val());
+        $('input#infracoes').val('');
+      }
+    });
+
     function mostra_marcas(marcas_encontradas){
         $('#div_marcas_encontradas').empty();
         $.each(marcas_encontradas, function(i, marca) {
@@ -131,14 +201,6 @@
           mostra_marcas(marcas_encontradas);
         });
     }
-    function exclui_anexo(anexo_id){
-        $.getJSON('exclui_anexo', {
-         _id: anexo_id
-        }, function(anexos) {
-          // mostra_anexos(anexos);
-        });
-        location.reload();
-    }
     $( function() {
         var marcas = [
         {% for marca in marcas %}
@@ -156,6 +218,14 @@
       }
     });
 
+    function exclui_anexo(anexo_id){
+        $.getJSON('exclui_anexo', {
+         _id: anexo_id
+        }, function(anexos) {
+          // mostra_anexos(anexos);
+        });
+        location.reload();
+    }
     function upload_files(){
     // Resize images before upload if images are too big
         var dataurl = null;
