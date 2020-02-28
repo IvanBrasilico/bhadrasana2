@@ -20,6 +20,9 @@ tipoStatusOVR = [
     'Intimação/Notificação',
     'Intimação Não Respondida',
     'Retificação do Termo de Guarda'
+    'Conclusão',
+    'Arquivamento',
+    'Atribuição de responsável'
 ]
 
 tipoOperacao = [
@@ -340,5 +343,14 @@ if __name__ == '__main__':  # pragma: no-cover
             marca = Marca()
             marca.nome = nome
             session.add(marca)
+        session.commit()
+        """
+        """
+        fases = [0, 1, 2, 2, 2, 2, 2, 1, 2, 1, 2, 3, 4, 1]   
+        for nome, fase in enumerate(tipoStatusOVR, fases):
+            evento = TipoEventoOVR()
+            evento.nome = nome
+            evento.fase = fase
+            session.add(evento)
         session.commit()
         """
