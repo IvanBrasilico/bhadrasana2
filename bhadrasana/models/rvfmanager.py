@@ -128,5 +128,3 @@ def get_ids_anexos(db, rvf):
     result = [str(row['_id']) for row in db['fs.files'].find(filtro)]
     print(filtro, result, count)
     return result
-
-
