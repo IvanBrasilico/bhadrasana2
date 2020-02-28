@@ -197,12 +197,14 @@ def get_itemtg(session, id: int = None):
     return session.query(ItemTG).filter(ItemTG.id == id).one_or_none()
 
 
-def get_itemtg_numero(session, tg: TGOVR, numero: int)->ItemTG:
+def get_itemtg_numero(session, tg: TGOVR, numero: int) -> ItemTG:
     """Retorna ItemTG do TG e numero passados. Se não existir, retorna ItemTG vazio."""
-    itemtg = session.query(ItemTG).filter(ItemTG.tg_id == tg.id and ItemTG.ncm == numero).one_or_none()
+    itemtg = session.query(ItemTG).filter(ItemTG.tg_id == tg.id).filter(
+        ItemTG.ncm == numero).one_or_none()
     if itemtg is None:
         itemtg = ItemTG()
     return itemtg
+
 
 # TODO: mover Setores e Usuários daqui e do models/ovr para módulos específicos
 def get_usuarios(session):
@@ -290,5 +292,7 @@ def importa_planilha(session, tg: TGOVR, afile):
             if valor:
                 itemtg.valor = valor
             session.add(itemtg)
-    except:
         session.commit()
+    except KeyError as err:
+        raise KeyError('Campo não encontrado. Campos obrigatórios na planilha são '
+                       'numero, descricao, qtde e unidademedida. Erro: %s' % str(err))
