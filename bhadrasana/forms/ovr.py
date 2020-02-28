@@ -129,6 +129,7 @@ class TGOVRForm(FlaskForm):
 class ItemTGForm(FlaskForm):
     id = IntegerField('ID')
     tg_id = IntegerField('TG')
+    numero = IntegerField('numero')
     descricao = TextAreaField(u'Descrição',
                               render_kw={'rows': 5, 'cols': 100},
                               default='')
@@ -144,6 +145,6 @@ class ItemTGForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.unidadedemedida.choices = Enumerado.unidadeMedida()
-        self.marca_id.choices = [(0, 'Nenhuma')]
+        self.marca_id.choices = [(None, 'Nenhuma')]
         if kwargs.get('marcas'):
             self.marca_id.choices.extend(kwargs.get('marcas'))

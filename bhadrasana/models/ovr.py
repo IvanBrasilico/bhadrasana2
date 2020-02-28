@@ -98,6 +98,10 @@ class Enumerado:
     def unidadeMedida(cls, id=None):
         return cls.get_tipo(unidadeMedida, id)
 
+    @classmethod
+    def index_unidadeMedida(cls, sigla):
+        return unidadeMedida.index(sigla)
+
 
 class OVR(BaseRastreavel):
     __tablename__ = 'ovr_ovrs'
@@ -260,6 +264,7 @@ class ItemTG(Base):
     tg_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                    ForeignKey('ovr_tgovr.id'))
     tg = relationship('TGOVR', back_populates='itenstg')
+    numero = Column(Integer, index=True)
     descricao = Column(VARCHAR(200), index=True, nullable=False)
     qtde = Column(Numeric(10, 4))
     unidadedemedida = Column(Integer(), index=True)
@@ -273,22 +278,6 @@ class ItemTG(Base):
 
     def get_unidadedemedida(self):
         return Enumerado.unidadeMedida(self.unidadedemedida)
-
-
-class Setor(Base):
-    __tablename__ = 'ovr_setores'
-    id = Column(CHAR(15), primary_key=True)
-    nome = Column(CHAR(50), index=True)
-    pai_id = Column(CHAR(15), ForeignKey('ovr_setores.id'))
-    pai = relationship('Setor')
-
-
-class Usuario(Base):
-    __tablename__ = 'ovr_usuarios'
-    cpf = Column(CHAR(15), primary_key=True)
-    nome = Column(CHAR(50), index=True)
-    setor_id = Column(CHAR(15), ForeignKey('ovr_setores.id'))
-    setor = relationship('Setor')
 
 
 if __name__ == '__main__':  # pragma: no-cover
@@ -345,8 +334,9 @@ if __name__ == '__main__':  # pragma: no-cover
             session.add(marca)
         session.commit()
         """
+
         """
-        fases = [0, 1, 2, 2, 2, 2, 2, 1, 2, 1, 2, 3, 4, 1]   
+        fases = [0, 1, 2, 2, 2, 2, 2, 1, 2, 1, 2, 3, 4, 1]
         for nome, fase in enumerate(tipoStatusOVR, fases):
             evento = TipoEventoOVR()
             evento.nome = nome

@@ -7,7 +7,8 @@ from sqlalchemy.orm import sessionmaker
 
 sys.path.append('.')
 
-from bhadrasana.models.ovr import metadata, Usuario, OVR, TipoEventoOVR, Enumerado, Recinto, Setor
+from bhadrasana.models import Usuario, Setor
+from bhadrasana.models.ovr import metadata, OVR, TipoEventoOVR, Enumerado, Recinto
 
 from bhadrasana.models.ovrmanager import get_usuarios, cadastra_ovr, gera_eventoovr, \
     gera_processoovr, cadastra_tgovr, atribui_responsavel_ovr, get_recintos, get_setores_filhos_recursivo
@@ -73,6 +74,7 @@ class TestCase(unittest.TestCase):
         params['adata'] = '2020-01-01'
         params['ahora'] = '13:13'
         params['recinto_id'] = recinto.id
+        params['user_name'] = usuario.cpf
         ovr = cadastra_ovr(session, params, '123')
         assert ovr.id is not None
         assert ovr.datahora == datetime(2020, 1, 1, 13, 13)
