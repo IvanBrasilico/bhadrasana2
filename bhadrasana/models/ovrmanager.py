@@ -5,7 +5,7 @@ from sqlalchemy import and_
 from ajna_commons.flask.log import logger
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
-    TipoProcessoOVR, ItemTG, Recinto, Usuario, TGOVR, Setor
+    TipoProcessoOVR, ItemTG, Recinto, Usuario, TGOVR, Setor, Marca
 
 
 def get_recintos(session):
@@ -249,3 +249,13 @@ def get_ovrs_setor(session, setor: Setor) -> list:
     ids_setores = [setor.id for setor in setores]
     ovrs = session.query(OVR).filter(OVR.setor_id.in_(ids_setores)).all()
     return [ovr for ovr in ovrs]
+
+
+def get_marcas(session):
+    marcas = session.query(Marca).all()
+    return [marca for marca in marcas]
+
+
+def get_marcas_choice(session):
+    marcas = session.query(Marca).all()
+    return [(marca.id, marca.nome) for marca in marcas]

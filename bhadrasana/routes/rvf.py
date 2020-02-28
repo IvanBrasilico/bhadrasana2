@@ -10,8 +10,9 @@ from ajna_commons.flask.log import logger
 from ajna_commons.models.bsonimage import BsonImage
 from bhadrasana.forms.filtro_rvf import FiltroRVFForm
 from bhadrasana.forms.rvf import RVFForm
+from bhadrasana.models.ovrmanager import get_marcas
 from bhadrasana.models.rvfmanager import get_rvfs_filtro, cadastra_rvf, get_rvf_ovr, \
-    get_rvf, get_marcas, get_ids_anexos, inclui_marca_encontrada, \
+    get_rvf, get_ids_anexos, inclui_marca_encontrada, \
     exclui_marca_encontrada, exclui_infracao_encontrada, inclui_infracao_encontrada, \
     get_infracoes
 
