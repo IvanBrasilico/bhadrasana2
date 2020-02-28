@@ -3,6 +3,7 @@ from sqlalchemy import BigInteger, Column, DateTime, func, VARCHAR, Integer, \
 from sqlalchemy.dialects.mysql import TIMESTAMP
 from sqlalchemy.orm import relationship
 
+from ajna_commons.flask.log import logger
 from bhadrasana.models import Base, BaseRastreavel
 
 metadata = Base.metadata
@@ -66,7 +67,11 @@ class Enumerado:
     @classmethod
     def get_tipo(cls, listatipo: list, id: int = None):
         if (id is not None) and isinstance(id, int):
-            return listatipo[id]
+            try:
+                return listatipo[id]
+            except IndexError:
+                logger.warning('Item %s não encontrado em %s' % (id, listatipo))
+                return None
         else:
             return [(id, item) for id, item in enumerate(listatipo, 1)]
 
@@ -325,3 +330,15 @@ if __name__ == '__main__':  # pragma: no-cover
                                 #  metadata.tables['ovr_usuarios'],
                                 #  metadata.tables['ovr_recintos'],
                             ])
+        """
+        for nome in ('Adidas',
+                     'Burberry',
+                     'Tag Hauer',
+                     'Nike',
+                     'Apple',
+                     'Disney'):
+            marca = Marca()
+            marca.nome = nome
+            session.add(marca)
+        session.commit()
+        """

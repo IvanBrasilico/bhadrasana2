@@ -92,15 +92,3 @@ if __name__ == '__main__':
             session.add(infracao)
         session.commit()
         """
-        """
-        for nome in ('Adidas',
-                     'Burberry',
-                     'Tag Hauer',
-                     'Nike',
-                     'Apple',
-                     'Disney'):
-            marca = Marca()
-            marca.nome = nome
-            session.add(marca)
-        session.commit()
-        """
