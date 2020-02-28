@@ -245,7 +245,7 @@ def ovr_app(app):
         tg_id = request.form.get('tg_id')
         print(itemtg_form.data.items())
         try:
-            itemtg = cadastra_itemtg(session, dict(itemtg_form.data.items()))
+            cadastra_itemtg(session, dict(itemtg_form.data.items()))
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')

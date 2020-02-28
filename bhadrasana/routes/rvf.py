@@ -10,7 +10,7 @@ from ajna_commons.flask.log import logger
 from ajna_commons.models.bsonimage import BsonImage
 from bhadrasana.forms.filtro_rvf import FiltroRVFForm
 from bhadrasana.forms.rvf import RVFForm
-from bhadrasana.models.ovrmanager import get_marcas, get_marcas_choice
+from bhadrasana.models.ovrmanager import get_marcas
 from bhadrasana.models.rvfmanager import get_rvfs_filtro, cadastra_rvf, \
     get_rvf, get_ids_anexos, inclui_marca_encontrada, \
     exclui_marca_encontrada, exclui_infracao_encontrada, inclui_infracao_encontrada, \
@@ -44,7 +44,6 @@ def rvf_app(app):
     def listarvfovr():
         session = app.config.get('dbsession')
         ovr_id = request.args.get('ovr_id')
-        item_id = request.args.get('item_id')
         listarvfovr = lista_rvfovr(session, ovr_id)
         return render_template('lista_rvfovr.html',
                                listarvfovr=listarvfovr,
@@ -81,7 +80,7 @@ def rvf_app(app):
             else:
                 ovr_id = request.args.get('ovr')
                 if ovr_id is not None:
-                   rvf = cadastra_rvf(session, ovr_id=ovr_id)
+                    rvf = cadastra_rvf(session, ovr_id=ovr_id)
             if rvf is not None:
                 rvf_form = RVFForm(**rvf.__dict__)
                 if rvf.datahora:
