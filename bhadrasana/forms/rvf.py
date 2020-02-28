@@ -9,6 +9,8 @@ class RVFForm(RastreavelForm):
     # ovr_id = IntegerField('ID da OVR relacionada, se houver' )
     numeroCEmercante = StringField(u'CE Mercante',
                                    default='')
+    numerolote = StringField(u'Número do contêiner, ou do lote do terminal'
+                             u' se não houver contêiner', default='')
     descricao = TextAreaField(u'Descrição',
                               render_kw={'rows': 5, 'cols': 100},
                               default='')

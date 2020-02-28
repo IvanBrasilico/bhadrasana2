@@ -1,0 +1,54 @@
+{% extends "layout.html" %} {% block content %} {{super()}}
+<div id="main" class="container-fluid">
+    <div id="list" class="row col-sm-12">
+        &nbsp;<br>
+        <div class="table">
+            <table class="inlineTable table table-bordered table-hover table-responsive"
+                   id="filtro_personalizado_table" style="width:100%;">
+                <thead>
+                <tr>
+                    <th></th>
+                    <th style="max-width: 50px;">Número contêiner/lote</th>
+                    <th style="word-wrap: break-word; max-width: 210px; min-width: 200px;">Descrição</th>
+                    <th style="max-width: 50px;">Peso</th>
+                    <th style="max-width: 50px;">Volume</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for rvf in listarvfovr %}
+                <tr>
+                    <td><a href="rvf?id={{rvf.id}}">{{rvf.id}}</a></td>
+                    <td style="max-width: 40px;">
+                        {{ rvf.numerolote }}
+                    </td>
+                    <td style="word-wrap: break-word; max-width: 500px; min-width: 400px;">
+                        {{ rvf.descricao }}
+                    </td>
+                    <td style="max-width: 40px;">
+                        {{ rvf.peso }}
+                    </td>
+                    <td style="max-width: 50px;">{{ rvf.volume }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="row col-sm-12">
+        <br>
+        <button id="btn_novotg" type="button" class="btn btn-primary btn-warning form-control"
+                onclick="window.open('rvf?ovr={{ovr_id}}', '_self')">
+            Novo RVF
+        </button>
+    </div>
+    <div id="bottom" class="row col-sm-12">
+        AJNA - Receita Federal do Brasil 2017
+    </div>
+</div>
+{% endblock %} {% block scripts %} {{super()}}
+<script>
+
+
+
+</script>
+{% endblock %}

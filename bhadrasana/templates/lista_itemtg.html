@@ -18,7 +18,7 @@
                 <tbody>
                 {% for itemtg in listaitemtg %}
                 <tr>
-                    <td><a href="lista_itemtg?ovr_id={{itemtg.ovr_id}}&item_id={{itemtg.id}}" >{{loop.index}}</a></td>
+                    <td><a href="lista_itemtg?tg_id={{itemtg.tg_id}}&item_id={{itemtg.id}}" >{{loop.index}}</a></td>
                     <td style="word-wrap: break-word; max-width: 500px; min-width: 400px;">
                         <input class="form-control" type="text"
                                value="{{ itemtg.descricao }}"
@@ -48,7 +48,8 @@
         <form method="POST" id="formitemtg" action="itemtg">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <input type="hidden" name="id" value="{{ oform.id.data }}"/>
-            <input type="hidden" name="ovr_id" value="{{ oform.tg_id.data }}"/>
+            <input type="hidden" name="tg_id" value="{{ oform.tg_id.data }}"/>
+            <input type="hidden" name="numero" value="{{ oform.numero.data }}"/>
             <div class="row">
                 <div class="form-group">
                     <div class="col-sm-12">

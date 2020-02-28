@@ -1,8 +1,9 @@
 import datetime
 
-from sqlalchemy import Column, func, VARCHAR
+from sqlalchemy import Column, func, VARCHAR, CHAR, ForeignKey
 from sqlalchemy.dialects.mysql import TIMESTAMP
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 
 from ajna_commons.flask.log import logger
 
@@ -31,6 +32,22 @@ class BaseRastreavel(Base):
             self.user_name = kwargs['user_name']
 
 
+class Setor(Base):
+    __tablename__ = 'ovr_setores'
+    id = Column(CHAR(15), primary_key=True)
+    nome = Column(CHAR(50), index=True)
+    pai_id = Column(CHAR(15), ForeignKey('ovr_setores.id'))
+    pai = relationship('Setor')
+
+
+class Usuario(Base):
+    __tablename__ = 'ovr_usuarios'
+    cpf = Column(CHAR(15), primary_key=True)
+    nome = Column(CHAR(50), index=True)
+    setor_id = Column(CHAR(15), ForeignKey('ovr_setores.id'))
+    setor = relationship('Setor')
+
+
 def handle_datahora(params):
     data = params.get('adata', '')
     hora = params.get('ahora', '')
@@ -49,7 +66,20 @@ def handle_datahora(params):
     return datetime.datetime.combine(data, hora)
 
 
+def get_usuario_logado(session, params):
+    user_name = params.get('user_name')
+    if user_name is None:
+        raise KeyError('Usuário não foi informado!')
+    usuario = session.query(Usuario).filter(
+        Usuario.cpf == user_name).one_or_none()
+    if not usuario:
+        raise ENaoAutorizado('Usuário inválido ou não informado.'
+                             'Somente Usuários habilitados podem salvar.')
+    return usuario
+
+
 def gera_objeto(instance: object, session, params):
+    # get_usuario_logado(session, params)
     for key, value in params.items():
         if value is not None and value != 'None':
             setattr(instance, key, value)

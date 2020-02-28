@@ -1,11 +1,14 @@
 from datetime import timedelta
 
+import pandas as pd
 from sqlalchemy import and_
 
 from ajna_commons.flask.log import logger
-from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto
+from bhadrasana.models import Usuario, Setor
+from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto, \
+    get_usuario_logado
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
-    TipoProcessoOVR, ItemTG, Recinto, Usuario, TGOVR, Setor, Marca
+    TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado
 
 
 def get_recintos(session):
@@ -33,12 +36,8 @@ def cadastra_ovr(session, params: dict, user_name: str) -> OVR:
             setattr(ovr, key, value)
     ovr.datahora = handle_datahora(params)
     try:
-        usuario = session.query(Usuario).filter(
-            Usuario.cpf == user_name).one_or_none()
-        if not usuario:
-            raise Exception('Usuário inválido ou não informado.'
-                            'Somente Usuários habilitados podem salvar.')
-            ovr.setor_id = usuario.setor_id
+        usuario = get_usuario_logado(session, params)
+        ovr.setor_id = usuario.setor_id
         session.add(ovr)
         session.commit()
     except Exception as err:
@@ -198,6 +197,13 @@ def get_itemtg(session, id: int = None):
     return session.query(ItemTG).filter(ItemTG.id == id).one_or_none()
 
 
+def get_itemtg_numero(session, tg: TGOVR, numero: int)->ItemTG:
+    """Retorna ItemTG do TG e numero passados. Se não existir, retorna ItemTG vazio."""
+    itemtg = session.query(ItemTG).filter(ItemTG.tg_id == tg.id and ItemTG.ncm == numero).one_or_none()
+    if itemtg is None:
+        itemtg = ItemTG()
+    return itemtg
+
 # TODO: mover Setores e Usuários daqui e do models/ovr para módulos específicos
 def get_usuarios(session):
     usuarios = session.query(Usuario).all()
@@ -259,3 +265,30 @@ def get_marcas(session):
 def get_marcas_choice(session):
     marcas = session.query(Marca).all()
     return [(marca.id, marca.nome) for marca in marcas]
+
+
+def importa_planilha(session, tg: TGOVR, afile):
+    if '.csv' in afile.filename:
+        df = pd.read_csv(afile, sep=';',
+                         header=1, encoding='windows-1252')
+    elif '.xls' in afile.filename:
+        df = pd.read_excel(afile)
+    else:
+        raise Exception('Extensão de arquivo desconhecida! Conheço .csv e .xls')
+    print(df.head())
+    try:
+        for row in df.iterrows():
+            itemtg = get_itemtg_numero(session, tg, row['numero'])
+            itemtg.tg_id = tg.id
+            itemtg.descricao = row['descricao']
+            itemtg.qtde = row['qtde']
+            itemtg.unidadedemedida = Enumerado.index_unidadeMedida(row['unidadedemedida'])
+            ncm = row.get['ncm']
+            if ncm:
+                itemtg.ncm = ncm
+            valor = row.get['valor']
+            if valor:
+                itemtg.valor = valor
+            session.add(itemtg)
+    except:
+        session.commit()

@@ -1,10 +1,10 @@
 from sqlalchemy import and_
 
 from ajna_commons.flask.log import logger
-from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario
+from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, get_usuario_logado
+from bhadrasana.models.ovr import Marca
 from bhadrasana.models.ovrmanager import get_ovr
 from bhadrasana.models.rvf import RVF, Infracao
-from bhadrasana.models.ovr import Marca
 
 
 def get_infracoes(session):
@@ -31,8 +31,12 @@ def get_rvf(session, id=None):
     return session.query(RVF).filter(RVF.id == id).one_or_none()
 
 
-def get_rvf_ovr(session, ovr_id):
-    return session.query(RVF).filter(RVF.ovr_id == ovr_id).one_or_none()
+def lista_rvfovr(session, ovr_id):
+    try:
+        ovr_id = int(ovr_id)
+    except (ValueError, TypeError):
+        return None
+    return session.query(RVF).filter(RVF.ovr_id == ovr_id).all()
 
 
 def cadastra_rvf(session, params=None,
@@ -47,7 +51,8 @@ def cadastra_rvf(session, params=None,
         rvf.numeroCEmercante = ovr.numeroCEmercante
     elif params:
         rvf = get_rvf(session, params.get('id'))
-        if rvf.user_name and rvf.user_name != params['user_name']:
+        usuario = get_usuario_logado(session, params)
+        if rvf.user_name and rvf.user_name != usuario.cpf:
             raise ESomenteMesmoUsuario()
         for key, value in params.items():
             setattr(rvf, key, value)
@@ -123,3 +128,5 @@ def get_ids_anexos(db, rvf):
     result = [str(row['_id']) for row in db['fs.files'].find(filtro)]
     print(filtro, result, count)
     return result
+
+

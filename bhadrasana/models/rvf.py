@@ -29,6 +29,7 @@ class RVF(BaseRastreavel):
     numeroCEmercante = Column(VARCHAR(15), index=True)
     numeroDI = Column(VARCHAR(10), index=True)
     numeroDUE = Column(VARCHAR(10), index=True)
+    numerolote = Column(VARCHAR(20), index=True, nullable=False)
     descricao = Column(VARCHAR(40), index=True)
     peso = Column(Numeric(10, 2), index=True)
     volume = Column(Numeric(10, 2), index=True)

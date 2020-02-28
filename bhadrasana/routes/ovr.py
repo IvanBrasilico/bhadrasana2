@@ -73,7 +73,7 @@ def ovr_app(app):
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
             flash(type(err))
-            flash(err)
+            flash(str(err))
         return render_template('ovr.html',
                                ovr=ovr,
                                oform=ovr_form,
@@ -118,7 +118,7 @@ def ovr_app(app):
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
             flash(type(err))
-            flash(err)
+            flash(str(err))
         return render_template('pesquisa_ovr.html',
                                oform=filtro_form,
                                ovrs=ovrs)
@@ -142,7 +142,7 @@ def ovr_app(app):
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
             flash(type(err))
-            flash(err)
+            flash(str(err))
         return render_template('minhas_ovrs.html',
                                listasovrs=listasovrs,
                                active_tab=active_tab)
@@ -187,7 +187,6 @@ def ovr_app(app):
         marcas = get_marcas_choice(session)
         if item_id:
             tgovr = get_tgovr(session, item_id)
-            marcas = get_marcas_choice(session)
             oform = TGOVRForm(**tgovr.__dict__, marcas=marcas)
         else:
             oform = TGOVRForm(ovr_id=ovr_id, marcas=marcas)
@@ -218,16 +217,20 @@ def ovr_app(app):
     @login_required
     def listaitemtg():
         session = app.config.get('dbsession')
-        ovr_id = request.args.get('ovr_id')
+        tg_id = request.args.get('tg_id')
         item_id = request.args.get('item_id')
-        listaitemtg = lista_itemtg(session, ovr_id)
+        listaitemtg = lista_itemtg(session, tg_id)
         marcas = get_marcas_choice(session)
         if item_id:
             itemtg = get_itemtg(session, item_id)
             marcas = get_marcas_choice(session)
             oform = ItemTGForm(**itemtg.__dict__, marcas=marcas)
         else:
-            oform = ItemTGForm(ovr_id=ovr_id, marcas=marcas)
+            oform = ItemTGForm(tg_id=tg_id, marcas=marcas)
+            max_numero_itemtg = 0
+            if listaitemtg and len(listaitemtg) > 0:
+                max_numero_itemtg = max([item.numero for item in listaitemtg])
+            oform.numero.data = max_numero_itemtg + 1
         return render_template('lista_itemtg.html',
                                listaitemtg=listaitemtg,
                                oform=oform)
@@ -239,9 +242,16 @@ def ovr_app(app):
         itemtg_form = ItemTGForm(request.form)
         itemtg_form.validate()
         print(request.form)
+        tg_id = request.form.get('tg_id')
         print(itemtg_form.data.items())
-        itemtg = cadastra_itemtg(session, dict(itemtg_form.data.items()))
-        return redirect(url_for('listaitemtg', ovr_id=itemtg.ovr_id))
+        try:
+            itemtg = cadastra_itemtg(session, dict(itemtg_form.data.items()))
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            # flash(type(err))
+            flash(str(err))
+        return redirect(url_for('listaitemtg', tg_id=tg_id))
 
     @app.route('/edita_itemtg', methods=['GET'])
     @login_required
