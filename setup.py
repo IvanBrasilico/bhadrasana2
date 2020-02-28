@@ -27,7 +27,8 @@ setup(
         'pymysql',
         'redis', # Ver como retirar necessidade
         'requests', # Ver como retirar necessidade
-        'sqlalchemy'
+        'sqlalchemy',
+        'xlrd'
     ],
     dependency_links=[
         'git+https://github.com/IvanBrasilico/ajna_commons.git#egg=ajna_commons-0.0.1'

@@ -18,7 +18,7 @@
                 <tbody>
                 {% for itemtg in listaitemtg %}
                 <tr>
-                    <td><a href="lista_itemtg?tg_id={{itemtg.tg_id}}&item_id={{itemtg.id}}" >{{loop.index}}</a></td>
+                    <td><a href="lista_itemtg?tg_id={{itemtg.tg_id}}&item_id={{itemtg.id}}">{{loop.index}}</a></td>
                     <td style="word-wrap: break-word; max-width: 500px; min-width: 400px;">
                         <input class="form-control" type="text"
                                value="{{ itemtg.descricao }}"
@@ -31,17 +31,33 @@
                     </td>
                     <td style="max-width: 50px;">{{ itemtg.get_unidadedemedida() }}</td>
                     <td style="max-width: 60px;"><input class="form-control" type="text"
-                               value="{{ itemtg.valor }}"
-                               onkeydown="do_update(event, {{itemtg.id}}, 'valor', this.value)">
+                                                        value="{{ itemtg.valor }}"
+                                                        onkeydown="do_update(event, {{itemtg.id}}, 'valor', this.value)">
                     </td>
                     <td style="max-width: 60px;"><input class="form-control" type="text"
-                               value="{{ itemtg.ncm }}"
-                               onkeydown="do_update(event, {{itemtg.id}}, 'ncm', this.value)">
+                                                        value="{{ itemtg.ncm }}"
+                                                        onkeydown="do_update(event, {{itemtg.id}}, 'ncm', this.value)">
                     </td>
                 </tr>
                 {% endfor %}
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    <div class="row col-sm-12">
+        <br>
+        <div class="col-sm-6">
+            <button id="btn_novotg" type="button" class="btn btn-primary btn-warning form-control"
+                    onclick="window.open('lista_itemtg?tg_id={{oform.tg_id.data}}', '_self')">
+                Novo item
+            </button>
+        </div>
+        <div class="col-sm-6">
+            <button id="btn_incluir" type="button" class="btn btn-info form-control"
+                    data-toggle="modal" data-target="#importa_planilha">
+                Importar Planilha
+            </button>
         </div>
     </div>
     <div id="form_div" class="row">
@@ -92,6 +108,35 @@
         AJNA - Receita Federal do Brasil 2017
     </div>
 </div>
+<div class="modal fade" id="importa_planilha" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title" id="ModalLabel">Importar Planilha</h1>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="/importaplanilhatg" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <input type="hidden" name="tg_id" value="{{ oform.tg_id.data }}"/>
+                    <label class="btn btn-default btn-choose" for="planilha">
+                        <input id="planilha" name="planilha" type="file" style="display:none"
+                               onchange="$('#upload-file-info').html(this.files[0].name)"> Escolha a planilha
+                    </label>
+                    <big>
+                        <span class='label label-success' id="upload-file-info"></span>
+                    </big>
+                    &nbsp;
+                    <input class="btn btn-primary" type="submit" value="Importar CSV"/>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %} {% block scripts %} {{super()}}
 <script>
     function do_update(event, id, campo, value){
@@ -107,6 +152,11 @@
         });
       }
     }
+
+
+
+
+
 
 </script>
 {% endblock %}
