@@ -14,7 +14,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_ovr_filtro, gera_eventoovr, get_tipos_evento, \
     gera_processoovr, get_tipos_processo, lista_itemtg, get_itemtg, get_recintos, \
     cadastra_itemtg, get_usuarios, atribui_responsavel_ovr, lista_tgovr, get_tgovr, \
-    cadastra_tgovr, get_ovr_responsavel
+    cadastra_tgovr, get_ovr_responsavel, importa_planilha
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, Item
 
@@ -268,6 +268,22 @@ def ovr_app(app):
         # itemtg_form.validate()
         # gera_itemtg(session, dict(itemtg_form.data.items()))
         return {'msg': 'Modificado com sucesso'}, 200
+
+    @app.route('/importaplanilhatg', methods=['POST'])
+    @login_required
+    def importa_planilha_tg():
+        try:
+            session = app.config.get('dbsession')
+            tg_id = request.form['tg_id']
+            tg = get_tgovr(session, tg_id)
+            planilha = request.files['planilha']
+            importa_planilha(session, tg, planilha)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return redirect(url_for('listaitemtg', tg_id=tg_id))
 
     @app.route('/excluiobjeto/<classname>/<id>', methods=['POST'])
     @login_required
