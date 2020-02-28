@@ -3,7 +3,8 @@ from sqlalchemy import and_
 from ajna_commons.flask.log import logger
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario
 from bhadrasana.models.ovrmanager import get_ovr
-from bhadrasana.models.rvf import Marca, RVF, Infracao
+from bhadrasana.models.rvf import RVF, Infracao
+from bhadrasana.models.ovr import Marca
 
 
 def get_infracoes(session):
@@ -14,16 +15,6 @@ def get_infracoes(session):
 def get_infracoes_choice(session):
     infracoes = session.query(Infracao).all()
     return [(infracao.id, infracao.nome) for infracao in infracoes]
-
-
-def get_marcas(session):
-    marcas = session.query(Marca).all()
-    return [marca for marca in marcas]
-
-
-def get_marcas_choice(session):
-    marcas = session.query(Marca).all()
-    return [(marca.id, marca.nome) for marca in marcas]
 
 
 def get_rvfs_filtro(session, pfiltro):

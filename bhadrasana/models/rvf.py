@@ -41,12 +41,6 @@ class RVF(BaseRastreavel):
                            onupdate=func.current_timestamp())
 
 
-class Marca(Base):
-    __tablename__ = 'ovr_marcas'
-    id = Column(BigInteger(), primary_key=True)
-    nome = Column(VARCHAR(50), index=True)
-
-
 class Infracao(Base):
     __tablename__ = 'ovr_infracoes'
     id = Column(BigInteger(), primary_key=True)

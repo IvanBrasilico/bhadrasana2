@@ -15,7 +15,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     gera_processoovr, get_tipos_processo, lista_itemtg, get_itemtg, get_recintos, \
     cadastra_itemtg, get_usuarios, atribui_responsavel_ovr, lista_tgovr, get_tgovr, \
     cadastra_tgovr, get_ovr_responsavel
-from bhadrasana.models.rvfmanager import get_marcas_choice
+from bhadrasana.models.ovrmanager import get_marcas_choice
 from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, Item
 
 
