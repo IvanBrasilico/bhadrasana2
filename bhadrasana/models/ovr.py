@@ -262,13 +262,13 @@ class ItemTG(Base):
     __tablename__ = 'ovr_itenstg'
     id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
     tg_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
-                   ForeignKey('ovr_tgovr.id'))
+                   ForeignKey('ovr_tgovr.id'), nullable=False)
     tg = relationship('TGOVR', back_populates='itenstg')
-    numero = Column(Integer, index=True)
+    numero = Column(Integer, index=True, nullable=False)
     descricao = Column(VARCHAR(200), index=True, nullable=False)
     qtde = Column(Numeric(10, 4))
     unidadedemedida = Column(Integer(), index=True)
-    valor = Column(Numeric(10, 4))
+    valor = Column(Numeric(10, 4), index=True)
     ncm = Column(VARCHAR(8), index=True)
     marca_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                       ForeignKey('ovr_marcas.id'))

@@ -275,11 +275,13 @@ def importa_planilha(session, tg: TGOVR, afile):
                          header=1, encoding='windows-1252')
     elif '.xls' in afile.filename:
         df = pd.read_excel(afile)
+    elif '.ods' in afile.filename:
+        df = pd.read_excel(afile, engine='ods')
     else:
-        raise Exception('Extensão de arquivo desconhecida! Conheço .csv e .xls')
+        raise Exception('Extensão de arquivo desconhecida! Conheço .csv, .ods e .xls')
     print(df.head())
     try:
-        for row in df.iterrows():
+        for index, row in df.iterrows():
             itemtg = get_itemtg_numero(session, tg, row['numero'])
             itemtg.tg_id = tg.id
             itemtg.descricao = row['descricao']
@@ -295,4 +297,4 @@ def importa_planilha(session, tg: TGOVR, afile):
         session.commit()
     except KeyError as err:
         raise KeyError('Campo não encontrado. Campos obrigatórios na planilha são '
-                       'numero, descricao, qtde e unidademedida. Erro: %s' % str(err))
+                       'numero, descricao, qtde e unidademedida. Opcionais ncm e valor. Erro: %s' % str(err))
