@@ -12,6 +12,7 @@ setup(
     install_requires=[
         'chardet',
         'dominate',
+        'defusedxml',
         'Flask',
         'Flask-BootStrap',
         'Flask-Login',
@@ -23,6 +24,7 @@ setup(
         'lxml',
         'Pillow',   # Centralizar acesso imagens no virasana??
         'plotly', # Ver como retirar necessidade
+        'odfpy',
         'pymongo',
         'pymysql',
         'redis', # Ver como retirar necessidade

@@ -56,6 +56,7 @@ nav.init_app(app)
 def configure_app(mongodb, sqlsession, mongo_risco):
     """Configurações gerais e de Banco de Dados da Aplicação."""
     app.config['DEBUG'] = os.environ.get('DEBUG', 'None') == '1'
+    print(app.debug)
     if app.config['DEBUG'] is True:
         app.jinja_env.auto_reload = True
         app.config['TEMPLATES_AUTO_RELOAD'] = True
@@ -67,6 +68,7 @@ def configure_app(mongodb, sqlsession, mongo_risco):
     app.config['dbsession'] = sqlsession
     app.config['mongodb'] = mongodb
     app.config['mongo_risco'] = mongo_risco
+    login_ajna.login_manager.login_view = 'bhadrasana/login'
     return app
 
 
