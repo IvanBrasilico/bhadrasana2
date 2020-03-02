@@ -250,12 +250,10 @@ def ovr_app(app):
     @login_required
     def itemtg():
         session = app.config.get('dbsession')
-        itemtg_form = ItemTGForm(request.form)
-        itemtg_form.validate()
-        print(request.form)
-        tg_id = request.form.get('tg_id')
-        print(itemtg_form.data.items())
         try:
+            itemtg_form = ItemTGForm(request.form)
+            itemtg_form.validate()
+            tg_id = request.form.get('tg_id')
             cadastra_itemtg(session, dict(itemtg_form.data.items()))
         except Exception as err:
             logger.error(err, exc_info=True)
@@ -268,16 +266,17 @@ def ovr_app(app):
     @login_required
     def edita_itemtg():
         session = app.config.get('dbsession')
-        id = request.args.get('id')
-        campo = request.args.get('campo')
-        valor = request.args.get('valor')
-        itemtg = session.query(ItemTG).filter(ItemTG.id == int(id)).one_or_none()
-        setattr(itemtg, campo, valor)
-        session.add(itemtg)
-        session.commit()
-        # itemtg_form = ItemTGForm(request.form)
-        # itemtg_form.validate()
-        # gera_itemtg(session, dict(itemtg_form.data.items()))
+        try:
+            id = request.args.get('id')
+            campo = request.args.get('campo')
+            valor = request.args.get('valor')
+            itemtg = session.query(ItemTG).filter(ItemTG.id == int(id)).one_or_none()
+            setattr(itemtg, campo, valor)
+            session.add(itemtg)
+            session.commit()
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            return {'error': str(err), 'msg': 'Erro!'}, 500
         return {'msg': 'Modificado com sucesso'}, 200
 
     @app.route('/importaplanilhatg', methods=['POST'])
