@@ -110,12 +110,14 @@
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <input type="hidden" name="rvf_id" value="{{ oform.id.data }}"/>
                     <h4>Selecione anexos:</h4>
-                    <div class="col-sm-3"><input type="file" class="btn btn-default" name="images" multiple="">
+                    <div class="col-sm-3"><input type="file" class="btn btn-default" name="images" id="images" multiple>
                     </div>
                     <div class="col-sm-1">
                     </div>
                     <div class="col-sm-2">
-                        <button class="btn btn-default btn-primary form-control" onclick="upload()">Enviar</button>
+                        <button type="button" class="btn btn-default btn-primary form-control" onclick="upload_files()">
+                            Enviar
+                        </button>
                     </div>
                     <div class="col-sm-6">
                     </div>
@@ -240,77 +242,67 @@
     }
     function upload_files(){
     // Resize images before upload if images are too big
-        var dataurl = null;
-        // Create an image
-        var img = document.createElement("img");
-        // Create a file reader
-        var reader = new FileReader();
         // Set the image once loaded into file reader
-        reader.onload = function(e)
-        {
-            img.src = e.target.result;
-            img.onload = function () {
-                var canvas = document.createElement("canvas");
-                var ctx = canvas.getContext("2d");
-                ctx.drawImage(img, 0, 0);
-                var MAX_WIDTH = 800;
-                var MAX_HEIGHT = 600;
-
-                var width = img.width;
-                var height = img.height;
-
-                if (width > height) {
-                  if (width > MAX_WIDTH) {
-                    height *= MAX_WIDTH / width;
-                    width = MAX_WIDTH;
-                  }
-                } else {
-                  if (height > MAX_HEIGHT) {
-                    width *= MAX_HEIGHT / height;
-                    height = MAX_HEIGHT;
-                  }
-                }
-                canvas.width = width;
-                canvas.height = height;
-                var ctx = canvas.getContext("2d");
-                ctx.drawImage(img, 0, 0, width, height);
-                dataurl = canvas.toDataURL("image/jpeg");
-                // Post the data
-                var fd = new FormData();
-                fd.append("name", e.target);
-                fd.append("image", dataurl);
-                fd.append("rvf_id",  {{ rvf_id }});
-                $.ajax({
-                    url: '/rvf_imgupload',
-                    data: fd,
-                    cache: false,
-                    contentType: false,
-                    processData: false,
-                    type: 'POST',
-                    success: function(data){
-                    }
-                });
-            }
-            img.onload
-        }
         // Load files into file reader
-
-        var filesToUpload = $('input#images').files;
-        for (file in filesToUpload[0]) {
+        console.log($("input#images"));
+        console.log($("input#images").val());
+        var filesToUpload = $("input#images")[0].files;
+        console.log(filesToUpload);
+        var dataurl = null;
+        for (var i = 0; i < filesToUpload.length; i++) {
+            console.log(i);
+            file = filesToUpload[i];
+            var reader = new FileReader();
+            reader.onloadend = function(e)
+            {
+                var img = document.createElement("img");
+                img.src = e.target.result;
+                img.onload = function () {
+                    var canvas = document.createElement("canvas");
+                    var ctx = canvas.getContext("2d");
+                    ctx.drawImage(img, 0, 0);
+                    var MAX_WIDTH = 800;
+                    var MAX_HEIGHT = 600;
+                    var width = img.width;
+                    var height = img.height;
+                    if (width > height) {
+                      if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                      }
+                    } else {
+                      if (height > MAX_HEIGHT) {
+                        width *= MAX_HEIGHT / height;
+                        height = MAX_HEIGHT;
+                      }
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    console.log(width, height);
+                    var ctx = canvas.getContext("2d");
+                    ctx.drawImage(img, 0, 0, width, height);
+                    dataurl = canvas.toDataURL("image/jpeg");
+                    // Post the data
+                    var fd = new FormData();
+                    fd.append("filename", e.target);
+                    fd.append("content", dataurl);
+                    fd.append("rvf_id",  {{ oform.id.data }});
+                    $.ajax({
+                        url: '/api/rvf_imgupload',
+                        data: fd,
+                        cache: false,
+                        contentType: false,
+                        processData: false,
+                        type: 'POST',
+                        success: function(data){
+                        }
+                    });
+                }
+                img.onload()
+            }
             reader.readAsDataURL(file);
         }
-
+        // location.reload();
     }
-
-
-
-
-
-
-
-
-
-
-
 
 </script> {% endblock %}

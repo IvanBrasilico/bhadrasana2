@@ -1,5 +1,9 @@
+import base64
+import io
+from base64 import b64encode, b64decode
 from datetime import date, timedelta
 
+from PIL.Image import Image
 from bson import ObjectId
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required
@@ -15,6 +19,7 @@ from bhadrasana.models.rvfmanager import get_rvfs_filtro, cadastra_rvf, \
     get_rvf, get_ids_anexos, inclui_marca_encontrada, \
     exclui_marca_encontrada, exclui_infracao_encontrada, inclui_infracao_encontrada, \
     get_infracoes, lista_rvfovr
+from bhadrasana.views import csrf
 
 
 def rvf_app(app):
@@ -200,6 +205,32 @@ def rvf_app(app):
             bson_img.set_campos(file.filename, content, rvf_id=rvf_id)
             bson_img.tomongo(fs)
         return redirect(url_for('rvf', id=rvf_id))
+
+    @csrf.exempt
+    @app.route('/api/rvf_imgupload', methods=['POST'])
+    def api_rvf_imgupload():
+        db = app.config['mongo_risco']
+        fs = GridFS(db)
+        try:
+            rvf_id = request.form.get('rvf_id')
+            if rvf_id is None:
+                return jsonify({'msg': 'Informe o parâmetro rvf_id'}), 500
+            content = request.form.get('content')
+            filename = request.form.get('filename')
+            print(len(filename), filename, len(content), type(content))
+            if content is None or len(content) < 100:
+                return jsonify({'msg': 'Imagem vazia ou inválida'}), 500
+            if filename is None:
+                return jsonify({'msg': 'Informe o parâmetro filename'}), 500
+            image = base64.decodebytes(content.split(',')[1].encode())
+            bson_img = BsonImage()
+            bson_img.set_campos(filename, image, rvf_id=rvf_id)
+            bson_img.tomongo(fs)
+            print(rvf_id, filename)
+        except Exception as err:
+            logger.error(str(err), exc_info=True)
+            return jsonify({'msg': 'Erro: %s' % str(err)}), 500
+        return jsonify({'msg': 'imagens incluídas'}), 201
 
     @app.route('/exclui_anexo')
     def exclui_anexo():
