@@ -19,6 +19,9 @@ class ESomenteMesmoUsuario(Exception):
     def __init__(self):
         Exception.__init__(self, 'Somente o Usuário que cadastra pode editar.')
 
+class EBloqueado(Exception):
+    def __init__(self):
+        Exception.__init__(self, 'Bloqueado para edição. Status/fase não permite alteração.')
 
 class BaseRastreavel(Base):
     __abstract__ = True

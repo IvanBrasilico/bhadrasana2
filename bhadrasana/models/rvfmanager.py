@@ -1,7 +1,8 @@
 from sqlalchemy import and_
 
 from ajna_commons.flask.log import logger
-from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, get_usuario_logado, gera_objeto
+from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, \
+    get_usuario_logado, gera_objeto
 from bhadrasana.models.ovr import Marca
 from bhadrasana.models.ovrmanager import get_ovr
 from bhadrasana.models.rvf import RVF, Infracao, ImagemRVF
