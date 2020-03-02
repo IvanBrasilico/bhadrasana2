@@ -1,4 +1,4 @@
-from wtforms import StringField, IntegerField, TextAreaField
+from wtforms import StringField, IntegerField, TextAreaField, SelectField
 from wtforms.fields.html5 import DateField, TimeField, DecimalField
 
 from bhadrasana.forms import RastreavelForm
@@ -18,3 +18,21 @@ class RVFForm(RastreavelForm):
     volume = DecimalField('Volume efetivo da carga verificada em m3', places=2)
     adata = DateField(u'Data')
     ahora = TimeField(u'Horário')
+
+
+class ImagemRVFForm(RastreavelForm):
+    id = IntegerField('ID')
+    rvf_id = IntegerField('ID')
+    imagem = StringField('_id do GridFS')
+    tg_id = IntegerField('ID do TG relacionado, se houver')
+    itemtg_id = IntegerField('ID do ItemTG relacionado, se houver')
+    descricao = TextAreaField(u'Descrição',
+                              render_kw={'rows': 3, 'cols': 80},
+                              default='')
+    marca_id = SelectField('Marca licenciada, se existir', default=0)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.marca_id.choices = [(None, 'Nenhuma')]
+        if kwargs.get('marcas'):
+            self.marca_id.choices.extend(kwargs.get('marcas'))
