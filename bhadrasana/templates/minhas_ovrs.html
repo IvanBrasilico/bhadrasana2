@@ -1,9 +1,22 @@
 {% extends "layout.html" %} {% block content %} {{super()}}
 <div id="main" class="container-fluid">
-    <ul class="nav nav-pills">
-        <li class="{% if active_tab!='minhas_ovrs'  %}active{% endif %}"><a href="ovrs_meus_setores">OVRs do meu Setor</a></li>
-        <li class="{% if active_tab=='minhas_ovrs'  %}active{% endif %}"><a href="minhas_ovrs">OVRs sob minha responsabilidade</a></li>
-    </ul>
+    <div id="options" class="row col-sm-12">
+        <div class="col-sm-5">
+            <ul class="nav nav-pills">
+                <li class="{% if active_tab!='minhas_ovrs'  %}active{% endif %}"><a href="ovrs_meus_setores">OVRs do meu
+                    Setor</a></li>
+                <li class="{% if active_tab=='minhas_ovrs'  %}active{% endif %}"><a href="minhas_ovrs">OVRs sob minha
+                    responsabilidade</a></li>
+            </ul>
+        </div>
+        <div class="col-sm-3">
+            <button onclick="exporta_planilhaovr()" id="btn_exportar"
+                    type="button" class="btn btn-default form-control">Exportar Planilha do Setor
+            </button>
+        </div>
+        <div class="col-sm-4">
+        </div>
+    </div>
     <div id="list" class="row col-sm-12">
         &nbsp;<br>
         {% for fase in listasovrs.keys()|sort() %}
@@ -47,6 +60,8 @@
 </div>
 {% endblock %} {% block scripts %} {{super()}}
 <script>
-
+    function exporta_planilhaovr() {
+        window.location.assign('exportaplanilhaovr');
+    }
 </script>
 {% endblock %}
