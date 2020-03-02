@@ -5,7 +5,7 @@ from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 from ajna_commons.flask.log import logger
-from bhadrasana.models import Usuario, Setor
+from bhadrasana.models import Usuario, Setor, EBloqueado
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto, \
     get_usuario_logado
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
@@ -32,6 +32,8 @@ def cadastra_ovr(session, params: dict, user_name: str) -> OVR:
     ovr = get_ovr(session, params.get('id'))
     if ovr.user_name and ovr.user_name != params['user_name']:
         raise ESomenteMesmoUsuario()
+    if ovr.fase > 3:
+        raise EBloqueado()
     for key, value in params.items():
         if value and value != 'None':
             setattr(ovr, key, value)
@@ -298,7 +300,8 @@ def importa_planilha(session, tg: TGOVR, afile):
         session.commit()
     except KeyError as err:
         raise KeyError('Campo não encontrado. Campos obrigatórios na planilha são '
-                       'numero, descricao, qtde e unidademedida. Opcionais ncm e valor. Erro: %s' % str(err))
+                       'numero, descricao, qtde e unidademedida. Opcionais ncm e valor.'
+                       'Erro: %s' % str(err))
 
 
 def exporta_planilhaovr(session: Session, user_name: str, filename: str):

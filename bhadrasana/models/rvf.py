@@ -1,4 +1,5 @@
-from sqlalchemy import BigInteger, Column, DateTime, func, VARCHAR, Table, Numeric, Integer
+from sqlalchemy import BigInteger, Column, DateTime, func, VARCHAR, Table, \
+    Numeric, Integer
 from sqlalchemy import ForeignKey
 from sqlalchemy.dialects.mysql import TIMESTAMP
 from sqlalchemy.orm import relationship
