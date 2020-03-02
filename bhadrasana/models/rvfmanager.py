@@ -1,10 +1,10 @@
 from sqlalchemy import and_
 
 from ajna_commons.flask.log import logger
-from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, get_usuario_logado
+from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, get_usuario_logado, gera_objeto
 from bhadrasana.models.ovr import Marca
 from bhadrasana.models.ovrmanager import get_ovr
-from bhadrasana.models.rvf import RVF, Infracao
+from bhadrasana.models.rvf import RVF, Infracao, ImagemRVF
 
 
 def get_infracoes(session):
@@ -29,6 +29,28 @@ def get_rvf(session, id=None):
     if id is None:
         return RVF()
     return session.query(RVF).filter(RVF.id == id).one_or_none()
+
+
+def get_imagemrvf_or_none(session, rvf_id: str, _id: str):
+    return session.query(ImagemRVF).filter(
+        ImagemRVF.rvf_id == rvf_id).filter(
+        ImagemRVF.imagem == _id).one_or_none()
+
+
+def get_imagemrvf(session, rvf_id: str, _id: str):
+    imagemrvf = session.query(ImagemRVF).filter(
+        ImagemRVF.rvf_id == rvf_id).filter(
+        ImagemRVF.imagem == _id).one_or_none()
+    if imagemrvf is None:
+        return ImagemRVF()
+
+
+def cadastra_imagemrvf(session, params=None):
+    imagemrvf = get_imagemrvf(session,
+                              params.get('rvf_id'),
+                              params.get('imagem'))
+    if imagemrvf is not None:
+        return gera_objeto(imagemrvf, session, params)
 
 
 def lista_rvfovr(session, ovr_id):

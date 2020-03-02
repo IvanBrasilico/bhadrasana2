@@ -1,9 +1,6 @@
 import base64
-import io
-from base64 import b64encode, b64decode
 from datetime import date, timedelta
 
-from PIL.Image import Image
 from bson import ObjectId
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required
@@ -13,12 +10,12 @@ from werkzeug.utils import redirect
 from ajna_commons.flask.log import logger
 from ajna_commons.models.bsonimage import BsonImage
 from bhadrasana.forms.filtro_rvf import FiltroRVFForm
-from bhadrasana.forms.rvf import RVFForm
-from bhadrasana.models.ovrmanager import get_marcas
+from bhadrasana.forms.rvf import RVFForm, ImagemRVFForm
+from bhadrasana.models.ovrmanager import get_marcas, get_marcas_choice
 from bhadrasana.models.rvfmanager import get_rvfs_filtro, cadastra_rvf, \
     get_rvf, get_ids_anexos, inclui_marca_encontrada, \
     exclui_marca_encontrada, exclui_infracao_encontrada, inclui_infracao_encontrada, \
-    get_infracoes, lista_rvfovr
+    get_infracoes, lista_rvfovr, cadastra_imagemrvf, get_imagemrvf_or_none
 from bhadrasana.views import csrf
 
 
@@ -243,3 +240,53 @@ def rvf_app(app):
         rvf_id = grid_out['metadata']['rvf_id']
         db['fs.files'].delete_one({'_id': ObjectId(_id)})
         return redirect(url_for('rvf', id=rvf_id))
+
+    @app.route('/ver_imagens_rvf', methods=['GET'])
+    @login_required
+    def ver_imagens_rvf():
+        session = app.config.get('dbsession')
+        db = app.config['mongo_risco']
+        rvf_id = None
+        imagemativa = None
+        anexos = []
+        marcas = get_marcas_choice(session)
+        oform = ImagemRVFForm(marcas=marcas)
+        try:
+            rvf_id = request.args.get('rvf_id')
+            imagemativa = request.args.get('imagem')
+            if rvf_id is None:
+                raise Exception('RVF não informado!!!')
+            rvf = get_rvf(session, rvf_id)
+            imagemrvf = get_imagemrvf_or_none(session, rvf_id, imagemativa)
+            if imagemrvf is not None:
+                oform = ImagemRVFForm(**imagemrvf.__dict__, marcas=marcas)
+            anexos = get_ids_anexos(db, rvf)
+            oform.rvf_id.data = rvf_id
+            oform.imagem.data = imagemativa
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(type(err))
+            flash(err)
+        return render_template('imagens_rvf.html',
+                               rvf_id=rvf_id,
+                               oform=oform,
+                               imagemativa=imagemativa,
+                               anexos=anexos)
+
+    @app.route('/imagemrvf', methods=['POST'])
+    @login_required
+    def imagemrvf():
+        session = app.config.get('dbsession')
+        try:
+            oform = ImagemRVFForm(request.form)
+            oform.validate()
+            cadastra_imagemrvf(session, dict(oform.data.items()))
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(type(err))
+            flash(err)
+        return redirect(url_for('ver_imagens_rvf',
+                                rvf_id=oform.rvf_id.data,
+                                imagem=oform.imagem.data))
