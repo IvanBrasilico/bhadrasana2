@@ -2,6 +2,7 @@ from datetime import timedelta
 
 import pandas as pd
 from sqlalchemy import and_
+from sqlalchemy.orm import Session
 
 from ajna_commons.flask.log import logger
 from bhadrasana.models import Usuario, Setor
@@ -298,3 +299,14 @@ def importa_planilha(session, tg: TGOVR, afile):
     except KeyError as err:
         raise KeyError('Campo não encontrado. Campos obrigatórios na planilha são '
                        'numero, descricao, qtde e unidademedida. Opcionais ncm e valor. Erro: %s' % str(err))
+
+
+def exporta_planilhaovr(session: Session, user_name: str, filename: str):
+    """
+    Gera tabelão de OVRs (Tabela Gerencial EQODI) com pivot table
+
+    :param session: Conexão SQLAlchemy ao Banco de Dados
+    :param user_name: Nome do Usuário
+    :param filename: Nome do arquivo a gerar com caminho completo
+    """
+    raise NotImplementedError()

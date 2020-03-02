@@ -1,4 +1,5 @@
 import datetime
+import os
 from _collections import defaultdict
 
 from flask import request, flash, render_template, url_for, jsonify
@@ -14,8 +15,9 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_ovr_filtro, gera_eventoovr, get_tipos_evento, \
     gera_processoovr, get_tipos_processo, lista_itemtg, get_itemtg, get_recintos, \
     cadastra_itemtg, get_usuarios, atribui_responsavel_ovr, lista_tgovr, get_tgovr, \
-    cadastra_tgovr, get_ovr_responsavel, importa_planilha
+    cadastra_tgovr, get_ovr_responsavel, importa_planilha, exporta_planilhaovr
 from bhadrasana.models.ovrmanager import get_marcas_choice
+from bhadrasana.views import get_user_save_path
 from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, Item
 
 
@@ -217,20 +219,29 @@ def ovr_app(app):
     @login_required
     def listaitemtg():
         session = app.config.get('dbsession')
-        tg_id = request.args.get('tg_id')
-        item_id = request.args.get('item_id')
-        listaitemtg = lista_itemtg(session, tg_id)
-        marcas = get_marcas_choice(session)
-        if item_id:
-            itemtg = get_itemtg(session, item_id)
+        itemtg = None
+        try:
+            tg_id = request.args.get('tg_id')
+            if tg_id is None:
+                raise KeyError('Ocorreu um erro: parâmetro tg_id é necessário nesta tela.')
+            item_id = request.args.get('item_id')
+            listaitemtg = lista_itemtg(session, tg_id)
             marcas = get_marcas_choice(session)
-            oform = ItemTGForm(**itemtg.__dict__, marcas=marcas)
-        else:
-            oform = ItemTGForm(tg_id=tg_id, marcas=marcas)
-            max_numero_itemtg = 0
-            if listaitemtg and len(listaitemtg) > 0:
-                max_numero_itemtg = max([item.numero for item in listaitemtg])
-            oform.numero.data = max_numero_itemtg + 1
+            if item_id:
+                itemtg = get_itemtg(session, item_id)
+                marcas = get_marcas_choice(session)
+                oform = ItemTGForm(**itemtg.__dict__, marcas=marcas)
+            if itemtg is None:
+                oform = ItemTGForm(tg_id=tg_id, marcas=marcas)
+                max_numero_itemtg = 0
+                if listaitemtg and len(listaitemtg) > 0:
+                    max_numero_itemtg = max([item.numero for item in listaitemtg])
+                oform.numero.data = max_numero_itemtg + 1
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            # flash(type(err))
+            flash(str(err))
         return render_template('lista_itemtg.html',
                                listaitemtg=listaitemtg,
                                oform=oform)
@@ -284,6 +295,24 @@ def ovr_app(app):
             flash(str(type(err)))
             flash(str(err))
         return redirect(url_for('listaitemtg', tg_id=tg_id))
+
+    @app.route('/exportaplanilhaovr', methods=['GET'])
+    @login_required
+    def exporta_planilha_ovr():
+        """Exporta tabelão de OVRs do Setor com pivot table."""
+        try:
+            session = app.config.get('dbsession')
+            out_filename = current_user.name
+            exporta_planilhaovr(session,
+                               current_user.name,
+                               os.path.join(get_user_save_path(), out_filename))
+            return redirect('static/%s/%s' % (current_user.name, out_filename))
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return redirect(url_for('minhas_ovrs'))
 
     @app.route('/excluiobjeto/<classname>/<id>', methods=['POST'])
     @login_required
