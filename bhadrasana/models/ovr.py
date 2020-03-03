@@ -1,7 +1,7 @@
 from sqlalchemy import BigInteger, Column, DateTime, func, VARCHAR, Integer, \
-    ForeignKey, Numeric, CHAR, Table
+    ForeignKey, Numeric, CHAR, Table, create_engine
 from sqlalchemy.dialects.mysql import TIMESTAMP
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, sessionmaker
 
 from ajna_commons.flask.log import logger
 from bhadrasana.models import Base, BaseRastreavel
@@ -289,7 +289,11 @@ if __name__ == '__main__':  # pragma: no-cover
         sys.path.insert(0, '.')
         sys.path.insert(0, '../ajna_docs/commons')
         sys.path.insert(0, '../virasana')
-        from bhadrasana.main import engine
+        from ajna_commons.flask.conf import SQL_URI
+
+        engine = create_engine(SQL_URI)
+        Session = sessionmaker(bind=engine)
+        session = Session()
 
         metadata.drop_all(engine)
         metadata.create_all(engine)
