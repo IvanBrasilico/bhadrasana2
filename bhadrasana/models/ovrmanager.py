@@ -32,7 +32,7 @@ def cadastra_ovr(session, params: dict, user_name: str) -> OVR:
     ovr = get_ovr(session, params.get('id'))
     if ovr.user_name and ovr.user_name != user_name:
         raise ESomenteMesmoUsuario()
-    if ovr.fase > 3:
+    if ovr.fase > 2:
         raise EBloqueado()
     for key, value in params.items():
         if value and value != 'None':

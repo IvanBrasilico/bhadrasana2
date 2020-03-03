@@ -12,14 +12,16 @@
                             {{ oform.numeroCEmercante(class='form-control')}}
                         </div>
                         <div class="col-sm-3">
+                            Número do contêiner ou Lote
+                            {{ oform.numerolote(class='form-control')}}
+                        </div>
+                        <div class="col-sm-3">
                             Peso verificado em Kg
                             {{ oform.peso(class='form-control')}}
                         </div>
                         <div class="col-sm-3">
                             Volume verificado em m3
                             {{ oform.volume(class='form-control')}}
-                        </div>
-                        <div class="col-sm-3">
                         </div>
                         <div class="col-sm-12">
                             Descrição
@@ -45,19 +47,17 @@
                 </div>
                 <div class="row col-sm-12">
                     &nbsp;<br>
-                    <div class="col-sm-2">
+                    <div class="col-sm-3">
                         <button class="btn btn-default btn-primary form-control" onclick="submit">
                             Salvar
                         </button>
                     </div>
-                    <div class="col-sm-1">
-                    </div>
-                    <div class="col-sm-2">
+                    <div class="col-sm-3">
                         <a href="rvf_impressao/{{ oform.id.data }}" class="btn btn-info form-control">
                             Imprimir
                         </a>
                     </div>
-                    <div class="col-sm-7">
+                    <div class="col-sm-6">
                     </div>
                 </div>
             </form>
