@@ -3,8 +3,9 @@ import os
 from collections import OrderedDict
 from datetime import date, datetime
 
-from ajna_commons.flask.log import logger
 from sqlalchemy import select, and_, join, or_
+
+from ajna_commons.flask.log import logger
 from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, RiscoAtivo
 
 CAMPOS_RISCO = [('0', 'Selecione'),
@@ -79,6 +80,19 @@ def mercanterisco(session, pfiltros: dict, limit=1000):
     return result, str_filtros
 
 
+def save_planilharisco(lista_risco: list, save_path: str, filtros: str):
+    if lista_risco and len(lista_risco) > 0:
+        csv_salvo = 'resultado_' \
+                    + datetime.strftime(datetime.now(), '%Y-%m%dT%H%M%S') + \
+                    '.csv'
+        with open(os.path.join(save_path, csv_salvo), 'w') as out_file:
+            out_file.write(filtros + '\n')
+            out_file.write(';'.join([key for key in lista_risco[0].keys()]) + '\n')
+            for row in lista_risco:
+                campos = [str(value).replace(';', ',') for value in row.values()]
+                out_file.write(';'.join(campos) + '\n')
+
+
 def riscosativos(session, user_name):
     riscosativos = session.query(RiscoAtivo). \
         filter(RiscoAtivo.user_name == user_name).all()
@@ -111,7 +125,7 @@ def get_lista_csv(csvpath):
     lista_csv = os.listdir(csvpath)
     lista_csv = [os.path.join(csvpath, f)
                  for f in lista_csv
-                 if '.csv' in f]
+                 if '.csv' in f and 'resultado' in f]
     lista_csv.sort(key=lambda x: os.path.getmtime(x), reverse=True)
     for arquivo in lista_csv[4:]:  # Somente manter cinco resultados
         print('Excluir... %s' % arquivo)
