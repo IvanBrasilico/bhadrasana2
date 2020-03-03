@@ -77,7 +77,7 @@ def get_usuario_logado(session, user_name: str):
     usuario = session.query(Usuario).filter(
         Usuario.cpf == user_name).one_or_none()
     if not usuario:
-        raise ENaoAutorizado('Usuário inválido ou não informado.' +
+        raise ENaoAutorizado('Usuário %s inválido ou não informado.' % user_name +
                              'Somente Usuários habilitados podem salvar.')
     return usuario
 

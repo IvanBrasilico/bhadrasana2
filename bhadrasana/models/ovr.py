@@ -1,10 +1,9 @@
+from ajna_commons.flask.log import logger
+from bhadrasana.models import Base, BaseRastreavel
 from sqlalchemy import BigInteger, Column, DateTime, func, VARCHAR, Integer, \
     ForeignKey, Numeric, CHAR, Table, create_engine
 from sqlalchemy.dialects.mysql import TIMESTAMP
 from sqlalchemy.orm import relationship, sessionmaker
-
-from ajna_commons.flask.log import logger
-from bhadrasana.models import Base, BaseRastreavel
 
 metadata = Base.metadata
 

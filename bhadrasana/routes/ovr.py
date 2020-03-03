@@ -28,6 +28,7 @@ def ovr_app(app):
         processos = []
         tiposeventos = get_tipos_evento(session)
         recintos = get_recintos(session)
+        print(recintos)
         responsaveis = get_usuarios(session)
         ovr_form = OVRForm(tiposeventos=tiposeventos, recintos=recintos)
         tiposprocesso = get_tipos_processo(session)
@@ -220,17 +221,18 @@ def ovr_app(app):
     def listaitemtg():
         session = app.config.get('dbsession')
         itemtg = None
+        listaitemtg = []
         try:
+            marcas = get_marcas_choice(session)
+            oform = ItemTGForm(marcas=marcas)
             tg_id = request.args.get('tg_id')
             if tg_id is None:
                 raise KeyError('Ocorreu um erro: parâmetro tg_id'
                                'é necessário nesta tela.')
             item_id = request.args.get('item_id')
             listaitemtg = lista_itemtg(session, tg_id)
-            marcas = get_marcas_choice(session)
             if item_id:
                 itemtg = get_itemtg(session, item_id)
-                marcas = get_marcas_choice(session)
                 oform = ItemTGForm(**itemtg.__dict__, marcas=marcas)
             if itemtg is None:
                 oform = ItemTGForm(tg_id=tg_id, marcas=marcas)
