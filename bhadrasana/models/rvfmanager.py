@@ -1,11 +1,10 @@
-from sqlalchemy import and_
-
 from ajna_commons.flask.log import logger
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, \
     get_usuario_logado, gera_objeto
 from bhadrasana.models.ovr import Marca
 from bhadrasana.models.ovrmanager import get_ovr
 from bhadrasana.models.rvf import RVF, Infracao, ImagemRVF
+from sqlalchemy import and_
 
 
 def get_infracoes(session):
@@ -62,8 +61,9 @@ def lista_rvfovr(session, ovr_id):
     return session.query(RVF).filter(RVF.ovr_id == ovr_id).all()
 
 
-def cadastra_rvf(session, params=None,
-                 ovr_id=None):
+def cadastra_rvf(session, params: dict,
+                 user_name: str,
+                 ovr_id: int = None):
     rvf = None
     if ovr_id:
         ovr = get_ovr(session, ovr_id)
@@ -74,7 +74,7 @@ def cadastra_rvf(session, params=None,
         rvf.numeroCEmercante = ovr.numeroCEmercante
     elif params:
         rvf = get_rvf(session, params.get('id'))
-        usuario = get_usuario_logado(session, params)
+        usuario = get_usuario_logado(session, user_name)
         if rvf.user_name and rvf.user_name != usuario.cpf:
             raise ESomenteMesmoUsuario()
         for key, value in params.items():

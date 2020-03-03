@@ -1,4 +1,5 @@
 import sys
+
 from sqlalchemy import BigInteger, Column, DateTime, func, VARCHAR, Table, \
     Numeric, Integer, create_engine
 from sqlalchemy import ForeignKey
@@ -8,7 +9,7 @@ from sqlalchemy.orm import relationship, sessionmaker
 sys.path.append('.')
 sys.path.insert(0, '../ajna_docs/commons')
 sys.path.insert(0, '../virasana')
-from bhadrasana.models import Base
+from bhadrasana.models import Base, BaseRastreavel
 
 from bhadrasana.models.ovr import Marca
 
@@ -31,14 +32,14 @@ infracoesencontradas_table = Table('ovr_infracoesencontradas', metadata,
                                    )
 
 
-class RVF(Base):
+class RVF(BaseRastreavel):
     __tablename__ = 'ovr_verificacoesfisicas'
     id = Column(BigInteger(), primary_key=True)
     ovr_id = Column(BigInteger(), index=True)
     numeroCEmercante = Column(VARCHAR(15), index=True)
     numeroDI = Column(VARCHAR(10), index=True)
     numeroDUE = Column(VARCHAR(10), index=True)
-    numerolote = Column(VARCHAR(20), index=True, nullable=False)
+    numerolote = Column(VARCHAR(20), index=True)
     descricao = Column(VARCHAR(40), index=True)
     peso = Column(Numeric(10, 2), index=True)
     volume = Column(Numeric(10, 2), index=True)
@@ -61,7 +62,7 @@ class ImagemRVF(Base):
     itemtg_id = Column(BigInteger(), index=True)
     marca_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                       ForeignKey('ovr_marcas.id'))
-    marca = relationship('Marca')
+    marca = relationship(Marca)
 
 
 class Infracao(Base):
@@ -96,11 +97,10 @@ if __name__ == '__main__':
                                 # metadata.tables['ovr_marcas'],
                                 # metadata.tables['ovr_infracoesencontradas'],
                                 # metadata.tables['ovr_infracoes'],
-                                # metadata.tables['ovr_verificacoesfisicas']
-                                metadata.tables['ovr_imagensrvf'],
+                                # metadata.tables['ovr_verificacoesfisicas'],
+                                # metadata.tables['ovr_imagensrvf'],
                             ])
-
-        """
+        """"
         for nome in ('Falsa declaração de conteúdo',
                      'Interposição',
                      'Contrafação',

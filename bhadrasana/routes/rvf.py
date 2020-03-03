@@ -1,22 +1,20 @@
 import base64
 from datetime import date, timedelta
 
-from bson import ObjectId
-from flask import request, flash, render_template, url_for, jsonify
-from flask_login import login_required
-from gridfs import GridFS
-from werkzeug.utils import redirect
-
 from ajna_commons.flask.log import logger
 from ajna_commons.models.bsonimage import BsonImage
 from bhadrasana.forms.filtro_rvf import FiltroRVFForm
 from bhadrasana.forms.rvf import RVFForm, ImagemRVFForm
 from bhadrasana.models.ovrmanager import get_marcas, get_marcas_choice
-from bhadrasana.models.rvfmanager import get_rvfs_filtro, cadastra_rvf, \
-    get_rvf, get_ids_anexos, inclui_marca_encontrada, \
+from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, get_ids_anexos, inclui_marca_encontrada, \
     exclui_marca_encontrada, exclui_infracao_encontrada, inclui_infracao_encontrada, \
-    get_infracoes, lista_rvfovr, cadastra_imagemrvf, get_imagemrvf_or_none
+    get_infracoes, lista_rvfovr, cadastra_imagemrvf, get_imagemrvf_or_none, cadastra_rvf
 from bhadrasana.views import csrf
+from bson import ObjectId
+from flask import request, flash, render_template, url_for, jsonify
+from flask_login import login_required, current_user
+from gridfs import GridFS
+from werkzeug.utils import redirect
 
 
 def rvf_app(app):
@@ -70,7 +68,17 @@ def rvf_app(app):
                 print(dict(rvf_form.data.items()))
                 rvf_form.validate()
                 print(dict(rvf_form.data.items()))
-                rvf = cadastra_rvf(session, dict(rvf_form.data.items()))
+                rvf = cadastra_rvf(session,
+                                   dict(rvf_form.data.items()),
+                                   user_name=current_user.name)
+                session.refresh(rvf)
+                return redirect(url_for('rvf', id=rvf.id))
+            # ELSE
+            ovr_id = request.args.get('ovr')
+            if ovr_id is not None:
+                rvf = cadastra_rvf(session, ovr_id=ovr_id,
+                                   user_name=current_user.name)
+                session.refresh(rvf)
                 return redirect(url_for('rvf', id=rvf.id))
             # ELSE
             db = app.config['mongo_risco']
@@ -79,10 +87,6 @@ def rvf_app(app):
             rvf_id = request.args.get('id')
             if rvf_id is not None:
                 rvf = get_rvf(session, rvf_id)
-            else:
-                ovr_id = request.args.get('ovr')
-                if ovr_id is not None:
-                    rvf = cadastra_rvf(session, ovr_id=ovr_id)
             if rvf is not None:
                 rvf_form = RVFForm(**rvf.__dict__)
                 if rvf.datahora:
