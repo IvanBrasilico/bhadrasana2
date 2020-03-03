@@ -1,18 +1,17 @@
 import datetime
 
+from ajna_commons.flask.log import logger
 from sqlalchemy import Column, func, VARCHAR, CHAR, ForeignKey
 from sqlalchemy.dialects.mysql import TIMESTAMP
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
-from ajna_commons.flask.log import logger
-
 Base = declarative_base()
 
 
 class ENaoAutorizado(Exception):
-    def __init__(self):
-        Exception.__init__(self, 'Usuário não autorizado.')
+    def __init__(self, msg='Usuário não autorizado.'):
+        Exception.__init__(self, msg)
 
 
 class ESomenteMesmoUsuario(Exception):
@@ -72,14 +71,13 @@ def handle_datahora(params):
     return datetime.datetime.combine(data, hora)
 
 
-def get_usuario_logado(session, params):
-    user_name = params.get('user_name')
+def get_usuario_logado(session, user_name: str):
     if user_name is None:
         raise KeyError('Usuário não foi informado!')
     usuario = session.query(Usuario).filter(
         Usuario.cpf == user_name).one_or_none()
     if not usuario:
-        raise ENaoAutorizado('Usuário inválido ou não informado.'
+        raise ENaoAutorizado('Usuário inválido ou não informado.' +
                              'Somente Usuários habilitados podem salvar.')
     return usuario
 

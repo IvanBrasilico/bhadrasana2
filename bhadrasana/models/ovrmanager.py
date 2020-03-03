@@ -30,7 +30,7 @@ def get_tipos_processo(session):
 
 def cadastra_ovr(session, params: dict, user_name: str) -> OVR:
     ovr = get_ovr(session, params.get('id'))
-    if ovr.user_name and ovr.user_name != params['user_name']:
+    if ovr.user_name and ovr.user_name != user_name:
         raise ESomenteMesmoUsuario()
     if ovr.fase > 3:
         raise EBloqueado()
@@ -39,7 +39,7 @@ def cadastra_ovr(session, params: dict, user_name: str) -> OVR:
             setattr(ovr, key, value)
     ovr.datahora = handle_datahora(params)
     try:
-        usuario = get_usuario_logado(session, params)
+        usuario = get_usuario_logado(session, user_name)
         ovr.setor_id = usuario.setor_id
         session.add(ovr)
         session.commit()
