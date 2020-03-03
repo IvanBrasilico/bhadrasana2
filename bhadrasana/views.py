@@ -42,7 +42,7 @@ from bhadrasana.conf import APP_PATH
 from bhadrasana.forms.editarisco import get_edita_risco_form
 from bhadrasana.forms.riscosativos import RiscosAtivosForm
 from bhadrasana.models.riscomanager import mercanterisco, riscosativos, \
-    insererisco, exclui_risco, CAMPOS_RISCO, get_lista_csv
+    insererisco, exclui_risco, CAMPOS_RISCO, get_lista_csv, save_planilharisco
 
 tmpdir = tempfile.mkdtemp()
 
@@ -168,17 +168,7 @@ def risco():
             flash(str(type(err)))
             flash(str(err))
         # Salvar resultado um arquivo para donwload
-        # Limita resultados em 100 linhas na tela
-        if lista_risco and len(lista_risco) > 0:
-            csv_salvo = 'resultado_' \
-                        + datetime.strftime(datetime.now(), '%Y-%m%dT%H%M%S') + \
-                        '.csv'
-            with open(os.path.join(get_user_save_path(), csv_salvo), 'w') as out_file:
-                out_file.write(str_filtros + '\n')
-                out_file.write(';'.join([key for key in lista_risco[0].keys()]) + '\n')
-                for row in lista_risco:
-                    campos = [str(value).replace(';', ',') for value in row.values()]
-                    out_file.write(';'.join(campos) + '\n')
+        save_planilharisco(lista_risco, get_user_save_path(), str_filtros)
     else:
         riscos_ativos_form = RiscosAtivosForm()
         planilha_atual = request.args.get('planilha_atual', '')
@@ -186,6 +176,7 @@ def risco():
             csv_salvo = planilha_atual
             lista_risco = le_csv(os.path.join(get_user_save_path(), csv_salvo))
     total_linhas = len(lista_risco)
+    # Limita resultados em 100 linhas na tela
     lista_risco = append_images(lista_risco[:100])
     return render_template('aplica_risco.html',
                            oform=riscos_ativos_form,
