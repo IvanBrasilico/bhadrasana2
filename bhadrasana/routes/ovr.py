@@ -304,7 +304,7 @@ def ovr_app(app):
         """Exporta tabelão de OVRs do Setor com pivot table."""
         try:
             session = app.config.get('dbsession')
-            out_filename = current_user.name
+            out_filename = 'planilha_ovr1.csv'
             exporta_planilhaovr(session,
                                 current_user.name,
                                 os.path.join(get_user_save_path(), out_filename))
