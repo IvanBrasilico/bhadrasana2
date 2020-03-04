@@ -312,4 +312,11 @@ def exporta_planilhaovr(session: Session, user_name: str, filename: str):
     :param user_name: Nome do Usuário
     :param filename: Nome do arquivo a gerar com caminho completo
     """
-    raise NotImplementedError()
+    sql_processos = 'SELECT o.id, tipoprocesso_id, p.numero FROM ovr_ovrs o inner join ovr_processos p on o.id = p.ovr_id'
+    sql_ovrs = 'SELECT * FROM ovr_ovrs'
+    processsos = pd.read_sql(sql_processos, session.get_bind())
+    processsos = processsos.pivot(index='id', columns='tipoprocesso_id', values='numero')
+    processsos = processsos.fillna('').reset_index()
+    ovrs = pd.read_sql(sql_ovrs, session.get_bind())
+    df = pd.merge(ovrs, processsos, how='inner', on='id')
+    df.to_csv(filename)
