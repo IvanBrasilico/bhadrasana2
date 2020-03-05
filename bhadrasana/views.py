@@ -61,7 +61,7 @@ def configure_app(mongodb, sqlsession, mongo_risco):
     app.config['dbsession'] = sqlsession
     app.config['mongodb'] = mongodb
     app.config['mongo_risco'] = mongo_risco
-    login_ajna.login_manager.login_view = 'bhadrasana2/login'
+    # login_ajna.login_manager.login_view = 'bhadrasana2/log'
     return app
 
 
