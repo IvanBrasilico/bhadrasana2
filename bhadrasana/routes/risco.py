@@ -40,7 +40,7 @@ def risco_app(app):
 
     def le_csv(filename):
         df = pd.read_csv(filename, sep=';',
-                         header=5, encoding='windows-1252')
+                         header=5)
         return [row[1].to_dict() for row in df.iterrows()]
 
     @app.route('/risco', methods=['POST', 'GET'])
