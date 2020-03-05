@@ -21,6 +21,12 @@ a aplicação de filtros/parâmetros de risco.
 import os
 import tempfile
 
+import ajna_commons.flask.login as login_ajna
+from ajna_commons.flask.conf import ALLOWED_EXTENSIONS, SECRET, logo
+from ajna_commons.flask.log import logger
+from ajna_commons.flask.user import DBUser
+from ajna_commons.utils.images import mongo_image
+from bhadrasana.conf import APP_PATH
 from flask import (Flask, redirect, render_template, request,
                    url_for, Response)
 from flask_bootstrap import Bootstrap
@@ -29,13 +35,6 @@ from flask_login import current_user
 from flask_nav import Nav
 from flask_nav.elements import Navbar, View
 from flask_wtf.csrf import CSRFProtect
-
-import ajna_commons.flask.login as login_ajna
-from ajna_commons.flask.conf import ALLOWED_EXTENSIONS, SECRET, logo
-from ajna_commons.flask.log import logger
-from ajna_commons.flask.user import DBUser
-from ajna_commons.utils.images import mongo_image
-from bhadrasana.conf import APP_PATH
 
 tmpdir = tempfile.mkdtemp()
 
@@ -48,6 +47,11 @@ nav.init_app(app)
 
 def configure_app(mongodb, sqlsession, mongo_risco):
     """Configurações gerais e de Banco de Dados da Aplicação."""
+
+    @app.route('/bhadrasana2/login', methods=['GET', 'POST'])
+    def bhadrasana_login():
+        return login_ajna.login_view()
+
     app.config['DEBUG'] = os.environ.get('DEBUG', 'None') == '1'
     print(app.debug)
     if app.config['DEBUG'] is True:
