@@ -50,7 +50,7 @@ def configure_app(mongodb, sqlsession, mongo_risco):
 
     @app.route('/bhadrasana2/login', methods=['GET', 'POST'])
     def bhadrasana_login():
-        return login_ajna.login_view()
+        return login_ajna.login_view(request)
 
     app.config['DEBUG'] = os.environ.get('DEBUG', 'None') == '1'
     print(app.debug)
@@ -65,7 +65,7 @@ def configure_app(mongodb, sqlsession, mongo_risco):
     app.config['dbsession'] = sqlsession
     app.config['mongodb'] = mongodb
     app.config['mongo_risco'] = mongo_risco
-    # login_ajna.login_manager.login_view = 'bhadrasana2/log'
+    login_ajna.login_manager.login_view = 'bhadrasana_login'
     return app
 
 
