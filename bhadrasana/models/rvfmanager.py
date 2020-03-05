@@ -61,8 +61,9 @@ def lista_rvfovr(session, ovr_id):
     return session.query(RVF).filter(RVF.ovr_id == ovr_id).all()
 
 
-def cadastra_rvf(session, params: dict,
+def cadastra_rvf(session,
                  user_name: str,
+                 params: dict = None,
                  ovr_id: int = None):
     rvf = None
     if ovr_id:
