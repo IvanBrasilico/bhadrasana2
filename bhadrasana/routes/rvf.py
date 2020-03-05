@@ -69,8 +69,8 @@ def rvf_app(app):
                 rvf_form.validate()
                 print(dict(rvf_form.data.items()))
                 rvf = cadastra_rvf(session,
-                                   dict(rvf_form.data.items()),
-                                   user_name=current_user.name)
+                                   user_name=current_user.name,
+                                   params=dict(rvf_form.data.items()))
                 session.refresh(rvf)
                 return redirect(url_for('rvf', id=rvf.id))
             # ELSE

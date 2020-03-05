@@ -233,7 +233,7 @@ mercadorias_table = Table('ovr_tgvor_mercadorias', metadata,
                           )
 
 
-class TGOVR(Base):
+class TGOVR(BaseRastreavel):
     __tablename__ = 'ovr_tgovr'
     id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
     ovr_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
@@ -250,8 +250,16 @@ class TGOVR(Base):
     mercadorias = relationship('TipoMercadoria',
                                secondary=mercadorias_table)
     itenstg = relationship('ItemTG', back_populates='tg')
-    create_date = Column(TIMESTAMP, index=True,
-                         server_default=func.current_timestamp())
+
+    # Ano:
+    # Número do TG:
+    # Data de registro:
+    # AFRFB:
+    # Autuado:
+    # Embalagem
+    # Quantidade da embalagem: (campo aberto).
+    # Identificação: (campo aberto)
+    # Observações: (campo aberto)
 
     def get_unidadedemedida(self):
         return Enumerado.unidadeMedida(self.unidadedemedida)
@@ -304,7 +312,7 @@ if __name__ == '__main__':  # pragma: no-cover
                               # metadata.tables['ovr_tiposprocesso'],
                               # metadata.tables['ovr_eventos'],
                               # metadata.tables['ovr_processos'],
-                              # metadata.tables['ovr_tgovr'],
+                              metadata.tables['ovr_tgovr'],
                               # metadata.tables['ovr_itenstg'],
                               # metadata.tables['ovr_setores'],
                               # metadata.tables['ovr_usuarios'],
@@ -319,7 +327,7 @@ if __name__ == '__main__':  # pragma: no-cover
                                 #  metadata.tables['ovr_eventos'],
                                 #  metadata.tables['ovr_processos'],
                                 #  metadata.tables['ovr_tiposmercadoria'],
-                                #  metadata.tables['ovr_tgovr'],
+                                metadata.tables['ovr_tgovr'],
                                 #  metadata.tables['ovr_itenstg'],
                                 #  metadata.tables['ovr_setores'],
                                 #  metadata.tables['ovr_usuarios'],

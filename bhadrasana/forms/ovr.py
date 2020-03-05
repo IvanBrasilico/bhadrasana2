@@ -116,9 +116,9 @@ class TGOVRForm(FlaskForm):
                               render_kw={'rows': 5, 'cols': 100},
                               default='')
     unidadedemedida = SelectField('Unidade de Medida', default=1)
-    qtde = StringField(u'Quantidade',
+    qtde = StringField(u'Quantidade total',
                        default='')
-    valor = StringField(u'Valor unitário',
+    valor = StringField(u'Valor total',
                         default='')
 
     def __init__(self, *args, **kwargs):
