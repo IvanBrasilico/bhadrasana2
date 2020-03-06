@@ -113,17 +113,27 @@ class TGOVRForm(FlaskForm):
     numerolote = StringField(u'Número do contêiner, ou do lote do terminal'
                              u' se não houver contêiner', default='')
     descricao = TextAreaField(u'Descrição',
-                              render_kw={'rows': 5, 'cols': 100},
+                              render_kw={'rows': 4, 'cols': 100},
                               default='')
     unidadedemedida = SelectField('Unidade de Medida', default=1)
     qtde = StringField(u'Quantidade total',
                        default='')
     valor = StringField(u'Valor total',
                         default='')
+    tipomercadoria_id = SelectField('Unidade de Medida', default=0)
+    numerotg = StringField(u'Número do Termo de Guarda', default='')
+    afrfb = StringField(u'CPF do AFRFB Responsável', default='')
+    identificacao = StringField(u'Identificação(marca) da carga', default='')
+    observacoes = TextAreaField(u'Observações',
+                                render_kw={'rows': 4, 'cols': 100},
+                                default='')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.unidadedemedida.choices = Enumerado.unidadeMedida()
+        self.tipomercadoria_id.choices = []
+        if kwargs.get('tiposmercadoria'):
+            self.tipomercadoria_id.choices.extend(kwargs.get('tiposmercadoria'))
 
 
 class ItemTGForm(FlaskForm):

@@ -51,6 +51,7 @@ def configure_app(mongodb, sqlsession, mongo_risco):
     @app.route('/bhadrasana2/login', methods=['GET', 'POST'])
     def bhadrasana_login():
         return login_ajna.login_view(request)
+    login_ajna.login_manager.login_view = 'bhadrasana_login'
 
     app.config['DEBUG'] = os.environ.get('DEBUG', 'None') == '1'
     print(app.debug)
@@ -65,7 +66,6 @@ def configure_app(mongodb, sqlsession, mongo_risco):
     app.config['dbsession'] = sqlsession
     app.config['mongodb'] = mongodb
     app.config['mongo_risco'] = mongo_risco
-    login_ajna.login_manager.login_view = 'bhadrasana_login'
     return app
 
 
@@ -120,10 +120,10 @@ def mynavbar():
     items = [View('Home', 'index'),
              View('Risco', 'risco'),
              View('Editar Riscos', 'edita_risco'),
-             View('RVF', 'pesquisa_rvf'),
+             View('Verificações físicas', 'pesquisa_rvf'),
              # View('FMA', 'pesquisa_fma'),
-             View('OVR', 'pesquisa_ovr'),
-             View('Minhas OVRs', 'minhas_ovrs'),
+             View('Ficha de Carga', 'pesquisa_ovr'),
+             View('Minhas Fichas', 'minhas_ovrs'),
              # View('Avaliar PDFs trânsito', 'transito'),
              ]
     if current_user.is_authenticated:

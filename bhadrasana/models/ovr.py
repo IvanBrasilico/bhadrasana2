@@ -1,4 +1,8 @@
-from ajna_commons.flask.log import logger
+import sys
+
+sys.path.insert(0, '.')
+sys.path.insert(0, '../ajna_docs/commons')
+sys.path.insert(0, '../virasana')
 from bhadrasana.models import Base, BaseRastreavel
 from sqlalchemy import BigInteger, Column, DateTime, func, VARCHAR, Integer, \
     ForeignKey, Numeric, CHAR, Table, create_engine
@@ -72,7 +76,7 @@ class Enumerado:
             try:
                 return listatipo[id]
             except IndexError:
-                logger.warning('Item %s não encontrado em %s' % (id, listatipo))
+                print('Item %s não encontrado em %s' % (id, listatipo))
                 return None
         else:
             return [(id, item) for id, item in enumerate(listatipo, 1)]
@@ -110,7 +114,6 @@ class OVR(BaseRastreavel):
     tipooperacao = Column(Integer(), index=True)
     ano = Column(VARCHAR(4), index=True)
     numeroCEmercante = Column(VARCHAR(15), index=True)
-    recinto = Column(VARCHAR(50), index=True)
     observacoes = Column(VARCHAR(200), index=True)
     datahora = Column(TIMESTAMP, index=True)
     fase = Column(Integer(), index=True, default=0)
@@ -118,7 +121,7 @@ class OVR(BaseRastreavel):
                            ForeignKey('ovr_tiposevento.id'),
                            default=1)
     tipoevento = relationship('TipoEventoOVR')
-    recinto_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
+    recinto_id = Column(CHAR(10),
                         ForeignKey('ovr_recintos.id'))
     recinto = relationship('Recinto')
     setor_id = Column(CHAR(15),
@@ -224,14 +227,6 @@ marcas_table = Table('ovr_tgvor_marcas', metadata,
                             ForeignKey('ovr_marcas.id'))
                      )
 
-mercadorias_table = Table('ovr_tgvor_mercadorias', metadata,
-                          Column('tg_id', BigInteger().with_variant(Integer, 'sqlite'),
-                                 ForeignKey('ovr_tgovr.id')),
-                          Column('tipomercadoria_id',
-                                 BigInteger().with_variant(Integer, 'sqlite'),
-                                 ForeignKey('ovr_tiposmercadoria.id'))
-                          )
-
 
 class TGOVR(BaseRastreavel):
     __tablename__ = 'ovr_tgovr'
@@ -247,19 +242,14 @@ class TGOVR(BaseRastreavel):
     valor = Column(Numeric(10, 4))
     marcas = relationship('Marca',
                           secondary=marcas_table)
-    mercadorias = relationship('TipoMercadoria',
-                               secondary=mercadorias_table)
+    tipomercadoria_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
+                               ForeignKey('ovr_tiposmercadoria.id'))
+    tipomercadoria = relationship('TipoMercadoria')
     itenstg = relationship('ItemTG', back_populates='tg')
-
-    # Ano:
-    # Número do TG:
-    # Data de registro:
-    # AFRFB:
-    # Autuado:
-    # Embalagem
-    # Quantidade da embalagem: (campo aberto).
-    # Identificação: (campo aberto)
-    # Observações: (campo aberto)
+    numerotg = Column(VARCHAR(20), index=True)
+    afrfb = Column(VARCHAR(20), index=True)
+    identificacao = Column(VARCHAR(50), index=True)
+    observacoes = Column(VARCHAR(200), index=True)
 
     def get_unidadedemedida(self):
         return Enumerado.unidadeMedida(self.unidadedemedida)
@@ -302,8 +292,6 @@ if __name__ == '__main__':  # pragma: no-cover
         Session = sessionmaker(bind=engine)
         session = Session()
 
-        metadata.drop_all(engine)
-        metadata.create_all(engine)
 
         metadata.drop_all(engine,
                           [
@@ -312,25 +300,24 @@ if __name__ == '__main__':  # pragma: no-cover
                               # metadata.tables['ovr_tiposprocesso'],
                               # metadata.tables['ovr_eventos'],
                               # metadata.tables['ovr_processos'],
-                              metadata.tables['ovr_tgovr'],
+                              # metadata.tables['ovr_tgovr'],
                               # metadata.tables['ovr_itenstg'],
                               # metadata.tables['ovr_setores'],
-                              # metadata.tables['ovr_usuarios'],
                               # metadata.tables['ovr_tiposmercadoria'],
                           ])
 
         metadata.create_all(engine,
                             [
-                                #  metadata.tables['ovr_ovrs'],
-                                #  metadata.tables['ovr_tiposevento'],
-                                #  metadata.tables['ovr_tiposprocesso'],
-                                #  metadata.tables['ovr_eventos'],
-                                #  metadata.tables['ovr_processos'],
-                                #  metadata.tables['ovr_tiposmercadoria'],
+                                # metadata.tables['ovr_usuarios'],
+                                # metadata.tables['ovr_ovrs'],
+                                # metadata.tables['ovr_tiposevento'],
+                                # metadata.tables['ovr_tiposprocesso'],
+                                # metadata.tables['ovr_eventos'],
+                                # metadata.tables['ovr_processos'],
+                                # metadata.tables['ovr_tiposmercadoria'],
                                 metadata.tables['ovr_tgovr'],
-                                #  metadata.tables['ovr_itenstg'],
+                                metadata.tables['ovr_itenstg'],
                                 #  metadata.tables['ovr_setores'],
-                                #  metadata.tables['ovr_usuarios'],
                                 #  metadata.tables['ovr_recintos'],
                             ])
         """
@@ -355,3 +342,28 @@ if __name__ == '__main__':  # pragma: no-cover
             session.add(evento)
         session.commit()
         """
+        tiposmercadoria = ['Alimentos',
+                           'Automotivo',
+                           'Bagagem',
+                           'Brinquedos',
+                           'Eletro-eletrônico'
+                           'Livro',
+                           'Informática',
+                           'Máquinas',
+                           'Papel',
+                           'Têxtil',
+                           'Químico',
+                           'Ferramenta',
+                           'Obras de metal',
+                           'Obras de borracha',
+                           'Obras de vidro',
+                           'Obras de plástico',
+                           'Bebidas',
+                           'Medicamento',
+                           'Sem valor comercial',
+                           'Container vazio']
+        for nome in tiposmercadoria:
+            tipomercadoria = TipoMercadoria()
+            tipomercadoria.nome = nome
+            session.add(tipomercadoria)
+        session.commit()
