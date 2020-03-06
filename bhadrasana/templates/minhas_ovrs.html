@@ -26,11 +26,11 @@
                    id="filtro_personalizado_table">
                 <thead>
                 <tr>
-                    <th></th>
+                    <th>Ficha Nº</th>
                     <th>Tipo Operação</th>
-                    <th>Ano</th>
-                    <th>Número</th>
                     <th>Recinto</th>
+                    <th>Ano</th>
+                    <th>Número doc.</th>
                     <th>CE Mercante</th>
                     <th>Data</th>
                     <th>Último Evento</th>
@@ -41,9 +41,9 @@
                 <tr>
                     <td><a href="ovr?id={{ ovr.id }}">{{ ovr.id }}</a></td>
                     <td>{{ ovr.get_tipooperacao() }}</td>
-                    <td>{{ ovr.ano }}</td>
-                    <td>{{ ovr.numero }}</td>
                     <td>{{ ovr.recinto.nome }}</td>
+                    <td>{{ ovr.get_ano() }}</td>
+                    <td>{{ ovr.numero }}</td>
                     <td>{{ ovr.numeroCEmercante }}</td>
                     <td>{{ ovr.datahora }}</td>
                     <td>{{ ovr.tipoevento.nome }}</td>

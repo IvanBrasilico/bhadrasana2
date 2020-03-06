@@ -1,4 +1,5 @@
 import sys
+from datetime import datetime
 
 sys.path.insert(0, '.')
 sys.path.insert(0, '../ajna_docs/commons')
@@ -79,7 +80,7 @@ class Enumerado:
                 print('Item %s não encontrado em %s' % (id, listatipo))
                 return None
         else:
-            return [(id, item) for id, item in enumerate(listatipo, 1)]
+            return [(id, item) for id, item in enumerate(listatipo, 0)]
 
     @classmethod
     def faseOVR(cls, id=None):
@@ -112,8 +113,8 @@ class OVR(BaseRastreavel):
                 primary_key=True)
     numero = Column(VARCHAR(10), index=True)
     tipooperacao = Column(Integer(), index=True)
-    ano = Column(VARCHAR(4), index=True)
     numeroCEmercante = Column(VARCHAR(15), index=True)
+    numerodeclaracao = Column(VARCHAR(20), index=True)
     observacoes = Column(VARCHAR(200), index=True)
     datahora = Column(TIMESTAMP, index=True)
     fase = Column(Integer(), index=True, default=0)
@@ -134,6 +135,11 @@ class OVR(BaseRastreavel):
     historico = relationship('EventoOVR', back_populates='ovr')
     processos = relationship('ProcessoOVR', back_populates='ovr')
     tgs = relationship('TGOVR', back_populates='ovr')
+
+    def get_ano(self):
+        if self.datahora is not None and isinstance(self.datahora, datetime):
+            return self.datahora.year
+        return ''
 
     def get_fase(self):
         return Enumerado.faseOVR(self.fase)
@@ -292,7 +298,6 @@ if __name__ == '__main__':  # pragma: no-cover
         Session = sessionmaker(bind=engine)
         session = Session()
 
-
         metadata.drop_all(engine,
                           [
                               # metadata.tables['ovr_ovrs'],
@@ -315,8 +320,8 @@ if __name__ == '__main__':  # pragma: no-cover
                                 # metadata.tables['ovr_eventos'],
                                 # metadata.tables['ovr_processos'],
                                 # metadata.tables['ovr_tiposmercadoria'],
-                                metadata.tables['ovr_tgovr'],
-                                metadata.tables['ovr_itenstg'],
+                                # metadata.tables['ovr_tgovr'],
+                                # metadata.tables['ovr_itenstg'],
                                 #  metadata.tables['ovr_setores'],
                                 #  metadata.tables['ovr_recintos'],
                             ])
@@ -341,6 +346,7 @@ if __name__ == '__main__':  # pragma: no-cover
             evento.fase = fase
             session.add(evento)
         session.commit()
+        """
         """
         tiposmercadoria = ['Alimentos',
                            'Automotivo',
@@ -367,3 +373,4 @@ if __name__ == '__main__':  # pragma: no-cover
             tipomercadoria.nome = nome
             session.add(tipomercadoria)
         session.commit()
+        """

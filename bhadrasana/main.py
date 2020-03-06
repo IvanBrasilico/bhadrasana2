@@ -17,15 +17,15 @@ conexões internas.
 Adicionalmente, permite o merge entre bases, navegação de bases, e
 a aplicação de filtros/parâmetros de risco.
 """
-from pymongo import MongoClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
 from ajna_commons.flask.conf import DATABASE, MONGODB_URI, SQL_URI
+from bhadrasana.routes.admin import admin_app
 from bhadrasana.routes.ovr import ovr_app
 from bhadrasana.routes.risco import risco_app
 from bhadrasana.routes.rvf import rvf_app
 from bhadrasana.views import configure_app
+from pymongo import MongoClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 conn = MongoClient(host=MONGODB_URI)
 mongodb = conn[DATABASE]
@@ -37,6 +37,7 @@ app = configure_app(mongodb, session, mongodb_risco)
 risco_app(app)
 rvf_app(app)
 ovr_app(app)
+admin_app(app, session)
 
 if __name__ == '__main__':
     print('Iniciando Servidor Bhadrasana...')

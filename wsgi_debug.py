@@ -1,7 +1,7 @@
 import os
 import sys
 from werkzeug.serving import run_simple
-from werkzeug.wsgi import DispatcherMiddleware
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
 sys.path.insert(0, '../ajna_docs/commons')
 sys.path.insert(0, '../virasana')

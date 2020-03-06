@@ -45,7 +45,7 @@
             Novo Termo de Guarda
         </button>
     </div>
-    <div id="form_div" class="row">
+    <div id="form_div" class="row col-sm-12">
         <form method="POST" id="formtgovr" action="tgovr">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <input type="hidden" name="id" value="{{ oform.id.data }}"/>
@@ -61,16 +61,36 @@
                         {{ oform.descricao(class='form-control')}}
                     </div>
                     <div class="col-sm-12">
-                        Unidade
+                        Unidade de medida
                         {{ oform.unidadedemedida(class='form-control')}}
                     </div>
                     <div class="col-sm-12">
-                        Qtde
+                        Quantidade total
                         {{ oform.qtde(class='form-control')}}
                     </div>
                     <div class="col-sm-12">
-                        Valor unitário
+                        Valor total
                         {{ oform.valor(class='form-control') }}
+                    </div>
+                    <div class="col-sm-12">
+                        Tipo de mercadoria principal
+                        {{ oform.tipomercadoria_id(class='form-control') }}
+                    </div>
+                    <div class="col-sm-12">
+                        Número do TG
+                        {{ oform.numerotg(class='form-control') }}
+                    </div>
+                    <div class="col-sm-12">
+                        Auditor Fiscal Responsável
+                        {{ oform.afrfb(class='form-control') }}
+                    </div>
+                    <div class="col-sm-12">
+                        Identificação principal do produto (Marca, código, Part Number, etc)
+                        {{ oform.identificacao(class='form-control') }}
+                    </div>
+                    <div class="col-sm-12">
+                        Outras observações
+                        {{ oform.observacoes(class='form-control') }}
                     </div>
                 </div>
             </div>
