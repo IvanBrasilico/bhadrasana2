@@ -9,7 +9,7 @@ from bhadrasana.models import Usuario, Setor, EBloqueado
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto, \
     get_usuario_logado
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
-    TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado
+    TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria
 
 
 def get_recintos(session):
@@ -29,9 +29,13 @@ def get_tipos_processo(session):
 
 
 def cadastra_ovr(session, params: dict, user_name: str) -> OVR:
+    usuario = get_usuario_logado(session, user_name)
     ovr = get_ovr(session, params.get('id'))
     if ovr.user_name and ovr.user_name != user_name:
         raise ESomenteMesmoUsuario()
+    if not ovr.user_name:
+        ovr.setor_id = usuario.setor_id
+        ovr.user_name = usuario.cpf
     if ovr.fase > 2:
         raise EBloqueado()
     for key, value in params.items():
@@ -39,8 +43,6 @@ def cadastra_ovr(session, params: dict, user_name: str) -> OVR:
             setattr(ovr, key, value)
     ovr.datahora = handle_datahora(params)
     try:
-        usuario = get_usuario_logado(session, user_name)
-        ovr.setor_id = usuario.setor_id
         session.add(ovr)
         session.commit()
     except Exception as err:
@@ -270,6 +272,10 @@ def get_marcas(session):
 def get_marcas_choice(session):
     marcas = session.query(Marca).all()
     return [(marca.id, marca.nome) for marca in marcas]
+
+def get_tiposmercadoria_choice(session):
+    tipos = session.query(TipoMercadoria).all()
+    return [(tipo.id, tipo.nome) for tipo in tipos]
 
 
 def importa_planilha(session, tg: TGOVR, afile):

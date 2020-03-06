@@ -15,7 +15,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_ovr_filtro, gera_eventoovr, get_tipos_evento, \
     gera_processoovr, get_tipos_processo, lista_itemtg, get_itemtg, get_recintos, \
     cadastra_itemtg, get_usuarios, atribui_responsavel_ovr, lista_tgovr, get_tgovr, \
-    cadastra_tgovr, get_ovr_responsavel, importa_planilha, exporta_planilhaovr
+    cadastra_tgovr, get_ovr_responsavel, importa_planilha, exporta_planilhaovr, get_tiposmercadoria_choice
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.views import get_user_save_path
 from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, Item
@@ -188,11 +188,12 @@ def ovr_app(app):
         item_id = request.args.get('item_id')
         listatgovr = lista_tgovr(session, ovr_id)
         marcas = get_marcas_choice(session)
+        tipos = get_tiposmercadoria_choice(session)
         if item_id:
             tgovr = get_tgovr(session, item_id)
-            oform = TGOVRForm(**tgovr.__dict__, marcas=marcas)
+            oform = TGOVRForm(**tgovr.__dict__, marcas=marcas, tiposmercadoria=tipos)
         else:
-            oform = TGOVRForm(ovr_id=ovr_id, marcas=marcas)
+            oform = TGOVRForm(ovr_id=ovr_id, marcas=marcas, tiposmercadoria=tipos)
         return render_template('lista_tgovr.html',
                                listatgovr=listatgovr,
                                oform=oform)

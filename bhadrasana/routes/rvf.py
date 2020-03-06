@@ -215,13 +215,16 @@ def rvf_app(app):
         try:
             rvf_id = request.form.get('rvf_id')
             if rvf_id is None:
+                logger.error('Informe o parâmetro rvf_id')
                 return jsonify({'msg': 'Informe o parâmetro rvf_id'}), 500
             content = request.form.get('content')
             filename = request.form.get('filename')
             print(len(filename), filename, len(content), type(content))
             if content is None or len(content) < 100:
+                logger.error('Imagem vazia ou inválida')
                 return jsonify({'msg': 'Imagem vazia ou inválida'}), 500
             if filename is None:
+                logger.error('Filename vazio')
                 return jsonify({'msg': 'Informe o parâmetro filename'}), 500
             image = base64.decodebytes(content.split(',')[1].encode())
             bson_img = BsonImage()

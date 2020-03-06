@@ -60,13 +60,13 @@
             </button>
         </div>
     </div>
-    <div id="form_div" class="row">
+    <div id="form_div" class="row col-sm-12">
         <form method="POST" id="formitemtg" action="itemtg">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <input type="hidden" name="id" value="{{ oform.id.data }}"/>
             <input type="hidden" name="tg_id" value="{{ oform.tg_id.data }}"/>
             <input type="hidden" name="numero" value="{{ oform.numero.data }}"/>
-            <div class="row">
+            <div class="row col-sm-12">
                 <div class="form-group">
                     <div class="col-sm-12">
                         Descrição

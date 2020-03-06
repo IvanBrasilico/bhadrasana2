@@ -3,7 +3,23 @@
     <div id="top" class="row col-sm-12 form-group">
         <form method="POST" id="filtroformovr" action="pesquisa_ovr">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-            <div class="row col-sm-12">
+            <div class="row">
+                <div class="col-sm-2">
+                    <label for="numeroCEmercante">Número CE-Mercante</label>
+                    {{ oform.numeroCEmercante(class='form-control') }}
+                </div>
+                <div class="col-sm-2">
+                    <label for="tipoevento">Número declaração</label>
+                    {{ oform.numerodeclaracao(class='form-control') }}
+                </div>
+                <div class="col-sm-2">
+                    <label for="numero">Número documento</label>
+                    {{ oform.numero(class='form-control') }}
+                </div>
+                <div class="col-sm-2">
+                    <label for="recinto_id">Recinto</label>
+                    {{ oform.recinto_id(class='form-control') }}
+                </div>
                 <div class="col-sm-2">
                     <label for="tipooperacao">Tipo</label>
                     {{ oform.tipooperacao(class='form-control') }}
@@ -12,41 +28,32 @@
                     <label for="fase">Fase</label>
                     {{ oform.fase(class='form-control') }}
                 </div>
-                <div class="col-sm-2">
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    <label for="datainicio">Início e fim de período de pesquisa</label>
+                </div>
+                <div class="col-sm-8">
                     <label for="tipoevento">Status</label>
-                    {{ oform.tipoevento_id(class='form-control') }}
-                </div>
-                <div class="col-sm-2">
-                    <label for="numero">Número Ficha</label>
-                    {{ oform.numero(class='form-control') }}
-                </div>
-                <div class="col-sm-2">
-                    <label for="numeroCEmercante">Número CE-Mercante</label>
-                    {{ oform.numeroCEmercante(class='form-control') }}
-                </div>
-                <div class="col-sm-2">
-                    <label for="recinto_id">Recinto</label>
-                    {{ oform.recinto_id(class='form-control') }}
                 </div>
             </div>
-            <div class="row col-sm-12">
+            <div class="row">
                 <div class="col-sm-2">
-                    <label for="datainicio">Início e fim de período de pesquisa</label>
                     {{ oform.datainicio(class='form-control') }}
                 </div>
                 <div class="col-sm-2">
-                    <br>
                     {{ oform.datafim(class='form-control') }}
                 </div>
-                <div class="col-sm-4">
-                    <br>
+                <div class="col-sm-2">
+                    {{ oform.tipoevento_id(class='form-control') }}
+                </div>
+                <div class="col-sm-3">
                     <button class="btn btn-default btn-info form-control" onclick="submit">
                         Pesquisar
                     </button>
                 </div>
-                <div class="col-sm-4">
-                    <br>
-                    <button class="btn btn-default btn-info form-control" onclick="window.open('ovr')">
+                <div class="col-sm-3">
+                    <button class="btn btn-primary btn-warning form-control" onclick="window.open('ovr')">
                         Nova Ficha
                     </button>
                 </div>
@@ -60,11 +67,11 @@
                    id="filtro_personalizado_table">
                 <thead>
                 <tr>
-                    <th></th>
+                    <th>Ficha Nº</th>
                     <th>Tipo Operação</th>
                     <th>Recinto</th>
                     <th>Ano</th>
-                    <th>Número</th>
+                    <th>Número doc.</th>
                     <th>CE Mercante</th>
                     <th>Data</th>
                     <th>Último Evento</th>
@@ -76,7 +83,7 @@
                     <td><a href="ovr?id={{ ovr.id }}">{{ ovr.id }}</a></td>
                     <td>{{ ovr.get_tipooperacao() }}</td>
                     <td>{{ ovr.recinto.nome }}</td>
-                    <td>{{ ovr.ano }}</td>
+                    <td>{{ ovr.get_ano() }}</td>
                     <td>{{ ovr.numero }}</td>
                     <td>{{ ovr.numeroCEmercante }}</td>
                     <td>{{ ovr.datahora }}</td>
