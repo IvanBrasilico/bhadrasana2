@@ -71,13 +71,14 @@
                     {% for arquivo in lista_csv %}
                     <tr>
                         <td>
-                            {{ arquivo }}
+                            {{ arquivo[0] }}<br>
+                            {{ arquivo[1] }}
                         </td>
                         <td>
-                            <a href="risco?planilha_atual={{arquivo}}">Mostrar na tela</a>
+                            <a href="risco?planilha_atual={{arquivo[0]}}">Mostrar na tela</a>
                         </td>
                         <td>
-                            <a href="static/{{ current_user.name }}/{{arquivo}}">Baixar</a>
+                            <a href="static/{{ current_user.name }}/{{arquivo[0]}}">Baixar</a>
                         </td>
                     </tr>
                     {% endfor %}

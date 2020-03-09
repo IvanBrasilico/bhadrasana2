@@ -1,19 +1,19 @@
 import os
+from datetime import date, timedelta
 from datetime import datetime
 
 import pandas as pd
 import requests
-from flask import (flash, redirect, render_template, request,
-                   url_for)
-from flask_login import current_user, login_required
-from werkzeug.utils import secure_filename
-
 from ajna_commons.flask.log import logger
 from bhadrasana.forms.editarisco import get_edita_risco_form
 from bhadrasana.forms.riscosativos import RiscosAtivosForm
 from bhadrasana.models.riscomanager import mercanterisco, riscosativos, \
     insererisco, exclui_risco, CAMPOS_RISCO, get_lista_csv, save_planilharisco
 from bhadrasana.views import get_user_save_path, tmpdir
+from flask import (flash, redirect, render_template, request,
+                   url_for)
+from flask_login import current_user, login_required
+from werkzeug.utils import secure_filename
 
 
 def risco_app(app):
@@ -53,6 +53,7 @@ def risco_app(app):
         dbsession = app.config.get('dbsession')
         user_name = current_user.name
         lista_risco = []
+        total_linhas = 0
         csv_salvo = None
         planilha_atual = ''
         lista_csv = get_lista_csv(get_user_save_path())
@@ -78,16 +79,20 @@ def risco_app(app):
                 flash(str(type(err)))
                 flash(str(err))
             # Salvar resultado um arquivo para donwload
-            save_planilharisco(lista_risco, get_user_save_path(), str_filtros)
+            destino = save_planilharisco(lista_risco, get_user_save_path(), str_filtros)
+            return redirect(url_for('risco', planilha_atual=destino))
         else:
-            riscos_ativos_form = RiscosAtivosForm()
+            riscos_ativos_form = RiscosAtivosForm(
+                datainicio=date.today() - timedelta(days=5),
+                datafim=date.today()
+            )
             planilha_atual = request.args.get('planilha_atual', '')
             if planilha_atual:
                 csv_salvo = planilha_atual
                 lista_risco = le_csv(os.path.join(get_user_save_path(), csv_salvo))
-        total_linhas = len(lista_risco)
-        # Limita resultados em 100 linhas na tela
-        lista_risco = append_images(lista_risco[:100])
+                total_linhas = len(lista_risco)
+                # Limita resultados em 100 linhas na tela
+                lista_risco = append_images(lista_risco[:100])
         return render_template('aplica_risco.html',
                                oform=riscos_ativos_form,
                                lista_risco=lista_risco,

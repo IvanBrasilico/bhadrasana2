@@ -3,9 +3,8 @@ import os
 from collections import OrderedDict
 from datetime import date, datetime
 
-from sqlalchemy import select, and_, join, or_
-
 from ajna_commons.flask.log import logger
+from sqlalchemy import select, and_, join, or_
 from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, RiscoAtivo
 
 CAMPOS_RISCO = [('0', 'Selecione'),
@@ -81,16 +80,19 @@ def mercanterisco(session, pfiltros: dict, limit=1000):
 
 
 def save_planilharisco(lista_risco: list, save_path: str, filtros: str):
+    destino = ''
     if lista_risco and len(lista_risco) > 0:
         csv_salvo = 'resultado_' \
                     + datetime.strftime(datetime.now(), '%Y-%m%dT%H%M%S') + \
                     '.csv'
-        with open(os.path.join(save_path, csv_salvo), 'w') as out_file:
+        destino = os.path.join(save_path, csv_salvo)
+        with open(destino, 'w') as out_file:
             out_file.write(filtros + '\n')
             out_file.write(';'.join([key for key in lista_risco[0].keys()]) + '\n')
             for row in lista_risco:
                 campos = [str(value).replace(';', ',') for value in row.values()]
                 out_file.write(';'.join(campos) + '\n')
+    return csv_salvo
 
 
 def riscosativos(session, user_name):
@@ -130,4 +132,11 @@ def get_lista_csv(csvpath):
     for arquivo in lista_csv[4:]:  # Somente manter cinco resultados
         print('Excluir... %s' % arquivo)
         os.remove(arquivo)
-    return os.listdir(csvpath)
+        lista_csv.remove(arquivo)
+    lista_comentada = []
+    for arquivo in lista_csv:
+        with open(arquivo, 'r') as in_file:
+            for i in range(5):
+                linha = in_file.readline()
+        lista_comentada.append((os.path.basename(arquivo), linha))
+    return lista_comentada
