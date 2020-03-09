@@ -52,6 +52,7 @@ def configure_app(mongodb, sqlsession, mongo_risco):
     def bhadrasana_login():
         return login_ajna.login_view(request)
     login_ajna.login_manager.login_view = 'bhadrasana_login'
+    app.config['REMEMBER_COOKIE_PATH'] = '/bhadrasana2'
 
     app.config['DEBUG'] = os.environ.get('DEBUG', 'None') == '1'
     print(app.debug)
