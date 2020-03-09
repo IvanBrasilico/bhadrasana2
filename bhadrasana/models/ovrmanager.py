@@ -1,15 +1,14 @@
 from datetime import timedelta
 
 import pandas as pd
-from sqlalchemy import and_
-from sqlalchemy.orm import Session
-
 from ajna_commons.flask.log import logger
 from bhadrasana.models import Usuario, Setor, EBloqueado
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto, \
     get_usuario_logado
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
     TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria
+from sqlalchemy import and_
+from sqlalchemy.orm import Session
 
 
 def get_recintos(session):
@@ -68,9 +67,11 @@ def get_ovr_responsavel(session, user_name: str):
     return session.query(OVR).filter(OVR.responsavel_cpf == user_name).all()
 
 
-def get_ovr_filtro(session, user_name: str, pfiltro: dict = None):
-    ids_setores = [setor.id for setor in get_setores_cpf(session, user_name)]
-    filtro = and_(OVR.setor_id.in_(ids_setores))
+def get_ovr_filtro(session, user_name: str, pfiltro: dict = None, filtrar_setor=True):
+    filtro = and_()
+    if filtrar_setor:
+        ids_setores = [setor.id for setor in get_setores_cpf(session, user_name)]
+        filtro = and_(OVR.setor_id.in_(ids_setores))
     if pfiltro and isinstance(pfiltro, dict):
         if pfiltro.get('datainicio'):
             filtro = and_(OVR.datahora >= pfiltro.get('datainicio'), filtro)
@@ -272,6 +273,7 @@ def get_marcas(session):
 def get_marcas_choice(session):
     marcas = session.query(Marca).all()
     return [(marca.id, marca.nome) for marca in marcas]
+
 
 def get_tiposmercadoria_choice(session):
     tipos = session.query(TipoMercadoria).all()

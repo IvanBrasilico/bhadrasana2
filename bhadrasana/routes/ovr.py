@@ -2,10 +2,6 @@ import datetime
 import os
 from _collections import defaultdict
 
-from flask import request, flash, render_template, url_for, jsonify
-from flask_login import login_required, current_user
-from werkzeug.utils import redirect
-
 from ajna_commons.flask.log import logger
 from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
     ProcessoOVRForm, ItemTGForm, ResponsavelOVRForm, TGOVRForm
@@ -18,7 +14,10 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     cadastra_tgovr, get_ovr_responsavel, importa_planilha, exporta_planilhaovr, get_tiposmercadoria_choice
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.views import get_user_save_path
+from flask import request, flash, render_template, url_for, jsonify
+from flask_login import login_required, current_user
 from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, Item
+from werkzeug.utils import redirect
 
 
 def ovr_app(app):
@@ -117,7 +116,8 @@ def ovr_app(app):
                 filtro_form = FiltroOVRForm(request.form, tiposeventos=tiposeventos)
                 filtro_form.validate()
                 ovrs = get_ovr_filtro(session, current_user.name,
-                                      dict(filtro_form.data.items()))
+                                      dict(filtro_form.data.items()),
+                                      filtrar_setor=False)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
