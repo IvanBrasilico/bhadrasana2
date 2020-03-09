@@ -30,7 +30,8 @@ def ovr_app(app):
         recintos = get_recintos(session)
         print(recintos)
         responsaveis = get_usuarios(session)
-        ovr_form = OVRForm(tiposeventos=tiposeventos, recintos=recintos)
+        ovr_form = OVRForm(tiposeventos=tiposeventos, recintos=recintos,
+                           numeroCEmercante=request.args.get('numeroCEmercante'))
         tiposprocesso = get_tipos_processo(session)
         historico_form = HistoricoOVRForm(tiposeventos=tiposeventos)
         processo_form = ProcessoOVRForm(tiposprocesso=tiposprocesso)
