@@ -106,14 +106,17 @@ def ovr_app(app):
         session = app.config.get('dbsession')
         ovrs = []
         tiposeventos = get_tipos_evento(session)
+        recintos = get_recintos(session)
         filtro_form = FiltroOVRForm(
             datainicio=datetime.date.today() - datetime.timedelta(days=10),
             datafim=datetime.date.today(),
-            tiposeventos=tiposeventos
+            tiposeventos=tiposeventos,
+            recintos=recintos
         )
         try:
             if request.method == 'POST':
-                filtro_form = FiltroOVRForm(request.form, tiposeventos=tiposeventos)
+                filtro_form = FiltroOVRForm(request.form, tiposeventos=tiposeventos,
+                                            recintos=recintos)
                 filtro_form.validate()
                 ovrs = get_ovr_filtro(session, current_user.name,
                                       dict(filtro_form.data.items()),

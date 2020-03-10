@@ -66,8 +66,8 @@ class FiltroOVRForm(FlaskForm):
             self.tipoevento_id.choices = [(None, 'Selecione'),
                                           *kwargs.get('tiposeventos')]
         self.recinto_id.choices = [(None, 'Selecione')]
-        if kwargs.get('recinto_id'):
-            self.recinto_id.choices.extend(kwargs.get('recinto_id'))
+        if kwargs.get('recintos'):
+            self.recinto_id.choices.extend(kwargs.get('recintos'))
 
 
 class HistoricoOVRForm(FlaskForm):
