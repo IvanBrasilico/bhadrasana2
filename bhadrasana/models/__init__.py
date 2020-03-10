@@ -1,12 +1,20 @@
 import datetime
 
+from ajna_commons.flask.conf import SQL_URI
 from ajna_commons.flask.log import logger
 from sqlalchemy import Column, func, VARCHAR, CHAR, ForeignKey
+from sqlalchemy import create_engine
 from sqlalchemy.dialects.mysql import TIMESTAMP
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
+from sqlalchemy.orm import scoped_session, sessionmaker
 
+engine = create_engine(SQL_URI)
+db_session = scoped_session(sessionmaker(autocommit=False,
+                                         autoflush=False,
+                                         bind=engine))
 Base = declarative_base()
+Base.query = db_session.query_property()
 
 
 class ENaoAutorizado(Exception):
