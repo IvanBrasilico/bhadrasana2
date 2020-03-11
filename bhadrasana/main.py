@@ -18,6 +18,7 @@ Adicionalmente, permite o merge entre bases, navegação de bases, e
 a aplicação de filtros/parâmetros de risco.
 """
 from ajna_commons.flask.conf import DATABASE, MONGODB_URI
+from ajna_commons.flask.log import logger
 from bhadrasana.routes.admin import admin_app
 from bhadrasana.routes.ovr import ovr_app
 from bhadrasana.routes.risco import risco_app
@@ -39,6 +40,7 @@ admin_app(app, db_session)
 @app.teardown_appcontext
 def shutdown_session(exception=None):
     db_session.remove()
+    logger.info('db_session remove')
 
 
 if __name__ == '__main__':
