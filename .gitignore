@@ -153,3 +153,4 @@ ajna_commons/*
 /virasana/
 *.csv
 /virasana/
+*.pickle
