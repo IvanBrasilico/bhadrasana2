@@ -59,14 +59,14 @@ def do(inicio, fim, limit):
     projection = {'_id': 1, 'metadata.recinto': 1}
     #r = requests.post('https://ajna.labin.rf08.srf/virasana/grid_data', json=params, verify=False)
     cursor = db.fs.files.find(query, projection).limit(limit)
-    for doc in cursor:
+    for count, doc in enumerate(cursor):
         _id = doc['_id']
         image = Image.open(io.BytesIO(mongo_image(db, _id)))
         # print(image.size)
         sizes_recinto[doc['metadata']['recinto']].append(image.size)
     s1 = time.time()
     # print(sizes_recinto)
-    print('{:0.2f} segundos para processar {:d} registros'.format((s1 - s0), limit))
+    print('{:0.2f} segundos para processar {:d} registros'.format((s1 - s0), count))
     print('Resultado salvo em %s' % out_filename)
     with open(out_filename, 'wb') as handle:
         pickle.dump(sizes_recinto, handle, protocol=pickle.HIGHEST_PROTOCOL)
