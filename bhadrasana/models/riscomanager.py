@@ -81,6 +81,7 @@ def mercanterisco(session, pfiltros: dict, limit=1000):
 
 def save_planilharisco(lista_risco: list, save_path: str, filtros: str):
     destino = ''
+    csv_salvo = ''
     if lista_risco and len(lista_risco) > 0:
         csv_salvo = 'resultado_' \
                     + datetime.strftime(datetime.now(), '%Y-%m%dT%H%M%S') + \
