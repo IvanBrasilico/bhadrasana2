@@ -5,6 +5,17 @@ por Recinto/Escâner para permitir a detecção de imagens que estão
 sendo geradas com poucos pulsos de X-Ray/pouca informação e consequentemente
 terão a qualidade prejudicada.
 
+O script salva os resultados em um dicionário e salva dict com pickle.
+Use o comando abaixo para carregar e analisar em um notebook ou outro script
+
+with open('sizes_recinto.pickle', 'rb') as handle:
+    sizes_recinto = pickle.load(handle)
+
+Options:
+  --inicio TEXT    Dia de início (dia/mês/ano) - padrão ontem
+  --fim TEXT       Dia de fim (dia/mês/ano) - padrão hoje
+  --limit INTEGER  Limite de registros - padrão 100
+
 """
 import io
 import pickle
