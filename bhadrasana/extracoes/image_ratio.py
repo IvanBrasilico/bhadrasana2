@@ -23,20 +23,16 @@ import sys
 import time
 from collections import defaultdict
 
+from . import str_yesterday, str_today, parse_datas
+
 sys.path.insert(0, '.')
 sys.path.insert(0, '../ajna_docs/commons')
 
 from bhadrasana.main import mongodb as db
 from ajna_commons.utils.images import mongo_image
 from PIL import Image
-from datetime import date, datetime, timedelta
 
 import click
-
-today = date.today()
-str_today = datetime.strftime(today, '%d/%m/%Y')
-yesterday = today - timedelta(days=1)
-str_yesterday = datetime.strftime(yesterday, '%d/%m/%Y')
 
 
 @click.command()
@@ -48,16 +44,15 @@ str_yesterday = datetime.strftime(yesterday, '%d/%m/%Y')
               help='Limite de registros - padrão 100')
 def do(inicio, fim, limit):
     print('Iniciando...')
-    start = datetime.strptime(inicio, '%d/%m/%Y')
-    end = datetime.strptime(fim + ' 23:59:59', '%d/%m/%Y %H:%M:%S')
-    out_filename =  'sizes_recinto%s%s%s.pickle' % (end.year, end.month, end.day)
+    start, end = parse_datas(inicio, fim)
+    out_filename = 'sizes_recinto%s%s%s.pickle' % (end.year, end.month, end.day)
     s0 = time.time()
     sizes_recinto = defaultdict(list)
     query = {'metadata.contentType': 'image/jpeg',
-                               'metadata.recinto': {'$exists': True},
-                               'metadata.dataescaneamento': {'$gte': start, '$lt': end}}
+             'metadata.recinto': {'$exists': True},
+             'metadata.dataescaneamento': {'$gte': start, '$lt': end}}
     projection = {'_id': 1, 'metadata.recinto': 1}
-    #r = requests.post('https://ajna.labin.rf08.srf/virasana/grid_data', json=params, verify=False)
+    # r = requests.post('https://ajna.labin.rf08.srf/virasana/grid_data', json=params, verify=False)
     cursor = db.fs.files.find(query, projection).limit(limit)
     for count, doc in enumerate(cursor):
         _id = doc['_id']

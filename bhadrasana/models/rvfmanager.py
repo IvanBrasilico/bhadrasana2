@@ -1,8 +1,8 @@
 from ajna_commons.flask.log import logger
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, \
     get_usuario_logado, gera_objeto
-from bhadrasana.models.ovr import Marca
-from bhadrasana.models.ovrmanager import get_ovr
+from bhadrasana.models.ovr import Marca, TipoEventoOVR, EventoEspecial
+from bhadrasana.models.ovrmanager import get_ovr, gera_eventoovr
 from bhadrasana.models.rvf import RVF, Infracao, ImagemRVF
 from sqlalchemy import and_
 
@@ -83,6 +83,16 @@ def cadastra_rvf(session,
         rvf.datahora = handle_datahora(params)
     if rvf is not None:
         try:
+            if rvf.ovr_id is not None:
+                tipoevento = session.query(TipoEventoOVR).filter(
+                    TipoEventoOVR.eventoespecial == EventoEspecial.RVF).first()
+                params = {'tipoevento_id': tipoevento.id,
+                          'motivo': 'RVF %s' % rvf.id,
+                          'user_name': rvf.user_name,
+                          'ovr_id': rvf.ovr_id
+                          }
+                evento = gera_eventoovr(session, params, commit=False)
+                session.add(evento)
             session.add(rvf)
             session.commit()
         except Exception as err:
