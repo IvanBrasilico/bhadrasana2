@@ -52,7 +52,7 @@
                                 Embarcador: {{ conhecimento.embarcador }}<br>
                                 Consignatário: {{ conhecimento.consignatario }}<br>
                                 Descrição Mercadoria:{{ conhecimento.descricao }}<br>
-                                <!--Nº BL original: {{ conhecimento. }} -->
+                                <!--Nº BL original: {{ conhecimento.descricao }} -->
                                 Contêineres: {% for container in containers %}
                                 nº: {{container.codigoConteiner}} - {{"%.2f"|format(container.pesoBruto|float)}}kg
                                 {% endfor %}<br>
