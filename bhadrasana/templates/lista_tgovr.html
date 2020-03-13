@@ -84,10 +84,12 @@
                         Auditor Fiscal Responsável
                         {{ oform.afrfb(class='form-control') }}
                     </div>
+                    <!--
                     <div class="col-sm-12">
                         Identificação principal do produto (Marca, código, Part Number, etc)
                         {{ oform.identificacao(class='form-control') }}
                     </div>
+                    -->
                     <div class="col-sm-12">
                         Outras observações
                         {{ oform.observacoes(class='form-control') }}
@@ -102,10 +104,12 @@
                     </button>
                 </div>
                 <div class="col-sm-6">
+                    {% if oform.id.data %}
                     <button id="btn_tg" type="button" class="btn btn-primary btn-success form-control"
                             onclick="window.open('lista_itemtg?tg_id={{oform.id.data}}')">
                         Itens
                     </button>
+                    {% endif %}
                 </div>
             </div>
         </form>

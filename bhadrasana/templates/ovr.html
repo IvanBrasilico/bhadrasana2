@@ -90,10 +90,12 @@
                         </div>
                     </div>
                     <div class="col-sm-3">
+                        {% if oform.id.data %}
                         <button id="btn_responsavel" type="button" class="btn btn-warning form-control"
                                 data-toggle="modal" data-target="#responsavel">
                             Atribuir responsável
                         </button>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -107,16 +109,20 @@
                 <div class="col-sm-1">
                 </div>
                 <div class="col-sm-3">
+                    {% if oform.id.data %}
                     <button id="btn_rvf" type="button" class="btn btn-primary btn-success form-control"
                             onclick="window.open('lista_rvfovr?ovr_id={{oform.id.data}}')">
                         Informar RVF
                     </button>
+                    {% endif %}
                 </div>
                 <div class="col-sm-3">
+                    {% if oform.id.data %}
                     <button id="btn_tg" type="button" class="btn btn-primary btn-success form-control"
                             onclick="window.open('lista_tgovr?ovr_id={{oform.id.data}}')">
                         Termo de Guarda
                     </button>
+                    {% endif %}
                 </div>
             </div>
         </form>
@@ -124,6 +130,7 @@
     <div class="row col-sm-12">
         &nbsp;<br>
     </div>
+    {% if oform.id.data %}
     <div class="row col-sm-12">
         <div class="col-sm-3">
             <h4>Lista de Movimentações</h4>
@@ -213,6 +220,7 @@
             </table>
         </div>
     </div>
+    {% endif %}
 </div>
 <div id="bottom" class="row">
     AJNA - Receita Federal do Brasil 2017
