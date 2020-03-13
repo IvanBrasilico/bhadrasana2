@@ -218,7 +218,9 @@ def ovr_app(app):
         try:
             tgovr_form = TGOVRForm(request.form)
             tgovr_form.validate()
-            tgovr = cadastra_tgovr(session, dict(tgovr_form.data.items()))
+            tgovr = cadastra_tgovr(session,
+                                   dict(tgovr_form.data.items()),
+                                   current_user.name)
             ovr_id = tgovr.ovr_id
             # item_id = tgovr.id
         except Exception as err:

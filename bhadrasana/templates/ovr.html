@@ -52,10 +52,11 @@
                                 Embarcador: {{ conhecimento.embarcador }}<br>
                                 Consignatário: {{ conhecimento.consignatario }}<br>
                                 Descrição Mercadoria:{{ conhecimento.descricao }}<br>
-                                Cubagem: {{ "%.2f"|format(conhecimento.cubagem|float) }}m³<br>
+                                <!--Nº BL original: {{ conhecimento. }} -->
                                 Contêineres: {% for container in containers %}
                                 nº: {{container.codigoConteiner}} - {{"%.2f"|format(container.pesoBruto|float)}}kg
                                 {% endfor %}<br>
+                                Cubagem total: {{ "%.2f"|format(conhecimento.cubagem|float) }}m³
                                 NCMs: {% for ncm in ncms %}{{ ncm.identificacaoNCM }} {% endfor %}<br>
                                 {% endif %}
                             </div>
