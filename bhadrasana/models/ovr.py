@@ -1,5 +1,6 @@
 import sys
 from datetime import datetime
+from enum import Enum
 
 sys.path.insert(0, '.')
 sys.path.insert(0, '../ajna_docs/commons')
@@ -11,6 +12,12 @@ from sqlalchemy.dialects.mysql import TIMESTAMP
 from sqlalchemy.orm import relationship, sessionmaker
 
 metadata = Base.metadata
+
+class EventoEspecial(Enum):
+    Responsavel = 1
+    RVF = 2
+    TG = 3
+    Fim = 4
 
 tipoStatusOVR = [
     'Aguardando distribuicão',
@@ -163,6 +170,8 @@ class TipoEventoOVR(Base):
     fase = Column(Integer(), index=True, default=0)
     create_date = Column(TIMESTAMP, index=True,
                          server_default=func.current_timestamp())
+    eventoespecial = Column(Integer(), index=True)
+
 
 
 class Recinto(Base):

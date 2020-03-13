@@ -6,7 +6,7 @@ from bhadrasana.models import Usuario, Setor, EBloqueado
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto, \
     get_usuario_logado
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
-    TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria
+    TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria, EventoEspecial
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
@@ -18,7 +18,10 @@ def get_recintos(session):
 
 
 def get_tipos_evento(session):
-    tiposeventos = session.query(TipoEventoOVR).all()
+    tiposeventos = session.query(TipoEventoOVR).filter(
+        TipoEventoOVR.eventoespecial == None).order_by(
+        TipoEventoOVR.nome
+    ).all()
     return [(tipo.id, tipo.nome) for tipo in tiposeventos]
 
 
@@ -102,9 +105,7 @@ def get_ovr_filtro(session, user_name: str, pfiltro: dict = None, filtrar_setor=
 
 
 def atribui_responsavel_ovr(session, ovr_id: int,
-                            responsavel: str,
-                            id_tipo_evento_atribuicao=16
-                            ) -> OVR:
+                            responsavel: str) -> OVR:
     """Atualiza campo responsável na OVR. Gera evento correspondente.
 
     :param session: Conexão com banco SQLAlchemy
@@ -114,8 +115,9 @@ def atribui_responsavel_ovr(session, ovr_id: int,
     """
     try:
         ovr = get_ovr(session, ovr_id)
-        # TODO: Ver como mapear id_tipoevento de forma melhor
-        params = {'tipoevento_id': id_tipo_evento_atribuicao,
+        tipoevento = session.query(TipoEventoOVR).filter(
+            TipoEventoOVR.eventoespecial == EventoEspecial.Responsavel).first()
+        params = {'tipoevento_id': tipoevento.id,
                   'motivo': responsavel,  # Novo Responsável
                   'user_name': ovr.responsavel_cpf,  # Responsável anterior
                   'ovr_id': ovr.id
@@ -161,6 +163,17 @@ def gera_processoovr(session, params) -> ProcessoOVR:
 
 def cadastra_tgovr(session, params) -> TGOVR:
     tgovr = get_tgovr(session, params.get('id'))
+    if tgovr.ovr_id is not None:
+        tipoevento = session.query(TipoEventoOVR).filter(
+            TipoEventoOVR.eventoespecial == EventoEspecial.TG).first()
+        params = {'tipoevento_id': tipoevento.id,
+                  'motivo': 'TG %s' % tgovr.id,
+                  'user_name': tgovr.user_name,
+                  'ovr_id': tgovr.ovr_id
+                  }
+        evento = gera_eventoovr(session, params, commit=False)
+        session.add(evento)
+
     return gera_objeto(tgovr,
                        session, params)
 
