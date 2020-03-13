@@ -17,7 +17,6 @@ class EventoEspecial(Enum):
     Responsavel = 1
     RVF = 2
     TG = 3
-    Fim = 4
 
 tipoStatusOVR = [
     'Aguardando distribuicão',
