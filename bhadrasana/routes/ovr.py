@@ -190,14 +190,22 @@ def ovr_app(app):
         session = app.config.get('dbsession')
         ovr_id = request.args.get('ovr_id')
         item_id = request.args.get('item_id')
-        listatgovr = lista_tgovr(session, ovr_id)
-        marcas = get_marcas_choice(session)
-        tipos = get_tiposmercadoria_choice(session)
-        if item_id:
-            tgovr = get_tgovr(session, item_id)
-            oform = TGOVRForm(**tgovr.__dict__, marcas=marcas, tiposmercadoria=tipos)
-        else:
-            oform = TGOVRForm(ovr_id=ovr_id, marcas=marcas, tiposmercadoria=tipos)
+        listatgovr = []
+        oform = TGOVRForm()
+        try:
+            listatgovr = lista_tgovr(session, ovr_id)
+            marcas = get_marcas_choice(session)
+            tipos = get_tiposmercadoria_choice(session)
+            if item_id:
+                tgovr = get_tgovr(session, item_id)
+                oform = TGOVRForm(**tgovr.__dict__, marcas=marcas, tiposmercadoria=tipos)
+            else:
+                oform = TGOVRForm(ovr_id=ovr_id, marcas=marcas, tiposmercadoria=tipos)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(type(err))
+            flash(str(err))
         return render_template('lista_tgovr.html',
                                listatgovr=listatgovr,
                                oform=oform)

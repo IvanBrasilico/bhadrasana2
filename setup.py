@@ -14,6 +14,7 @@ setup(
         'dominate',
         'defusedxml',
         'Flask',
+        'flask-admin',
         'Flask-BootStrap',
         'Flask-Login',
         'Flask-cors',
