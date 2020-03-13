@@ -125,7 +125,8 @@ class TestCase(unittest.TestCase):
             'ovr_id': ovr.id,
             'numerolote': 'CCNU1234567'
         }
-        tgovr = cadastra_tgovr(session, params)
+        usuario = self.create_usuario('123', 'user1')
+        tgovr = cadastra_tgovr(session, params, '123')
         session.refresh(tgovr)
         for key, param in params.items():
             assert getattr(tgovr, key) == param

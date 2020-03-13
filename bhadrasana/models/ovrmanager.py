@@ -161,19 +161,22 @@ def gera_processoovr(session, params) -> ProcessoOVR:
                        session, params)
 
 
-def cadastra_tgovr(session, params) -> TGOVR:
+def cadastra_tgovr(session, params, user_name: str) -> TGOVR:
+    usuario = get_usuario_logado(session, user_name)
     tgovr = get_tgovr(session, params.get('id'))
-    if tgovr.ovr_id is not None:
+    if not tgovr.user_name:
+        tgovr.user_name = usuario.cpf
+    if tgovr.id is None and params.get('ovr_id') is not None:
+        # Está incluindo Novo TG e informando ovr
         tipoevento = session.query(TipoEventoOVR).filter(
             TipoEventoOVR.eventoespecial == EventoEspecial.TG).first()
         params = {'tipoevento_id': tipoevento.id,
-                  'motivo': 'TG %s' % tgovr.id,
+                  'motivo': 'Inseriu TG ',
                   'user_name': tgovr.user_name,
-                  'ovr_id': tgovr.ovr_id
+                  'ovr_id': params['ovr_id']
                   }
         evento = gera_eventoovr(session, params, commit=False)
         session.add(evento)
-
     return gera_objeto(tgovr,
                        session, params)
 
