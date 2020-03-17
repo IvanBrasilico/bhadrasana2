@@ -35,6 +35,7 @@ from flask_login import current_user
 from flask_nav import Nav
 from flask_nav.elements import Navbar, View
 from flask_wtf.csrf import CSRFProtect
+from gridfs import GridFS
 
 tmpdir = tempfile.mkdtemp()
 
@@ -94,6 +95,21 @@ def allowed_file(filename, extensions=ALLOWED_EXTENSIONS):
            filename.rsplit('.', 1)[1].lower() in extensions
 
 
+def valid_file(file, extensions=['jpg', 'jpeg', 'png']):
+    """Valida arquivo passado e retorna validade e mensagem."""
+    if not file or file.filename == '' or not allowed_file(file.filename, extensions):
+        if not file:
+            mensagem = 'Arquivo nao informado'
+        elif not file.filename:
+            mensagem = 'Nome do arquivo vazio'
+        else:
+            mensagem = 'Nome de arquivo não permitido: ' + \
+                       file.filename
+            # print(file)
+        return False, mensagem
+    return True, None
+
+
 @app.route('/')
 def index():
     """View retorna index.html ou login se não autenticado."""
@@ -113,6 +129,37 @@ def image_id(_id):
     if image:
         return Response(response=image, mimetype='image/jpeg')
     return 'Sem Imagem'
+
+
+@app.route('/anexo_filename')
+def anexo_filename():
+    """Recupera anexo do banco e retorna campo filename
+
+    """
+    db = app.config['mongo_risco']
+    filter = {'metadata.' + key: value for key, value in request.args.items()}
+    row = db['fs.files'].find_one(filter)
+    if row:
+        return row['filename']
+    return 'Sem Anexo'
+
+
+@app.route('/anexo')
+def anexo():
+    """Recupera aenxo do banco e serializa para stream HTTP.
+
+    """
+    db = app.config['mongo_risco']
+    filter = {'metadata.' + key: value for key, value in request.args.items()}
+    row = db['fs.files'].find_one(filter)
+    if row:
+        _id = row['_id']
+        mimetype = row.get('metadata').get('contentType') or 'image/jpeg'
+        image = mongo_image(db, _id)
+        print(mimetype)
+        if image:
+            return Response(response=image, mimetype=mimetype)
+    return 'Sem Anexo'
 
 
 @nav.navigation()

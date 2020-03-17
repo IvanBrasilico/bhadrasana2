@@ -152,6 +152,7 @@
                     <th>Usuário</th>
                     <th>Detalhes</th>
                     <th>Data</th>
+                    <th>Anexo</th>
                 </tr>
                 {% for historico in listahistorico %}
                 <tr>
@@ -166,6 +167,15 @@
                     </td>
                     <td align="center">
                         {{ historico.create_date }}
+                    </td>
+                    <td align="center">
+                        {% if historico.anexo_filename %}
+                        <btn id="btn_anexo{{historico.id}}"
+                             data-toggle="modal" data-target="#anexomodal{{historico.id}}"
+                             class="btn btn-warning">
+                            {{ historico.anexo_filename }}
+                        </btn>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -290,6 +300,15 @@
                             {{ historico_form.user_name(class='form-control') }}
                         </div>
                     </div>
+                    <div class="row">
+                        <label class="btn btn-default btn-choose" for="anexo">
+                            <input id="anexo" name="anexo" type="file" style="display:none"
+                                   onchange="$('#upload-file-info').html(this.files[0].name)"> Informe arquivo a anexar
+                        </label>
+                        <big>
+                            <span class='label label-success' id="upload-file-info"></span>
+                        </big>
+                    </div>
                     <input class="btn btn-primary" type="submit" value="Movimentar"/>
                 </form>
             </div>
@@ -335,6 +354,25 @@
         </div>
     </div>
 </div>
+{% for historico in listahistorico %}
+{% if historico.anexo_filename %}
+<div class="modal fade" id="anexomodal{{historico.id}}" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <span>
+                    <embed src="anexo?evento={{historico.id}}" height="600px" width="600px"/>
+                </span>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
 {% endblock %} {% block scripts %} {{super()}}
 <script>
 </script> {% endblock %}

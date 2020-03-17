@@ -13,9 +13,10 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     cadastra_itemtg, get_usuarios, atribui_responsavel_ovr, lista_tgovr, get_tgovr, \
     cadastra_tgovr, get_ovr_responsavel, importa_planilha, exporta_planilhaovr, get_tiposmercadoria_choice
 from bhadrasana.models.ovrmanager import get_marcas_choice
-from bhadrasana.views import get_user_save_path
+from bhadrasana.views import get_user_save_path, valid_file
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
+from gridfs import GridFS
 from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, Item
 from werkzeug.utils import redirect
 
@@ -171,7 +172,33 @@ def ovr_app(app):
         session = app.config.get('dbsession')
         ovr_id = request.form['ovr_id']
         historico_ovr_form = HistoricoOVRForm(request.form)
-        gera_eventoovr(session, dict(historico_ovr_form.data.items()))
+        try:
+            evento = gera_eventoovr(session, dict(historico_ovr_form.data.items()))
+            # TODO: Mover para ação específica ou para gera_eventoovr
+            session.refresh(evento)
+            db = app.config['mongo_risco']
+            fs = GridFS(db)
+            file = request.files.get('anexo')
+            if file:
+                print('Arquivo:', file)
+                validfile, mensagem = \
+                    valid_file(file, extensions=['pdf', 'jpg', 'png'])
+                if not validfile:
+                    flash(mensagem)
+                    print('Não é válido %s' % mensagem)
+                content = file.read()
+                _id = fs.put(content, filename=file.filename,
+                              metadata={'ovr': str(ovr_id),
+                                        'evento': str(evento.id),
+                                        'contentType': file.mimetype })
+                evento.anexo_filename = file.filename
+                session.add(evento)
+                session.commit()
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(type(err))
+            flash(str(err))
         return redirect(url_for('ovr', id=ovr_id))
 
     @app.route('/processoovr', methods=['POST'])
