@@ -140,7 +140,6 @@ image_aq/covimgaq/db.sqlite3
 ajna_commons
 bhadrasana/files/BTP_-_01_de_setembro.csv
 bhadrasana/static/baixar.csv
-bhadrasana/static/baixar.csv
 bhadrasana/static/ivan/
 notebooks/*.csv
 .mypy_cache/
@@ -155,3 +154,5 @@ ajna_commons/*
 /virasana/
 *.pickle
 /bhadrasana/extracoes/notebooks/yolo/*
+/bhadrasana/extracoes/notebooks/vazios/*
+

@@ -42,6 +42,7 @@ def extract_yolo(rows: list, min_ratio=MIN_RATIO):
     """
     if not os.path.exists('yolo'):
         os.mkdir('yolo')
+    count = 0
     for count, row in enumerate(rows):
         _id = row['_id']
         predictions = row['metadata']['predictions']
@@ -72,6 +73,7 @@ def extract_yolo(rows: list, min_ratio=MIN_RATIO):
                 out_handle.write('0 Container')
             image.save(arquivo_atual + '.jpg')
     print('%s arquivos exportados...' % count)
+    return count
 
 
 @click.command()
@@ -87,11 +89,10 @@ def do(inicio, fim, limit):
     print(start, end)
     s0 = time.time()
     cursor = cursor_images_and_bboxes(mongodb, start, end, limit)
-    extract_yolo(cursor)
+    count = extract_yolo(cursor)
     s1 = time.time()
-    count = 0
     print('{:0.2f} segundos para processar {:d} registros'.format((s1 - s0), count))
-    print('Resultado salvo no diretório %s' % end)
+    print('Resultado salvo no diretório yolo')
 
 
 if __name__ == '__main__':
