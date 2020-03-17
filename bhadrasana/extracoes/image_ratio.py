@@ -19,20 +19,14 @@ Options:
 """
 import io
 import pickle
-import sys
 import time
 from collections import defaultdict
 
-from . import str_yesterday, str_today, parse_datas
-
-sys.path.insert(0, '.')
-sys.path.insert(0, '../ajna_docs/commons')
-
-from bhadrasana.main import mongodb as db
-from ajna_commons.utils.images import mongo_image
-from PIL import Image
-
 import click
+from PIL import Image
+from bson import ObjectId
+
+from .utils import fs, mongodb, str_yesterday, str_today, parse_datas
 
 
 @click.command()
@@ -53,12 +47,15 @@ def do(inicio, fim, limit):
              'metadata.dataescaneamento': {'$gte': start, '$lt': end}}
     projection = {'_id': 1, 'metadata.recinto': 1}
     # r = requests.post('https://ajna.labin.rf08.srf/virasana/grid_data', json=params, verify=False)
-    cursor = db.fs.files.find(query, projection).limit(limit)
+    cursor = mongodb.fs.files.find(query, projection).limit(limit)
     for count, doc in enumerate(cursor):
         _id = doc['_id']
-        image = Image.open(io.BytesIO(mongo_image(db, _id)))
-        # print(image.size)
-        sizes_recinto[doc['metadata']['recinto']].append(image.size)
+        oid = ObjectId(_id)
+        if fs.exists(oid):
+            grid_out = fs.get(oid)
+            image = Image.open(io.BytesIO(grid_out.read()))
+            # print(image.size)
+            sizes_recinto[doc['metadata']['recinto']].append(image.size)
     s1 = time.time()
     # print(sizes_recinto)
     print('{:0.2f} segundos para processar {:d} registros'.format((s1 - s0), count))
