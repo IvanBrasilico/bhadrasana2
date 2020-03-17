@@ -203,6 +203,7 @@ class EventoOVR(Base):
     fase = Column(Integer(), index=True, default=0)
     user_name = Column(VARCHAR(50), index=True)
     motivo = Column(VARCHAR(50), index=True)
+    anexo_filename = Column(VARCHAR(100), index=True)
     create_date = Column(TIMESTAMP, index=True,
                          server_default=func.current_timestamp())
 

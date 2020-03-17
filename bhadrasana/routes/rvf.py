@@ -9,7 +9,7 @@ from bhadrasana.models.ovrmanager import get_marcas, get_marcas_choice
 from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, get_ids_anexos, inclui_marca_encontrada, \
     exclui_marca_encontrada, exclui_infracao_encontrada, inclui_infracao_encontrada, \
     get_infracoes, lista_rvfovr, cadastra_imagemrvf, get_imagemrvf_or_none, cadastra_rvf
-from bhadrasana.views import csrf
+from bhadrasana.views import csrf, valid_file
 from bson import ObjectId
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
@@ -166,24 +166,6 @@ def rvf_app(app):
         novas_marcas = exclui_marca_encontrada(session, rvf_id, marca_id)
         return jsonify([{'id': marca.id, 'nome': marca.nome} for marca in novas_marcas])
 
-    def allowed_file(filename, extensions):
-        """Checa extensões permitidas."""
-        return '.' in filename and \
-               filename.rsplit('.', 1)[1].lower() in extensions
-
-    def valid_file(file, extensions=['jpg', 'jpeg']):
-        """Valida arquivo passado e retorna validade e mensagem."""
-        if not file or file.filename == '' or not allowed_file(file.filename, extensions):
-            if not file:
-                mensagem = 'Arquivo nao informado'
-            elif not file.filename:
-                mensagem = 'Nome do arquivo vazio'
-            else:
-                mensagem = 'Nome de arquivo não permitido: ' + \
-                           file.filename
-                # print(file)
-            return False, mensagem
-        return True, None
 
     @app.route('/rvf_imgupload', methods=['POST'])
     @login_required
