@@ -77,7 +77,6 @@ if __name__ == '__main__':
                      'Esta ação pode apagar TODAS as tabelas. Confirma??')
     if confirma == 'S':
         from ajna_commons.flask.conf import SQL_URI
-
         engine = create_engine(SQL_URI)
         Session = sessionmaker(bind=engine)
         session = Session()
