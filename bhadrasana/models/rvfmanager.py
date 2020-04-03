@@ -85,7 +85,7 @@ def cadastra_rvf(session,
         try:
             if rvf.ovr_id is not None:
                 tipoevento = session.query(TipoEventoOVR).filter(
-                    TipoEventoOVR.eventoespecial == EventoEspecial.RVF).first()
+                    TipoEventoOVR.eventoespecial == EventoEspecial.RVF.value).first()
                 params = {'tipoevento_id': tipoevento.id,
                           'motivo': 'RVF %s' % rvf.id,
                           'user_name': rvf.user_name,

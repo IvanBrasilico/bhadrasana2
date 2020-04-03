@@ -116,7 +116,7 @@ def atribui_responsavel_ovr(session, ovr_id: int,
     try:
         ovr = get_ovr(session, ovr_id)
         tipoevento = session.query(TipoEventoOVR).filter(
-            TipoEventoOVR.eventoespecial == EventoEspecial.Responsavel).first()
+            TipoEventoOVR.eventoespecial == EventoEspecial.Responsavel.value).first()
         params = {'tipoevento_id': tipoevento.id,
                   'motivo': responsavel,  # Novo Responsável
                   'user_name': ovr.responsavel_cpf,  # Responsável anterior
@@ -169,7 +169,7 @@ def cadastra_tgovr(session, params, user_name: str) -> TGOVR:
     if tgovr.id is None and params.get('ovr_id') is not None:
         # Está incluindo Novo TG e informando ovr
         tipoevento = session.query(TipoEventoOVR).filter(
-            TipoEventoOVR.eventoespecial == EventoEspecial.TG).first()
+            TipoEventoOVR.eventoespecial == EventoEspecial.TG.value).first()
         params = {'tipoevento_id': tipoevento.id,
                   'motivo': 'Inseriu TG ',
                   'user_name': tgovr.user_name,
