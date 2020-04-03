@@ -40,7 +40,7 @@ class RVF(BaseRastreavel):
     numeroDI = Column(VARCHAR(10), index=True)
     numeroDUE = Column(VARCHAR(10), index=True)
     numerolote = Column(VARCHAR(20), index=True)
-    descricao = Column(VARCHAR(40), index=True)
+    descricao = Column(VARCHAR(400), index=True)
     peso = Column(Numeric(10, 2), index=True)
     volume = Column(Numeric(10, 2), index=True)
     marcasencontradas = relationship('Marca',
@@ -57,12 +57,13 @@ class ImagemRVF(Base):
     id = Column(BigInteger(), primary_key=True)
     rvf_id = Column(BigInteger(), index=True)
     imagem = Column(VARCHAR(100))  # _id da imagem no GrifFS
-    descricao = Column(VARCHAR(40), index=True)
+    descricao = Column(VARCHAR(200), index=True)
     tg_id = Column(BigInteger(), index=True)
     itemtg_id = Column(BigInteger(), index=True)
     marca_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                       ForeignKey('ovr_marcas.id'))
     marca = relationship(Marca)
+    ordem = Column(Integer(), index=True)
 
 
 class Infracao(Base):

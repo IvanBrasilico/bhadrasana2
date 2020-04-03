@@ -2,6 +2,11 @@ import datetime
 import os
 from _collections import defaultdict
 
+from flask import request, flash, render_template, url_for, jsonify
+from flask_login import login_required, current_user
+from gridfs import GridFS
+from werkzeug.utils import redirect
+
 from ajna_commons.flask.log import logger
 from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
     ProcessoOVRForm, ItemTGForm, ResponsavelOVRForm, TGOVRForm
@@ -14,11 +19,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     cadastra_tgovr, get_ovr_responsavel, importa_planilha, exporta_planilhaovr, get_tiposmercadoria_choice
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.views import get_user_save_path, valid_file
-from flask import request, flash, render_template, url_for, jsonify
-from flask_login import login_required, current_user
-from gridfs import GridFS
 from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, Item
-from werkzeug.utils import redirect
 
 
 def ovr_app(app):
@@ -159,12 +160,21 @@ def ovr_app(app):
     @login_required
     def atribuirresponsavel():
         session = app.config.get('dbsession')
-        responsavel_ovr_form = ResponsavelOVRForm(request.form)
-        atribui_responsavel_ovr(session,
-                                ovr_id=responsavel_ovr_form.ovr_id.data,
-                                responsavel=responsavel_ovr_form.responsavel.data
-                                )
-        return redirect(url_for('ovr', id=responsavel_ovr_form.ovr_id.data))
+        ovr_id = None
+        try:
+            responsavel_ovr_form = ResponsavelOVRForm(request.form)
+            ovr_id = responsavel_ovr_form.ovr_id.data
+            atribui_responsavel_ovr(session,
+                                    ovr_id=ovr_id,
+                                    responsavel=responsavel_ovr_form.responsavel.data
+                                    )
+            return redirect(url_for('ovr', id=ovr_id))
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(type(err))
+            flash(str(err))
+        return redirect(url_for('ovr', id=ovr_id))
 
     @app.route('/movimentaovr', methods=['POST'])
     @login_required
@@ -188,9 +198,9 @@ def ovr_app(app):
                     print('Não é válido %s' % mensagem)
                 content = file.read()
                 _id = fs.put(content, filename=file.filename,
-                              metadata={'ovr': str(ovr_id),
-                                        'evento': str(evento.id),
-                                        'contentType': file.mimetype })
+                             metadata={'ovr': str(ovr_id),
+                                       'evento': str(evento.id),
+                                       'contentType': file.mimetype})
                 evento.anexo_filename = file.filename
                 session.add(evento)
                 session.commit()
