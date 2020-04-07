@@ -51,7 +51,7 @@ def cadastra_imagemrvf(session, params=None):
                               params.get('imagem'))
     if imagemrvf is not None:
         return gera_objeto(imagemrvf, session, params)
-
+    return imagemrvf
 
 def lista_rvfovr(session, ovr_id):
     try:
