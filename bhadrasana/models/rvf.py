@@ -52,7 +52,7 @@ class RVF(BaseRastreavel):
                            onupdate=func.current_timestamp())
 
 
-class ImagemRVF(Base):
+class ImagemRVF(BaseRastreavel):
     __tablename__ = 'ovr_imagensrvf'
     id = Column(BigInteger(), primary_key=True)
     rvf_id = Column(BigInteger(), index=True)
@@ -84,23 +84,21 @@ if __name__ == '__main__':
 
         metadata.drop_all(engine,
                           [
-                              # metadata.tables['ovr_marcasencontradas'],
-                              # metadata.tables['ovr_marcas'],
-                              # metadata.tables['ovr_infracoesencontradas'],
-                              # metadata.tables['ovr_infracoes'],
-                              # metadata.tables['ovr_verificacoesfisicas']
-                              # metadata.tables['ovr_imagensrvf'],
+                              metadata.tables['ovr_marcasencontradas'],
+                              metadata.tables['ovr_infracoesencontradas'],
+                              metadata.tables['ovr_infracoes'],
+                              metadata.tables['ovr_verificacoesfisicas'],
+                              metadata.tables['ovr_imagensrvf'],
                           ])
         metadata.create_all(engine,
                             [
-                                # metadata.tables['ovr_marcasencontradas'],
-                                # metadata.tables['ovr_marcas'],
-                                # metadata.tables['ovr_infracoesencontradas'],
-                                # metadata.tables['ovr_infracoes'],
-                                # metadata.tables['ovr_verificacoesfisicas'],
-                                # metadata.tables['ovr_imagensrvf'],
+                                metadata.tables['ovr_marcasencontradas'],
+                                metadata.tables['ovr_infracoesencontradas'],
+                                metadata.tables['ovr_infracoes'],
+                                metadata.tables['ovr_verificacoesfisicas'],
+                                metadata.tables['ovr_imagensrvf'],
                             ])
-        """"
+
         for nome in ('Falsa declaração de conteúdo',
                      'Interposição',
                      'Contrafação',
@@ -115,4 +113,3 @@ if __name__ == '__main__':
             infracao.nome = nome
             session.add(infracao)
         session.commit()
-        """
