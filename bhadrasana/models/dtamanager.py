@@ -7,7 +7,8 @@ from gridfs import GridFS
 from pymongo import MongoClient
 
 import sys
-sys.path.insert(0, '../ajna_docs/commons')
+if sys.platform == 'win32':
+    sys.path.insert(0, '../ajna_docs/commons')
 from ajna_commons.flask.log import logger
 
 from bhadrasana.models.dta import Anexo
