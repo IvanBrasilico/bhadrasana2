@@ -95,11 +95,16 @@ def processa_pdf(mongodb, numero_dta: str, filename: str):
 
 
 if __name__ == '__main__':
-    filename = 'C:/Users/25052288840/Downloads/MapearUnidadeN.pdf'
-    mongodb = MongoClient('10.68.64.10')
+    filename = sys.argv[1]
+    print('Testando PDF %s ' % filename)
+    mongodb = MongoClient('mongodb://10.68.100.210')
     conn = mongodb['transito']
+    print('Enviando páginas para o MongoDB')
     npaginas = processa_pdf(conn, '1234', filename)
+    print('Consultando páginas geradas')
     npaginas = get_npaginas(conn, '1234', filename)
+    print('Páginas geradas: %s' % npaginas)
     for i in range(1, npaginas + 1):
         image = get_pagina(conn, '1234', filename, i)
+        print('Salvando página %s em png' % i)
         image.save('%s.png' % i)
