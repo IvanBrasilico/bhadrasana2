@@ -80,7 +80,7 @@ def get_pagina(mongodb, numero_dta: str, filename: str, npagina: int):
     params = {'filename': filename,
               'metadata.numero_dta': numero_dta,
               'metadata.pagina': npagina}
-    document = mongodb.fs.files.find(params, {'_id': 1})
+    document = mongodb.fs.files.find_one(params, {'_id': 1})
     print(document)
     if document is None:
         raise KeyError('Página não encontrada com os parâmetros: ' % params)
