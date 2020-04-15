@@ -1,4 +1,4 @@
-import io
+import sys
 from _md5 import md5
 
 import fitz
@@ -6,7 +6,6 @@ from PIL import Image
 from gridfs import GridFS
 from pymongo import MongoClient
 
-import sys
 if sys.platform == 'win32':
     sys.path.insert(0, '../ajna_docs/commons')
 from ajna_commons.flask.log import logger
@@ -75,6 +74,7 @@ def get_npaginas(mongodb, numero_dta: str, filename: str, npagina: int):
               'numero_dta': numero_dta}
     return mongodb.fs.files.count_documents(params)
 
+
 def get_pagina(mongodb, numero_dta: str, filename: str, npagina: int):
     params = {'filename': filename,
               'numero_dta': numero_dta,
@@ -85,6 +85,7 @@ def get_pagina(mongodb, numero_dta: str, filename: str, npagina: int):
     fs = GridFS(mongodb)
     return Image.open(fs.get(_id))
 
+
 def processa_pdf(mongodb, numero_dta: str, filename: str):
     pdf = fitz.open(filename)
     for npagina, page in enumerate(pdf, 1):
@@ -92,7 +93,6 @@ def processa_pdf(mongodb, numero_dta: str, filename: str):
         insert_pagina(mongodb, pix.getPNGData(),
                       numero_dta, filename, npagina)
     return npagina
-
 
 
 if __name__ == '__main__':
