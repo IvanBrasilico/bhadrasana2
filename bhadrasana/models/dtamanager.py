@@ -72,7 +72,7 @@ def insert_pagina(mongodb, png_image: bytes,
 
 def get_npaginas(mongodb, numero_dta: str, filename: str):
     params = {'filename': filename,
-              'numero_dta': numero_dta}
+              'metadata.numero_dta': numero_dta}
     return mongodb.fs.files.count_documents(params)
 
 
