@@ -54,6 +54,7 @@ setup(
             'flask-testing',
             'isort',
             'autopep8',
+            'mkdocs',
             'pylint',
             'pytest',
             'pytest-cov',

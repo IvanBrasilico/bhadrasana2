@@ -62,15 +62,18 @@ def ovr_app(app):
                         # TODO: Extrair visualização do conhecimento para uma função,
                         # talvez um Endpoint para consulta JavaScript
                         numeroCEmercante = ovr.numeroCEmercante
-                        conhecimento = session.query(Conhecimento).filter(
-                            Conhecimento.numeroCEmercante == numeroCEmercante
-                        ).one_or_none()
-                        ncms = session.query(NCMItem).filter(
-                            NCMItem.numeroCEMercante == numeroCEmercante
-                        ).all()
-                        containers = session.query(Item).filter(
-                            Item.numeroCEmercante == numeroCEmercante
-                        ).all()
+                        try:
+                            conhecimento = session.query(Conhecimento).filter(
+                                Conhecimento.numeroCEmercante == numeroCEmercante
+                            ).one_or_none()
+                            ncms = session.query(NCMItem).filter(
+                                NCMItem.numeroCEMercante == numeroCEmercante
+                            ).all()
+                            containers = session.query(Item).filter(
+                                Item.numeroCEmercante == numeroCEmercante
+                            ).all()
+                        except:
+                            pass
                         ovr_form.id.data = ovr.id
                         listahistorico = ovr.historico
                         processos = ovr.processos
