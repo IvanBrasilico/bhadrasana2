@@ -13,10 +13,19 @@ from sqlalchemy.orm import relationship, sessionmaker
 
 metadata = Base.metadata
 
+
 class EventoEspecial(Enum):
     Responsavel = 1
     RVF = 2
     TG = 3
+
+
+tipoStatusOVREspecial = [
+    ('Atribuição de responsável', EventoEspecial.Responsavel.value),
+    ('RVF incluída', EventoEspecial.RVF.value),
+    ('TG incluído', EventoEspecial.TG.value)
+
+]
 
 tipoStatusOVR = [
     'Aguardando distribuicão',
@@ -24,15 +33,14 @@ tipoStatusOVR = [
     'Aguardando Medida Judicial',
     'Aguardando Providência de Outro Setor',
     'Aguardando Laudo Técnico',
-    'Aguardando Laudo de Marcas'
+    'Aguardando Laudo de Marcas',
     'Aguardando Saneamento',
     'Recebimento de Saneamento',
     'Intimação/Notificação',
     'Intimação Não Respondida',
-    'Retificação do Termo de Guarda'
+    'Retificação do Termo de Guarda',
     'Conclusão',
     'Arquivamento',
-    'Atribuição de responsável'
 ]
 
 tipoOperacao = [
@@ -128,7 +136,7 @@ class OVR(BaseRastreavel):
                            ForeignKey('ovr_tiposevento.id'),
                            default=1)
     tipoevento = relationship('TipoEventoOVR')
-    recinto_id = Column(CHAR(10),
+    recinto_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                         ForeignKey('ovr_recintos.id'))
     recinto = relationship('Recinto')
     setor_id = Column(CHAR(15),
@@ -172,7 +180,6 @@ class TipoEventoOVR(Base):
     eventoespecial = Column(Integer(), index=True)
 
 
-
 class Recinto(Base):
     __tablename__ = 'ovr_recintos'
     id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
@@ -208,7 +215,7 @@ class EventoOVR(Base):
                          server_default=func.current_timestamp())
 
 
-class ProcessoOVR(Base):
+class ProcessoOVR(BaseRastreavel):
     __tablename__ = 'ovr_processos'
     id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
     ovr_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
@@ -270,7 +277,7 @@ class TGOVR(BaseRastreavel):
         return Enumerado.unidadeMedida(self.unidadedemedida)
 
 
-class ItemTG(Base):
+class ItemTG(BaseRastreavel):
     __tablename__ = 'ovr_itenstg'
     id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
     tg_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
@@ -285,8 +292,6 @@ class ItemTG(Base):
     marca_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                       ForeignKey('ovr_marcas.id'))
     marca = relationship(Marca)
-    create_date = Column(TIMESTAMP, index=True,
-                         server_default=func.current_timestamp())
 
     def get_unidadedemedida(self):
         return Enumerado.unidadeMedida(self.unidadedemedida)
@@ -307,34 +312,30 @@ if __name__ == '__main__':  # pragma: no-cover
         Session = sessionmaker(bind=engine)
         session = Session()
 
+        # Sair por segurança. Comentar linha abaixo para funcionar
+        sys.exit(0)
+
+        # metadata.drop_all(engine)
+        # metadata.create_all(engine)
         metadata.drop_all(engine,
                           [
-                              # metadata.tables['ovr_ovrs'],
-                              # metadata.tables['ovr_tiposevento'],
-                              # metadata.tables['ovr_tiposprocesso'],
-                              # metadata.tables['ovr_eventos'],
-                              # metadata.tables['ovr_processos'],
-                              # metadata.tables['ovr_tgovr'],
-                              # metadata.tables['ovr_itenstg'],
-                              # metadata.tables['ovr_setores'],
-                              # metadata.tables['ovr_tiposmercadoria'],
+                              #metadata.tables['ovr_tgvor_marcas'],
+                              #metadata.tables['ovr_itenstg'],
+                              #metadata.tables['ovr_eventos'],
+                              #metadata.tables['ovr_processos'],
+                              #metadata.tables['ovr_tgovr'],
+                          ])
+        metadata.drop_all(engine,
+                          [
+                              #metadata.tables['ovr_marcas'],
+                              #metadata.tables['ovr_tiposevento'],
+                              #metadata.tables['ovr_tiposprocesso'],
+                              #metadata.tables['ovr_tiposmercadoria']
                           ])
 
-        metadata.create_all(engine,
-                            [
-                                # metadata.tables['ovr_usuarios'],
-                                # metadata.tables['ovr_ovrs'],
-                                # metadata.tables['ovr_tiposevento'],
-                                # metadata.tables['ovr_tiposprocesso'],
-                                # metadata.tables['ovr_eventos'],
-                                # metadata.tables['ovr_processos'],
-                                # metadata.tables['ovr_tiposmercadoria'],
-                                # metadata.tables['ovr_tgovr'],
-                                # metadata.tables['ovr_itenstg'],
-                                #  metadata.tables['ovr_setores'],
-                                #  metadata.tables['ovr_recintos'],
-                            ])
-        """
+        metadata.create_all(engine)
+        # sys.exit(0)
+
         for nome in ('Adidas',
                      'Burberry',
                      'Tag Hauer',
@@ -345,18 +346,20 @@ if __name__ == '__main__':  # pragma: no-cover
             marca.nome = nome
             session.add(marca)
         session.commit()
-        """
-
-        """
-        fases = [0, 1, 2, 2, 2, 2, 2, 1, 2, 1, 2, 3, 4, 1]
-        for nome, fase in enumerate(tipoStatusOVR, fases):
+        fases = [0, 1, 2, 2, 2, 2, 2, 1, 2, 1, 2, 3, 4]
+        for nome, fase in zip(tipoStatusOVR, fases):
             evento = TipoEventoOVR()
             evento.nome = nome
             evento.fase = fase
             session.add(evento)
+        for nome, especial in tipoStatusOVREspecial:
+            evento = TipoEventoOVR()
+            evento.nome = nome
+            evento.fase = 1
+            evento.eventoespecial = especial
+            session.add(evento)
         session.commit()
-        """
-        """
+
         tiposmercadoria = ['Alimentos',
                            'Automotivo',
                            'Bagagem',
@@ -382,4 +385,3 @@ if __name__ == '__main__':  # pragma: no-cover
             tipomercadoria.nome = nome
             session.add(tipomercadoria)
         session.commit()
-        """
