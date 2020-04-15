@@ -58,8 +58,8 @@ def insert_pagina(mongodb, png_image: bytes,
     if grid_out:
         if grid_out.filename == filename:
             logger.warning(
-                ' Arquivo %s Pagina %s MD5 %s ' +
-                ' tentativa de inserir pela segunda vez!!' %
+                ' Arquivo %s Pagina %s MD5 %s  '
+                'tentativa de inserir pela segunda vez!!' %
                 (filename, npagina, m.hexdigest())
             )
             # File exists, abort!
