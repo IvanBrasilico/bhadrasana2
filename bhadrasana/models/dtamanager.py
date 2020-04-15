@@ -80,11 +80,11 @@ def get_pagina(mongodb, numero_dta: str, filename: str, npagina: int):
     params = {'filename': filename,
               'metadata.numero_dta': numero_dta,
               'metadata.pagina': npagina}
-    _id = mongodb.fs.files.find(params, {'_id': 1})
-    if _id is None:
+    document = mongodb.fs.files.find(params, {'_id': 1})
+    if document is None:
         raise KeyError('Página não encontrada com os parâmetros: ' % params)
     fs = GridFS(mongodb)
-    return Image.open(fs.get(_id))
+    return Image.open(fs.get(document['_id']))
 
 
 def processa_pdf(mongodb, numero_dta: str, filename: str):
