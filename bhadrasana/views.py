@@ -46,7 +46,7 @@ nav = Nav()
 nav.init_app(app)
 
 
-def configure_app(mongodb, sqlsession, mongo_risco):
+def configure_app(mongodb, sqlsession, mongo_risco, mongo_transito):
     """Configurações gerais e de Banco de Dados da Aplicação."""
 
     @app.route('/bhadrasana2/login', methods=['GET', 'POST'])
@@ -68,6 +68,7 @@ def configure_app(mongodb, sqlsession, mongo_risco):
     app.config['dbsession'] = sqlsession
     app.config['mongodb'] = mongodb
     app.config['mongo_risco'] = mongo_risco
+    app.config['mongo_transito'] = mongo_transito
     return app
 
 

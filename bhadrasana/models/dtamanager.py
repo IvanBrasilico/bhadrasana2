@@ -3,6 +3,7 @@ from _md5 import md5
 
 import fitz
 from PIL import Image
+from bson import ObjectId
 from gridfs import GridFS
 from pymongo import MongoClient
 
@@ -48,8 +49,8 @@ def gera_objeto(object, session, params):
     return object
 
 
-def insert_pagina(mongodb, png_image: bytes,
-                  numero_dta: str, filename: str, npagina: int):
+def insert_pagina(mongodb, png_image,
+                  numero_dta: str, filename: str, npagina: int) -> ObjectId:
     fs = GridFS(mongodb)
     content = png_image
     m = md5()
@@ -70,13 +71,45 @@ def insert_pagina(mongodb, png_image: bytes,
                   metadata=params)
 
 
-def get_npaginas(mongodb, numero_dta: str, filename: str):
+def _processa_pdf(mongodb, numero_dta: str, filename: str, pdf):
+    for npagina, page in enumerate(pdf, 1):
+        pix = page.getPixmap()
+        insert_pagina(mongodb, pix.getPNGData(),
+                      numero_dta, filename, npagina)
+    return npagina
+
+
+def processa_pdf(mongodb, numero_dta: str, filename: str):
+    pdf = fitz.open(filename)
+    return _processa_pdf(mongodb, numero_dta, filename, pdf)
+
+
+def processa_pdf_stream(mongodb, numero_dta: str, file):
+    pdf = fitz.open(stream=file.read(), filetype='pdf')
+    return _processa_pdf(mongodb, numero_dta, file.filename, pdf)
+
+
+def get_documentos(mongodb, numero_dta: str) -> list:
+    params = {'metadata.numero_dta': numero_dta}
+    projection = {'filename': 1, '_id': -1}
+    cursor = mongodb.fs.files.find(params, projection)
+    filenames = set([document['filename'] for document in cursor])
+    return list(filenames)
+
+
+def get_paginas(mongodb, numero_dta: str, filename: str) -> list:
+    params = {'filename': filename,
+              'metadata.numero_dta': numero_dta}
+    return list(mongodb.fs.files.find(params, {'_id': 1}))
+
+
+def get_npaginas(mongodb, numero_dta: str, filename: str) -> int:
     params = {'filename': filename,
               'metadata.numero_dta': numero_dta}
     return mongodb.fs.files.count_documents(params)
 
 
-def get_pagina(mongodb, numero_dta: str, filename: str, npagina: int):
+def get_pagina(mongodb, numero_dta: str, filename: str, npagina: int)-> Image:
     params = {'filename': filename,
               'metadata.numero_dta': numero_dta,
               'metadata.pagina': npagina}
@@ -88,22 +121,14 @@ def get_pagina(mongodb, numero_dta: str, filename: str, npagina: int):
     return Image.open(fs.get(document['_id']))
 
 
-def processa_pdf(mongodb, numero_dta: str, filename: str):
-    pdf = fitz.open(filename)
-    for npagina, page in enumerate(pdf, 1):
-        pix = page.getPixmap()
-        insert_pagina(mongodb, pix.getPNGData(),
-                      numero_dta, filename, npagina)
-    return npagina
-
-
 if __name__ == '__main__':
+    import os
     filename = sys.argv[1]
     print('Testando PDF %s ' % filename)
-    mongodb = MongoClient('mongodb://10.68.100.210')
+    mongodb = MongoClient('mongodb://localhost')
     conn = mongodb['transito']
     print('Enviando páginas para o MongoDB')
-    npaginas = processa_pdf(conn, '1234', filename)
+    npaginas = processa_pdf(conn, '1234', os.path.basename(filename))
     print('Consultando páginas geradas')
     npaginas = get_npaginas(conn, '1234', filename)
     print('Páginas geradas: %s' % npaginas)

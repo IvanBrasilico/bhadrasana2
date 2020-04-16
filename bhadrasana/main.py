@@ -27,13 +27,17 @@ from bhadrasana.views import configure_app
 from bhadrasana.models import db_session
 from pymongo import MongoClient
 
+from bhadrasana.routes.dta import dta_app
+
 conn = MongoClient(host=MONGODB_URI)
 mongodb = conn[DATABASE]
 mongodb_risco = conn['risco']
-app = configure_app(mongodb, db_session, mongodb_risco)
+mongodb_transito = conn['transito']
+app = configure_app(mongodb, db_session, mongodb_risco, mongodb_transito)
 risco_app(app)
 rvf_app(app)
 ovr_app(app)
+dta_app(app)
 admin_app(app, db_session)
 
 
