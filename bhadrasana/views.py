@@ -21,12 +21,6 @@ a aplicação de filtros/parâmetros de risco.
 import os
 import tempfile
 
-import ajna_commons.flask.login as login_ajna
-from ajna_commons.flask.conf import ALLOWED_EXTENSIONS, SECRET, logo
-from ajna_commons.flask.log import logger
-from ajna_commons.flask.user import DBUser
-from ajna_commons.utils.images import mongo_image
-from bhadrasana.conf import APP_PATH
 from flask import (Flask, redirect, render_template, request,
                    url_for, Response)
 from flask_bootstrap import Bootstrap
@@ -35,7 +29,13 @@ from flask_login import current_user
 from flask_nav import Nav
 from flask_nav.elements import Navbar, View
 from flask_wtf.csrf import CSRFProtect
-from gridfs import GridFS
+
+import ajna_commons.flask.login as login_ajna
+from ajna_commons.flask.conf import ALLOWED_EXTENSIONS, SECRET, logo
+from ajna_commons.flask.log import logger
+from ajna_commons.flask.user import DBUser
+from ajna_commons.utils.images import mongo_image
+from bhadrasana.conf import APP_PATH
 
 tmpdir = tempfile.mkdtemp()
 
@@ -46,12 +46,13 @@ nav = Nav()
 nav.init_app(app)
 
 
-def configure_app(mongodb, sqlsession, mongo_risco, mongo_transito):
+def configure_app(mongodb, sqlsession, mongo_risco):
     """Configurações gerais e de Banco de Dados da Aplicação."""
 
     @app.route('/bhadrasana2/login', methods=['GET', 'POST'])
     def bhadrasana_login():
         return login_ajna.login_view(request)
+
     login_ajna.login_manager.login_view = 'bhadrasana_login'
     app.config['REMEMBER_COOKIE_PATH'] = '/bhadrasana2'
 
@@ -68,7 +69,6 @@ def configure_app(mongodb, sqlsession, mongo_risco, mongo_transito):
     app.config['dbsession'] = sqlsession
     app.config['mongodb'] = mongodb
     app.config['mongo_risco'] = mongo_risco
-    app.config['mongo_transito'] = mongo_transito
     return app
 
 
