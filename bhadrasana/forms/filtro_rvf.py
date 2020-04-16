@@ -7,5 +7,7 @@ class FiltroRVFForm(FlaskForm):
     id = IntegerField('ID')
     numeroCEmercante = StringField(u'CE Mercante',
                                    default='')
+    numerolote = StringField(u'Contêiner ou Lote',
+                                   default='')
     datainicio = DateField(u'Data inicial da pesquisa')
     datafim = DateField(u'Data final da pesquisa')

@@ -1,10 +1,11 @@
 from ajna_commons.flask.log import logger
+from sqlalchemy import and_
+
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, \
     get_usuario_logado, gera_objeto
 from bhadrasana.models.ovr import Marca, TipoEventoOVR, EventoEspecial
 from bhadrasana.models.ovrmanager import get_ovr, gera_eventoovr
 from bhadrasana.models.rvf import RVF, Infracao, ImagemRVF
-from sqlalchemy import and_
 
 
 def get_infracoes(session):
@@ -19,8 +20,14 @@ def get_infracoes_choice(session):
 
 def get_rvfs_filtro(session, pfiltro):
     filtro = and_()
+    if pfiltro.get('numeroCEmercante'):
+        filtro = and_(RVF.numeroCEmercante.ilike(
+            pfiltro.get('numeroCEmercante')), filtro)
+    if pfiltro.get('numerolote'):
+        filtro = and_(RVF.numerolote.ilike(
+            pfiltro.get('numerolote')), filtro)
     if pfiltro.get('datainicio'):
-        filtro = and_(RVF.datahora >= pfiltro.get('datainicio'))
+        filtro = and_(RVF.datahora >= pfiltro.get('datainicio'), filtro)
     rvfs = session.query(RVF).filter(filtro).all()
     return [rvf for rvf in rvfs]
 
@@ -52,6 +59,7 @@ def cadastra_imagemrvf(session, params=None):
     if imagemrvf is not None:
         return gera_objeto(imagemrvf, session, params)
     return imagemrvf
+
 
 def lista_rvfovr(session, ovr_id):
     try:
