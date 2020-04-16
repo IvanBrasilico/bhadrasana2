@@ -83,10 +83,11 @@ def get_ovr_filtro(session, user_name: str, pfiltro: dict = None, filtrar_setor=
             datafim = datafim + timedelta(days=1)
             filtro = and_(OVR.datahora <= datafim, filtro)
         if pfiltro.get('numeroCEmercante'):
-            filtro = and_(OVR.numeroCEmercante.ilike(pfiltro.get('numeroCEmercante')),
+            filtro = and_(OVR.numeroCEmercante.ilike(
+                pfiltro.get('numeroCEmercante') + '%'),
                           filtro)
         if pfiltro.get('numero'):
-            filtro = and_(OVR.numero.ilike(pfiltro.get('numero')), filtro)
+            filtro = and_(OVR.numero.ilike(pfiltro.get('numero') + '%'), filtro)
         if pfiltro.get('tipooperacao') and pfiltro.get('tipooperacao') != 'None':
             filtro = and_(OVR.tipooperacao == int(pfiltro.get('tipooperacao')), filtro)
         if pfiltro.get('fase') and pfiltro.get('fase') != 'None':
