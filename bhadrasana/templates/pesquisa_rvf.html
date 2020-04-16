@@ -8,16 +8,22 @@
                     <div class="col-sm-2">
                         <label for="numeroCEmercante">Número CE-Mercante</label>
                     </div>
+                    <div class="col-sm-2">
+                        <label for="numerolote">Número do Contêiner ou Lote</label>
+                    </div>
                     <div class="col-sm-4">
                         <label for="datainicio">Início e fim de período de pesquisa</label>
                     </div>
-                    <div class="col-sm-6">
+                    <div class="col-sm-4">
                     </div>
                 </div>
                 <div class="row">
                     <div class="form-group">
                         <div class="col-sm-2">
                             {{ oform.numeroCEmercante(class='form-control') }}
+                        </div>
+                        <div class="col-sm-2">
+                            {{ oform.numerolote(class='form-control') }}
                         </div>
                         <div class="col-sm-2">
                             {{ oform.datainicio(class='form-control') }}
@@ -54,6 +60,7 @@
                 <tr>
                     <th></th>
                     <th>CE Mercante</th>
+                    <th>Numero Contêiner/Lote</th>
                     <th>Data da verificação</th>
                 </tr>
                 </thead>
@@ -62,6 +69,7 @@
                 <tr>
                     <td><a href="rvf?id={{ rvf.id }}">{{ rvf.id }}</a></td>
                     <td>{{ rvf.numeroCEmercante }}</td>
+                    <td>{{ rvf.numerolote }}</td>
                     <td>{{ rvf.datahora }}</td>
                 </tr>
                 {% endfor %}
