@@ -22,10 +22,10 @@ def get_rvfs_filtro(session, pfiltro):
     filtro = and_()
     if pfiltro.get('numeroCEmercante'):
         filtro = and_(RVF.numeroCEmercante.ilike(
-            pfiltro.get('numeroCEmercante')), filtro)
+            pfiltro.get('numeroCEmercante') + '%'), filtro)
     if pfiltro.get('numerolote'):
         filtro = and_(RVF.numerolote.ilike(
-            pfiltro.get('numerolote')), filtro)
+            pfiltro.get('numerolote') + '%'), filtro)
     if pfiltro.get('datainicio'):
         filtro = and_(RVF.datahora >= pfiltro.get('datainicio'), filtro)
     rvfs = session.query(RVF).filter(filtro).all()
