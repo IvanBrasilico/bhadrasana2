@@ -12,11 +12,11 @@ from ajna_commons.models.bsonimage import BsonImage
 from bhadrasana.forms.filtro_rvf import FiltroRVFForm
 from bhadrasana.forms.rvf import RVFForm, ImagemRVFForm
 from bhadrasana.models.ovrmanager import get_marcas, get_marcas_choice
+from bhadrasana.models.rvf import ImagemRVF
 from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, get_ids_anexos, inclui_marca_encontrada, \
     exclui_marca_encontrada, exclui_infracao_encontrada, inclui_infracao_encontrada, \
     get_infracoes, lista_rvfovr, cadastra_imagemrvf, get_imagemrvf_or_none, cadastra_rvf
 from bhadrasana.views import csrf, valid_file
-from models.rvf import ImagemRVF
 
 
 def rvf_app(app):
@@ -246,25 +246,37 @@ def rvf_app(app):
         session = app.config.get('dbsession')
         db = app.config['mongo_risco']
         rvf_id = None
-        imagemativa = None
+        idimagemativa = None
         anexos = []
         marcas = get_marcas_choice(session)
         oform = ImagemRVFForm(marcas=marcas)
         try:
             rvf_id = request.args.get('rvf_id')
-            imagemativa = request.args.get('imagem')
+            idimagemativa = request.args.get('imagem')
             if rvf_id is None:
                 raise Exception('RVF não informado!!!')
             rvf = get_rvf(session, rvf_id)
             imagemrvf = get_imagemrvf_or_none(session, rvf_id, imagemativa)
             if imagemrvf is not None:
                 oform = ImagemRVFForm(**imagemrvf.__dict__, marcas=marcas)
-            imagens_anexas = rvf.imagens
-            imagens = [(imagem.imagem, imagem.ordem) for imagem in imagens_anexas]
+            # TODO: Temporário - para recuperar imagens "perdidas" na transição
+            anexos_mongo = get_ids_anexos(db, rvf_id)
+            anexos_mysql = [imagem.imagem for imagem in rvf.imagens]
+            imagens_perdidas = set(anexos_mongo) - set(anexos_mysql)
+            if len(imagens_perdidas) > 0:
+                for _id in imagens_perdidas:
+                    imagem = ImagemRVF()
+                    imagem.rvf_id = rvf_id
+                    imagem.imagem = _id
+                    imagem.ordem = len(rvf.imagens) + 1
+                    session.add(imagem)
+                session.commit()
+                session.refresh(rvf)
+            imagens = [(imagem.imagem, imagem.ordem) for imagem in rvf.imagens]
             imagens = sorted(imagens, key=lambda x: x[1])
             anexos = [imagens[0] for imagem in imagens]
             oform.rvf_id.data = rvf_id
-            oform.imagem.data = imagemativa
+            oform.imagem.data = idimagemativa
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
@@ -273,7 +285,7 @@ def rvf_app(app):
         return render_template('imagens_rvf.html',
                                rvf_id=rvf_id,
                                oform=oform,
-                               imagemativa=imagemativa,
+                               imagemativa=idimagemativa,
                                anexos=anexos)
 
     @app.route('/imagemrvf', methods=['POST'])
