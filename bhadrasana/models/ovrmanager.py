@@ -118,12 +118,12 @@ def atribui_responsavel_ovr(session, ovr_id: int,
         ovr = get_ovr(session, ovr_id)
         tipoevento = session.query(TipoEventoOVR).filter(
             TipoEventoOVR.eventoespecial == EventoEspecial.Responsavel.value).first()
-        params = {'tipoevento_id': tipoevento.id,
+        evento_params = {'tipoevento_id': tipoevento.id,
                   'motivo': responsavel,  # Novo Responsável
                   'user_name': ovr.responsavel_cpf,  # Responsável anterior
                   'ovr_id': ovr.id
                   }
-        evento = gera_eventoovr(session, params, commit=False)
+        evento = gera_eventoovr(session, evento_params, commit=False)
         ovr.responsavel_cpf = responsavel  # Novo responsavel
         session.add(evento)
         session.add(ovr)
@@ -171,12 +171,12 @@ def cadastra_tgovr(session, params, user_name: str) -> TGOVR:
         # Está incluindo Novo TG e informando ovr
         tipoevento = session.query(TipoEventoOVR).filter(
             TipoEventoOVR.eventoespecial == EventoEspecial.TG.value).first()
-        params = {'tipoevento_id': tipoevento.id,
+        evento_params = {'tipoevento_id': tipoevento.id,
                   'motivo': 'Inseriu TG ',
                   'user_name': tgovr.user_name,
                   'ovr_id': params['ovr_id']
                   }
-        evento = gera_eventoovr(session, params, commit=False)
+        evento = gera_eventoovr(session, evento_params, commit=False)
         session.add(evento)
     return gera_objeto(tgovr,
                        session, params)

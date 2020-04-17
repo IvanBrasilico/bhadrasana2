@@ -256,6 +256,7 @@ def ovr_app(app):
         session = app.config.get('dbsession')
         item_id = None
         try:
+            print(request.form)
             tgovr_form = TGOVRForm(request.form)
             tgovr_form.validate()
             tgovr = cadastra_tgovr(session,
