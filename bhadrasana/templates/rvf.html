@@ -128,7 +128,7 @@
                     {% for anexo in anexos %}
                     <span class="badge">
                         <a href="ver_imagens_rvf?rvf_id={{oform.id.data}}&imagem={{anexo}}" target="_blank">
-                            <img src="image/{{anexo}}" class="btn btn-primary" alt="{{ anexo }}" width="240px"
+                            <img src="image/{{anexo}}?size=240,160" class="btn btn-primary" alt="{{ anexo }}" width="240px"
                                  height="160px"/>
                         </a>
                     <span class="badge" onclick="exclui_anexo('{{ anexo }}')">X</span>
