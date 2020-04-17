@@ -38,13 +38,19 @@ def get_rvf(session, id=None):
     return session.query(RVF).filter(RVF.id == id).one_or_none()
 
 
-def get_imagemrvf_or_none(session, rvf_id: str, _id: str):
+def get_imagemrvf_or_none(session, rvf_id: int, _id: str):
     return session.query(ImagemRVF).filter(
         ImagemRVF.rvf_id == rvf_id).filter(
         ImagemRVF.imagem == _id).one_or_none()
 
 
-def get_imagemrvf(session, rvf_id: str, _id: str):
+def get_imagemrvf_ordem_or_none(session, rvf_id: int, ordem: int):
+    return session.query(ImagemRVF).filter(
+        ImagemRVF.rvf_id == rvf_id).filter(
+        ImagemRVF.ordem == ordem).one_or_none()
+
+
+def get_imagemrvf(session, rvf_id: int, _id: str):
     imagemrvf = session.query(ImagemRVF).filter(
         ImagemRVF.rvf_id == rvf_id).filter(
         ImagemRVF.imagem == _id).one_or_none()
@@ -53,11 +59,30 @@ def get_imagemrvf(session, rvf_id: str, _id: str):
     return imagemrvf
 
 
+def swap_ordem(session, imagem_rvf: ImagemRVF, ordem_nova: int):
+    """ Quando editar campo ordem, se existir imagem na posição, trocar
+
+    :param imagem_rvf: Imagem a modificar ordem
+    :param ordem_nova: ordem nova
+
+    """
+    imagem_rvf_ordem = get_imagemrvf_ordem_or_none(session,
+                                                   imagem_rvf.rvf_id, ordem_nova)
+    if imagem_rvf_ordem:
+        imagem_rvf_ordem.ordem = imagem_rvf.ordem
+        imagem_rvf.ordem = ordem_nova
+        session.add(imagem_rvf_ordem)
+        session.add(imagem_rvf)
+        session.commit()
+
+
 def cadastra_imagemrvf(session, params=None):
     imagemrvf = get_imagemrvf(session,
                               params.get('rvf_id'),
                               params.get('imagem'))
     if imagemrvf is not None:
+        if imagemrvf.ordem != params.get('ordem'):
+            swap_ordem(session, imagemrvf, params.get('ordem'))
         return gera_objeto(imagemrvf, session, params)
     return imagemrvf
 
