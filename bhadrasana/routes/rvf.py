@@ -13,7 +13,8 @@ from bhadrasana.forms.filtro_rvf import FiltroRVFForm
 from bhadrasana.forms.rvf import RVFForm, ImagemRVFForm
 from bhadrasana.models.ovrmanager import get_marcas, get_marcas_choice
 from bhadrasana.models.rvf import ImagemRVF
-from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, get_ids_anexos, inclui_marca_encontrada, \
+from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, get_ids_anexos_ordenado, \
+    inclui_marca_encontrada, ressuscita_anexos_perdidos, \
     exclui_marca_encontrada, exclui_infracao_encontrada, inclui_infracao_encontrada, \
     get_infracoes, lista_rvfovr, cadastra_imagemrvf, get_imagemrvf_or_none, cadastra_rvf
 from bhadrasana.views import csrf, valid_file
@@ -46,14 +47,14 @@ def rvf_app(app):
     def listarvfovr():
         session = app.config.get('dbsession')
         ovr_id = request.args.get('ovr_id')
-        listarvfovr = lista_rvfovr(session, ovr_id)
+        lista = lista_rvfovr(session, ovr_id)
         return render_template('lista_rvfovr.html',
-                               listarvfovr=listarvfovr,
+                               listarvfovr=lista,
                                ovr_id=ovr_id)
 
     @app.route('/rvf', methods=['POST', 'GET'])
     @login_required
-    def rvf():
+    def _rvf():
         session = app.config.get('dbsession')
         infracoes = []
         infracoes_encontradas = []
@@ -97,7 +98,9 @@ def rvf_app(app):
                 rvf_form.id.data = rvf.id
                 infracoes_encontradas = rvf.infracoesencontradas
                 marcas_encontradas = rvf.marcasencontradas
-                anexos = get_ids_anexos(db, rvf)
+                # Temporário - para recuperar imagens "perdidas" na transição
+                ressuscita_anexos_perdidos(db, session, rvf)
+                anexos = get_ids_anexos_ordenado(rvf)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
@@ -111,20 +114,27 @@ def rvf_app(app):
                                marcas_encontradas=marcas_encontradas,
                                anexos=anexos)
 
-    @app.route('/rvf_impressao/<id>', methods=['GET'])
+    @app.route('/rvf_impressao/<rvf_id>', methods=['GET'])
     @login_required
-    def rvf_impressao(id):
+    def rvf_impressao(rvf_id):
         session = app.config.get('dbsession')
         db = app.config['mongo_risco']
         marcas_encontradas = []
         anexos = []
         rvf = None
-        rvf = get_rvf(session, id)
-        if rvf is None:
-            flash('rvf %s não encontrado.' % id)
-            return redirect(url_for('pesquisa_rvf'))
-        marcas_encontradas = rvf.marcasencontradas
-        anexos = get_ids_anexos(db, rvf)
+        try:
+            rvf = get_rvf(session, rvf_id)
+            if rvf is None:
+                flash('rvf %s não encontrado.' % rvf_id)
+                return redirect(url_for('pesquisa_rvf'))
+            marcas_encontradas = rvf.marcasencontradas
+            # Temporário - para recuperar imagens "perdidas" na transição
+            ressuscita_anexos_perdidos(db, session, rvf)
+            anexos = get_ids_anexos_ordenado(rvf)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(err)
         return render_template('rvf_impressao.html',
                                rvf=rvf,
                                marcas_encontradas=marcas_encontradas,
@@ -132,7 +142,7 @@ def rvf_app(app):
 
     @app.route('/inclui_infracao_encontrada', methods=['GET'])
     @login_required
-    def inclui_Infracao():
+    def inclui_infracao():
         session = app.config.get('dbsession')
         rvf_id = request.args.get('rvf_id')
         infracao_nome = request.args.get('infracao_nome')
@@ -142,7 +152,7 @@ def rvf_app(app):
 
     @app.route('/exclui_infracao_encontrada', methods=['GET'])
     @login_required
-    def exclui_Infracao():
+    def exclui_infracao():
         session = app.config.get('dbsession')
         rvf_id = request.args.get('rvf_id')
         infracao_id = request.args.get('infracao_id')
@@ -210,6 +220,7 @@ def rvf_app(app):
             if filename is None:
                 logger.error('Filename vazio')
                 return jsonify({'msg': 'Informe o parâmetro filename'}), 500
+            # TODO: Extrair método
             image = base64.decodebytes(content.split(',')[1].encode())
             bson_img = BsonImage()
             bson_img.set_campos(filename, image, rvf_id=rvf_id)
@@ -243,8 +254,8 @@ def rvf_app(app):
     @app.route('/ver_imagens_rvf', methods=['GET'])
     @login_required
     def ver_imagens_rvf():
-        session = app.config.get('dbsession')
         db = app.config['mongo_risco']
+        session = app.config.get('dbsession')
         rvf_id = None
         idimagemativa = None
         anexos = []
@@ -255,26 +266,13 @@ def rvf_app(app):
             idimagemativa = request.args.get('imagem')
             if rvf_id is None:
                 raise Exception('RVF não informado!!!')
+            # Temporário - para recuperar imagens "perdidas" na transição
             rvf = get_rvf(session, rvf_id)
-            imagemrvf = get_imagemrvf_or_none(session, rvf_id, imagemativa)
-            if imagemrvf is not None:
-                oform = ImagemRVFForm(**imagemrvf.__dict__, marcas=marcas)
-            # TODO: Temporário - para recuperar imagens "perdidas" na transição
-            anexos_mongo = get_ids_anexos(db, rvf_id)
-            anexos_mysql = [imagem.imagem for imagem in rvf.imagens]
-            imagens_perdidas = set(anexos_mongo) - set(anexos_mysql)
-            if len(imagens_perdidas) > 0:
-                for _id in imagens_perdidas:
-                    imagem = ImagemRVF()
-                    imagem.rvf_id = rvf_id
-                    imagem.imagem = _id
-                    imagem.ordem = len(rvf.imagens) + 1
-                    session.add(imagem)
-                session.commit()
-                session.refresh(rvf)
-            imagens = [(imagem.imagem, imagem.ordem) for imagem in rvf.imagens]
-            imagens = sorted(imagens, key=lambda x: x[1])
-            anexos = [imagens[0] for imagem in imagens]
+            ressuscita_anexos_perdidos(db, session, rvf)
+            anexos = get_ids_anexos_ordenado(rvf)
+            aimagemrvf = get_imagemrvf_or_none(session, rvf_id, idimagemativa)
+            if aimagemrvf is not None:
+                oform = ImagemRVFForm(**aimagemrvf.__dict__, marcas=marcas)
             oform.rvf_id.data = rvf_id
             oform.imagem.data = idimagemativa
         except Exception as err:
@@ -292,6 +290,7 @@ def rvf_app(app):
     @login_required
     def imagemrvf():
         session = app.config.get('dbsession')
+        oform = ImagemRVFForm()
         try:
             oform = ImagemRVFForm(request.form)
             oform.validate()
