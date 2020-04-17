@@ -132,7 +132,7 @@ def image_id(_id):
         size = request.args.get('size')
         if size:
             width, height = map(int, size.split(','))
-            pil_img = Image.open(io.BytesIO(image_bytes))
+            pil_img = Image.open(io.BytesIO(image))
             pil_img.thumbnail(width, height)
             image = PIL_tobytes(pil_img)
     except Exception as err:
@@ -181,10 +181,8 @@ def mynavbar():
              View('Risco', 'risco'),
              View('Editar Riscos', 'edita_risco'),
              View('Verificações físicas', 'pesquisa_rvf'),
-             # View('FMA', 'pesquisa_fma'),
              View('Ficha de Carga', 'pesquisa_ovr'),
              View('Minhas Fichas', 'minhas_ovrs'),
-             # View('Avaliar PDFs trânsito', 'transito'),
              ]
     if current_user.is_authenticated:
         items.append(View('Sair', 'commons.logout'))
