@@ -43,6 +43,7 @@ class RVF(BaseRastreavel):
     descricao = Column(VARCHAR(400), index=True)
     peso = Column(Numeric(10, 2), index=True)
     volume = Column(Numeric(10, 2), index=True)
+    imagens = relationship('ImagemRVF', back_populates='rvf')
     marcasencontradas = relationship('Marca',
                                      secondary=marcasencontradas_table)
     infracoesencontradas = relationship('Infracao',
@@ -50,6 +51,7 @@ class RVF(BaseRastreavel):
     datahora = Column(TIMESTAMP, index=True)
     last_modified = Column(DateTime, index=True,
                            onupdate=func.current_timestamp())
+
 
 
 class ImagemRVF(BaseRastreavel):
@@ -64,6 +66,9 @@ class ImagemRVF(BaseRastreavel):
                       ForeignKey('ovr_marcas.id'))
     marca = relationship(Marca)
     ordem = Column(Integer(), index=True)
+    rvf_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
+                      ForeignKey('ovr_verificacoesfisicas.id'))
+    rvf = relationship(RVF)
 
 
 class Infracao(Base):

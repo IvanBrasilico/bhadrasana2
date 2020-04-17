@@ -16,6 +16,7 @@ from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, get_ids_anexo
     exclui_marca_encontrada, exclui_infracao_encontrada, inclui_infracao_encontrada, \
     get_infracoes, lista_rvfovr, cadastra_imagemrvf, get_imagemrvf_or_none, cadastra_rvf
 from bhadrasana.views import csrf, valid_file
+from models.rvf import ImagemRVF
 
 
 def rvf_app(app):
@@ -193,6 +194,7 @@ def rvf_app(app):
     @app.route('/api/rvf_imgupload', methods=['POST'])
     def api_rvf_imgupload():
         db = app.config['mongo_risco']
+        session = app.config.get('dbsession')
         fs = GridFS(db)
         try:
             rvf_id = request.form.get('rvf_id')
@@ -211,8 +213,16 @@ def rvf_app(app):
             image = base64.decodebytes(content.split(',')[1].encode())
             bson_img = BsonImage()
             bson_img.set_campos(filename, image, rvf_id=rvf_id)
-            bson_img.tomongo(fs)
+            _id = bson_img.tomongo(fs)
             print(rvf_id, filename)
+            rvf = get_rvf(session, rvf_id)
+            imagem = ImagemRVF()
+            imagem.rvf_id = rvf_id
+            imagem.imagem = str(_id)
+            imagem.descricao = filename
+            imagem.ordem = len(rvf.imagens) + 1
+            session.add(imagem)
+            session.commit()
         except Exception as err:
             logger.error(str(err), exc_info=True)
             return jsonify({'msg': 'Erro: %s' % str(err)}), 500
@@ -249,7 +259,10 @@ def rvf_app(app):
             imagemrvf = get_imagemrvf_or_none(session, rvf_id, imagemativa)
             if imagemrvf is not None:
                 oform = ImagemRVFForm(**imagemrvf.__dict__, marcas=marcas)
-            anexos = get_ids_anexos(db, rvf)
+            imagens_anexas = rvf.imagens
+            imagens = [(imagem.imagem, imagem.ordem) for imagem in imagens_anexas]
+            imagens = sorted(imagens, key=lambda x: x[1])
+            anexos = [imagens[0] for imagem in imagens]
             oform.rvf_id.data = rvf_id
             oform.imagem.data = imagemativa
         except Exception as err:
