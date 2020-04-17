@@ -30,6 +30,7 @@ class ImagemRVFForm(RastreavelForm):
                               render_kw={'rows': 3, 'cols': 80},
                               default='')
     marca_id = SelectField('Marca licenciada, se existir', default=0)
+    ordem = IntegerField('ID')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

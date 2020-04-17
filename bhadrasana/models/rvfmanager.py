@@ -190,9 +190,31 @@ def exclui_marca_encontrada(session, rvf_id, marca_id):
     return gerencia_marca_encontrada(session, rvf_id, marca_id, inclui=False)
 
 
-def get_ids_anexos(db, rvf):
+
+def get_ids_anexos_ordenado(rvf):
+    imagens = [(imagem.imagem, imagem.ordem) for imagem in rvf.imagens]
+    imagens = sorted(imagens, key=lambda x: x[1])
+    anexos = [imagem[0] for imagem in imagens]
+    return anexos
+
+def get_ids_anexos_mongo(db, rvf):
     filtro = {'metadata.rvf_id': str(rvf.id)}
     count = db['fs.files'].count_documents(filtro)
     result = [str(row['_id']) for row in db['fs.files'].find(filtro)]
     print(filtro, result, count)
     return result
+
+def ressuscita_anexos_perdidos(db, session, rvf):
+    # TODO: Temporário - para recuperar imagens "perdidas" na transição
+    anexos_mongo = get_ids_anexos_mongo(db, rvf)
+    anexos_mysql = [imagem.imagem for imagem in rvf.imagens]
+    imagens_perdidas = set(anexos_mongo) - set(anexos_mysql)
+    if len(imagens_perdidas) > 0:
+        for ind, _id in enumerate(imagens_perdidas, 1):
+            imagem = ImagemRVF()
+            imagem.rvf_id = rvf.id
+            imagem.imagem = _id
+            imagem.ordem = len(anexos_mysql) + ind
+            session.add(imagem)
+        session.commit()
+        session.refresh(rvf)
