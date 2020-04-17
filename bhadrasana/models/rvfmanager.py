@@ -107,6 +107,15 @@ def cadastra_rvf(session,
         rvf = RVF()
         rvf.ovr_id = ovr.id
         rvf.numeroCEmercante = ovr.numeroCEmercante
+        tipoevento = session.query(TipoEventoOVR).filter(
+            TipoEventoOVR.eventoespecial == EventoEspecial.RVF.value).first()
+        params = {'tipoevento_id': tipoevento.id,
+                  'motivo': 'RVF %s' % rvf.id,
+                  'user_name': rvf.user_name,
+                  'ovr_id': rvf.ovr_id
+                  }
+        evento = gera_eventoovr(session, params, commit=False)
+        session.add(evento)
     elif params:
         rvf = get_rvf(session, params.get('id'))
         usuario = get_usuario_logado(session, user_name)
@@ -117,16 +126,6 @@ def cadastra_rvf(session,
         rvf.datahora = handle_datahora(params)
     if rvf is not None:
         try:
-            if rvf.ovr_id is not None:
-                tipoevento = session.query(TipoEventoOVR).filter(
-                    TipoEventoOVR.eventoespecial == EventoEspecial.RVF.value).first()
-                params = {'tipoevento_id': tipoevento.id,
-                          'motivo': 'RVF %s' % rvf.id,
-                          'user_name': rvf.user_name,
-                          'ovr_id': rvf.ovr_id
-                          }
-                evento = gera_eventoovr(session, params, commit=False)
-                session.add(evento)
             session.add(rvf)
             session.commit()
         except Exception as err:
