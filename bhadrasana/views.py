@@ -17,10 +17,16 @@ conexões internas.
 Adicionalmente, permite o merge entre bases, navegação de bases, e
 a aplicação de filtros/parâmetros de risco.
 """
-
+import io
 import os
 import tempfile
 
+import ajna_commons.flask.login as login_ajna
+from PIL import Image
+from ajna_commons.flask.conf import ALLOWED_EXTENSIONS, SECRET, logo
+from ajna_commons.flask.log import logger
+from ajna_commons.flask.user import DBUser
+from ajna_commons.utils.images import mongo_image, PIL_tobytes
 from flask import (Flask, redirect, render_template, request,
                    url_for, Response)
 from flask_bootstrap import Bootstrap
@@ -30,11 +36,6 @@ from flask_nav import Nav
 from flask_nav.elements import Navbar, View
 from flask_wtf.csrf import CSRFProtect
 
-import ajna_commons.flask.login as login_ajna
-from ajna_commons.flask.conf import ALLOWED_EXTENSIONS, SECRET, logo
-from ajna_commons.flask.log import logger
-from ajna_commons.flask.user import DBUser
-from ajna_commons.utils.images import mongo_image
 from bhadrasana.conf import APP_PATH
 
 tmpdir = tempfile.mkdtemp()
@@ -78,7 +79,7 @@ def log_every_request():
     name = 'No user'
     if current_user and current_user.is_authenticated:
         name = current_user.name
-        logger.info(request.url + ' - ' + name)
+    logger.info(request.url + ' - ' + name)
 
 
 def get_user_save_path():
@@ -127,6 +128,16 @@ def image_id(_id):
     """
     db = app.config['mongo_risco']
     image = mongo_image(db, _id)
+    try:
+        size = request.args.get('size')
+        if size:
+            width, height = map(int, size.split(','))
+            pil_img = Image.open(io.BytesIO(image_bytes))
+            pil_img.thumbnail(width, height)
+            image = PIL_tobytes(pil_img)
+    except Exception as err:
+        logger.error('Erro ao processar parâmetro size em /image: %s' % str(err))
+
     if image:
         return Response(response=image, mimetype='image/jpeg')
     return 'Sem Imagem'
@@ -138,8 +149,8 @@ def anexo_filename():
 
     """
     db = app.config['mongo_risco']
-    filter = {'metadata.' + key: value for key, value in request.args.items()}
-    row = db['fs.files'].find_one(filter)
+    filtro = {'metadata.' + key: value for key, value in request.args.items()}
+    row = db['fs.files'].find_one(filtro)
     if row:
         return row['filename']
     return 'Sem Anexo'
@@ -151,8 +162,8 @@ def anexo():
 
     """
     db = app.config['mongo_risco']
-    filter = {'metadata.' + key: value for key, value in request.args.items()}
-    row = db['fs.files'].find_one(filter)
+    filtro = {'metadata.' + key: value for key, value in request.args.items()}
+    row = db['fs.files'].find_one(filtro)
     if row:
         _id = row['_id']
         mimetype = row.get('metadata').get('contentType') or 'image/jpeg'
