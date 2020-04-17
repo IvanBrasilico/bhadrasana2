@@ -133,7 +133,7 @@ def image_id(_id):
         if size:
             width, height = map(int, size.split(','))
             pil_img = Image.open(io.BytesIO(image))
-            pil_img.thumbnail(width, height)
+            pil_img.thumbnail((width, height))
             image = PIL_tobytes(pil_img)
     except Exception as err:
         logger.error('Erro ao processar parâmetro size em /image: %s' % str(err))
