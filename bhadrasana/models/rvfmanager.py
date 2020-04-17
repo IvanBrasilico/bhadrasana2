@@ -50,6 +50,7 @@ def get_imagemrvf(session, rvf_id: str, _id: str):
         ImagemRVF.imagem == _id).one_or_none()
     if imagemrvf is None:
         return ImagemRVF()
+    return imagemrvf
 
 
 def cadastra_imagemrvf(session, params=None):
