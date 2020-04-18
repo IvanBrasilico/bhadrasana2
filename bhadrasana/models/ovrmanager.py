@@ -1,14 +1,15 @@
 from datetime import timedelta
 
 import pandas as pd
+from sqlalchemy import and_
+from sqlalchemy.orm import Session
+
 from ajna_commons.flask.log import logger
 from bhadrasana.models import Usuario, Setor, EBloqueado
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto, \
     get_usuario_logado
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
     TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria, EventoEspecial
-from sqlalchemy import and_
-from sqlalchemy.orm import Session
 
 
 def get_recintos(session):
@@ -55,12 +56,12 @@ def cadastra_ovr(session, params: dict, user_name: str) -> OVR:
     return ovr
 
 
-def get_ovr(session, id: int = None) -> OVR:
-    if id is None:
+def get_ovr(session, ovr_id: int = None) -> OVR:
+    if ovr_id is None:
         ovr = OVR()
         ovr.status = 1
         return ovr
-    ovr = session.query(OVR).filter(OVR.id == id).one_or_none()
+    ovr = session.query(OVR).filter(OVR.id == ovr_id).one_or_none()
     if ovr is None:
         return get_ovr(session)
     return ovr
@@ -85,7 +86,7 @@ def get_ovr_filtro(session, user_name: str, pfiltro: dict = None, filtrar_setor=
         if pfiltro.get('numeroCEmercante'):
             filtro = and_(OVR.numeroCEmercante.ilike(
                 pfiltro.get('numeroCEmercante') + '%'),
-                          filtro)
+                filtro)
         if pfiltro.get('numero'):
             filtro = and_(OVR.numero.ilike(pfiltro.get('numero') + '%'), filtro)
         if pfiltro.get('tipooperacao') and pfiltro.get('tipooperacao') != 'None':
@@ -119,10 +120,10 @@ def atribui_responsavel_ovr(session, ovr_id: int,
         tipoevento = session.query(TipoEventoOVR).filter(
             TipoEventoOVR.eventoespecial == EventoEspecial.Responsavel.value).first()
         evento_params = {'tipoevento_id': tipoevento.id,
-                  'motivo': responsavel,  # Novo Responsável
-                  'user_name': ovr.responsavel_cpf,  # Responsável anterior
-                  'ovr_id': ovr.id
-                  }
+                         'motivo': responsavel,  # Novo Responsável
+                         'user_name': ovr.responsavel_cpf,  # Responsável anterior
+                         'ovr_id': ovr.id
+                         }
         evento = gera_eventoovr(session, evento_params, commit=False)
         ovr.responsavel_cpf = responsavel  # Novo responsavel
         session.add(evento)
@@ -172,10 +173,10 @@ def cadastra_tgovr(session, params, user_name: str) -> TGOVR:
         tipoevento = session.query(TipoEventoOVR).filter(
             TipoEventoOVR.eventoespecial == EventoEspecial.TG.value).first()
         evento_params = {'tipoevento_id': tipoevento.id,
-                  'motivo': 'Inseriu TG ',
-                  'user_name': tgovr.user_name,
-                  'ovr_id': params['ovr_id']
-                  }
+                         'motivo': 'Inseriu TG ',
+                         'user_name': tgovr.user_name,
+                         'ovr_id': params['ovr_id']
+                         }
         evento = gera_eventoovr(session, evento_params, commit=False)
         session.add(evento)
     return gera_objeto(tgovr,
@@ -190,12 +191,12 @@ def lista_tgovr(session, ovr_id):
     return session.query(TGOVR).filter(TGOVR.ovr_id == ovr_id).all()
 
 
-def get_tgovr(session, id: int = None):
-    if id is None or id == 'None':
+def get_tgovr(session, tg_id: int = None):
+    if tg_id is None or tg_id == 'None':
         tgovr = TGOVR()
         print('Criando TGOVR zerado...')
         return tgovr
-    return session.query(TGOVR).filter(TGOVR.id == id).one_or_none()
+    return session.query(TGOVR).filter(TGOVR.id == tg_id).one_or_none()
 
 
 def cadastra_itemtg(session, params):
@@ -212,12 +213,12 @@ def lista_itemtg(session, tg_id):
     return session.query(ItemTG).filter(ItemTG.tg_id == tg_id).all()
 
 
-def get_itemtg(session, id: int = None):
-    if id is None or id == 'None':
+def get_itemtg(session, itemid: int = None):
+    if itemid is None or itemid == 'None':
         itemtg = ItemTG()
         print('Criando ItemTG zerado...')
         return itemtg
-    return session.query(ItemTG).filter(ItemTG.id == id).one_or_none()
+    return session.query(ItemTG).filter(ItemTG.id == itemid).one_or_none()
 
 
 def get_itemtg_numero(session, tg: TGOVR, numero: int) -> ItemTG:
