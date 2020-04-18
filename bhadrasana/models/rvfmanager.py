@@ -1,6 +1,11 @@
-from ajna_commons.flask.log import logger
+from typing import Callable
+
+from bson import ObjectId
+from gridfs import GridFS
 from sqlalchemy import and_
 
+from ajna_commons.flask.log import logger
+from ajna_commons.models.bsonimage import BsonImage
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, \
     get_usuario_logado, gera_objeto
 from bhadrasana.models.ovr import Marca, TipoEventoOVR, EventoEspecial
@@ -32,59 +37,16 @@ def get_rvfs_filtro(session, pfiltro):
     return [rvf for rvf in rvfs]
 
 
-def get_rvf(session, id=None):
-    if id is None:
+def get_rvf(session, rvf_id=None):
+    if rvf_id is None:
         return RVF()
-    return session.query(RVF).filter(RVF.id == id).one_or_none()
+    return session.query(RVF).filter(RVF.id == rvf_id).one_or_none()
 
 
 def get_imagemrvf_or_none(session, rvf_id: int, _id: str):
     return session.query(ImagemRVF).filter(
         ImagemRVF.rvf_id == rvf_id).filter(
         ImagemRVF.imagem == _id).one_or_none()
-
-
-def get_imagemrvf_ordem_or_none(session, rvf_id: int, ordem: int):
-    return session.query(ImagemRVF).filter(
-        ImagemRVF.rvf_id == rvf_id).filter(
-        ImagemRVF.ordem == ordem).one_or_none()
-
-
-def get_imagemrvf(session, rvf_id: int, _id: str):
-    imagemrvf = session.query(ImagemRVF).filter(
-        ImagemRVF.rvf_id == rvf_id).filter(
-        ImagemRVF.imagem == _id).one_or_none()
-    if imagemrvf is None:
-        return ImagemRVF()
-    return imagemrvf
-
-
-def swap_ordem(session, imagem_rvf: ImagemRVF, ordem_nova: int):
-    """ Quando editar campo ordem, se existir imagem na posição, trocar
-
-    :param imagem_rvf: Imagem a modificar ordem
-    :param ordem_nova: ordem nova
-
-    """
-    imagem_rvf_ordem = get_imagemrvf_ordem_or_none(session,
-                                                   imagem_rvf.rvf_id, ordem_nova)
-    if imagem_rvf_ordem:
-        imagem_rvf_ordem.ordem = imagem_rvf.ordem
-        imagem_rvf.ordem = ordem_nova
-        session.add(imagem_rvf_ordem)
-        session.add(imagem_rvf)
-        session.commit()
-
-
-def cadastra_imagemrvf(session, params=None):
-    imagemrvf = get_imagemrvf(session,
-                              params.get('rvf_id'),
-                              params.get('imagem'))
-    if imagemrvf is not None:
-        if imagemrvf.ordem != params.get('ordem'):
-            swap_ordem(session, imagemrvf, params.get('ordem'))
-        return gera_objeto(imagemrvf, session, params)
-    return imagemrvf
 
 
 def lista_rvfovr(session, ovr_id):
@@ -189,6 +151,79 @@ def exclui_marca_encontrada(session, rvf_id, marca_id):
     return gerencia_marca_encontrada(session, rvf_id, marca_id, inclui=False)
 
 
+def get_imagemrvf(session, rvf_id: int, _id: str):
+    imagemrvf = session.query(ImagemRVF).filter(
+        ImagemRVF.rvf_id == rvf_id).filter(
+        ImagemRVF.imagem == _id).one_or_none()
+    if imagemrvf is None:
+        return ImagemRVF()
+    return imagemrvf
+
+
+def get_imagemrvf_ordem_or_none(session, rvf_id: int, ordem: int):
+    return session.query(ImagemRVF).filter(
+        ImagemRVF.rvf_id == rvf_id).filter(
+        ImagemRVF.ordem == ordem).one_or_none()
+
+
+def get_imagemrvf_imagem_or_none(session, _id: str):
+    return session.query(ImagemRVF).filter(
+        ImagemRVF.imagem == _id).one_or_none()
+
+
+def swap_ordem(session, imagem_rvf: ImagemRVF, ordem_nova: int):
+    """ Quando editar campo ordem, se existir imagem na posição, trocar
+
+    :param imagem_rvf: Imagem a modificar ordem
+    :param ordem_nova: ordem nova
+
+    """
+    imagem_rvf_ordem = get_imagemrvf_ordem_or_none(session,
+                                                   imagem_rvf.rvf_id, ordem_nova)
+    if imagem_rvf_ordem:
+        imagem_rvf_ordem.ordem = imagem_rvf.ordem
+        imagem_rvf.ordem = ordem_nova
+        session.add(imagem_rvf_ordem)
+        session.add(imagem_rvf)
+        session.commit()
+
+
+def inclui_imagemrvf(mongodb, session, image, filename, rvf_id):
+    bson_img = BsonImage()
+    bson_img.set_campos(filename, image, rvf_id=rvf_id)
+    fs = GridFS(mongodb)
+    _id = bson_img.tomongo(fs)
+    print(rvf_id, filename)
+    rvf = get_rvf(session, rvf_id)
+    imagem = ImagemRVF()
+    imagem.rvf_id = rvf_id
+    imagem.imagem = str(_id)
+    imagem.descricao = filename
+    imagem.ordem = len(rvf.imagens) + 1
+    session.add(imagem)
+    session.commit()
+
+
+def cadastra_imagemrvf(session, params=None):
+    imagemrvf = get_imagemrvf(session,
+                              params.get('rvf_id'),
+                              params.get('imagem'))
+    if imagemrvf is not None:
+        if imagemrvf.ordem != params.get('ordem'):
+            swap_ordem(session, imagemrvf, params.get('ordem'))
+        return gera_objeto(imagemrvf, session, params)
+    return imagemrvf
+
+
+def delete_imagemrvf(mongodb, session, _id: str):
+    imagemrvf = get_imagemrvf_imagem_or_none(session, _id)
+    grid_out = mongodb['fs.files'].find_one({'_id': ObjectId(_id)})
+    rvf_id = grid_out['metadata']['rvf_id']
+    session.delete(imagemrvf)
+    mongodb['fs.files'].delete_one({'_id': ObjectId(_id)})
+    session.commmit()
+    return rvf_id
+
 
 def get_ids_anexos_ordenado(rvf):
     imagens = [(imagem.imagem, imagem.ordem) for imagem in rvf.imagens]
@@ -196,12 +231,14 @@ def get_ids_anexos_ordenado(rvf):
     anexos = [imagem[0] for imagem in imagens]
     return anexos
 
+
 def get_ids_anexos_mongo(db, rvf):
     filtro = {'metadata.rvf_id': str(rvf.id)}
     count = db['fs.files'].count_documents(filtro)
     result = [str(row['_id']) for row in db['fs.files'].find(filtro)]
     print(filtro, result, count)
     return result
+
 
 def ressuscita_anexos_perdidos(db, session, rvf):
     # TODO: Temporário - para recuperar imagens "perdidas" na transição
@@ -217,3 +254,25 @@ def ressuscita_anexos_perdidos(db, session, rvf):
             session.add(imagem)
         session.commit()
         session.refresh(rvf)
+
+def make_transformation(mongodb, session, imagemrvf: ImagemRVF,
+                        transformation: Callable):
+    """Aplica função no conteúdo de GridFS, salva em novo registro, atauliza ponteiro.
+
+    :param mongodb: conexão com MongoDB (conteúdo da imagem)
+    :param session: conexão com MySQL
+    :param imagemrvf: instância do objeto ImagemRVF (dados mapeamento)
+    :param transformation: função que recebe conteúdo do fs.files e retorna este
+    conteúdo transformado.
+    :return:
+    """
+    fs = GridFS(mongodb)
+    old_id = imagemrvf.imagem
+    imagem_bytes = fs.get(old_id).read()
+    imagem_bytes = make_transformation(imagem_bytes)
+    new_id = fs.put(imagem_bytes, filename=imagemrvf.filename,
+                    metadata = imagem_bytes.metadata)
+    imagemrvf.imagem = new_id
+    session.add(imagemrvf)
+    session.commit()
+    fs.delete(old_id)
