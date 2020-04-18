@@ -1,7 +1,8 @@
 import base64
+import io
 from datetime import date, timedelta
 
-from bson import ObjectId
+from PIL import Image
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
 from gridfs import GridFS
@@ -9,15 +10,15 @@ from werkzeug.utils import redirect
 
 from ajna_commons.flask.log import logger
 from ajna_commons.models.bsonimage import BsonImage
+from ajna_commons.utils.images import PIL_tobytes
 from bhadrasana.forms.filtro_rvf import FiltroRVFForm
 from bhadrasana.forms.rvf import RVFForm, ImagemRVFForm
 from bhadrasana.models.ovrmanager import get_marcas, get_marcas_choice
-from bhadrasana.models.rvf import ImagemRVF
 from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, get_ids_anexos_ordenado, \
     inclui_marca_encontrada, ressuscita_anexos_perdidos, \
     exclui_marca_encontrada, exclui_infracao_encontrada, inclui_infracao_encontrada, \
     get_infracoes, lista_rvfovr, cadastra_imagemrvf, get_imagemrvf_or_none, cadastra_rvf, delete_imagemrvf, \
-    inclui_imagemrvf
+    inclui_imagemrvf, get_imagemrvf_imagem_or_none, make_transformation
 from bhadrasana.views import csrf, valid_file
 
 
@@ -290,3 +291,29 @@ def rvf_app(app):
         return redirect(url_for('ver_imagens_rvf',
                                 rvf_id=oform.rvf_id.data,
                                 imagem=oform.imagem.data))
+
+    @app.route('/transformimagemrvf', methods=['GET'])
+    @login_required
+    def transformimagemrvf():
+        def rotate(image_bytes):
+            pil_img = Image.open(io.BytesIO(image_bytes))
+            pil_img = pil_img.transpose(Image.ROTATE_90)
+            return PIL_tobytes(pil_img)
+
+        db = app.config['mongo_risco']
+        session = app.config.get('dbsession')
+        idimagemativa = request.args.get('imagem')
+        rvf_id = None
+        try:
+            imagemrvf = get_imagemrvf_imagem_or_none()
+            if imagemrvf:
+                rvf_id = imagemrvf.rvf_id
+                make_transformation(db, session, imagemrvf, rotate)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(type(err))
+            flash(err)
+        return redirect(url_for('ver_imagens_rvf',
+                                rvf_id=rvf_id,
+                                imagem=idimagemativa))
