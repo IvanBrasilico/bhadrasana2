@@ -16,7 +16,8 @@ from bhadrasana.models.rvf import ImagemRVF
 from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, get_ids_anexos_ordenado, \
     inclui_marca_encontrada, ressuscita_anexos_perdidos, \
     exclui_marca_encontrada, exclui_infracao_encontrada, inclui_infracao_encontrada, \
-    get_infracoes, lista_rvfovr, cadastra_imagemrvf, get_imagemrvf_or_none, cadastra_rvf
+    get_infracoes, lista_rvfovr, cadastra_imagemrvf, get_imagemrvf_or_none, cadastra_rvf, delete_imagemrvf, \
+    inclui_imagemrvf
 from bhadrasana.views import csrf, valid_file
 
 
@@ -205,7 +206,6 @@ def rvf_app(app):
     def api_rvf_imgupload():
         db = app.config['mongo_risco']
         session = app.config.get('dbsession')
-        fs = GridFS(db)
         try:
             rvf_id = request.form.get('rvf_id')
             if rvf_id is None:
@@ -220,20 +220,8 @@ def rvf_app(app):
             if filename is None:
                 logger.error('Filename vazio')
                 return jsonify({'msg': 'Informe o parâmetro filename'}), 500
-            # TODO: Extrair método
             image = base64.decodebytes(content.split(',')[1].encode())
-            bson_img = BsonImage()
-            bson_img.set_campos(filename, image, rvf_id=rvf_id)
-            _id = bson_img.tomongo(fs)
-            print(rvf_id, filename)
-            rvf = get_rvf(session, rvf_id)
-            imagem = ImagemRVF()
-            imagem.rvf_id = rvf_id
-            imagem.imagem = str(_id)
-            imagem.descricao = filename
-            imagem.ordem = len(rvf.imagens) + 1
-            session.add(imagem)
-            session.commit()
+            inclui_imagemrvf(db, session, image, filename, rvf_id)
         except Exception as err:
             logger.error(str(err), exc_info=True)
             return jsonify({'msg': 'Erro: %s' % str(err)}), 500
@@ -246,9 +234,8 @@ def rvf_app(app):
         """
         _id = request.args.get('_id')
         db = app.config['mongo_risco']
-        grid_out = db['fs.files'].find_one({'_id': ObjectId(_id)})
-        rvf_id = grid_out['metadata']['rvf_id']
-        db['fs.files'].delete_one({'_id': ObjectId(_id)})
+        session = app.config.get('dbsession')
+        rvf_id = delete_imagemrvf(db, session, _id)
         return redirect(url_for('rvf', id=rvf_id))
 
     @app.route('/ver_imagens_rvf', methods=['GET'])
