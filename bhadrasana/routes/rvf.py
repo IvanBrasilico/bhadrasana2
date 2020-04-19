@@ -10,7 +10,7 @@ from werkzeug.utils import redirect
 
 from ajna_commons.flask.log import logger
 from ajna_commons.models.bsonimage import BsonImage
-from ajna_commons.utils.images import PIL_tobytes
+from ajna_commons.utils.images import PIL_tobytes, ImageBytesTansFormations
 from bhadrasana.forms.filtro_rvf import FiltroRVFForm
 from bhadrasana.forms.rvf import RVFForm, ImagemRVFForm
 from bhadrasana.models.ovrmanager import get_marcas, get_marcas_choice
@@ -18,7 +18,7 @@ from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, get_ids_anexo
     inclui_marca_encontrada, ressuscita_anexos_perdidos, \
     exclui_marca_encontrada, exclui_infracao_encontrada, inclui_infracao_encontrada, \
     get_infracoes, lista_rvfovr, cadastra_imagemrvf, get_imagemrvf_or_none, cadastra_rvf, delete_imagemrvf, \
-    inclui_imagemrvf, get_imagemrvf_imagem_or_none, make_transformation
+    inclui_imagemrvf, get_imagemrvf_imagem_or_none, make_and_save_transformation
 from bhadrasana.views import csrf, valid_file
 
 
@@ -38,8 +38,8 @@ def rvf_app(app):
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
-            flash(type(err))
-            flash(err)
+            flash(str(type(err)))
+            flash(str(err))
         return render_template('pesquisa_rvf.html',
                                oform=filtro_form,
                                rvfs=rvfs)
@@ -106,8 +106,8 @@ def rvf_app(app):
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
-            flash(type(err))
-            flash(err)
+            flash(str(type(err)))
+            flash(str(err))
         return render_template('rvf.html',
                                infracoes=infracoes,
                                marcas=marcas,
@@ -136,7 +136,7 @@ def rvf_app(app):
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
-            flash(err)
+            flash(str(err))
         return render_template('rvf_impressao.html',
                                rvf=rvf,
                                marcas_encontradas=marcas_encontradas,
@@ -266,8 +266,8 @@ def rvf_app(app):
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
-            flash(type(err))
-            flash(err)
+            flash(str(type(err)))
+            flash(str(err))
         return render_template('imagens_rvf.html',
                                rvf_id=rvf_id,
                                oform=oform,
@@ -286,15 +286,15 @@ def rvf_app(app):
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
-            flash(type(err))
-            flash(err)
+            flash(str(type(err)))
+            flash(str(err))
         return redirect(url_for('ver_imagens_rvf',
                                 rvf_id=oform.rvf_id.data,
                                 imagem=oform.imagem.data))
 
-    @app.route('/transformimagemrvf', methods=['GET'])
+    @app.route('/transformimagemrvf/<id_imagem>/<transformation>', methods=['GET'])
     @login_required
-    def transformimagemrvf():
+    def transformimagemrvf(id_imagem, transformation):
         def rotate(image_bytes):
             pil_img = Image.open(io.BytesIO(image_bytes))
             pil_img = pil_img.transpose(Image.ROTATE_90)
@@ -302,18 +302,21 @@ def rvf_app(app):
 
         db = app.config['mongo_risco']
         session = app.config.get('dbsession')
-        idimagemativa = request.args.get('imagem')
         rvf_id = None
+        new_id = None
         try:
-            imagemrvf = get_imagemrvf_imagem_or_none()
+            imagemrvf = get_imagemrvf_imagem_or_none(session, id_imagem)
             if imagemrvf:
                 rvf_id = imagemrvf.rvf_id
-                make_transformation(db, session, imagemrvf, rotate)
+                transform_function = ImageBytesTansFormations.get_tranformation(
+                    transformation)
+                new_id = make_and_save_transformation(db, session, imagemrvf,
+                                                      transform_function)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
-            flash(type(err))
-            flash(err)
+            flash(str(type(err)))
+            flash(str(err))
         return redirect(url_for('ver_imagens_rvf',
                                 rvf_id=rvf_id,
-                                imagem=idimagemativa))
+                                imagem=new_id))
