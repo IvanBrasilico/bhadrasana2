@@ -15,6 +15,15 @@
                             Número do contêiner ou Lote
                             {{ oform.numerolote(class='form-control')}}
                         </div>
+                        <div class="col-sm-6">
+                            {% if oform.ovr_id.data %}
+                            <h3><a href="ovr?id={{oform.ovr_id.data}}" target="_blank"> Ver Ficha de Carga</a></h3>
+                            {% endif %}
+                        </div>
+                        <div class="col-sm-12">
+                            Descrição
+                            {{ oform.descricao(class='form-control') }}
+                        </div>
                         <div class="col-sm-3">
                             Peso verificado em Kg
                             {{ oform.peso(class='form-control')}}
@@ -23,9 +32,10 @@
                             Volume verificado em m3
                             {{ oform.volume(class='form-control')}}
                         </div>
+                        <div class="col-sm-6">
+                        </div>
                         <div class="col-sm-12">
-                            Descrição
-                            {{ oform.descricao(class='form-control') }}
+                            Lacres verificados...
                         </div>
                         <div class="col-sm-12">
                             <div class="col-sm-3">
