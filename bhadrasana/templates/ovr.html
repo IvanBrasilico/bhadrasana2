@@ -73,24 +73,18 @@
                     <div class="col-sm-3">
                         <label for="adata">Dia da emissão</label>
                     </div>
-                    <div class="col-sm-3">
-                        <label for="ahora">Hora da emissão</label>
-                    </div>
-                    <div class="col-sm-6">
+                    <div class="col-sm-9">
                         <label for="responsavel">Responsável</label>
                     </div>
                     <div class="col-sm-3">
                         {{ oform.adata(class='form-control') }}
                     </div>
-                    <div class="col-sm-3">
-                        {{ oform.ahora(class='form-control') }}
-                    </div>
-                    <div class="col-sm-3">
+                    <div class="col-sm-4">
                         <div class="form-control ">
                             {{ ovr.responsavel.nome }}
                         </div>
                     </div>
-                    <div class="col-sm-3">
+                    <div class="col-sm-4">
                         {% if oform.id.data %}
                         <button id="btn_responsavel" type="button" class="btn btn-warning form-control"
                                 data-toggle="modal" data-target="#responsavel">

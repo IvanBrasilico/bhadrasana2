@@ -6,7 +6,7 @@ from bhadrasana.forms import RastreavelForm
 
 class RVFForm(RastreavelForm):
     id = IntegerField('ID')
-    # ovr_id = IntegerField('ID da OVR relacionada, se houver' )
+    ovr_id = IntegerField('ID da OVR relacionada, se houver' )
     numeroCEmercante = StringField(u'CE Mercante',
                                    default='')
     numerolote = StringField(u'Número do contêiner, ou do lote do terminal'
