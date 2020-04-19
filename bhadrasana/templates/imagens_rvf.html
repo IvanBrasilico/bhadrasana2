@@ -6,6 +6,10 @@
                  height="600px">
         </div>
         <div class="col-sm-6" id="div_form">
+            <a href="transformimagemrvf/{{imagemativa}}/rotate90">Rotaciona Direita</a>&nbsp;
+            <a href="transformimagemrvf/{{imagemativa}}/rotate270">Rotaciona Esquerda</a>&nbsp;
+            <a href="transformimagemrvf/{{imagemativa}}/equalize">Mais contraste</a>&nbsp;
+            <a href="transformimagemrvf/{{imagemativa}}/crop10">Zoom</a>
             <form method="POST" id="formimagemrvf" action="imagemrvf">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <input type="hidden" name="id" value="{{ oform.id.data }}"/>

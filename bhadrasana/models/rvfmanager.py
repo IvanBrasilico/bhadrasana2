@@ -255,9 +255,9 @@ def ressuscita_anexos_perdidos(db, session, rvf):
         session.commit()
         session.refresh(rvf)
 
-def make_transformation(mongodb, session, imagemrvf: ImagemRVF,
+def make_and_save_transformation(mongodb, session, imagemrvf: ImagemRVF,
                         transformation: Callable):
-    """Aplica função no conteúdo de GridFS, salva em novo registro, atauliza ponteiro.
+    """Aplica função no conteúdo de GridFS, salva em novo registro, atualiza ponteiro.
 
     :param mongodb: conexão com MongoDB (conteúdo da imagem)
     :param session: conexão com MySQL
@@ -267,12 +267,14 @@ def make_transformation(mongodb, session, imagemrvf: ImagemRVF,
     :return:
     """
     fs = GridFS(mongodb)
-    old_id = imagemrvf.imagem
-    imagem_bytes = fs.get(old_id).read()
-    imagem_bytes = make_transformation(imagem_bytes)
-    new_id = fs.put(imagem_bytes, filename=imagemrvf.filename,
-                    metadata = imagem_bytes.metadata)
-    imagemrvf.imagem = new_id
+    old_id = ObjectId(imagemrvf.imagem)
+    grid_out = fs.get(old_id)
+    imagem_bytes = grid_out.read()
+    imagem_bytes = transformation(imagem_bytes)
+    new_id = fs.put(imagem_bytes, filename=grid_out.filename,
+                    metadata = grid_out.metadata)
+    imagemrvf.imagem = str(new_id)
     session.add(imagemrvf)
     session.commit()
     fs.delete(old_id)
+    return new_id
