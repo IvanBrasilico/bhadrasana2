@@ -298,12 +298,12 @@ def rvf_app(app):
         rvf_id = None
         new_id = None
         try:
-            imagemrvf = get_imagemrvf_imagem_or_none(session, id_imagem)
-            if imagemrvf:
-                rvf_id = imagemrvf.rvf_id
+            aimagemrvf = get_imagemrvf_imagem_or_none(session, id_imagem)
+            if aimagemrvf:
+                rvf_id = aimagemrvf.rvf_id
                 transform_function = ImageBytesTansformations.get_tranformation(
                     transformation)
-                new_id = make_and_save_transformation(db, session, imagemrvf,
+                new_id = make_and_save_transformation(db, session, aimagemrvf,
                                                       transform_function)
         except Exception as err:
             logger.error(err, exc_info=True)
