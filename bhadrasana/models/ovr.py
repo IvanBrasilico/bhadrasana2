@@ -18,13 +18,14 @@ class EventoEspecial(Enum):
     Responsavel = 1
     RVF = 2
     TG = 3
+    Encerramento = 4
 
 
 tipoStatusOVREspecial = [
-    ('Atribuição de responsável', EventoEspecial.Responsavel.value),
-    ('RVF incluída', EventoEspecial.RVF.value),
-    ('TG incluído', EventoEspecial.TG.value)
-
+    ('Atribuição de responsável', EventoEspecial.Responsavel.value, 1),
+    ('RVF incluída', EventoEspecial.RVF.value, 1),
+    ('TG incluído', EventoEspecial.TG.value, 1),
+    ('Emissão de Auto de Infração', EventoEspecial.Encerramento.value, 4)
 ]
 
 tipoStatusOVR = [
@@ -39,7 +40,6 @@ tipoStatusOVR = [
     'Intimação/Notificação',
     'Intimação Não Respondida',
     'Retificação do Termo de Guarda',
-    'Conclusão',
     'Arquivamento',
 ]
 
@@ -352,10 +352,10 @@ if __name__ == '__main__':  # pragma: no-cover
             evento.nome = nome
             evento.fase = fase
             session.add(evento)
-        for nome, especial in tipoStatusOVREspecial:
+        for nome, especial, fase in tipoStatusOVREspecial:
             evento = TipoEventoOVR()
             evento.nome = nome
-            evento.fase = 1
+            evento.fase = fase
             evento.eventoespecial = especial
             session.add(evento)
         session.commit()

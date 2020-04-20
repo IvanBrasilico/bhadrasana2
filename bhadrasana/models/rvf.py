@@ -31,6 +31,13 @@ infracoesencontradas_table = Table('ovr_infracoesencontradas', metadata,
                                           ForeignKey('ovr_infracoes.id')),
                                    )
 
+lacresverificados_table = Table('ovr_lacresverificados', metadata,
+                                   Column('rvf_id', BigInteger(),
+                                          ForeignKey('ovr_verificacoesfisicas.id')),
+                                   Column('lacre_id', BigInteger(),
+                                          ForeignKey('ovr_lacres.id')),
+                                   )
+
 
 class RVF(BaseRastreavel):
     __tablename__ = 'ovr_verificacoesfisicas'
@@ -48,6 +55,8 @@ class RVF(BaseRastreavel):
                                      secondary=marcasencontradas_table)
     infracoesencontradas = relationship('Infracao',
                                         secondary=infracoesencontradas_table)
+    lacresverificados = relationship('Lacre',
+                                        secondary=lacresverificados_table)
     datahora = Column(TIMESTAMP, index=True)
     last_modified = Column(DateTime, index=True,
                            onupdate=func.current_timestamp())
@@ -76,6 +85,11 @@ class Infracao(Base):
     id = Column(BigInteger(), primary_key=True)
     nome = Column(VARCHAR(50), index=True)
 
+class Lacre(Base):
+    __tablename__ = 'ovr_lacres'
+    id = Column(BigInteger(), primary_key=True)
+    numero = Column(VARCHAR(50), index=True)
+
 
 if __name__ == '__main__':
     # Código para criar/recriar tabelas atualizadas já com alguns dados mínimos
@@ -89,21 +103,22 @@ if __name__ == '__main__':
 
         metadata.drop_all(engine,
                           [
-                              metadata.tables['ovr_marcasencontradas'],
-                              metadata.tables['ovr_infracoesencontradas'],
-                              metadata.tables['ovr_infracoes'],
-                              metadata.tables['ovr_verificacoesfisicas'],
-                              metadata.tables['ovr_imagensrvf'],
+                              # metadata.tables['ovr_marcasencontradas'],
+                              # metadata.tables['ovr_infracoesencontradas'],
+                              # metadata.tables['ovr_infracoes'],
+                              # metadata.tables['ovr_verificacoesfisicas'],
+                              # metadata.tables['ovr_imagensrvf'],
                           ])
         metadata.create_all(engine,
                             [
-                                metadata.tables['ovr_marcasencontradas'],
-                                metadata.tables['ovr_infracoesencontradas'],
-                                metadata.tables['ovr_infracoes'],
-                                metadata.tables['ovr_verificacoesfisicas'],
-                                metadata.tables['ovr_imagensrvf'],
+                                # metadata.tables['ovr_marcasencontradas'],
+                                metadata.tables['ovr_lacres'],
+                                metadata.tables['ovr_lacresverificados'],
+                                # metadata.tables['ovr_infracoes'],
+                                # metadata.tables['ovr_verificacoesfisicas'],
+                                # metadata.tables['ovr_imagensrvf'],
                             ])
-
+        """
         for nome in ('Falsa declaração de conteúdo',
                      'Interposição',
                      'Contrafação',
@@ -118,3 +133,4 @@ if __name__ == '__main__':
             infracao.nome = nome
             session.add(infracao)
         session.commit()
+        """

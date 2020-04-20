@@ -19,6 +19,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     cadastra_tgovr, get_ovr_responsavel, importa_planilha, exporta_planilhaovr, get_tiposmercadoria_choice
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.views import get_user_save_path, valid_file
+from bhadrasana.models.rvfmanager import lista_rvfovr
 from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, Item
 
 
@@ -41,6 +42,7 @@ def ovr_app(app):
         ncms = []
         containers = []
         ovr = OVR()
+        qtdervfs = 0
         try:
             if request.method == 'POST':
                 ovr_form = OVRForm(request.form)
@@ -77,6 +79,7 @@ def ovr_app(app):
                         ovr_form.id.data = ovr.id
                         listahistorico = ovr.historico
                         processos = ovr.processos
+                        qtdervfs = len(lista_rvfovr(session, ovr_id))
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
@@ -88,6 +91,7 @@ def ovr_app(app):
                                conhecimento=conhecimento,
                                ncms=ncms,
                                containers=containers,
+                               qtdervfs = qtdervfs,
                                historico_form=historico_form,
                                processo_form=processo_form,
                                responsavel_form=responsavel_form,
