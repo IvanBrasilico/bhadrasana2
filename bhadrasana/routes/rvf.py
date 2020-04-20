@@ -1,8 +1,6 @@
 import base64
-import io
 from datetime import date, timedelta
 
-from PIL import Image
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
 from gridfs import GridFS
@@ -10,7 +8,7 @@ from werkzeug.utils import redirect
 
 from ajna_commons.flask.log import logger
 from ajna_commons.models.bsonimage import BsonImage
-from ajna_commons.utils.images import PIL_tobytes, ImageBytesTansformations
+from ajna_commons.utils.images import ImageBytesTansformations
 from bhadrasana.forms.filtro_rvf import FiltroRVFForm
 from bhadrasana.forms.rvf import RVFForm, ImagemRVFForm
 from bhadrasana.models.ovrmanager import get_marcas, get_marcas_choice
