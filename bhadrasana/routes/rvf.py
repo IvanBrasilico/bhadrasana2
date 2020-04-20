@@ -10,7 +10,7 @@ from werkzeug.utils import redirect
 
 from ajna_commons.flask.log import logger
 from ajna_commons.models.bsonimage import BsonImage
-from ajna_commons.utils.images import PIL_tobytes, ImageBytesTansFormations
+from ajna_commons.utils.images import PIL_tobytes, ImageBytesTansformations
 from bhadrasana.forms.filtro_rvf import FiltroRVFForm
 from bhadrasana.forms.rvf import RVFForm, ImagemRVFForm
 from bhadrasana.models.ovrmanager import get_marcas, get_marcas_choice
@@ -293,11 +293,6 @@ def rvf_app(app):
     @app.route('/transformimagemrvf/<id_imagem>/<transformation>', methods=['GET'])
     @login_required
     def transformimagemrvf(id_imagem, transformation):
-        def rotate(image_bytes):
-            pil_img = Image.open(io.BytesIO(image_bytes))
-            pil_img = pil_img.transpose(Image.ROTATE_90)
-            return PIL_tobytes(pil_img)
-
         db = app.config['mongo_risco']
         session = app.config.get('dbsession')
         rvf_id = None
@@ -306,7 +301,7 @@ def rvf_app(app):
             imagemrvf = get_imagemrvf_imagem_or_none(session, id_imagem)
             if imagemrvf:
                 rvf_id = imagemrvf.rvf_id
-                transform_function = ImageBytesTansFormations.get_tranformation(
+                transform_function = ImageBytesTansformations.get_tranformation(
                     transformation)
                 new_id = make_and_save_transformation(db, session, imagemrvf,
                                                       transform_function)
