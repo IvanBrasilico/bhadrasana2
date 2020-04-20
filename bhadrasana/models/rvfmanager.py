@@ -10,7 +10,7 @@ from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, \
     get_usuario_logado, gera_objeto
 from bhadrasana.models.ovr import Marca, TipoEventoOVR, EventoEspecial
 from bhadrasana.models.ovrmanager import get_ovr, gera_eventoovr
-from bhadrasana.models.rvf import RVF, Infracao, ImagemRVF
+from bhadrasana.models.rvf import RVF, Infracao, ImagemRVF, Lacre
 
 
 def get_infracoes(session):
@@ -110,6 +110,39 @@ def gerencia_infracao_encontrada(session, rvf_id, infracao_id, inclui=True):
             session.commit()
             return rvf.infracoesencontradas
     return None
+
+
+def gerencia_lacre_verificado(session, rvf_id, lacre_id, inclui=True):
+    rvf = session.query(RVF).filter(RVF.id == rvf_id).one_or_none()
+    if rvf:
+        lacre = session.query(Lacre).filter(
+            Lacre.id == lacre_id).one_or_none()
+        if lacre:
+            if inclui:
+                if lacre not in rvf.lacresverificados:
+                    rvf.lacresverificados.append(lacre)
+            else:
+                rvf.lacresverificados.remove(lacre)
+            session.commit()
+            return rvf.lacresverificados
+    return None
+
+
+def inclui_lacre_verificado(session, rvf_id, lacre_numero):
+    lacre = session.query(Lacre).filter(
+        Lacre.numero == lacre_numero).one_or_none()
+    if not lacre:
+        lacre = Lacre()
+        lacre.numero = lacre_numero
+        session.add(lacre)
+        session.commit()
+    return gerencia_lacre_verificado(session, rvf_id,
+                                     lacre.id,
+                                     inclui=True)
+
+
+def exclui_lacre_verificado(session, rvf_id, lacre_id):
+    return gerencia_lacre_verificado(session, rvf_id, lacre_id, inclui=False)
 
 
 def inclui_infracao_encontrada(session, rvf_id, infracao_nome):
@@ -226,7 +259,7 @@ def delete_imagemrvf(mongodb, session, _id: str):
 
 
 def get_ids_anexos_ordenado(rvf):
-    imagens = [(imagem.imagem, imagem.ordem) for imagem in rvf.imagens]
+    imagens = [(imagem.imagem, imagem.ordem or 999) for imagem in rvf.imagens]
     imagens = sorted(imagens, key=lambda x: x[1])
     anexos = [imagem[0] for imagem in imagens]
     return anexos
@@ -255,8 +288,9 @@ def ressuscita_anexos_perdidos(db, session, rvf):
         session.commit()
         session.refresh(rvf)
 
+
 def make_and_save_transformation(mongodb, session, imagemrvf: ImagemRVF,
-                        transformation: Callable):
+                                 transformation: Callable):
     """Aplica função no conteúdo de GridFS, salva em novo registro, atualiza ponteiro.
 
     :param mongodb: conexão com MongoDB (conteúdo da imagem)
@@ -272,7 +306,7 @@ def make_and_save_transformation(mongodb, session, imagemrvf: ImagemRVF,
     imagem_bytes = grid_out.read()
     imagem_bytes = transformation(imagem_bytes)
     new_id = fs.put(imagem_bytes, filename=grid_out.filename,
-                    metadata = grid_out.metadata)
+                    metadata=grid_out.metadata)
     imagemrvf.imagem = str(new_id)
     session.add(imagemrvf)
     session.commit()

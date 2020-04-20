@@ -17,137 +17,151 @@
                         </div>
                         <div class="col-sm-6">
                             {% if oform.ovr_id.data %}
-                            <h3><a href="ovr?id={{oform.ovr_id.data}}" target="_blank"> Ver Ficha de Carga</a></h3>
+                            <h2><b>
+                                <a href="ovr?id={{oform.ovr_id.data}}" target="_blank" class="text-warning">
+                                    Ver Ficha de Carga</a>
+                            </b>
+                            </h2>
                             {% endif %}
                         </div>
                         <div class="col-sm-12">
                             Descrição
                             {{ oform.descricao(class='form-control') }}
                         </div>
-                        <div class="col-sm-3">
-                            Peso verificado em Kg
-                            {{ oform.peso(class='form-control')}}
-                        </div>
-                        <div class="col-sm-3">
-                            Volume verificado em m3
-                            {{ oform.volume(class='form-control')}}
-                        </div>
-                        <div class="col-sm-6">
-                        </div>
-                        <div class="col-sm-12">
-                            Lacres verificados...
-                        </div>
-                        <div class="col-sm-12">
+                        <div class="row col-sm-12">
                             <div class="col-sm-3">
-                                <label for="data">Dia da verificação</label>
+                                <label for="peso">Peso verificado em Kg</label>
+                                {{ oform.peso(class='form-control')}}
                             </div>
                             <div class="col-sm-3">
-                                <label for="data">Hora da verificação</label>
+                                <label for="volume">Volume verificado em m3</label>
+                                {{ oform.volume(class='form-control')}}
                             </div>
-                        </div>
-                        <div class="col-sm-12">
                             <div class="col-sm-3">
+                                <label for="adata">Dia da verificação</label>
                                 {{ oform.adata(class='form-control') }}
                             </div>
                             <div class="col-sm-3">
+                                <label for="ahora">Hora da verificação</label>
                                 {{ oform.ahora(class='form-control') }}
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <h3>Lacres verificados</h3>
+                        </div>
+                        <div class="col-sm-3">
+                            <br>
+                            <input id="lacres" class="form-control">
+                        </div>
+                        <div class="col-sm-6">
+                        </div>
+                        <div class="row col-sm-12">
+                            <div class="col-sm-12" id="div_lacres_verificados" border="1">
+                                {% for lacre in lacres_verificados %}
+                                <button type="button" class="btn btn-primary">
+                                    {{ lacre.numero }} <span class="badge"
+                                                             onclick="exclui_lacre_encontrado({{oform.id.data}}, {{ lacre.id }})">X</span>
+                                </button>
+                                {% endfor %}
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="row col-sm-12">
-                    &nbsp;<br>
-                    <div class="col-sm-3">
-                        <button class="btn btn-default btn-primary form-control" onclick="submit">
-                            Salvar
-                        </button>
-                    </div>
-                    <div class="col-sm-3">
-                        <a href="rvf_impressao/{{ oform.id.data }}" class="btn btn-info form-control">
-                            Imprimir
-                        </a>
-                    </div>
-                    <div class="col-sm-6">
-                    </div>
+        </div>
+        <div class="row col-sm-12">
+            &nbsp;<br>
+            <div class="col-sm-3">
+                <button class="btn btn-default btn-primary form-control" onclick="submit">
+                    Salvar
+                </button>
+            </div>
+            <div class="col-sm-3">
+                <a href="rvf_impressao/{{ oform.id.data }}" class="btn btn-info form-control">
+                    Imprimir
+                </a>
+            </div>
+            <div class="col-sm-6">
+            </div>
+        </div>
+        </form>
+    </div>
+    <div class="row col-sm-12">
+        <div class="col-sm-3">
+            <h3>Possíveis infrações detectadas</h3>
+        </div>
+        <div class="col-sm-9">
+            <br>
+            <div class="ui-widget">
+                <input id="infracoes" class="form-control">
+            </div>
+        </div>
+    </div>
+    <div class="row col-sm-12">
+        <div class="col-sm-12" id="div_infracoes_encontradas" border="1">
+            {% for infracao in infracoes_encontradas %}
+            <button type="button" class="btn btn-primary">
+                {{ infracao.nome }} <span class="badge"
+                                          onclick="exclui_infracao_encontrada({{oform.id.data}}, {{ infracao.id }})">X</span>
+            </button>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="row col-sm-12">
+        <div class="col-sm-3">
+            <h3>Marcas encontradas</h3>
+        </div>
+        <div class="col-sm-9">
+            <br>
+            <div class="ui-widget">
+                <input id="marcas" class="form-control">
+            </div>
+        </div>
+    </div>
+    <div class="row col-sm-12">
+        <div class="col-sm-12" id="div_marcas_encontradas" border="1">
+            {% for marca in marcas_encontradas %}
+            <button type="button" class="btn btn-primary">
+                {{ marca.nome }} <span class="badge"
+                                       onclick="exclui_marca_encontrada({{oform.id.data}}, {{ marca.id }})">X</span>
+            </button>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="row col-sm-12">
+        <div class="form-group">
+            <form action="rvf_imgupload" enctype="multipart/form-data" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <input type="hidden" name="rvf_id" value="{{ oform.id.data }}"/>
+                <h4>Selecione anexos:</h4>
+                <div class="col-sm-3"><input type="file" class="btn btn-default" name="images" id="images" multiple>
+                </div>
+                <div class="col-sm-1">
+                </div>
+                <div class="col-sm-2">
+                    <button type="button" class="btn btn-default btn-primary form-control" onclick="upload_files()">
+                        Enviar
+                    </button>
+                </div>
+                <div class="col-sm-6">
                 </div>
             </form>
         </div>
-        <div class="row col-sm-12">
-            <div class="col-sm-3">
-                <h3>Possíveis infrações detectadas</h3>
-            </div>
-            <div class="col-sm-9">
-                <br>
-                <div class="ui-widget">
-                    <input id="infracoes" class="form-control">
-                </div>
-            </div>
-        </div>
-        <div class="row col-sm-12">
-            <div class="col-sm-12" id="div_infracoes_encontradas" border="1">
-                {% for infracao in infracoes_encontradas %}
-                <button type="button" class="btn btn-primary">
-                    {{ infracao.nome }} <span class="badge"
-                                              onclick="exclui_infracao_encontrada({{oform.id.data}}, {{ infracao.id }})">X</span>
-                </button>
-                {% endfor %}
-            </div>
-        </div>
-        <div class="row col-sm-12">
-            <div class="col-sm-3">
-                <h3>Marcas encontradas</h3>
-            </div>
-            <div class="col-sm-9">
-                <br>
-                <div class="ui-widget">
-                    <input id="marcas" class="form-control">
-                </div>
-            </div>
-        </div>
-        <div class="row col-sm-12">
-            <div class="col-sm-12" id="div_marcas_encontradas" border="1">
-                {% for marca in marcas_encontradas %}
-                <button type="button" class="btn btn-primary">
-                    {{ marca.nome }} <span class="badge"
-                                           onclick="exclui_marca_encontrada({{oform.id.data}}, {{ marca.id }})">X</span>
-                </button>
-                {% endfor %}
-            </div>
-        </div>
-        <div class="row col-sm-12">
-            <div class="form-group">
-                <form action="rvf_imgupload" enctype="multipart/form-data" method="post">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                    <input type="hidden" name="rvf_id" value="{{ oform.id.data }}"/>
-                    <h4>Selecione anexos:</h4>
-                    <div class="col-sm-3"><input type="file" class="btn btn-default" name="images" id="images" multiple>
-                    </div>
-                    <div class="col-sm-1">
-                    </div>
-                    <div class="col-sm-2">
-                        <button type="button" class="btn btn-default btn-primary form-control" onclick="upload_files()">
-                            Enviar
-                        </button>
-                    </div>
-                    <div class="col-sm-6">
-                    </div>
-                </form>
-            </div>
-            <div class="row ">
-                <div class="col-sm-12" id="div_imagens" border="1">
-                    {% for anexo in anexos %}
-                    <span class="badge">
+        <div class="row ">
+            <div class="col-sm-12" id="div_imagens" border="1">
+                {% for anexo in anexos %}
+                <span class="badge">
                         <a href="ver_imagens_rvf?rvf_id={{oform.id.data}}&imagem={{anexo}}" target="_blank">
-                            <img src="image/{{anexo}}?size=240,160" class="btn btn-primary" alt="{{ anexo }}" width="240px"
+                            <img src="image/{{anexo}}?size=240,160" class="btn btn-primary" alt="{{ anexo }}"
+                                 width="240px"
                                  height="160px"/>
                         </a>
                     <span class="badge" onclick="exclui_anexo('{{ anexo }}')">X</span>
                     </span>
-                    {% endfor %}
-                </div>
+                {% endfor %}
             </div>
         </div>
     </div>
+</div>
 </div>
 <div id="bottom" class="row">
     AJNA - Receita Federal do Brasil 2017
@@ -155,6 +169,35 @@
 </div>
 {% endblock %} {% block scripts %} {{super()}}
 <script>
+    function mostra_lacres(lacres_verificados){
+        $('#div_lacres_verificados').empty();
+        $.each(lacres_verificados, function(i, lacre) {
+            $('<button type="button" class="btn btn-primary">').text(lacre.numero + ' ').append(
+            $('<span class="badge" onclick="exclui_lacre_verificado({{oform.id.data}}, ' + lacre.id + ')">').text('X')
+            ).appendTo('#div_lacres_verificados');
+        });
+    }
+    function exclui_lacre_verificado(rvf_id, lacre_id){
+        $.getJSON('exclui_lacre_verificado', {
+          rvf_id: rvf_id, lacre_id: lacre_id
+        }, function(lacres_verificados) {
+          mostra_lacres(lacres_verificados);
+        });
+    }
+    function inclui_lacre_verificado(rvf_id, lacre_numero){
+        $.getJSON('inclui_lacre_verificado', {
+          rvf_id: rvf_id, lacre_numero: lacre_numero
+        }, function(lacres_verificados) {
+          mostra_lacres(lacres_verificados);
+        });
+    }
+    $('input#lacres').bind('keydown', function(e) {
+      if (e.keyCode == 13) {
+         e.preventDefault();
+         inclui_lacre_verificado({{oform.id.data}}, $('input#lacres').val());
+      }
+    });
+
     function mostra_infracoes(infracoes_encontradas){
         $('#div_infracoes_encontradas').empty();
         $.each(infracoes_encontradas, function(i, infracao) {
@@ -320,7 +363,5 @@
         }
         //
     }
-
-
 
 </script> {% endblock %}

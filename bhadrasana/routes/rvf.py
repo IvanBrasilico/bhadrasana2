@@ -16,7 +16,8 @@ from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, get_ids_anexo
     inclui_marca_encontrada, ressuscita_anexos_perdidos, \
     exclui_marca_encontrada, exclui_infracao_encontrada, inclui_infracao_encontrada, \
     get_infracoes, lista_rvfovr, cadastra_imagemrvf, get_imagemrvf_or_none, cadastra_rvf, delete_imagemrvf, \
-    inclui_imagemrvf, get_imagemrvf_imagem_or_none, make_and_save_transformation
+    inclui_imagemrvf, get_imagemrvf_imagem_or_none, make_and_save_transformation, exclui_lacre_verificado, \
+    inclui_lacre_verificado
 from bhadrasana.views import csrf, valid_file
 
 
@@ -137,6 +138,26 @@ def rvf_app(app):
                                rvf=rvf,
                                marcas_encontradas=marcas_encontradas,
                                anexos=anexos)
+
+    @app.route('/inclui_lacre_verificado', methods=['GET'])
+    @login_required
+    def inclui_lacre_():
+        session = app.config.get('dbsession')
+        rvf_id = request.args.get('rvf_id')
+        lacre_numero = request.args.get('lacre_numero')
+        novos_lacres = inclui_lacre_verificado(session, rvf_id, lacre_numero)
+        return jsonify([{'id': lacre.id, 'numero': lacre.numero}
+                        for lacre in novos_lacres])
+
+    @app.route('/exclui_lacre_verificado', methods=['GET'])
+    @login_required
+    def exclui_lacre_():
+        session = app.config.get('dbsession')
+        rvf_id = request.args.get('rvf_id')
+        lacre_id = request.args.get('lacre_id')
+        novos_lacres = exclui_lacre_verificado(session, rvf_id, lacre_id)
+        return jsonify([{'id': lacre.id, 'numero': lacre.numero}
+                        for lacre in novos_lacres])
 
     @app.route('/inclui_infracao_encontrada', methods=['GET'])
     @login_required
