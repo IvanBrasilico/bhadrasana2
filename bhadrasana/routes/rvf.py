@@ -62,6 +62,7 @@ def rvf_app(app):
         marcas = []
         marcas_encontradas = []
         anexos = []
+        lacres_verificados = []
         rvf = None
         rvf_form = RVFForm()
         try:
@@ -97,6 +98,7 @@ def rvf_app(app):
                 rvf_form.id.data = rvf.id
                 infracoes_encontradas = rvf.infracoesencontradas
                 marcas_encontradas = rvf.marcasencontradas
+                lacres_verificados = rvf.lacresverificados
                 # Temporário - para recuperar imagens "perdidas" na transição
                 ressuscita_anexos_perdidos(db, session, rvf)
                 anexos = get_ids_anexos_ordenado(rvf)
@@ -111,6 +113,7 @@ def rvf_app(app):
                                oform=rvf_form,
                                infracoes_encontradas=infracoes_encontradas,
                                marcas_encontradas=marcas_encontradas,
+                               lacres_verificados=lacres_verificados,
                                anexos=anexos)
 
     @app.route('/rvf_impressao/<rvf_id>', methods=['GET'])

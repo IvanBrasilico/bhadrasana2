@@ -95,13 +95,32 @@
                 </div>
             </div>
             <div class="row col-sm-12">
+                <div class="col-sm-3">
+                    <h3>Observações importantes</h3>
+                </div>
+                <div class="col-sm-9">
+                    <br>
+                    <div class="ui-widget">
+                        <input id="flags" class="form-control">
+                    </div>
+                </div>
+            </div>
+            <div class="row col-sm-12">
+                <div class="col-sm-12" id="div_flags_ovr" border="1">
+                    {% for flag in flags_encontradas %}
+                    <button type="button" class="btn btn-primary">
+                        {{ flag.nome }} <span class="badge"
+                                                  onclick="exclui_flag_ovr({{oform.id.data}}, {{ flag.id }})">X</span>
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="row col-sm-12">
                 &nbsp;<br>
-                <div class="col-sm-5">
+                <div class="col-sm-3">
                     <button class="btn btn-default btn-primary form-control" onclick="submit">
                         Salvar
                     </button>
-                </div>
-                <div class="col-sm-1">
                 </div>
                 <div class="col-sm-3">
                     {% if oform.id.data %}
@@ -116,6 +135,14 @@
                     <button id="btn_tg" type="button" class="btn btn-primary btn-success form-control"
                             onclick="window.open('lista_tgovr?ovr_id={{oform.id.data}}')">
                         Termo de Guarda de Mercadoria
+                    </button>
+                    {% endif %}
+                </div>
+                <div class="col-sm-3">
+                    {% if oform.id.data %}
+                    <button id="btn_auto" type="button" class="btn btn-primary btn-success form-control"
+                            onclick="">
+                        Informar lavratura do Auto de Infração
                     </button>
                     {% endif %}
                 </div>
@@ -227,8 +254,8 @@
     </div>
     {% endif %}
 </div>
-<div id="bottom" class="row">
-    AJNA - Receita Federal do Brasil 2017
+<div id="bottom" class="row col-sm-12">
+    Sistema AJNA - Receita Federal do Brasil
 </div>
 <div class="modal fade" id="responsavel" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
      aria-hidden="true">
@@ -378,4 +405,52 @@
             $('#upload-file-info').html(ev.files[0].name);
         }
     }
+
+
+    function mostra_flags(flags_ovr){
+        $('#div_flags_ovr').empty();
+        $.each(flags_ovr, function(i, flag) {
+            $('<button type="button" class="btn btn-primary">').text(flag.nome+ ' ').append(
+            $('<span class="badge" onclick="exclui_flag_ovr({{oform.id.data}}, ' + flag.id + ')">').text('X')
+            ).appendTo('#div_flags_ovr');
+        });
+    }
+    function exclui_flag_ovr(rvf_id, flag_id){
+        $.getJSON('exclui_flag_ovr', {
+          rvf_id: rvf_id, flag_id: flag_id
+        }, function(flags_ovr) {
+          mostra_flags(flags_ovr);
+        });
+    }
+    function inclui_flag_ovr(rvf_id, flag_nome){
+        $.getJSON('inclui_flag_ovr', {
+          rvf_id: rvf_id, flag_nome: flag_nome
+        }, function(flags_ovr) {
+          mostra_flags(flags_ovr);
+        });
+    }
+    $( function() {
+        var flags = [
+        {% for flag in flags %}
+        "{{ flag.nome }}",
+        {% endfor %}
+        ];
+        $( "#flags" ).autocomplete({
+
+          source: flags,
+
+          select: function(event, ui){
+            var newTag = $(this).val();
+            $(this).val("");
+            event.preventDefault();
+          }
+        });
+    } );
+    $('input#flags').bind('keydown', function(e) {
+      if (e.keyCode == 13) {
+        inclui_flag_ovr({{oform.id.data}}, $('input#flags').val());
+        event.preventDefault();
+      }
+    });
+
 </script> {% endblock %}

@@ -9,7 +9,7 @@ from bhadrasana.models import Usuario, Setor, EBloqueado
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto, \
     get_usuario_logado
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
-    TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria, EventoEspecial
+    TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria, EventoEspecial, Flag
 
 
 def get_recintos(session):
@@ -99,11 +99,52 @@ def get_ovr_filtro(session, user_name: str, pfiltro: dict = None, filtrar_setor=
             filtro = and_(OVR.responsavel_cpf == pfiltro.get('responsavel'), filtro)
         if pfiltro.get('recinto_id') and pfiltro.get('recinto_id') != 'None':
             filtro = and_(OVR.recinto_id == int(pfiltro.get('recinto_id')), filtro)
+        if pfiltro.get('numero') and pfiltro.get('numero') != 'None':
+            filtro = and_(OVR.numero == int(pfiltro.get('numero')), filtro)
 
     ovrs = session.query(OVR).filter(filtro).all()
     logger.info(str(pfiltro))
     logger.info(str(filtro))
     return [ovr for ovr in ovrs]
+
+
+def get_flags(session):
+    flags = session.query(Flag).all()
+    return [flag for flag in flags]
+
+
+def get_flags_choice(session):
+    flags = session.query(Flag).all()
+    return [(flag.id, flag.nome) for flag in flags]
+
+
+def inclui_flag_ovr(session, ovr_id, flag_nome):
+    flag = session.query(Flag).filter(
+        Flag.nome == flag_nome).one_or_none()
+    if flag:
+        return gerencia_flag_ovr(session, ovr_id,
+                                        flag.id,
+                                        inclui=True)
+    return None
+
+
+def exclui_flag_ovr(session, ovr_id, flag_id):
+    return gerencia_flag_ovr(session, ovr_id, flag_id, inclui=False)
+
+
+def gerencia_flag_ovr(session, ovr_id, flag_id, inclui=True):
+    ovr = session.query(OVR).filter(OVR.id == ovr_id).one_or_none()
+    if ovr:
+        flag = session.query(Flag).filter(
+            Flag.id == flag_id).one_or_none()
+        if flag:
+            if inclui:
+                ovr.flags.append(flag)
+            else:
+                ovr.flags.remove(flag)
+            session.commit()
+            return ovr.flags
+    return None
 
 
 def atribui_responsavel_ovr(session, ovr_id: int,

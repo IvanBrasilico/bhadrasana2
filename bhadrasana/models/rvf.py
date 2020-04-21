@@ -112,8 +112,8 @@ if __name__ == '__main__':
         metadata.create_all(engine,
                             [
                                 # metadata.tables['ovr_marcasencontradas'],
-                                metadata.tables['ovr_lacres'],
-                                metadata.tables['ovr_lacresverificados'],
+                                # metadata.tables['ovr_lacres'],
+                                # metadata.tables['ovr_lacresverificados'],
                                 # metadata.tables['ovr_infracoes'],
                                 # metadata.tables['ovr_verificacoesfisicas'],
                                 # metadata.tables['ovr_imagensrvf'],
