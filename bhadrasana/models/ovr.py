@@ -157,8 +157,7 @@ class OVR(BaseRastreavel):
     historico = relationship('EventoOVR', back_populates='ovr')
     processos = relationship('ProcessoOVR', back_populates='ovr')
     tgs = relationship('TGOVR', back_populates='ovr')
-    flags = relationship('Flag',
-                                        secondary=flags_table)
+    flags = relationship('Flag', secondary=flags_table)
 
     def get_ano(self):
         if self.datahora is not None and isinstance(self.datahora, datetime):
