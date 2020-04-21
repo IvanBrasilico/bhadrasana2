@@ -12,7 +12,7 @@ from bhadrasana.models.ovr import TipoMercadoria, tipoStatusOVREspecial, \
     TipoEventoOVR, tipoStatusOVR, Marca
 from bhadrasana.models.rvf import Infracao
 
-SQL_URI_HOM = os.environ('SQL_URI_HOM')
+SQL_URI_HOM = os.environ['SQL_URI_HOM']
 if 'dbmercante' in SQL_URI_HOM:
     sys.exit('Configurar para Banco de Dados de homologação!!!')
 engine = create_engine(SQL_URI_HOM)
