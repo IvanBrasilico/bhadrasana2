@@ -4,14 +4,13 @@ import sys
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from models.rvf import Infracao
-
 sys.path.insert(0, '.')
 sys.path.insert(0, '../ajna_docs/commons')
 sys.path.insert(0, '../virasana')
 from bhadrasana.models import ovr, rvf
 from bhadrasana.models.ovr import TipoMercadoria, tipoStatusOVREspecial, \
     TipoEventoOVR, tipoStatusOVR, Marca
+from bhadrasana.models.rvf import Infracao
 
 SQL_URI_HOM = os.environ('SQL_URI_HOM')
 if 'dbmercante' in SQL_URI_HOM:
