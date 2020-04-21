@@ -107,7 +107,7 @@
             </div>
             <div class="row col-sm-12">
                 <div class="col-sm-12" id="div_flags_ovr" border="1">
-                    {% for flag in flags_encontradas %}
+                    {% for flag in flags_ovr %}
                     <button type="button" class="btn btn-primary">
                         {{ flag.nome }} <span class="badge"
                                                   onclick="exclui_flag_ovr({{oform.id.data}}, {{ flag.id }})">X</span>
