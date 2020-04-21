@@ -121,6 +121,14 @@ class Enumerado:
         return unidadeMedida.index(sigla)
 
 
+
+flags_table = Table('ovr_flags_ovr', metadata,
+                                   Column('rvf_id', BigInteger(),
+                                          ForeignKey('ovr_ovrs.id')),
+                                   Column('flag_id', BigInteger(),
+                                          ForeignKey('ovr_flags.id')),
+                                   )
+
 class OVR(BaseRastreavel):
     __tablename__ = 'ovr_ovrs'
     id = Column(BigInteger().with_variant(Integer, 'sqlite'),
@@ -149,6 +157,8 @@ class OVR(BaseRastreavel):
     historico = relationship('EventoOVR', back_populates='ovr')
     processos = relationship('ProcessoOVR', back_populates='ovr')
     tgs = relationship('TGOVR', back_populates='ovr')
+    flags = relationship('Flag',
+                                        secondary=flags_table)
 
     def get_ano(self):
         if self.datahora is not None and isinstance(self.datahora, datetime):
@@ -167,6 +177,12 @@ class OVR(BaseRastreavel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fase = 0
+
+
+class Flag(Base):
+    __tablename__ = 'ovr_flags'
+    id = Column(BigInteger(), primary_key=True)
+    nome = Column(VARCHAR(100), index=True)
 
 
 class TipoEventoOVR(Base):
@@ -197,7 +213,7 @@ class TipoProcessoOVR(Base):
                          server_default=func.current_timestamp())
 
 
-class EventoOVR(Base):
+class EventoOVR(BaseRastreavel):
     __tablename__ = 'ovr_eventos'
     id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                 primary_key=True)
@@ -208,11 +224,8 @@ class EventoOVR(Base):
                            ForeignKey('ovr_tiposevento.id'))
     tipoevento = relationship('TipoEventoOVR')
     fase = Column(Integer(), index=True, default=0)
-    user_name = Column(VARCHAR(50), index=True)
     motivo = Column(VARCHAR(50), index=True)
     anexo_filename = Column(VARCHAR(100), index=True)
-    create_date = Column(TIMESTAMP, index=True,
-                         server_default=func.current_timestamp())
 
 
 class ProcessoOVR(BaseRastreavel):
@@ -313,10 +326,15 @@ if __name__ == '__main__':  # pragma: no-cover
         session = Session()
 
         # Sair por segurança. Comentar linha abaixo para funcionar
-        sys.exit(0)
+        # sys.exit(0)
 
         # metadata.drop_all(engine)
-        # metadata.create_all(engine)
+        metadata.create_all(engine, 
+                            [ 
+                                metadata.tables['ovr_flags'],
+                                metadata.tables['ovr_flags_ovr'],
+                            ])
+        sys.exit(0)
         metadata.drop_all(engine,
                           [
                               #metadata.tables['ovr_tgvor_marcas'],
@@ -333,9 +351,10 @@ if __name__ == '__main__':  # pragma: no-cover
                               #metadata.tables['ovr_tiposmercadoria']
                           ])
 
+        sys.exit(0)
         metadata.create_all(engine)
-        # sys.exit(0)
-
+        sys.exit(0)
+        """"
         for nome in ('Adidas',
                      'Burberry',
                      'Tag Hauer',
@@ -385,3 +404,4 @@ if __name__ == '__main__':  # pragma: no-cover
             tipomercadoria.nome = nome
             session.add(tipomercadoria)
         session.commit()
+        """

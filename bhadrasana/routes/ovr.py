@@ -16,10 +16,11 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_ovr_filtro, gera_eventoovr, get_tipos_evento, \
     gera_processoovr, get_tipos_processo, lista_itemtg, get_itemtg, get_recintos, \
     cadastra_itemtg, get_usuarios, atribui_responsavel_ovr, lista_tgovr, get_tgovr, \
-    cadastra_tgovr, get_ovr_responsavel, importa_planilha, exporta_planilhaovr, get_tiposmercadoria_choice
+    cadastra_tgovr, get_ovr_responsavel, importa_planilha, exporta_planilhaovr, get_tiposmercadoria_choice, \
+    inclui_flag_ovr, exclui_flag_ovr, get_flags
 from bhadrasana.models.ovrmanager import get_marcas_choice
-from bhadrasana.views import get_user_save_path, valid_file
 from bhadrasana.models.rvfmanager import lista_rvfovr
+from bhadrasana.views import get_user_save_path, valid_file
 from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, Item
 
 
@@ -35,12 +36,14 @@ def ovr_app(app):
         ovr_form = OVRForm(tiposeventos=tiposeventos, recintos=recintos,
                            numeroCEmercante=request.args.get('numeroCEmercante'))
         tiposprocesso = get_tipos_processo(session)
+        flags = get_flags(session)
         historico_form = HistoricoOVRForm(tiposeventos=tiposeventos)
         processo_form = ProcessoOVRForm(tiposprocesso=tiposprocesso)
         responsavel_form = ResponsavelOVRForm(responsaveis=responsaveis)
         conhecimento = None
         ncms = []
         containers = []
+        flags_ovr = []
         ovr = OVR()
         qtdervfs = 0
         try:
@@ -79,6 +82,7 @@ def ovr_app(app):
                         ovr_form.id.data = ovr.id
                         listahistorico = ovr.historico
                         processos = ovr.processos
+                        flags_ovr = ovr.flags
                         qtdervfs = len(lista_rvfovr(session, ovr_id))
         except Exception as err:
             logger.error(err, exc_info=True)
@@ -91,12 +95,14 @@ def ovr_app(app):
                                conhecimento=conhecimento,
                                ncms=ncms,
                                containers=containers,
-                               qtdervfs = qtdervfs,
+                               qtdervfs=qtdervfs,
                                historico_form=historico_form,
                                processo_form=processo_form,
                                responsavel_form=responsavel_form,
                                listahistorico=listahistorico,
-                               processos=processos)
+                               processos=processos,
+                               flags=flags,
+                               flags_ovr=flags_ovr)
 
     @app.route('/ovr/<id>', methods=['POST', 'GET'])
     @login_required
@@ -108,6 +114,26 @@ def ovr_app(app):
     def ovr():
         id = request.args.get('id')
         return trata_ovr(request, id)
+
+    @app.route('/inclui_flag_ovr', methods=['GET'])
+    @login_required
+    def inclui_flag():
+        session = app.config.get('dbsession')
+        rvf_id = request.args.get('rvf_id')
+        flag_nome = request.args.get('flag_nome')
+        novas_flags = inclui_flag_ovr(session, rvf_id, flag_nome)
+        return jsonify([{'id': flag.id, 'nome': flag.nome}
+                        for flag in novas_flags])
+
+    @app.route('/exclui_flag_ovr', methods=['GET'])
+    @login_required
+    def exclui_flag():
+        session = app.config.get('dbsession')
+        rvf_id = request.args.get('rvf_id')
+        flag_id = request.args.get('flag_id')
+        novas_flags = exclui_flag_ovr(session, rvf_id, flag_id)
+        return jsonify([{'id': flag.id, 'nome': flag.nome}
+                        for flag in novas_flags])
 
     @app.route('/pesquisa_ovr', methods=['POST', 'GET'])
     @login_required
