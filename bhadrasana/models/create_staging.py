@@ -14,6 +14,8 @@ from bhadrasana.models.ovr import TipoMercadoria, tipoStatusOVREspecial, \
     TipoEventoOVR, tipoStatusOVR, Marca
 
 SQL_URI_HOM = os.environ('SQL_URI_HOM')
+if 'dbmercante' in SQL_URI_HOM:
+    sys.exit('Configurar para Banco de Dados de homologação!!!')
 engine = create_engine(SQL_URI_HOM)
 Session = sessionmaker(bind=engine)
 session = Session()
