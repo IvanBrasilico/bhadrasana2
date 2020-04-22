@@ -55,7 +55,7 @@ def rvf_app(app):
 
     @app.route('/rvf', methods=['POST', 'GET'])
     @login_required
-    def _rvf():
+    def rvf():
         session = app.config.get('dbsession')
         infracoes = []
         infracoes_encontradas = []
@@ -63,7 +63,7 @@ def rvf_app(app):
         marcas_encontradas = []
         anexos = []
         lacres_verificados = []
-        rvf = None
+        arvf = None
         rvf_form = RVFForm()
         try:
             if request.method == 'POST':
@@ -71,37 +71,37 @@ def rvf_app(app):
                 rvf_form.adata.data = request.form['adata']
                 rvf_form.ahora.data = request.form['ahora']
                 rvf_form.validate()
-                rvf = cadastra_rvf(session,
+                arvf = cadastra_rvf(session,
                                    user_name=current_user.name,
                                    params=dict(rvf_form.data.items()))
-                session.refresh(rvf)
-                return redirect(url_for('rvf', id=rvf.id))
+                session.refresh(arvf)
+                return redirect(url_for('rvf', id=arvf.id))
             # ELSE
             ovr_id = request.args.get('ovr')
             if ovr_id is not None:
-                rvf = cadastra_rvf(session, ovr_id=ovr_id,
+                arvf = cadastra_rvf(session, ovr_id=ovr_id,
                                    user_name=current_user.name)
-                session.refresh(rvf)
-                return redirect(url_for('rvf', id=rvf.id))
+                session.refresh(arvf)
+                return redirect(url_for('rvf', id=arvf.id))
             # ELSE
             db = app.config['mongo_risco']
             marcas = get_marcas(session)
             infracoes = get_infracoes(session)
             rvf_id = request.args.get('id')
             if rvf_id is not None:
-                rvf = get_rvf(session, rvf_id)
-            if rvf is not None:
-                rvf_form = RVFForm(**rvf.__dict__)
-                if rvf.datahora:
-                    rvf_form.adata.data = rvf.datahora.date()
-                    rvf_form.ahora.data = rvf.datahora.time()
-                rvf_form.id.data = rvf.id
-                infracoes_encontradas = rvf.infracoesencontradas
-                marcas_encontradas = rvf.marcasencontradas
-                lacres_verificados = rvf.lacresverificados
+                arvf = get_rvf(session, rvf_id)
+            if arvf is not None:
+                rvf_form = RVFForm(**arvf.__dict__)
+                if arvf.datahora:
+                    rvf_form.adata.data = arvf.datahora.date()
+                    rvf_form.ahora.data = arvf.datahora.time()
+                rvf_form.id.data = arvf.id
+                infracoes_encontradas = arvf.infracoesencontradas
+                marcas_encontradas = arvf.marcasencontradas
+                lacres_verificados = arvf.lacresverificados
                 # Temporário - para recuperar imagens "perdidas" na transição
-                ressuscita_anexos_perdidos(db, session, rvf)
-                anexos = get_ids_anexos_ordenado(rvf)
+                ressuscita_anexos_perdidos(db, session, arvf)
+                anexos = get_ids_anexos_ordenado(arvf)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
