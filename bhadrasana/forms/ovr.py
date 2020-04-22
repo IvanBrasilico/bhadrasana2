@@ -83,9 +83,9 @@ class HistoricoOVRForm(FlaskForm):
         self.tipoevento_id.choices = []
         if kwargs.get('tiposeventos'):
             self.tipoevento_id.choices = kwargs.get('tiposeventos')
-        self.responsavel.choices = []
+        self.user_name.choices = []
         if kwargs.get('responsaveis'):
-            self.responsavel.choices.extend(kwargs.get('responsaveis'))
+            self.user_name.choices.extend(kwargs.get('responsaveis'))
 
 
 class ProcessoOVRForm(FlaskForm):

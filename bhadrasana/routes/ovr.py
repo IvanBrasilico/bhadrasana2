@@ -18,7 +18,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     gera_processoovr, get_tipos_processo, lista_itemtg, get_itemtg, get_recintos, \
     cadastra_itemtg, get_usuarios, atribui_responsavel_ovr, lista_tgovr, get_tgovr, \
     cadastra_tgovr, get_ovr_responsavel, importa_planilha, exporta_planilhaovr, get_tiposmercadoria_choice, \
-    inclui_flag_ovr, exclui_flag_ovr, get_flags, usuario_index
+    inclui_flag_ovr, exclui_flag_ovr, get_flags, usuario_index, informa_lavratura_auto
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.rvfmanager import lista_rvfovr
 from bhadrasana.views import get_user_save_path, valid_file
@@ -220,7 +220,7 @@ def ovr_app(app):
         try:
             responsavel_ovr_form = ResponsavelOVRForm(request.form)
             ovr_id = responsavel_ovr_form.ovr_id.data
-            informalavraturaauto(session,
+            informa_lavratura_auto(session,
                                  ovr_id=ovr_id,
                                  responsavel=responsavel_ovr_form.responsavel.data
                                  )
