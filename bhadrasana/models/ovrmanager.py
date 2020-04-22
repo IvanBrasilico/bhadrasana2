@@ -1,10 +1,10 @@
 from datetime import timedelta
 
 import pandas as pd
+from ajna_commons.flask.log import logger
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
-from ajna_commons.flask.log import logger
 from bhadrasana.models import Usuario, Setor, EBloqueado
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto, \
     get_usuario_logado
@@ -123,8 +123,8 @@ def inclui_flag_ovr(session, ovr_id, flag_nome):
         Flag.nome == flag_nome).one_or_none()
     if flag:
         return gerencia_flag_ovr(session, ovr_id,
-                                        flag.id,
-                                        inclui=True)
+                                 flag.id,
+                                 inclui=True)
     return None
 
 
@@ -161,8 +161,37 @@ def atribui_responsavel_ovr(session, ovr_id: int,
         tipoevento = session.query(TipoEventoOVR).filter(
             TipoEventoOVR.eventoespecial == EventoEspecial.Responsavel.value).first()
         evento_params = {'tipoevento_id': tipoevento.id,
-                         'motivo': 'Anterior: ' + ovr.responsavel_cpf or 'Nenhum', # Responsável anterior
-                         'user_name': responsavel, # Novo Responsável
+                         'motivo': 'Anterior: ' + ovr.responsavel_cpf or 'Nenhum',  # Responsável anterior
+                         'user_name': responsavel,  # Novo Responsável
+                         'ovr_id': ovr.id
+                         }
+        evento = gera_eventoovr(session, evento_params, commit=False)
+        ovr.responsavel_cpf = responsavel  # Novo responsavel
+        session.add(evento)
+        session.add(ovr)
+        session.commit()
+    except Exception as err:
+        session.rollback()
+        raise err
+    return ovr
+
+
+def informa_lavratura_auto(session, ovr_id: int,
+                           responsavel: str) -> OVR:
+    """Atualiza campo responsável na OVR. Gera evento correspondente.
+
+    :param session: Conexão com banco SQLAlchemy
+    :param ovr_id: ID da OVR a atribuir responsável
+    :param responsavel: CPF do novo responsável
+    :return: OVR modificado
+    """
+    try:
+        ovr = get_ovr(session, ovr_id)
+        tipoevento = session.query(TipoEventoOVR).filter(
+            TipoEventoOVR.eventoespecial == EventoEspecial.Autuação.value).first()
+        evento_params = {'tipoevento_id': tipoevento.id,
+                         'motivo': 'Ficha encerrada, auto lavrado',  # Responsável anterior
+                         'user_name': responsavel,  # Novo Responsável
                          'ovr_id': ovr.id
                          }
         evento = gera_eventoovr(session, evento_params, commit=False)
@@ -276,6 +305,19 @@ def get_usuarios(session):
     usuarios = session.query(Usuario).all()
     usuarios_list = [(usuario.cpf, usuario.nome) for usuario in usuarios]
     return sorted(usuarios_list, key=lambda x: x[1])
+
+
+def usuario_index(usuarios: list, pcpf: str) -> int:
+    """Percorre a lista e retorna o índice do cpf ou -1
+
+    :param usuarios: lista [cpf, nome] conforme get_usuarios
+    :param pcpf: cpf do usuário atual / a pesquisar
+    """
+    index = -1
+    for ind, tuple in enumerate(usuarios):
+        if pcpf == tuple[0]:
+            index = ind
+    return index
 
 
 def get_setores_filhos(session, setor: Setor) -> list:

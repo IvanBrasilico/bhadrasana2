@@ -143,7 +143,7 @@
                     <button id="btn_auto" type="button" class="btn btn-primary btn-success form-control"
                             onclick="">
                         Informar lavratura do Auto de Infração
-                    </button>
+                    </button></button>
                     {% endif %}
                 </div>
             </div>
@@ -266,6 +266,35 @@
             </div>
             <div class="modal-body">
                 <form method="POST" action="responsavelovr" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <input type="hidden" name="ovr_id" value="{{ oform.id.data }}"/>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label for="tipoprocesso">Nome Responsável</label>
+                        </div>
+                        <div class="col-sm-9">
+                            {{ responsavel_form.responsavel(class='form-control') }}
+                        </div>
+                    </div>
+                    <input class="btn btn-primary" type="submit" value="Atribuir"/>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="autuacao" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title" id="ModalLabel1">Registra lavratura de Auto de Infração</h1>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="informalavraturaauto" enctype="multipart/form-data">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <input type="hidden" name="ovr_id" value="{{ oform.id.data }}"/>
                     <div class="row">

@@ -2,12 +2,13 @@ import datetime
 import os
 from _collections import defaultdict
 
+from ajna_commons.flask.log import logger
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
 from gridfs import GridFS
+from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, Item
 from werkzeug.utils import redirect
 
-from ajna_commons.flask.log import logger
 from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
     ProcessoOVRForm, ItemTGForm, ResponsavelOVRForm, TGOVRForm
 from bhadrasana.models import delete_objeto
@@ -17,11 +18,10 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     gera_processoovr, get_tipos_processo, lista_itemtg, get_itemtg, get_recintos, \
     cadastra_itemtg, get_usuarios, atribui_responsavel_ovr, lista_tgovr, get_tgovr, \
     cadastra_tgovr, get_ovr_responsavel, importa_planilha, exporta_planilhaovr, get_tiposmercadoria_choice, \
-    inclui_flag_ovr, exclui_flag_ovr, get_flags
+    inclui_flag_ovr, exclui_flag_ovr, get_flags, usuario_index
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.rvfmanager import lista_rvfovr
 from bhadrasana.views import get_user_save_path, valid_file
-from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, Item
 
 
 def ovr_app(app):
@@ -33,13 +33,16 @@ def ovr_app(app):
         recintos = get_recintos(session)
         print(recintos)
         responsaveis = get_usuarios(session)
+        current_user_index = usuario_index(responsaveis, current_user.name)
         ovr_form = OVRForm(tiposeventos=tiposeventos, recintos=recintos,
                            numeroCEmercante=request.args.get('numeroCEmercante'))
         tiposprocesso = get_tipos_processo(session)
         flags = get_flags(session)
-        historico_form = HistoricoOVRForm(tiposeventos=tiposeventos)
+        historico_form = HistoricoOVRForm(tiposeventos=tiposeventos, responsaveis=responsaveis)
+        historico_form.user_name.default = current_user_index
         processo_form = ProcessoOVRForm(tiposprocesso=tiposprocesso)
         responsavel_form = ResponsavelOVRForm(responsaveis=responsaveis)
+        responsavel_form.responsavel.default = current_user_index
         conhecimento = None
         ncms = []
         containers = []
@@ -201,6 +204,26 @@ def ovr_app(app):
                                     ovr_id=ovr_id,
                                     responsavel=responsavel_ovr_form.responsavel.data
                                     )
+            return redirect(url_for('ovr', id=ovr_id))
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(type(err))
+            flash(str(err))
+        return redirect(url_for('ovr', id=ovr_id))
+
+    @app.route('/informalavraturaauto', methods=['POST'])
+    @login_required
+    def informalavraturaauto():
+        session = app.config.get('dbsession')
+        ovr_id = None
+        try:
+            responsavel_ovr_form = ResponsavelOVRForm(request.form)
+            ovr_id = responsavel_ovr_form.ovr_id.data
+            informalavraturaauto(session,
+                                 ovr_id=ovr_id,
+                                 responsavel=responsavel_ovr_form.responsavel.data
+                                 )
             return redirect(url_for('ovr', id=ovr_id))
         except Exception as err:
             logger.error(err, exc_info=True)
