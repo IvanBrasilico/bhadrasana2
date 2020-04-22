@@ -141,7 +141,7 @@
                 <div class="col-sm-3">
                     {% if oform.id.data %}
                     <button id="btn_auto" type="button" class="btn btn-primary btn-success form-control"
-                            onclick="">
+                                data-toggle="modal" data-target="#lavratura">
                         Informar lavratura do Auto de Infração
                     </button></button>
                     {% endif %}
@@ -286,7 +286,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="autuacao" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+<div class="modal fade" id="lavratura" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
      aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
