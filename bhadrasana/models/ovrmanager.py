@@ -161,8 +161,8 @@ def atribui_responsavel_ovr(session, ovr_id: int,
         tipoevento = session.query(TipoEventoOVR).filter(
             TipoEventoOVR.eventoespecial == EventoEspecial.Responsavel.value).first()
         evento_params = {'tipoevento_id': tipoevento.id,
-                         'motivo': responsavel,  # Novo Responsável
-                         'user_name': ovr.responsavel_cpf,  # Responsável anterior
+                         'motivo': 'Anterior: ' + ovr.responsavel_cpf or 'Nenhum', # Responsável anterior
+                         'user_name': responsavel, # Novo Responsável
                          'ovr_id': ovr.id
                          }
         evento = gera_eventoovr(session, evento_params, commit=False)
