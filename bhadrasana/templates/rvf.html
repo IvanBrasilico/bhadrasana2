@@ -5,6 +5,7 @@
             <form method="POST" id="formrvf" action="rvf">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <input type="hidden" name="id" value="{{ oform.id.data }}"/>
+                <input type="hidden" name="ovr_id" value="{{ oform.ovr_id.data }}"/>
                 <div class="row">
                     <div class="form-group">
                         <div class="col-sm-3">
