@@ -18,14 +18,14 @@ class EventoEspecial(Enum):
     Responsavel = 1
     RVF = 2
     TG = 3
-    Encerramento = 4
+    Autuação = 4
 
 
 tipoStatusOVREspecial = [
     ('Atribuição de responsável', EventoEspecial.Responsavel.value, 1),
     ('RVF incluída', EventoEspecial.RVF.value, 1),
     ('TG incluído', EventoEspecial.TG.value, 1),
-    ('Emissão de Auto de Infração', EventoEspecial.Encerramento.value, 4)
+    ('Emissão de Auto de Infração', EventoEspecial.Autuação.value, 4)
 ]
 
 tipoStatusOVR = [

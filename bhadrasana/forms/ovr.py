@@ -74,8 +74,7 @@ class HistoricoOVRForm(FlaskForm):
     id = IntegerField('ID')
     ovr_id = IntegerField('OVR')
     tipoevento_id = SelectField('tipoevento', default=0)
-    user_name = StringField(u'Nome do usuário',
-                            default='')
+    user_name = SelectField('CPF do Responsável')
     motivo = StringField(u'Nome do usuário',
                          default='')
 
@@ -84,6 +83,9 @@ class HistoricoOVRForm(FlaskForm):
         self.tipoevento_id.choices = []
         if kwargs.get('tiposeventos'):
             self.tipoevento_id.choices = kwargs.get('tiposeventos')
+        self.responsavel.choices = []
+        if kwargs.get('responsaveis'):
+            self.responsavel.choices.extend(kwargs.get('responsaveis'))
 
 
 class ProcessoOVRForm(FlaskForm):
