@@ -100,7 +100,7 @@ def processa_fma(session, fma: dict):
 
 def processa_lista_fma(session, lista_recintos_fmas):
     print(lista_recintos_fmas)
-    for recinto, lista_fma in lista_recintos_fmas:
+    for recinto, lista_fma in lista_recintos_fmas.items():
         print(recinto, lista_fma)
         for fma in lista_fma:
             processa_fma(session, fma)
