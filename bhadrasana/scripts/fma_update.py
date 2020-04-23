@@ -52,8 +52,8 @@ def get_lista_fma(start, end, cod_recinto, token):
     logger.info('get_pesagens_dte ' + r.url)
     try:
         lista_fma = r.json()['JUP_WS']['FMA_Eletronica']['Lista_FMA']
-    except:
-        logger.error(r.text)
+    except Exception as err:
+        logger.error(err)
         return None
     return lista_fma
 
@@ -126,7 +126,7 @@ def update(sql_uri, inicio, fim):
         end = datetime.strptime(fim, '%d/%m/%Y')
     print(start, end)
     lista_recintos_fmas = get_lista_fma_recintos(recintos_list, start, end)
-    processa_lista_fma(lista_recintos_fmas)
+    processa_lista_fma(session, lista_recintos_fmas)
 
 
 if __name__ == '__main__':  # pragma: no cover
