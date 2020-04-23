@@ -314,11 +314,12 @@ def usuario_index(usuarios: list, pcpf: str) -> int:
     :param pcpf: cpf do usuário atual / a pesquisar
     """
     index = -1
+    pcpf = pcpf.strip()
     for ind, tuple in enumerate(usuarios):
-        if pcpf == tuple[0]:
+        if pcpf == tuple[0].strip():
             index = ind
+            break
     return index
-
 
 def get_setores_filhos(session, setor: Setor) -> list:
     return session.query(Setor).filter(Setor.pai_id == setor.id).all()
