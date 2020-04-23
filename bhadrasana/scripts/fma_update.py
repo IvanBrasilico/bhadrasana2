@@ -1,14 +1,14 @@
-import click
 import csv
 import os
 from collections import defaultdict
 from datetime import datetime
+
+import click
+import requests
+from ajna_commons.flask.log import logger
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 
-import requests
-
-from ajna_commons.flask.log import logger
 from bhadrasana.models.ovr import OVR
 
 DTE_USERNAME = os.environ.get('DTE_USERNAME')
@@ -103,7 +103,6 @@ def processa_lista_fma(session, lista_recintos_fmas):
             processa_fma(session, fma)
 
 
-
 @click.command()
 @click.option('--sql_uri', default='mysql+pymysql://ivan@localhost:3306/mercante',
               help='Hoje')
@@ -129,6 +128,6 @@ def update(sql_uri, inicio, fim):
     lista_recintos_fmas = get_lista_fma_recintos(recintos_list, start, end)
     processa_lista_fma(lista_recintos_fmas)
 
+
 if __name__ == '__main__':  # pragma: no cover
     update()
-
