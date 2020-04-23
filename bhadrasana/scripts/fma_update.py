@@ -79,13 +79,12 @@ if __name__ == '__main__':  # pragma: no cover
     Session = sessionmaker(bind=engine)
     session = Session()
 
-    if len(sys.argv) > 1 and sys.argv[1] == 'fma':
-        print('Adquirindo FMAs')
-        qry = session.query(func.max(OVR.datahora).label("last_date"))
-        res = qry.execute()
-        start = res.last_date
-        end = datetime.today()
-        print(start, end)
-        lista_recintos_fmas = get_lista_fma_recintos(recintos_list, start, end)
-        print(lista_recintos_fmas)
+    print('Adquirindo FMAs')
+    qry = session.query(func.max(OVR.datahora).label("last_date"))
+    res = qry.execute()
+    start = res.last_date
+    end = datetime.today()
+    print(start, end)
+    lista_recintos_fmas = get_lista_fma_recintos(recintos_list, start, end)
+    print(lista_recintos_fmas)
 
