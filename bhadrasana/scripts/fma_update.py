@@ -49,7 +49,7 @@ def get_lista_fma(start, end, cod_recinto, token):
                'cod_recinto': cod_recinto}
     headers = {'Authorization': 'Bearer ' + token}
     r = requests.get(DTE_URL_FMA, headers=headers, params=payload)
-    logger.info('get_pesagens_dte ' + r.url)
+    logger.info('get_fma_dte ' + r.url)
     try:
         lista_fma = r.json()['JUP_WS']['FMA_Eletronica']['Lista_FMA']
     except Exception as err:
@@ -74,7 +74,8 @@ def get_lista_fma_recintos(recintos_list, datainicial, datafinal):
 
 def processa_fma(session, fma: dict):
     ovr = session.query(OVR).filter(
-        OVR.numero == fma['Numero_FMA'] & OVR.recinto_id == int(fma['Cod_Recinto'])
+        OVR.numero == fma['Numero_FMA']).filter(
+        OVR.recinto_id == int(fma['Cod_Recinto'])
     ).one_or_none()
     if ovr is not None:
         logger.info('FMA %s - %s já existente, pulando... ' %
