@@ -81,7 +81,7 @@ if __name__ == '__main__':  # pragma: no cover
 
     print('Adquirindo FMAs')
     qry = session.query(func.max(OVR.datahora).label("last_date"))
-    res = qry.execute()
+    res = qry.one()
     start = res.last_date
     end = datetime.today()
     print(start, end)
