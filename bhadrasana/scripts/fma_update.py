@@ -30,7 +30,7 @@ except FileNotFoundError:
     recintos_list = []
 
 DTE_TOKEN = 'https://jupapi.org.br/api/sepes/Pesagem/token'
-DTE_URL_FMA = 'https://jupapi.org.br/api/sepes/PesagemMovimentacao'
+DTE_URL_FMA = 'https://jupapi.org.br/api/sepes/ConsultaFMA'
 
 
 def get_token_dte(username=DTE_USERNAME, password=DTE_PASSWORD):
