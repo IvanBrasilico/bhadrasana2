@@ -32,7 +32,7 @@ DTE_URL_FMA = 'https://jupapi.org.br/api/sepes/PesagemMovimentacao'
 
 def get_token_dte(username=DTE_USERNAME, password=DTE_PASSWORD):
     data = {'username': username, 'password': password, 'grant_type': 'password'}
-    r = requests.post(DTE_TOKEN, data=data, verify=False)
+    r = requests.post(DTE_TOKEN, data=data)
     print(r.url)
     print(r.text)
     print(r.status_code)
@@ -46,11 +46,12 @@ def get_lista_fma(start, end, cod_recinto, token):
                'cod_recinto': cod_recinto}
     headers = {'Authorization': 'Bearer ' + token}
     r = requests.get(DTE_URL_FMA, headers=headers, params=payload)
-    logger.debug('get_pesagens_dte ' + r.url)
+    logger.info('get_pesagens_dte ' + r.url)
     try:
         lista_fma = r.json()['JUP_WS']['FMA_Eletronica']['Lista_FMA']
     except:
-        logger.error(r, r.text)
+        logger.error(r.text)
+        return None
     return lista_fma
 
 
