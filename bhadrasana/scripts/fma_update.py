@@ -4,8 +4,8 @@ from collections import defaultdict
 from datetime import datetime
 
 import requests
-from ajna_commons.flask.log import logger
 
+from ajna_commons.flask.log import logger
 from bhadrasana.models.ovr import OVR
 
 DTE_USERNAME = os.environ.get('DTE_USERNAME')
@@ -98,6 +98,7 @@ def processa_lista_fma(lista_recintos_fmas):
         for fma in lista_fma:
             processa_fma(fma)
 
+
 if __name__ == '__main__':  # pragma: no cover
     import sys
     from sqlalchemy import create_engine, func
@@ -117,4 +118,3 @@ if __name__ == '__main__':  # pragma: no cover
     print(start, end)
     lista_recintos_fmas = get_lista_fma_recintos(recintos_list, start, end)
     processa_lista_fma(lista_recintos_fmas)
-
