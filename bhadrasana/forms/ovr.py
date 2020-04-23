@@ -1,7 +1,8 @@
-from bhadrasana.models.ovr import Enumerado
 from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, TextAreaField, SelectField
-from wtforms.fields.html5 import DateField, TimeField
+from wtforms.fields.html5 import DateField, TimeField, DecimalField
+
+from bhadrasana.models.ovr import Enumerado
 
 
 class OVRForm(FlaskForm):
@@ -122,10 +123,10 @@ class TGOVRForm(FlaskForm):
                               render_kw={'rows': 2, 'cols': 100},
                               default='')
     unidadedemedida = SelectField('Unidade de Medida', default=1)
-    qtde = StringField(u'Quantidade total',
-                       default='')
-    valor = StringField(u'Valor total',
-                        default='')
+    qtde = DecimalField(u'Quantidade total',
+                        places=2)
+    valor = DecimalField(u'Valor total',
+                         places=2)
     tipomercadoria_id = SelectField('Unidade de Medida', default=0)
     numerotg = StringField(u'Número do Termo de Guarda', default='')
     afrfb = StringField(u'CPF do AFRFB Responsável', default='')
@@ -150,10 +151,10 @@ class ItemTGForm(FlaskForm):
                               render_kw={'rows': 5, 'cols': 100},
                               default='')
     unidadedemedida = SelectField('Unidade de Medida', default=1)
-    qtde = StringField(u'Quantidade',
-                       default='')
-    valor = StringField(u'Valor unitário',
-                        default='')
+    qtde = DecimalField(u'Quantidade total',
+                        places=2)
+    valor = DecimalField(u'Valor unitário',
+                         places=2)
     ncm = StringField(u'Código Subitem NCM',
                       default='')
     marca_id = SelectField('Marca licenciada, se existir', default=0)
