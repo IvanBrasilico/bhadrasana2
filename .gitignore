@@ -149,4 +149,5 @@ ajna_commons/*
 *.pickle
 /bhadrasana/extracoes/notebooks/yolo/*
 /bhadrasana/extracoes/notebooks/vazios/*
+dte.info
 

@@ -68,6 +68,36 @@ def get_lista_fma_recintos(recintos_list, datainicial, datafinal):
     return fmas_recintos
 
 
+def processa_fma(fma: dict):
+    ovr = session.query(OVR).filter(
+        OVR.numero == fma['Numero_FMA'] & OVR.recinto_id == int(fma['Cod_Recinto'])
+    ).one_or_none()
+    if ovr is not None:
+        logger.info('FMA %s - %s já existente, pulando... ' %
+                    (fma['Cod_Recinto'], fma['Numero_FMA']))
+        return
+    ovr = OVR()
+    ovr.numero = fma['Numero_FMA']
+    ovr.ano = fma['Ano_FMA']
+    ovr.datahora = datetime.strptime(fma['Data_Emissao'], '%Y-%m-%d')
+    ovr.recinto_id = int(fma['Cod_Recinto'])
+    ovr.numeroCEmercante = fma['CE_Mercante']
+    ovr.tipooperacao = 0
+    ovr.fase = 0
+    ovr.tipoevento_id = 1
+    try:
+        session.add(ovr)
+        session.commit()
+    except Exception as err:
+        print(err)
+        session.rollback()
+
+
+def processa_lista_fma(lista_recintos_fmas):
+    for recinto, lista_fma in lista_recintos_fmas:
+        for fma in lista_fma:
+            processa_fma(fma)
+
 if __name__ == '__main__':  # pragma: no cover
     import sys
     from sqlalchemy import create_engine, func
@@ -86,5 +116,5 @@ if __name__ == '__main__':  # pragma: no cover
     end = datetime.today()
     print(start, end)
     lista_recintos_fmas = get_lista_fma_recintos(recintos_list, start, end)
-    print(lista_recintos_fmas)
+    processa_lista_fma(lista_recintos_fmas)
 
