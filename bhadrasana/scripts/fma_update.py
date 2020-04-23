@@ -1,7 +1,10 @@
+import click
 import csv
 import os
 from collections import defaultdict
 from datetime import datetime
+from sqlalchemy import create_engine, func
+from sqlalchemy.orm import sessionmaker
 
 import requests
 
@@ -32,7 +35,7 @@ DTE_URL_FMA = 'https://jupapi.org.br/api/sepes/PesagemMovimentacao'
 
 def get_token_dte(username=DTE_USERNAME, password=DTE_PASSWORD):
     data = {'username': username, 'password': password, 'grant_type': 'password'}
-    r = requests.post(DTE_TOKEN, data=data, verify=False)
+    r = requests.post(DTE_TOKEN, data=data)
     print(r.url)
     print(r.text)
     print(r.status_code)
@@ -68,7 +71,7 @@ def get_lista_fma_recintos(recintos_list, datainicial, datafinal):
     return fmas_recintos
 
 
-def processa_fma(fma: dict):
+def processa_fma(session, fma: dict):
     ovr = session.query(OVR).filter(
         OVR.numero == fma['Numero_FMA'] & OVR.recinto_id == int(fma['Cod_Recinto'])
     ).one_or_none()
@@ -93,28 +96,38 @@ def processa_fma(fma: dict):
         session.rollback()
 
 
-def processa_lista_fma(lista_recintos_fmas):
+def processa_lista_fma(session, lista_recintos_fmas):
     for recinto, lista_fma in lista_recintos_fmas:
         for fma in lista_fma:
-            processa_fma(fma)
+            processa_fma(session, fma)
 
 
-if __name__ == '__main__':  # pragma: no cover
-    import sys
-    from sqlalchemy import create_engine, func
-    from sqlalchemy.orm import sessionmaker
 
-    if len(sys.argv) == 1:
-        sys.exit('Informar endereço do MySQL')
-    engine = create_engine(sys.argv[1])
+@click.command()
+@click.option('--sql_uri', default='mysql+pymysql://ivan@localhost:3306/mercante',
+              help='Hoje')
+@click.option('--inicio', default=None,
+              help='Dia de início (dia/mês/ano) - padrão data da última FMA')
+@click.option('--fim', default=None,
+              help='Hoje')
+def update(sql_uri, inicio, fim):
+    engine = create_engine(sql_uri)
     Session = sessionmaker(bind=engine)
     session = Session()
-
-    print('Adquirindo FMAs')
-    qry = session.query(func.max(OVR.datahora).label("last_date"))
-    res = qry.one()
-    start = res.last_date
-    end = datetime.today()
+    if inicio is None:
+        qry = session.query(func.max(OVR.datahora).label("last_date"))
+        res = qry.one()
+        start = res.last_date
+    else:
+        start = datetime.strptime(inicio, '%d/%m/%Y')
+    if fim is None:
+        end = datetime.today()
+    else:
+        end = datetime.strptime(fim, '%d/%m/%Y')
     print(start, end)
     lista_recintos_fmas = get_lista_fma_recintos(recintos_list, start, end)
     processa_lista_fma(lista_recintos_fmas)
+
+if __name__ == '__main__':  # pragma: no cover
+    update()
+
