@@ -100,6 +100,7 @@ def processa_fma(session, fma: dict):
 
 def processa_lista_fma(session, lista_recintos_fmas):
     for recinto, lista_fma in lista_recintos_fmas:
+        print(recinto, lista_fma)
         for fma in lista_fma:
             processa_fma(session, fma)
 
@@ -126,6 +127,7 @@ def update(sql_uri, inicio, fim):
     else:
         end = datetime.strptime(fim, '%d/%m/%Y')
     print(start, end)
+    recintos_list = [[37], [37], [37]]
     lista_recintos_fmas = get_lista_fma_recintos(recintos_list, start, end)
     processa_lista_fma(session, lista_recintos_fmas)
 
