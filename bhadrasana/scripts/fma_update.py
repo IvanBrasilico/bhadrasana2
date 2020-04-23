@@ -121,7 +121,8 @@ def update(sql_uri, inicio, fim):
     Session = sessionmaker(bind=engine)
     session = Session()
     if inicio is None:
-        qry = session.query(func.max(OVR.datahora).label("last_date"))
+        qry = session.query(func.max(OVR.datahora).label("last_date")
+                            ).filter(OVR.tipooperacao == 0)
         res = qry.one()
         start = res.last_date
     else:
