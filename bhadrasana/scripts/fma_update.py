@@ -1,11 +1,14 @@
+import click
 import csv
 import os
 from collections import defaultdict
 from datetime import datetime
+from sqlalchemy import create_engine, func
+from sqlalchemy.orm import sessionmaker
 
 import requests
-from ajna_commons.flask.log import logger
 
+from ajna_commons.flask.log import logger
 from bhadrasana.models.ovr import OVR
 
 DTE_USERNAME = os.environ.get('DTE_USERNAME')
@@ -69,23 +72,63 @@ def get_lista_fma_recintos(recintos_list, datainicial, datafinal):
     return fmas_recintos
 
 
-if __name__ == '__main__':  # pragma: no cover
-    import sys
-    from sqlalchemy import create_engine, func
-    from sqlalchemy.orm import sessionmaker
+def processa_fma(session, fma: dict):
+    ovr = session.query(OVR).filter(
+        OVR.numero == fma['Numero_FMA'] & OVR.recinto_id == int(fma['Cod_Recinto'])
+    ).one_or_none()
+    if ovr is not None:
+        logger.info('FMA %s - %s já existente, pulando... ' %
+                    (fma['Cod_Recinto'], fma['Numero_FMA']))
+        return
+    ovr = OVR()
+    ovr.numero = fma['Numero_FMA']
+    ovr.ano = fma['Ano_FMA']
+    ovr.datahora = datetime.strptime(fma['Data_Emissao'], '%Y-%m-%d')
+    ovr.recinto_id = int(fma['Cod_Recinto'])
+    ovr.numeroCEmercante = fma['CE_Mercante']
+    ovr.tipooperacao = 0
+    ovr.fase = 0
+    ovr.tipoevento_id = 1
+    try:
+        session.add(ovr)
+        session.commit()
+    except Exception as err:
+        print(err)
+        session.rollback()
 
-    if len(sys.argv) == 1:
-        sys.exit('Informar endereço do MySQL')
-    engine = create_engine(sys.argv[1])
+
+def processa_lista_fma(session, lista_recintos_fmas):
+    for recinto, lista_fma in lista_recintos_fmas:
+        for fma in lista_fma:
+            processa_fma(session, fma)
+
+
+
+@click.command()
+@click.option('--sql_uri', default='mysql+pymysql://ivan@localhost:3306/mercante',
+              help='Hoje')
+@click.option('--inicio', default=None,
+              help='Dia de início (dia/mês/ano) - padrão data da última FMA')
+@click.option('--fim', default=None,
+              help='Hoje')
+def update(sql_uri, inicio, fim):
+    engine = create_engine(sql_uri)
     Session = sessionmaker(bind=engine)
     session = Session()
-
-    print('Adquirindo FMAs')
-    qry = session.query(func.max(OVR.datahora).label("last_date"))
-    res = qry.one()
-    start = res.last_date
-    end = datetime.today()
+    if inicio is None:
+        qry = session.query(func.max(OVR.datahora).label("last_date"))
+        res = qry.one()
+        start = res.last_date
+    else:
+        start = datetime.strptime(inicio, '%d/%m/%Y')
+    if fim is None:
+        end = datetime.today()
+    else:
+        end = datetime.strptime(fim, '%d/%m/%Y')
     print(start, end)
     lista_recintos_fmas = get_lista_fma_recintos(recintos_list, start, end)
-    print(lista_recintos_fmas)
+    processa_lista_fma(lista_recintos_fmas)
+
+if __name__ == '__main__':  # pragma: no cover
+    update()
 
