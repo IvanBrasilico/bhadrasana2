@@ -86,12 +86,15 @@ def processa_fma(session, fma: dict):
     ovr.ano = fma['Ano_FMA']
     ovr.datahora = datetime.strptime(fma['Data_Emissao'], '%Y-%m-%d')
     ovr.recinto_id = int(fma['Cod_Recinto'])
+    ovr.setor_id = 4 # EQMAB
     ovr.numeroCEmercante = fma['CE_Mercante']
     ovr.tipooperacao = 0
     ovr.fase = 0
     ovr.tipoevento_id = 1
     try:
         session.add(ovr)
+        logger.info('Inserindo OVR Recinto %s Numero %s ' %
+                    (fma['Cod_Recinto'], fma['Numero_FMA']))
         session.commit()
     except Exception as err:
         print(err)
@@ -99,9 +102,9 @@ def processa_fma(session, fma: dict):
 
 
 def processa_lista_fma(session, lista_recintos_fmas):
-    print(lista_recintos_fmas)
+    # print(lista_recintos_fmas)
     for recinto, lista_fma in lista_recintos_fmas.items():
-        print(recinto, lista_fma)
+        # print(recinto, lista_fma)
         for fma in lista_fma:
             processa_fma(session, fma)
 
@@ -128,7 +131,7 @@ def update(sql_uri, inicio, fim):
     else:
         end = datetime.strptime(fim, '%d/%m/%Y')
     print(start, end)
-    recintos_list = [[37], [37], [37]]
+    # recintos_list = [[37]]
     lista_recintos_fmas = get_lista_fma_recintos(recintos_list, start, end)
     processa_lista_fma(session, lista_recintos_fmas)
 
