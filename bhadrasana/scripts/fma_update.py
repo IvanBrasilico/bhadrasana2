@@ -1,8 +1,12 @@
 import csv
 import os
+from collections import defaultdict
+from datetime import datetime
 
 import requests
-from datetime import date, datetime, time, timedelta
+from ajna_commons.flask.log import logger
+
+from bhadrasana.models.ovr import OVR
 
 DTE_USERNAME = os.environ.get('DTE_USERNAME')
 DTE_PASSWORD = os.environ.get('DTE_PASSWORD')
@@ -66,12 +70,15 @@ def get_lista_fma_recintos(recintos_list, datainicial, datafinal):
 
 if __name__ == '__main__':  # pragma: no cover
     import sys
-    from pymongo import MongoClient
-    from ajna_commons.flask.conf import DATABASE, MONGODB_URI
+    from sqlalchemy import create_engine, func
+    from sqlalchemy.orm import sessionmaker
 
-    db = MongoClient(host=MONGODB_URI)[DATABASE]
-    # print('Criando índices para Pesagens')
-    # print(create_indexes(db))
+    if len(sys.argv) == 1:
+        sys.exit('Informar endereço do MySQL')
+    engine = create_engine(sys.argv[1])
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
     if len(sys.argv) > 1 and sys.argv[1] == 'fma':
         print('Adquirindo FMAs')
         qry = session.query(func.max(OVR.datahora).label("last_date"))
@@ -79,3 +86,6 @@ if __name__ == '__main__':  # pragma: no cover
         start = res.last_date
         end = datetime.today()
         print(start, end)
+        lista_recintos_fmas = get_lista_fma_recintos(recintos_list, start, end)
+        print(lista_recintos_fmas)
+
