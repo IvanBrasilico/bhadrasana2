@@ -34,15 +34,18 @@ def ovr_app(app):
         print(recintos)
         responsaveis = get_usuarios(session)
         current_user_index = usuario_index(responsaveis, current_user.name)
+        logger.info('current_user %s, current_user_index %s' %
+                    (current_user.name, current_user_index))
         ovr_form = OVRForm(tiposeventos=tiposeventos, recintos=recintos,
                            numeroCEmercante=request.args.get('numeroCEmercante'))
         tiposprocesso = get_tipos_processo(session)
         flags = get_flags(session)
-        historico_form = HistoricoOVRForm(tiposeventos=tiposeventos, responsaveis=responsaveis)
-        historico_form.user_name.default = current_user_index
+        historico_form = HistoricoOVRForm(tiposeventos=tiposeventos,
+                                          responsaveis=responsaveis,
+                                          user_name=current_user.name)
         processo_form = ProcessoOVRForm(tiposprocesso=tiposprocesso)
-        responsavel_form = ResponsavelOVRForm(responsaveis=responsaveis)
-        responsavel_form.responsavel.default = current_user_index
+        responsavel_form = ResponsavelOVRForm(responsaveis=responsaveis,
+                                              user_name=current_user.name)
         conhecimento = None
         ncms = []
         containers = []
