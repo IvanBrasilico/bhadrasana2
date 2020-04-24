@@ -1,0 +1,81 @@
+{% extends "layout.html" %} {% block content %} {{super()}}
+<div id="main" class="container-fluid">
+    <div id="top" class="row col-sm-12">
+        <div class="form-group">
+            <form method="POST" id="filtrorelatorioform" action="relatorios">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="row">
+                    <div class="col-sm-4">
+                        <label for="relatorio">Nome do relatório</label>
+                    </div>
+                    <div class="col-sm-4">
+                        <label for="datainicio">Início e fim de período de pesquisa</label>
+                    </div>
+                    <div class="col-sm-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <div class="col-sm-4">
+                            {{ oform.relatorio(class='form-control') }}
+                        </div>
+                        <div class="col-sm-2">
+                            {{ oform.datainicio(class='form-control') }}
+                        </div>
+                        <div class="col-sm-2">
+                            {{ oform.datafim(class='form-control') }}
+                        </div>
+                        <div class="col-sm-4">
+                        </div>
+                    </div>
+                </div>
+                <div class="row col-sm-12">
+                    &nbsp;<br>
+                    <div class="col-sm-2">
+                        <button class="btn btn-default btn-info form-control" onclick="submit">
+                            Pesquisar
+                        </button>
+                    </div>
+                    <div class="col-sm-2">
+                        <button onclick="exporta_planilhaovr()" id="btn_exportar"
+                                type="button" class="btn btn-default form-control">
+                            Planilha de Controle de Procedimentos
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="list" class="row col-sm-12">
+        &nbsp;<br>
+        <div class="table">
+            <table class="inlineTable table table-bordered table-hover table-responsive"
+                   id="filtro_personalizado_table">
+                <thead>
+                <tr>
+                    {% for coluna in linhas[0] %}
+                    <th>{{ coluna }}</th>
+                    {% endfor %}
+                </tr>
+                </thead>
+                <tbody>
+                {% for linha in linhas[1:] %}
+                <tr>
+                    {% for coluna in linha %}
+                    <td>{{ coluna }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div id="bottom" class="row col-sm-12">
+        AJNA - Receita Federal do Brasil 2017
+    </div>
+</div>
+{% endblock %} {% block scripts %} {{super()}}
+<script>
+
+</script>
+{% endblock %}

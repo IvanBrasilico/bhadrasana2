@@ -7,7 +7,7 @@ sys.path.insert(0, '../ajna_docs/commons')
 sys.path.insert(0, '../virasana')
 from bhadrasana.models import Base, BaseRastreavel
 from sqlalchemy import BigInteger, Column, DateTime, func, VARCHAR, Integer, \
-    ForeignKey, Numeric, CHAR, Table, create_engine
+    ForeignKey, Numeric, CHAR, Table, create_engine, Text
 from sqlalchemy.dialects.mysql import TIMESTAMP
 from sqlalchemy.orm import relationship, sessionmaker
 
@@ -308,6 +308,12 @@ class ItemTG(BaseRastreavel):
     def get_unidadedemedida(self):
         return Enumerado.unidadeMedida(self.unidadedemedida)
 
+
+class Relatorio(Base):
+    __tablename__ = 'ovr_relatorios'
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
+    nome = Column(VARCHAR(200), index=True, nullable=False)
+    sql = Column(Text())
 
 if __name__ == '__main__':  # pragma: no-cover
     confirma = input('Revisar o código... '

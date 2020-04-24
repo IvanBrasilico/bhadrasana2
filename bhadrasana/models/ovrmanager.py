@@ -1,15 +1,15 @@
 from datetime import timedelta
 
 import pandas as pd
-from ajna_commons.flask.log import logger
-from sqlalchemy import and_
+from sqlalchemy import and_, text
 from sqlalchemy.orm import Session
 
+from ajna_commons.flask.log import logger
 from bhadrasana.models import Usuario, Setor, EBloqueado
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto, \
     get_usuario_logado
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
-    TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria, EventoEspecial, Flag
+    TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria, EventoEspecial, Flag, Relatorio
 
 
 def get_recintos(session):
@@ -29,6 +29,21 @@ def get_tipos_evento(session):
 def get_tipos_processo(session):
     tiposprocesso = session.query(TipoProcessoOVR).all()
     return [(tipo.id, tipo.descricao) for tipo in tiposprocesso]
+
+
+def get_relatorios(session):
+    relatorios = session.query(Relatorio).all()
+    return [(relatorio.id, relatorio.nome) for relatorio in relatorios]
+
+
+def executa_relatorio(session, user_name: str, relatorio_id: int, filtrar_setor=False):
+    relatorio = session.query(Relatorio).filter(Relatorio.id == relatorio_id).one()
+    sql_query = text(relatorio.sql)
+    result = []
+    result_proxy = session.execute(sql_query)
+    result.append(result_proxy.keys())
+    result.extend(result_proxy.fetchall())
+    return result
 
 
 def cadastra_ovr(session, params: dict, user_name: str) -> OVR:
@@ -320,6 +335,7 @@ def usuario_index(usuarios: list, pcpf: str) -> int:
             index = ind
             break
     return index
+
 
 def get_setores_filhos(session, setor: Setor) -> list:
     return session.query(Setor).filter(Setor.pai_id == setor.id).all()
