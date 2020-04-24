@@ -41,7 +41,7 @@ def ovr_app(app):
                                           user_name=current_user.name)
         processo_form = ProcessoOVRForm(tiposprocesso=tiposprocesso)
         responsavel_form = ResponsavelOVRForm(responsaveis=responsaveis,
-                                              user_name=current_user.name)
+                                              responsavel=current_user.name)
         conhecimento = None
         ncms = []
         containers = []
