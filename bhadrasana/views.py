@@ -183,6 +183,7 @@ def mynavbar():
              View('Verificações físicas', 'pesquisa_rvf'),
              View('Ficha de Carga', 'pesquisa_ovr'),
              View('Minhas Fichas', 'minhas_ovrs'),
+             View('Relatórios', 'ver_relatorios'),
              ]
     if current_user.is_authenticated:
         items.append(View('Sair', 'commons.logout'))
