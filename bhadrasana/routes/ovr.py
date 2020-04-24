@@ -31,11 +31,7 @@ def ovr_app(app):
         processos = []
         tiposeventos = get_tipos_evento(session)
         recintos = get_recintos(session)
-        print(recintos)
         responsaveis = get_usuarios(session)
-        current_user_index = usuario_index(responsaveis, current_user.name)
-        logger.info('current_user %s, current_user_index %s' %
-                    (current_user.name, current_user_index))
         ovr_form = OVRForm(tiposeventos=tiposeventos, recintos=recintos,
                            numeroCEmercante=request.args.get('numeroCEmercante'))
         tiposprocesso = get_tipos_processo(session)
