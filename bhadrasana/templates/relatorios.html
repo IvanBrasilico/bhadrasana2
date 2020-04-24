@@ -5,18 +5,16 @@
             <form method="POST" id="filtrorelatorioform" action="relatorios">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="row">
-                    <div class="col-sm-4">
+                    <div class="col-sm-5">
                         <label for="relatorio">Nome do relatório</label>
                     </div>
-                    <div class="col-sm-4">
+                    <div class="col-sm-7">
                         <label for="datainicio">Início e fim de período de pesquisa</label>
-                    </div>
-                    <div class="col-sm-4">
                     </div>
                 </div>
                 <div class="row">
                     <div class="form-group">
-                        <div class="col-sm-4">
+                        <div class="col-sm-5">
                             {{ oform.relatorio(class='form-control') }}
                         </div>
                         <div class="col-sm-2">
@@ -25,21 +23,29 @@
                         <div class="col-sm-2">
                             {{ oform.datafim(class='form-control') }}
                         </div>
-                        <div class="col-sm-4">
+                        <div class="col-sm-3">
                         </div>
                     </div>
                 </div>
                 <div class="row col-sm-12">
                     &nbsp;<br>
-                    <div class="col-sm-2">
+                    <div class="col-sm-5">
                         <button class="btn btn-default btn-info form-control" onclick="submit">
                             Pesquisar
                         </button>
                     </div>
-                    <div class="col-sm-2">
+                    <div class="col-sm-1">
+                    </div>
+                    <div class="col-sm-3">
                         <button onclick="exporta_planilhaovr()" id="btn_exportar"
                                 type="button" class="btn btn-default form-control">
                             Planilha de Controle de Procedimentos
+                        </button>
+                    </div>
+                    <div class="col-sm-3">
+                        <button onclick="exporta_planilhaprodutividade()" id="btn_exportar2"
+                                type="button" class="btn btn-default form-control">
+                            Planilha de Produtividade
                         </button>
                     </div>
                 </div>
@@ -70,12 +76,20 @@
             </table>
         </div>
     </div>
+    <div>
+        {{ sql }}
+    </div>
     <div id="bottom" class="row col-sm-12">
         AJNA - Receita Federal do Brasil 2017
     </div>
 </div>
 {% endblock %} {% block scripts %} {{super()}}
 <script>
-
+    function exporta_planilhaovr() {
+        window.location.assign('exportaplanilhaovr');
+    }
+    function exporta_planilhaprodutividade() {
+        window.location.assign('exportaplanilhaprodutividade');
+    }
 </script>
 {% endblock %}

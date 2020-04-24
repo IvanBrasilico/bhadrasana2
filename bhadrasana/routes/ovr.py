@@ -18,7 +18,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     cadastra_itemtg, get_usuarios, atribui_responsavel_ovr, lista_tgovr, get_tgovr, \
     cadastra_tgovr, get_ovr_responsavel, importa_planilha, exporta_planilhaovr, get_tiposmercadoria_choice, \
     inclui_flag_ovr, exclui_flag_ovr, get_flags, informa_lavratura_auto, get_relatorios, \
-    executa_relatorio
+    executa_relatorio, get_relatorio
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.rvfmanager import lista_rvfovr
 from bhadrasana.views import get_user_save_path, valid_file
@@ -198,6 +198,7 @@ def ovr_app(app):
         session = app.config.get('dbsession')
         lista_relatorios = get_relatorios(session)
         linhas = []
+        sql = ''
         today = datetime.date.today()
         inicio = datetime.date(year=today.year, month=today.month, day=1)
         filtro_form = FiltroRelatorioForm(
@@ -210,8 +211,13 @@ def ovr_app(app):
                 filtro_form = FiltroRelatorioForm(request.form,
                                                   relatorios=lista_relatorios)
                 filtro_form.validate()
+                relatorio = get_relatorio(session, int(filtro_form.relatorio.data))
+                if relatorio is None:
+                    raise ValueError('Relatório %s não encontrado % ' %
+                                     filtro_form.relatorio.data)
+                sql = relatorio.sql
                 linhas = executa_relatorio(session, current_user.name,
-                                           int(filtro_form.relatorio.data),
+                                           relatorio,
                                            filtrar_setor=False)
         except Exception as err:
             logger.error(err, exc_info=True)
@@ -220,7 +226,7 @@ def ovr_app(app):
             flash(str(err))
         return render_template('relatorios.html',
                                oform=filtro_form,
-                               linhas=linhas)
+                               linhas=linhas, sql=sql)
 
     @app.route('/responsavelovr', methods=['POST'])
     @login_required

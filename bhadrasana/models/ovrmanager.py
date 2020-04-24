@@ -32,12 +32,15 @@ def get_tipos_processo(session):
 
 
 def get_relatorios(session):
-    relatorios = session.query(Relatorio).all()
+    relatorios = session.query(Relatorio).order_by(Relatorio.nome).all()
     return [(relatorio.id, relatorio.nome) for relatorio in relatorios]
 
 
-def executa_relatorio(session, user_name: str, relatorio_id: int, filtrar_setor=False):
-    relatorio = session.query(Relatorio).filter(Relatorio.id == relatorio_id).one()
+def get_relatorio(session, relatorio_id: int):
+    return session.query(Relatorio).filter(Relatorio.id == relatorio_id).one_or_none()
+
+
+def executa_relatorio(session, user_name: str, relatorio, filtrar_setor=False):
     sql_query = text(relatorio.sql)
     result = []
     result_proxy = session.execute(sql_query)
