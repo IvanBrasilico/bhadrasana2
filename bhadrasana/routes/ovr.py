@@ -55,7 +55,7 @@ def ovr_app(app):
                 ovr_form.adata.data = request.form.get('adata')
                 ovr_form.ahora.data = request.form.get('ahora')
                 ovr_form.validate()
-                print(ovr_form.data.items())
+                # print(ovr_form.data.items())
                 ovr = cadastra_ovr(session,
                                    dict(ovr_form.data.items()),
                                    user_name=current_user.name)
@@ -218,6 +218,8 @@ def ovr_app(app):
                 sql = relatorio.sql
                 linhas = executa_relatorio(session, current_user.name,
                                            relatorio,
+                                           filtro_form.datainicio.data,
+                                           filtro_form.datafim.data,
                                            filtrar_setor=False)
         except Exception as err:
             logger.error(err, exc_info=True)
