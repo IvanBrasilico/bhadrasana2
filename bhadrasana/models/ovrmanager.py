@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 import pandas as pd
 from sqlalchemy import and_, text
@@ -40,12 +40,29 @@ def get_relatorio(session, relatorio_id: int):
     return session.query(Relatorio).filter(Relatorio.id == relatorio_id).one_or_none()
 
 
-def executa_relatorio(session, user_name: str, relatorio, filtrar_setor=False):
+def executa_relatorio(session, user_name: str, relatorio: Relatorio,
+                      data_inicial: datetime, data_final: datetime,
+                      filtrar_setor=False):
+    params = {'datainicio': data_inicial, 'datafim': data_final}
+    # (datetime.strftime(data_inicial, '%Y-%m-%d'),
+    # datetime.strftime(data_final, '%Y-%m-%d'))
     sql_query = text(relatorio.sql)
     result = []
-    result_proxy = session.execute(sql_query)
-    result.append(result_proxy.keys())
-    result.extend(result_proxy.fetchall())
+    try:
+        result_proxy = session.execute(sql_query, params)
+    except TypeError as err:
+        logger.error('Erro em executa_relatorio: %s' % err)
+        result_proxy = session.execute(sql_query)
+    names = result_proxy.keys()
+    rows = result_proxy.fetchall()
+    if relatorio.id == 8:  # Do pivot for better visualization
+        df_eventos_especiais = pd.DataFrame(rows, columns=names)
+        df_eventos_especiais = df_eventos_especiais.pivot_table(index=['Ano', 'Mês', 'cpf', 'nome'],
+                                                                columns='Ação', values='qtde').fillna(0).reset_index()
+        names = df_eventos_especiais.columns
+        rows = df_eventos_especiais.values.tolist()
+    result.append(names)
+    result.extend(rows)
     return result
 
 
@@ -441,11 +458,13 @@ def exporta_planilhaovr(session: Session, user_name: str, filename: str):
     :param user_name: Nome do Usuário
     :param filename: Nome do arquivo a gerar com caminho completo
     """
-    sql_processos = 'SELECT o.id, tipoprocesso_id, p.numero FROM ovr_ovrs o inner join ovr_processos p on o.id = p.ovr_id'
+    sql_processos = 'SELECT o.id, tipoprocesso_id, p.numero FROM ' + \
+                    ' ovr_ovrs o inner join ovr_processos p on o.id = p.ovr_id'
     sql_ovrs = 'SELECT * FROM ovr_ovrs'
     processsos = pd.read_sql(sql_processos, session.get_bind())
-    processsos = processsos.pivot(index='id', columns='tipoprocesso_id', values='numero')
+    processsos = processsos.pivot(index='id', columns='tipoprocesso_id',
+                                  values='numero')
     processsos = processsos.fillna('').reset_index()
     ovrs = pd.read_sql(sql_ovrs, session.get_bind())
-    df = pd.merge(ovrs, processsos, how='inner', on='id')
+    df = pd.merge(ovrs, processsos, how='outer', on='id')
     df.to_csv(filename)

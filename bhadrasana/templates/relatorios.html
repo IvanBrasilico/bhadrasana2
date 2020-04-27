@@ -34,18 +34,12 @@
                             Pesquisar
                         </button>
                     </div>
-                    <div class="col-sm-1">
+                    <div class="col-sm-4">
                     </div>
                     <div class="col-sm-3">
                         <button onclick="exporta_planilhaovr()" id="btn_exportar"
                                 type="button" class="btn btn-default form-control">
                             Planilha de Controle de Procedimentos
-                        </button>
-                    </div>
-                    <div class="col-sm-3">
-                        <button onclick="exporta_planilhaprodutividade()" id="btn_exportar2"
-                                type="button" class="btn btn-default form-control">
-                            Planilha de Produtividade
                         </button>
                     </div>
                 </div>
@@ -87,9 +81,6 @@
 <script>
     function exporta_planilhaovr() {
         window.location.assign('exportaplanilhaovr');
-    }
-    function exporta_planilhaprodutividade() {
-        window.location.assign('exportaplanilhaprodutividade');
     }
 </script>
 {% endblock %}
