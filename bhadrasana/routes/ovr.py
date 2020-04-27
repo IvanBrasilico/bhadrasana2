@@ -2,15 +2,14 @@ import datetime
 import os
 from _collections import defaultdict
 
-from ajna_commons.flask.log import logger
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
 from gridfs import GridFS
-from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, Item
 from werkzeug.utils import redirect
 
+from ajna_commons.flask.log import logger
 from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
-    ProcessoOVRForm, ItemTGForm, ResponsavelOVRForm, TGOVRForm
+    ProcessoOVRForm, ItemTGForm, ResponsavelOVRForm, TGOVRForm, FiltroRelatorioForm
 from bhadrasana.models import delete_objeto
 from bhadrasana.models.ovr import ItemTG, OVR
 from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
@@ -18,10 +17,12 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     gera_processoovr, get_tipos_processo, lista_itemtg, get_itemtg, get_recintos, \
     cadastra_itemtg, get_usuarios, atribui_responsavel_ovr, lista_tgovr, get_tgovr, \
     cadastra_tgovr, get_ovr_responsavel, importa_planilha, exporta_planilhaovr, get_tiposmercadoria_choice, \
-    inclui_flag_ovr, exclui_flag_ovr, get_flags, usuario_index, informa_lavratura_auto
+    inclui_flag_ovr, exclui_flag_ovr, get_flags, informa_lavratura_auto, get_relatorios, \
+    executa_relatorio, get_relatorio
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.rvfmanager import lista_rvfovr
 from bhadrasana.views import get_user_save_path, valid_file
+from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, Item
 
 
 def ovr_app(app):
@@ -31,11 +32,7 @@ def ovr_app(app):
         processos = []
         tiposeventos = get_tipos_evento(session)
         recintos = get_recintos(session)
-        print(recintos)
         responsaveis = get_usuarios(session)
-        current_user_index = usuario_index(responsaveis, current_user.name)
-        logger.info('current_user %s, current_user_index %s' %
-                    (current_user.name, current_user_index))
         ovr_form = OVRForm(tiposeventos=tiposeventos, recintos=recintos,
                            numeroCEmercante=request.args.get('numeroCEmercante'))
         tiposprocesso = get_tipos_processo(session)
@@ -45,7 +42,7 @@ def ovr_app(app):
                                           user_name=current_user.name)
         processo_form = ProcessoOVRForm(tiposprocesso=tiposprocesso)
         responsavel_form = ResponsavelOVRForm(responsaveis=responsaveis,
-                                              user_name=current_user.name)
+                                              responsavel=current_user.name)
         conhecimento = None
         ncms = []
         containers = []
@@ -195,6 +192,42 @@ def ovr_app(app):
                                listasovrs=listasovrs,
                                active_tab=active_tab)
 
+    @app.route('/relatorios', methods=['GET', 'POST'])
+    @login_required
+    def ver_relatorios():
+        session = app.config.get('dbsession')
+        lista_relatorios = get_relatorios(session)
+        linhas = []
+        sql = ''
+        today = datetime.date.today()
+        inicio = datetime.date(year=today.year, month=today.month, day=1)
+        filtro_form = FiltroRelatorioForm(
+            datainicio=inicio,
+            datafim=datetime.date.today(),
+            relatorios=lista_relatorios,
+        )
+        try:
+            if request.method == 'POST':
+                filtro_form = FiltroRelatorioForm(request.form,
+                                                  relatorios=lista_relatorios)
+                filtro_form.validate()
+                relatorio = get_relatorio(session, int(filtro_form.relatorio.data))
+                if relatorio is None:
+                    raise ValueError('Relatório %s não encontrado % ' %
+                                     filtro_form.relatorio.data)
+                sql = relatorio.sql
+                linhas = executa_relatorio(session, current_user.name,
+                                           relatorio,
+                                           filtrar_setor=False)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(type(err))
+            flash(str(err))
+        return render_template('relatorios.html',
+                               oform=filtro_form,
+                               linhas=linhas, sql=sql)
+
     @app.route('/responsavelovr', methods=['POST'])
     @login_required
     def atribuirresponsavel():
@@ -224,9 +257,9 @@ def ovr_app(app):
             responsavel_ovr_form = ResponsavelOVRForm(request.form)
             ovr_id = responsavel_ovr_form.ovr_id.data
             informa_lavratura_auto(session,
-                                 ovr_id=ovr_id,
-                                 responsavel=responsavel_ovr_form.responsavel.data
-                                 )
+                                   ovr_id=ovr_id,
+                                   responsavel=responsavel_ovr_form.responsavel.data
+                                   )
             return redirect(url_for('ovr', id=ovr_id))
         except Exception as err:
             logger.error(err, exc_info=True)

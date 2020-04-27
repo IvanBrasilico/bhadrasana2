@@ -71,6 +71,19 @@ class FiltroOVRForm(FlaskForm):
             self.recinto_id.choices.extend(kwargs.get('recintos'))
 
 
+
+class FiltroRelatorioForm(FlaskForm):
+    relatorio = SelectField('Relatórios disponiveis', default=-1)
+    datainicio = DateField(u'Data inicial da pesquisa')
+    datafim = DateField(u'Data final da pesquisa')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.relatorio.choices = [(None, 'Selecione')]
+        if kwargs.get('relatorios'):
+            self.relatorio.choices = [(None, 'Selecione'),
+                                          *kwargs.get('relatorios')]
+
 class HistoricoOVRForm(FlaskForm):
     id = IntegerField('ID')
     ovr_id = IntegerField('OVR')
@@ -80,13 +93,13 @@ class HistoricoOVRForm(FlaskForm):
                          default='')
 
     def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.tipoevento_id.choices = []
         if kwargs.get('tiposeventos'):
             self.tipoevento_id.choices = kwargs.get('tiposeventos')
         self.user_name.choices = []
         if kwargs.get('responsaveis'):
             self.user_name.choices.extend(kwargs.get('responsaveis'))
-        super().__init__(*args, **kwargs)
 
 
 class ProcessoOVRForm(FlaskForm):
@@ -108,10 +121,10 @@ class ResponsavelOVRForm(FlaskForm):
     responsavel = SelectField('CPF do Responsável')
 
     def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.responsavel.choices = []
         if kwargs.get('responsaveis'):
             self.responsavel.choices.extend(kwargs.get('responsaveis'))
-        super().__init__(*args, **kwargs)
 
 
 class TGOVRForm(FlaskForm):
