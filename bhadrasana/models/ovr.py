@@ -321,9 +321,9 @@ if __name__ == '__main__':  # pragma: no-cover
     if confirma == 'S':
         import sys
 
-        sys.path.insert(0, '.')
-        sys.path.insert(0, '../ajna_docs/commons')
-        sys.path.insert(0, '../virasana')
+        sys.path.append('.')
+        sys.path.append('../ajna_docs/commons')
+        sys.path.append('../virasana')
         from ajna_commons.flask.conf import SQL_URI
 
         engine = create_engine(SQL_URI)
