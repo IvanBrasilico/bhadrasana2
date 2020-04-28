@@ -32,11 +32,11 @@ infracoesencontradas_table = Table('ovr_infracoesencontradas', metadata,
                                    )
 
 lacresverificados_table = Table('ovr_lacresverificados', metadata,
-                                   Column('rvf_id', BigInteger(),
-                                          ForeignKey('ovr_verificacoesfisicas.id')),
-                                   Column('lacre_id', BigInteger(),
-                                          ForeignKey('ovr_lacres.id')),
-                                   )
+                                Column('rvf_id', BigInteger(),
+                                       ForeignKey('ovr_verificacoesfisicas.id')),
+                                Column('lacre_id', BigInteger(),
+                                       ForeignKey('ovr_lacres.id')),
+                                )
 
 
 class RVF(BaseRastreavel):
@@ -56,11 +56,10 @@ class RVF(BaseRastreavel):
     infracoesencontradas = relationship('Infracao',
                                         secondary=infracoesencontradas_table)
     lacresverificados = relationship('Lacre',
-                                        secondary=lacresverificados_table)
+                                     secondary=lacresverificados_table)
     datahora = Column(TIMESTAMP, index=True)
     last_modified = Column(DateTime, index=True,
                            onupdate=func.current_timestamp())
-
 
 
 class ImagemRVF(BaseRastreavel):
@@ -76,7 +75,7 @@ class ImagemRVF(BaseRastreavel):
     marca = relationship(Marca)
     ordem = Column(Integer(), index=True)
     rvf_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
-                      ForeignKey('ovr_verificacoesfisicas.id'))
+                    ForeignKey('ovr_verificacoesfisicas.id'))
     rvf = relationship(RVF)
 
 
@@ -84,6 +83,7 @@ class Infracao(Base):
     __tablename__ = 'ovr_infracoes'
     id = Column(BigInteger(), primary_key=True)
     nome = Column(VARCHAR(50), index=True)
+
 
 class Lacre(Base):
     __tablename__ = 'ovr_lacres'
@@ -97,6 +97,7 @@ if __name__ == '__main__':
                      'Esta ação pode apagar TODAS as tabelas. Confirma??')
     if confirma == 'S':
         from ajna_commons.flask.conf import SQL_URI
+
         engine = create_engine(SQL_URI)
         Session = sessionmaker(bind=engine)
         session = Session()

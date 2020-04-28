@@ -12,11 +12,13 @@ from ajna_commons.utils.images import ImageBytesTansformations
 from bhadrasana.forms.filtro_rvf import FiltroRVFForm
 from bhadrasana.forms.rvf import RVFForm, ImagemRVFForm
 from bhadrasana.models.ovrmanager import get_marcas, get_marcas_choice
-from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, get_ids_anexos_ordenado, \
+from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, \
+    get_ids_anexos_ordenado, \
     inclui_marca_encontrada, ressuscita_anexos_perdidos, \
     exclui_marca_encontrada, exclui_infracao_encontrada, inclui_infracao_encontrada, \
-    get_infracoes, lista_rvfovr, cadastra_imagemrvf, get_imagemrvf_or_none, cadastra_rvf, delete_imagemrvf, \
-    inclui_imagemrvf, get_imagemrvf_imagem_or_none, make_and_save_transformation, exclui_lacre_verificado, \
+    get_infracoes, lista_rvfovr, cadastra_imagemrvf, get_imagemrvf_or_none, \
+    cadastra_rvf, delete_imagemrvf, inclui_imagemrvf, get_imagemrvf_imagem_or_none, \
+    make_and_save_transformation, exclui_lacre_verificado, \
     inclui_lacre_verificado
 from bhadrasana.views import csrf, valid_file
 
@@ -72,15 +74,15 @@ def rvf_app(app):
                 rvf_form.ahora.data = request.form['ahora']
                 rvf_form.validate()
                 arvf = cadastra_rvf(session,
-                                   user_name=current_user.name,
-                                   params=dict(rvf_form.data.items()))
+                                    user_name=current_user.name,
+                                    params=dict(rvf_form.data.items()))
                 session.refresh(arvf)
                 return redirect(url_for('rvf', id=arvf.id))
             # ELSE
             ovr_id = request.args.get('ovr')
             if ovr_id is not None:
                 arvf = cadastra_rvf(session, ovr_id=ovr_id,
-                                   user_name=current_user.name)
+                                    user_name=current_user.name)
                 session.refresh(arvf)
                 return redirect(url_for('rvf', id=arvf.id))
             # ELSE

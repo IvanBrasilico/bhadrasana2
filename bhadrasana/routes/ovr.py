@@ -16,7 +16,8 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_ovr_filtro, gera_eventoovr, get_tipos_evento, \
     gera_processoovr, get_tipos_processo, lista_itemtg, get_itemtg, get_recintos, \
     cadastra_itemtg, get_usuarios, atribui_responsavel_ovr, lista_tgovr, get_tgovr, \
-    cadastra_tgovr, get_ovr_responsavel, importa_planilha, exporta_planilhaovr, get_tiposmercadoria_choice, \
+    cadastra_tgovr, get_ovr_responsavel, importa_planilha, exporta_planilhaovr, \
+    get_tiposmercadoria_choice, \
     inclui_flag_ovr, exclui_flag_ovr, get_flags, informa_lavratura_auto, get_relatorios, \
     executa_relatorio, get_relatorio
 from bhadrasana.models.ovrmanager import get_marcas_choice
@@ -80,7 +81,8 @@ def ovr_app(app):
                             containers = session.query(Item).filter(
                                 Item.numeroCEmercante == numeroCEmercante
                             ).all()
-                        except:
+                        except Exception as err:
+                            logger.info(err)
                             pass
                         ovr_form.id.data = ovr.id
                         listahistorico = ovr.historico
@@ -291,10 +293,10 @@ def ovr_app(app):
                     flash(mensagem)
                     print('Não é válido %s' % mensagem)
                 content = file.read()
-                _id = fs.put(content, filename=file.filename,
-                             metadata={'ovr': str(ovr_id),
-                                       'evento': str(evento.id),
-                                       'contentType': file.mimetype})
+                fs.put(content, filename=file.filename,
+                       metadata={'ovr': str(ovr_id),
+                                 'evento': str(evento.id),
+                                 'contentType': file.mimetype})
                 evento.anexo_filename = file.filename
                 session.add(evento)
                 session.commit()
