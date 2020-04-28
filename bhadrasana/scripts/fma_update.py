@@ -5,10 +5,10 @@ from datetime import datetime
 
 import click
 import requests
-from ajna_commons.flask.log import logger
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 
+from ajna_commons.flask.log import logger
 from bhadrasana.models.ovr import OVR
 
 DTE_USERNAME = os.environ.get('DTE_USERNAME')
@@ -29,13 +29,13 @@ try:
 except FileNotFoundError:
     recintos_list = []
 
-DTE_TOKEN = 'https://jupapi.org.br/api/sepes/Pesagem/token'
+DTE_URL_AUTH = 'https://jupapi.org.br/api/sepes/Pesagem/token'
 DTE_URL_FMA = 'https://jupapi.org.br/api/sepes/ConsultaFMA'
 
 
 def get_token_dte(username=DTE_USERNAME, password=DTE_PASSWORD):
     data = {'username': username, 'password': password, 'grant_type': 'password'}
-    r = requests.post(DTE_TOKEN, data=data)
+    r = requests.post(DTE_URL_AUTH, data=data)
     print(r.url)
     print(r.text)
     print(r.status_code)
@@ -86,7 +86,7 @@ def processa_fma(session, fma: dict):
     ovr.ano = fma['Ano_FMA']
     ovr.datahora = datetime.strptime(fma['Data_Emissao'], '%Y-%m-%d')
     ovr.recinto_id = int(fma['Cod_Recinto'])
-    ovr.setor_id = 4 # EQMAB
+    ovr.setor_id = 4  # EQMAB
     ovr.numeroCEmercante = fma['CE_Mercante']
     ovr.tipooperacao = 0
     ovr.fase = 0
@@ -121,7 +121,7 @@ def update(sql_uri, inicio, fim):
     Session = sessionmaker(bind=engine)
     session = Session()
     if inicio is None:
-        qry = session.query(func.max(OVR.datahora).label("last_date")
+        qry = session.query(func.max(OVR.datahora).label('last_date')
                             ).filter(OVR.tipooperacao == 0)
         res = qry.one()
         start = res.last_date

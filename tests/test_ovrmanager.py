@@ -1,6 +1,7 @@
 import sys
 import unittest
 from datetime import datetime
+from typing import List, Tuple
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -8,15 +9,19 @@ from sqlalchemy.orm import sessionmaker
 sys.path.append('.')
 
 from bhadrasana.models import Usuario, Setor
-from bhadrasana.models.ovr import metadata, OVR, TipoEventoOVR, Enumerado, Recinto
+from bhadrasana.models.ovr import metadata, OVR, Enumerado, Recinto, \
+    create_tiposevento
 
 from bhadrasana.models.ovrmanager import get_usuarios, cadastra_ovr, gera_eventoovr, \
-    gera_processoovr, cadastra_tgovr, atribui_responsavel_ovr, get_recintos, get_setores_filhos_recursivo
+    gera_processoovr, cadastra_tgovr, atribui_responsavel_ovr, get_recintos, \
+    get_setores_filhos_recursivo, get_tipos_evento
 
 engine = create_engine('sqlite://')
 Session = sessionmaker(bind=engine)
 session = Session()
 metadata.create_all(engine)
+
+create_tiposevento(session)
 
 
 class TestCase(unittest.TestCase):
@@ -26,15 +31,6 @@ class TestCase(unittest.TestCase):
 
     def debug(self) -> None:
         pass
-
-    def create_tipos_evento(self):
-        for fase in Enumerado.faseOVR():
-            tipo = TipoEventoOVR()
-            tipo.id = fase[0]
-            tipo.fase = fase[0]
-            tipo.descricao = 'Fase %s' % fase[1]
-            session.add(tipo)
-        session.commit()
 
     def create_usuario(self, cpf, nome):
         usuario = session.query(Usuario).filter(Usuario.cpf == cpf).one_or_none()
@@ -84,7 +80,6 @@ class TestCase(unittest.TestCase):
     def test_OVR_Evento(self):
         ovr = self.create_OVR_valido()
         session.refresh(ovr)
-        self.create_tipos_evento()
         params = {
             'motivo': 'teste',
             'tipoevento_id': 1,
@@ -141,19 +136,22 @@ class TestCase(unittest.TestCase):
         assert ovr.fase == 0
         usuario = self.create_usuario('123', 'user1')
         usuario2 = self.create_usuario('456', 'user2')
-        ovr = atribui_responsavel_ovr(session, ovr.id, usuario.cpf, 1)
+        ovr = atribui_responsavel_ovr(session, ovr.id, usuario.cpf)
         session.refresh(ovr)
         assert ovr.responsavel_cpf == usuario.cpf
         assert ovr.fase == 1
         # Atribui outro responsável
-        ovr = atribui_responsavel_ovr(session, ovr.id, usuario2.cpf, 1)
+        ovr = atribui_responsavel_ovr(session, ovr.id, usuario2.cpf)
         session.refresh(ovr)
         assert ovr.responsavel_cpf == usuario2.cpf
         eventos = ovr.historico
         assert len(eventos) == 2
         evento = eventos[0]
         assert evento.fase == 1
-        assert evento.motivo == usuario.cpf
+        assert evento.motivo == 'Anterior: Nenhum'
+        evento = eventos[1]
+        assert evento.fase == 1
+        assert evento.motivo == 'Anterior: ' + usuario.cpf
 
     def test_Setores_Filhos(self):
         setorpai = Setor()
@@ -189,6 +187,29 @@ class TestCase(unittest.TestCase):
         setores = get_setores_filhos_recursivo(session, setorpai)
         print([(setor.id, setor.nome) for setor in setores])
         assert len(setores) == 5
+
+
+    def assert_choices(self, tipos: List[Tuple[int, float]]):
+        assert tipos is not None
+        assert isinstance(tipos, list)
+        assert len(tipos) > 0
+        umtipoevento = tipos[0]
+        assert isinstance(umtipoevento, tuple)
+        assert isinstance(umtipoevento[0], int)
+        assert isinstance(umtipoevento[1], str)
+
+
+
+    def test_tiposevento(self):
+        tiposevento = get_tipos_evento(session)
+        self.assert_choices(tiposevento)
+        assert tiposevento is not None
+        assert isinstance(tiposevento, list)
+        assert len(tiposevento) > 0
+        umtipoevento = tiposevento[0]
+        assert isinstance(umtipoevento, tuple)
+        assert isinstance(umtipoevento[0], int)
+        assert isinstance(umtipoevento[1], str)
 
 
 if __name__ == '__main__':

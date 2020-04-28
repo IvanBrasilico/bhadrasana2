@@ -71,7 +71,6 @@ class FiltroOVRForm(FlaskForm):
             self.recinto_id.choices.extend(kwargs.get('recintos'))
 
 
-
 class FiltroRelatorioForm(FlaskForm):
     relatorio = SelectField('Relatórios disponiveis', default=-1)
     datainicio = DateField(u'Data inicial da pesquisa')
@@ -82,7 +81,8 @@ class FiltroRelatorioForm(FlaskForm):
         self.relatorio.choices = [(None, 'Selecione')]
         if kwargs.get('relatorios'):
             self.relatorio.choices = [(None, 'Selecione'),
-                                          *kwargs.get('relatorios')]
+                                      *kwargs.get('relatorios')]
+
 
 class HistoricoOVRForm(FlaskForm):
     id = IntegerField('ID')

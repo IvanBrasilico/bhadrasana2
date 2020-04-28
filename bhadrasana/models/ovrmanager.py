@@ -1,4 +1,5 @@
 from datetime import timedelta, datetime
+from typing import List, Tuple
 
 import pandas as pd
 from sqlalchemy import and_, text
@@ -9,20 +10,22 @@ from bhadrasana.models import Usuario, Setor, EBloqueado
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto, \
     get_usuario_logado
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
-    TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria, EventoEspecial, Flag, Relatorio
+    TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria, \
+    EventoEspecial, Flag, Relatorio
 
 
-def get_recintos(session):
+def get_recintos(session) -> List[Tuple[int, str]]:
     recintos = session.query(Recinto).all()
     recintos_list = [(recinto.id, recinto.nome) for recinto in recintos]
     return sorted(recintos_list, key=lambda x: x[1])
 
 
-def get_tipos_evento(session):
+def get_tipos_evento(session) -> List[Tuple[int, str]]:
     tiposeventos = session.query(TipoEventoOVR).filter(
-        TipoEventoOVR.eventoespecial == None).order_by(
+        TipoEventoOVR.eventoespecial.is_(None)).order_by(
         TipoEventoOVR.nome
     ).all()
+    print(tiposeventos)
     return [(tipo.id, tipo.nome) for tipo in tiposeventos]
 
 
@@ -57,8 +60,10 @@ def executa_relatorio(session, user_name: str, relatorio: Relatorio,
     rows = result_proxy.fetchall()
     if relatorio.id == 8:  # Do pivot for better visualization
         df_eventos_especiais = pd.DataFrame(rows, columns=names)
-        df_eventos_especiais = df_eventos_especiais.pivot_table(index=['Ano', 'Mês', 'cpf', 'nome'],
-                                                                columns='Ação', values='qtde').fillna(0).reset_index()
+        df_eventos_especiais = df_eventos_especiais.pivot_table(
+            index=['Ano', 'Mês', 'cpf', 'nome'],
+            columns='Ação', values='qtde'
+        ).fillna(0).reset_index()
         names = df_eventos_especiais.columns
         rows = df_eventos_especiais.values.tolist()
     result.append(names)
@@ -195,8 +200,12 @@ def atribui_responsavel_ovr(session, ovr_id: int,
         ovr = get_ovr(session, ovr_id)
         tipoevento = session.query(TipoEventoOVR).filter(
             TipoEventoOVR.eventoespecial == EventoEspecial.Responsavel.value).first()
+        if ovr.responsavel_cpf is None:
+            responsavel_anterior = 'Nenhum'
+        else:
+            responsavel_anterior = ovr.responsavel_cpf
         evento_params = {'tipoevento_id': tipoevento.id,
-                         'motivo': 'Anterior: ' + ovr.responsavel_cpf or 'Nenhum',  # Responsável anterior
+                         'motivo': 'Anterior: ' + responsavel_anterior,
                          'user_name': responsavel,  # Novo Responsável
                          'ovr_id': ovr.id
                          }
@@ -225,7 +234,7 @@ def informa_lavratura_auto(session, ovr_id: int,
         tipoevento = session.query(TipoEventoOVR).filter(
             TipoEventoOVR.eventoespecial == EventoEspecial.Autuação.value).first()
         evento_params = {'tipoevento_id': tipoevento.id,
-                         'motivo': 'Ficha encerrada, auto lavrado',  # Responsável anterior
+                         'motivo': 'Ficha encerrada, auto lavrado',
                          'user_name': responsavel,  # Novo Responsável
                          'ovr_id': ovr.id
                          }
@@ -458,9 +467,13 @@ def exporta_planilhaovr(session: Session, user_name: str, filename: str):
     :param user_name: Nome do Usuário
     :param filename: Nome do arquivo a gerar com caminho completo
     """
-    sql_processos = 'SELECT o.id, tipoprocesso_id, p.numero FROM ' + \
-                    ' ovr_ovrs o inner join ovr_processos p on o.id = p.ovr_id'
-    sql_ovrs = 'SELECT * FROM ovr_ovrs'
+    # FIXME: Bandit está erroneamente identificando como sql injection abaixo.
+    # Ignorando...
+    sql_processos = """
+        SELECT o.id, tipoprocesso_id, p.numero FROM
+        ovr_ovrs o inner join ovr_processos p on o.id = p.ovr_id
+        """
+    sql_ovrs = 'SELECT * FROM ovr_ovrs'  # nosec
     processsos = pd.read_sql(sql_processos, session.get_bind())
     processsos = processsos.pivot(index='id', columns='tipoprocesso_id',
                                   values='numero')

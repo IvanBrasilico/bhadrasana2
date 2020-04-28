@@ -22,6 +22,7 @@ def get_infracoes_choice(session):
     infracoes = session.query(Infracao).all()
     return [(infracao.id, infracao.nome) for infracao in infracoes]
 
+
 def get_rvfs_filtro(session, pfiltro):
     filtro = and_()
     if pfiltro.get('numeroCEmercante'):
