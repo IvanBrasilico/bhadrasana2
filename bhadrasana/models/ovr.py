@@ -2,14 +2,15 @@ import sys
 from datetime import datetime
 from enum import Enum
 
-sys.path.insert(0, '.')
-sys.path.insert(0, '../ajna_docs/commons')
-sys.path.insert(0, '../virasana')
-from bhadrasana.models import Base, BaseRastreavel
 from sqlalchemy import BigInteger, Column, DateTime, func, VARCHAR, Integer, \
     ForeignKey, Numeric, CHAR, Table, create_engine, Text
 from sqlalchemy.dialects.mysql import TIMESTAMP
 from sqlalchemy.orm import relationship, sessionmaker
+
+sys.path.insert(0, '.')
+sys.path.insert(0, '../ajna_docs/commons')
+sys.path.insert(0, '../virasana')
+from bhadrasana.models import Base, BaseRastreavel
 
 metadata = Base.metadata
 
@@ -121,13 +122,13 @@ class Enumerado:
         return unidadeMedida.index(sigla)
 
 
-
 flags_table = Table('ovr_flags_ovr', metadata,
-                                   Column('rvf_id', BigInteger(),
-                                          ForeignKey('ovr_ovrs.id')),
-                                   Column('flag_id', BigInteger(),
-                                          ForeignKey('ovr_flags.id')),
-                                   )
+                    Column('rvf_id', BigInteger(),
+                           ForeignKey('ovr_ovrs.id')),
+                    Column('flag_id', BigInteger(),
+                           ForeignKey('ovr_flags.id')),
+                    )
+
 
 class OVR(BaseRastreavel):
     __tablename__ = 'ovr_ovrs'
@@ -224,7 +225,7 @@ class EventoOVR(BaseRastreavel):
     tipoevento = relationship('TipoEventoOVR')
     fase = Column(Integer(), index=True, default=0)
     motivo = Column(VARCHAR(50), index=True)
-    anexo_filename = Column(VARCHAR(100), index=True)
+    anexo_filename = Column(VARCHAR(100), index=True)   # ID no Mongo
 
 
 class ProcessoOVR(BaseRastreavel):
@@ -315,6 +316,67 @@ class Relatorio(Base):
     nome = Column(VARCHAR(200), index=True, nullable=False)
     sql = Column(Text())
 
+
+def create_marcas(session):
+    """Cria testes para classe Marcas"""
+    for nome in ('Adidas',
+                 'Burberry',
+                 'Tag Hauer',
+                 'Nike',
+                 'Apple',
+                 'Disney'):
+        marca = Marca()
+        marca.nome = nome
+        session.add(marca)
+    session.commit()
+
+
+def create_tiposevento(session):
+    """Cria dados da tabela básica de Eventos"""
+    fases = [0, 1, 2, 2, 2, 2, 2, 1, 2, 1, 2, 3, 4]
+    for nome, fase in zip(tipoStatusOVR, fases):
+        evento = TipoEventoOVR()
+        evento.nome = nome
+        evento.fase = fase
+        session.add(evento)
+    for nome, especial, fase in tipoStatusOVREspecial:
+        evento = TipoEventoOVR()
+        evento.nome = nome
+        evento.fase = fase
+        evento.eventoespecial = especial
+        session.add(evento)
+    session.commit()
+
+
+def create_tipomercadoria(session):
+    """Cria dados da tabela básica de TipoMercadoria"""
+    tiposmercadoria = ['Alimentos',
+                       'Automotivo',
+                       'Bagagem',
+                       'Brinquedos',
+                       'Eletro-eletrônico'
+                       'Livro',
+                       'Informática',
+                       'Máquinas',
+                       'Papel',
+                       'Têxtil',
+                       'Químico',
+                       'Ferramenta',
+                       'Obras de metal',
+                       'Obras de borracha',
+                       'Obras de vidro',
+                       'Obras de plástico',
+                       'Bebidas',
+                       'Medicamento',
+                       'Sem valor comercial',
+                       'Container vazio']
+    for nome in tiposmercadoria:
+        tipomercadoria = TipoMercadoria()
+        tipomercadoria.nome = nome
+        session.add(tipomercadoria)
+    session.commit()
+
+
 if __name__ == '__main__':  # pragma: no-cover
     confirma = input('Revisar o código... '
                      'Esta ação pode apagar TODAS as tabelas. Confirma??')
@@ -329,84 +391,23 @@ if __name__ == '__main__':  # pragma: no-cover
         engine = create_engine(SQL_URI)
         Session = sessionmaker(bind=engine)
         session = Session()
-
         # Sair por segurança. Comentar linha abaixo para funcionar
         # sys.exit(0)
-
         # metadata.drop_all(engine)
-        metadata.create_all(engine, 
-                            [ 
-                                metadata.tables['ovr_flags'],
-                                metadata.tables['ovr_flags_ovr'],
+        metadata.create_all(engine,
+                            [
+                                # metadata.tables['ovr_flags'],
+                                # metadata.tables['ovr_flags_ovr'],
                             ])
-        sys.exit(0)
         metadata.drop_all(engine,
                           [
-                              #metadata.tables['ovr_tgvor_marcas'],
-                              #metadata.tables['ovr_itenstg'],
-                              #metadata.tables['ovr_eventos'],
-                              #metadata.tables['ovr_processos'],
-                              #metadata.tables['ovr_tgovr'],
+                              # metadata.tables['ovr_tgvor_marcas'],
+                              # metadata.tables['ovr_itenstg'],
+                              # metadata.tables['ovr_eventos'],
+                              # metadata.tables['ovr_processos'],
+                              # metadata.tables['ovr_tgovr'],
                           ])
-        metadata.drop_all(engine,
-                          [
-                              #metadata.tables['ovr_marcas'],
-                              #metadata.tables['ovr_tiposevento'],
-                              #metadata.tables['ovr_tiposprocesso'],
-                              #metadata.tables['ovr_tiposmercadoria']
-                          ])
-
-        sys.exit(0)
-        metadata.create_all(engine)
-        sys.exit(0)
-        """"
-        for nome in ('Adidas',
-                     'Burberry',
-                     'Tag Hauer',
-                     'Nike',
-                     'Apple',
-                     'Disney'):
-            marca = Marca()
-            marca.nome = nome
-            session.add(marca)
-        session.commit()
-        fases = [0, 1, 2, 2, 2, 2, 2, 1, 2, 1, 2, 3, 4]
-        for nome, fase in zip(tipoStatusOVR, fases):
-            evento = TipoEventoOVR()
-            evento.nome = nome
-            evento.fase = fase
-            session.add(evento)
-        for nome, especial, fase in tipoStatusOVREspecial:
-            evento = TipoEventoOVR()
-            evento.nome = nome
-            evento.fase = fase
-            evento.eventoespecial = especial
-            session.add(evento)
-        session.commit()
-
-        tiposmercadoria = ['Alimentos',
-                           'Automotivo',
-                           'Bagagem',
-                           'Brinquedos',
-                           'Eletro-eletrônico'
-                           'Livro',
-                           'Informática',
-                           'Máquinas',
-                           'Papel',
-                           'Têxtil',
-                           'Químico',
-                           'Ferramenta',
-                           'Obras de metal',
-                           'Obras de borracha',
-                           'Obras de vidro',
-                           'Obras de plástico',
-                           'Bebidas',
-                           'Medicamento',
-                           'Sem valor comercial',
-                           'Container vazio']
-        for nome in tiposmercadoria:
-            tipomercadoria = TipoMercadoria()
-            tipomercadoria.nome = nome
-            session.add(tipomercadoria)
-        session.commit()
-        """
+        # metadata.create_all(engine)
+        # create_tiposevento(session)
+        # create_marcas(session)
+        # create_tipomercadoria(session)
