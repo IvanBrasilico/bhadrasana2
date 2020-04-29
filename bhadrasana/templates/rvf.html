@@ -61,7 +61,7 @@
                                 {% for lacre in lacres_verificados %}
                                 <button type="button" class="btn btn-primary">
                                     {{ lacre.numero }} <span class="badge"
-                                                             onclick="exclui_lacre_encontrado({{oform.id.data}}, {{ lacre.id }})">X</span>
+                                                             onclick="exclui_lacre_verificado({{oform.id.data}}, {{ lacre.id }})">X</span>
                                 </button>
                                 {% endfor %}
                             </div>
