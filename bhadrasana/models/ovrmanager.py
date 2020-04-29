@@ -350,6 +350,10 @@ def get_usuarios(session):
     usuarios_list = [(usuario.cpf, usuario.nome) for usuario in usuarios]
     return sorted(usuarios_list, key=lambda x: x[1])
 
+def get_afrfb(session):
+    #TODO: Filtrar Usuários do Setor/ Unidade / AFRFB ???
+    return get_usuarios(session)
+
 
 def usuario_index(usuarios: list, pcpf: str) -> int:
     """Percorre a lista e retorna o índice do cpf ou -1
