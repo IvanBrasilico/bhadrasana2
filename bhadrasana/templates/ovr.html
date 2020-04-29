@@ -464,16 +464,18 @@
         "{{ flag.nome }}",
         {% endfor %}
         ];
+        $('#selector')
         $( "#flags" ).autocomplete({
-
           source: flags,
-
           select: function(event, ui){
             var newTag = $(this).val();
             $(this).val("");
             event.preventDefault();
-          }
-        });
+          },
+        minLength: 0}
+        ).focus(function(){
+        $(this).autocomplete('search', $(this).val());
+    });
     } );
     $('input#flags').bind('keydown', function(e) {
       if (e.keyCode == 13) {
