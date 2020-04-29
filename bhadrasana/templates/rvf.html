@@ -143,14 +143,18 @@
                         Enviar
                     </button>
                 </div>
-                <div class="col-sm-6">
+                <div class="col-sm-2">
+                    <button type="button" class="btn btn-default btn-primary form-control" onclick="update_ordem_arquivos()">
+                        Atualizar ordem
+                    </button>
                 </div>
+                <div class="col-sm-4"></div>
             </form>
         </div>
         <div class="row ">
             <div class="col-sm-12" id="div_imagens" border="1">
                 {% for anexo in anexos %}
-                <span class="badge">
+                <span class="badge" name="{{anexo}}">
                         <a href="ver_imagens_rvf?rvf_id={{oform.id.data}}&imagem={{anexo}}" target="_blank">
                             <img src="image/{{anexo}}?size=240,160" class="btn btn-primary" alt="{{ anexo }}"
                                  width="240px"
@@ -169,6 +173,12 @@
 </div>
 </div>
 {% endblock %} {% block scripts %} {{super()}}
+
+<script type="text/javascript">
+    $(document).ready(function(){
+        $("#div_imagens").sortable();
+    });
+</script>
 <script>
     function mostra_lacres(lacres_verificados){
         $('#div_lacres_verificados').empty();
@@ -363,6 +373,23 @@
             reader.readAsDataURL(file);
         }
         //
+    }
+    function update_ordem_arquivos(){
+        var qttd_arq = $("#div_imagens").children().length;
+        rvf_id = {{oform.id.data}}
+        /*var lista = []
+              $('#div_imagens').children('span').each(function(){
+                  lista.append($(this).attr("name"));
+              });
+
+
+        console.log(lista);
+        */
+        console.log(qttd_arq);
+        console.log(rvf_id);
+        $.getJSON('rvf_inclui_ordem_arquivos', {
+          rvf_id: rvf_id, qttd_arq: qttd_arq
+        });
     }
 
 </script> {% endblock %}

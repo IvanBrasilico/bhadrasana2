@@ -312,3 +312,12 @@ def make_and_save_transformation(mongodb, session, imagemrvf: ImagemRVF,
     session.commit()
     fs.delete(old_id)
     return new_id
+
+def inclui_nova_ordem_arquivo(session,imagem, ordem):
+    # print(f'inclui_nova_ordem_arquivo.... imagem.rvf_id: {imagem.rvf_id} e imagem: {imagem.imagem}')
+    arquivo = session.query(ImagemRVF).filter(
+        ImagemRVF.rvf_id == imagem.rvf_id).filter(
+        ImagemRVF.imagem == imagem.imagem).one_or_none()
+    # print(f'ordem antes: {arquivo.ordem}')
+    arquivo.ordem = ordem
+    # print(f'ordem depois: {arquivo.ordem}')
