@@ -142,7 +142,7 @@ class TGOVRForm(FlaskForm):
                          places=2)
     tipomercadoria_id = SelectField('Unidade de Medida', default=0)
     numerotg = StringField(u'Número do Termo de Guarda', default='')
-    afrfb = StringField(u'CPF do AFRFB Responsável', default='')
+    afrfb = SelectField(u'CPF do AFRFB Responsável')
     identificacao = StringField(u'Identificação(marca) da carga', default='')
     observacoes = TextAreaField(u'Observações',
                                 render_kw={'rows': 2, 'cols': 100},
@@ -154,6 +154,9 @@ class TGOVRForm(FlaskForm):
         self.tipomercadoria_id.choices = []
         if kwargs.get('tiposmercadoria'):
             self.tipomercadoria_id.choices.extend(kwargs.get('tiposmercadoria'))
+        self.afrfb.choices = []
+        if kwargs.get('afrfb'):
+            self.afrfb.choices.extend(kwargs.get('afrfb'))
 
 
 class ItemTGForm(FlaskForm):
