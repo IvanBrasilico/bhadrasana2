@@ -155,8 +155,8 @@ class TGOVRForm(FlaskForm):
         if kwargs.get('tiposmercadoria'):
             self.tipomercadoria_id.choices.extend(kwargs.get('tiposmercadoria'))
         self.afrfb.choices = []
-        if kwargs.get('afrfb'):
-            self.afrfb.choices.extend(kwargs.get('afrfb'))
+        if kwargs.get('lista_afrfb'):
+            self.afrfb.choices.extend(kwargs.get('lista_afrfb'))
 
 
 class ItemTGForm(FlaskForm):

@@ -19,7 +19,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     cadastra_tgovr, get_ovr_responsavel, importa_planilha, exporta_planilhaovr, \
     get_tiposmercadoria_choice, \
     inclui_flag_ovr, exclui_flag_ovr, get_flags, informa_lavratura_auto, get_relatorios, \
-    executa_relatorio, get_relatorio
+    executa_relatorio, get_relatorio, get_afrfb
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.rvfmanager import lista_rvfovr
 from bhadrasana.views import get_user_save_path, valid_file
@@ -329,14 +329,14 @@ def ovr_app(app):
             listatgovr = lista_tgovr(session, ovr_id)
             marcas = get_marcas_choice(session)
             tipos = get_tiposmercadoria_choice(session)
-            afrfb = get_afrfb(session)
+            lista_afrfb = get_afrfb(session)
             if item_id:
                 tgovr = get_tgovr(session, item_id)
                 oform = TGOVRForm(**tgovr.__dict__, marcas=marcas,
-                                  tiposmercadoria=tipos, afrfb=afrfb)
+                                  tiposmercadoria=tipos, lista_afrfb=lista_afrfb)
             else:
                 oform = TGOVRForm(ovr_id=ovr_id, marcas=marcas,
-                                  tiposmercadoria=tipos, afrfb=afrfb)
+                                  tiposmercadoria=tipos, lista_afrfb=lista_afrfb)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
