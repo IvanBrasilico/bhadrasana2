@@ -273,8 +273,8 @@ class TGOVR(BaseRastreavel):
     numerolote = Column(VARCHAR(20), index=True, nullable=False)
     descricao = Column(VARCHAR(200), index=True, nullable=False)
     unidadedemedida = Column(Integer(), index=True)
-    qtde = Column(Numeric(10, 4))
-    valor = Column(Numeric(10, 4))
+    qtde = Column(Numeric(10, 2))
+    valor = Column(Numeric(10, 2))
     marcas = relationship('Marca',
                           secondary=marcas_table)
     tipomercadoria_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
@@ -298,9 +298,9 @@ class ItemTG(BaseRastreavel):
     tg = relationship('TGOVR', back_populates='itenstg')
     numero = Column(Integer, index=True, nullable=False)
     descricao = Column(VARCHAR(200), index=True, nullable=False)
-    qtde = Column(Numeric(10, 4))
+    qtde = Column(Numeric(10, 2))
     unidadedemedida = Column(Integer(), index=True)
-    valor = Column(Numeric(10, 4), index=True)
+    valor = Column(Numeric(10, 2), index=True)
     ncm = Column(VARCHAR(8), index=True)
     marca_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                       ForeignKey('ovr_marcas.id'))

@@ -25,12 +25,12 @@
                                onkeydown="do_update(event, {{itemtg.id}}, 'descricao', this.value)">
                     </td>
                     <td style="max-width: 40px;">
-                        <input class="form-control" type="text"
+                        <input class="form-control" type="number" step="any"
                                value="{{ itemtg.qtde }}"
                                onkeydown="do_update(event, {{itemtg.id}}, 'qtde', this.value)">
                     </td>
                     <td style="max-width: 50px;">{{ itemtg.get_unidadedemedida() }}</td>
-                    <td style="max-width: 60px;"><input class="form-control" type="text"
+                    <td style="max-width: 60px;"><input class="form-control" type="number" step="any"
                                                         value="{{ itemtg.valor }}"
                                                         onkeydown="do_update(event, {{itemtg.id}}, 'valor', this.value)">
                     </td>
