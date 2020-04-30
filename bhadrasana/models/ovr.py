@@ -181,7 +181,7 @@ class OVR(BaseRastreavel):
 
 class Flag(Base):
     __tablename__ = 'ovr_flags'
-    id = Column(BigInteger(), primary_key=True)
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
     nome = Column(VARCHAR(100), index=True)
 
 
@@ -225,7 +225,7 @@ class EventoOVR(BaseRastreavel):
     tipoevento = relationship('TipoEventoOVR')
     fase = Column(Integer(), index=True, default=0)
     motivo = Column(VARCHAR(50), index=True)
-    anexo_filename = Column(VARCHAR(100), index=True)   # ID no Mongo
+    anexo_filename = Column(VARCHAR(100), index=True)  # ID no Mongo
 
 
 class ProcessoOVR(BaseRastreavel):
@@ -328,6 +328,28 @@ def create_marcas(session):
         marca = Marca()
         marca.nome = nome
         session.add(marca)
+    session.commit()
+
+
+def create_tiposprocesso(session):
+    """Cria testes para classe TipoProcesso"""
+    for descricao in ('Dossiê',
+                      'Auto de infração',
+                      'RFPFP'):
+        tipo = TipoProcessoOVR()
+        tipo.descricao = descricao
+        session.add(tipo)
+    session.commit()
+
+
+def create_flags(session):
+    """Cria testes para classe TipoProcesso"""
+    for nome in ('Dossiê',
+                 'Auto de infração',
+                 'RFPFP'):
+        flag = Flag()
+        flag.nome = nome
+        session.add(flag)
     session.commit()
 
 
