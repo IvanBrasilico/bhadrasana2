@@ -29,17 +29,17 @@ def get_tipos_evento(session) -> List[Tuple[int, str]]:
     return [(tipo.id, tipo.nome) for tipo in tiposeventos]
 
 
-def get_tipos_processo(session):
+def get_tipos_processo(session) -> List[Tuple[int, str]]:
     tiposprocesso = session.query(TipoProcessoOVR).all()
     return [(tipo.id, tipo.descricao) for tipo in tiposprocesso]
 
 
-def get_relatorios(session):
+def get_relatorios(session) -> List[Tuple[int, str]]:
     relatorios = session.query(Relatorio).order_by(Relatorio.nome).all()
     return [(relatorio.id, relatorio.nome) for relatorio in relatorios]
 
 
-def get_relatorio(session, relatorio_id: int):
+def get_relatorio(session, relatorio_id: int) -> List[Relatorio]:
     return session.query(Relatorio).filter(Relatorio.id == relatorio_id).one_or_none()
 
 
@@ -107,7 +107,7 @@ def get_ovr(session, ovr_id: int = None) -> OVR:
     return ovr
 
 
-def get_ovr_responsavel(session, user_name: str):
+def get_ovr_responsavel(session, user_name: str) -> List[OVR]:
     return session.query(OVR).filter(OVR.responsavel_cpf == user_name).all()
 
 
@@ -148,12 +148,12 @@ def get_ovr_filtro(session, user_name: str, pfiltro: dict = None, filtrar_setor=
     return [ovr for ovr in ovrs]
 
 
-def get_flags(session):
+def get_flags(session) -> List[Flag]:
     flags = session.query(Flag).all()
     return [flag for flag in flags]
 
 
-def get_flags_choice(session):
+def get_flags_choice(session) -> List[Tuple[int, str]]:
     flags = session.query(Flag).all()
     return [(flag.id, flag.nome) for flag in flags]
 
@@ -472,8 +472,6 @@ def exporta_planilhaovr(session: Session, user_name: str, filename: str):
     :param user_name: Nome do Usuário
     :param filename: Nome do arquivo a gerar com caminho completo
     """
-    # FIXME: Bandit está erroneamente identificando como sql injection abaixo.
-    # Ignorando...
     sql_processos = """
         SELECT o.id, tipoprocesso_id, p.numero FROM
         ovr_ovrs o inner join ovr_processos p on o.id = p.ovr_id
