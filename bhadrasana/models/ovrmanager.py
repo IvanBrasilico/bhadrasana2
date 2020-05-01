@@ -11,7 +11,7 @@ from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto
     get_usuario_logado
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
     TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria, \
-    EventoEspecial, Flag, Relatorio
+    EventoEspecial, Flag, Relatorio, RoteiroOperacaoOVR
 
 
 def get_recintos(session) -> List[Tuple[int, str]]:
@@ -425,6 +425,10 @@ def get_marcas(session):
 def get_marcas_choice(session):
     marcas = session.query(Marca).all()
     return [(marca.id, marca.nome) for marca in marcas]
+
+def get_itens_roteiro(session, tipooperacao: int)-> List[RoteiroOperacaoOVR]:
+    return session.query(RoteiroOperacaoOVR)\
+        .filter(RoteiroOperacaoOVR.tipooperacao == tipooperacao).all()
 
 
 def get_tiposmercadoria_choice(session):
