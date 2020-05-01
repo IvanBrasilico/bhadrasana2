@@ -206,6 +206,8 @@ class RoteiroOperacaoOVR(Base):
                            ForeignKey('ovr_tiposevento.id'))
     tipoevento = relationship('TipoEventoOVR')
     descricao = Column(VARCHAR(400), index=True)
+    ordem = Column(Integer(), index=True)
+    quem = Column(VARCHAR(10), index=True)
 
 
 class Recinto(Base):
