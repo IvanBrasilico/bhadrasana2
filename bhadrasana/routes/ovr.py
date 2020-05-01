@@ -1,7 +1,12 @@
 import datetime
 import os
 from _collections import defaultdict
+from decimal import Decimal
 
+import numpy as np
+import pandas as pd
+import plotly
+import plotly.graph_objs as go
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
 from gridfs import GridFS
@@ -201,6 +206,7 @@ def ovr_app(app):
         lista_relatorios = get_relatorios(session)
         linhas = []
         sql = ''
+        plot = ''
         today = datetime.date.today()
         inicio = datetime.date(year=today.year, month=today.month, day=1)
         filtro_form = FiltroRelatorioForm(
@@ -223,6 +229,7 @@ def ovr_app(app):
                                            filtro_form.datainicio.data,
                                            filtro_form.datafim.data,
                                            filtrar_setor=False)
+                plot = bar_plotly(linhas, relatorio.nome)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
@@ -230,7 +237,9 @@ def ovr_app(app):
             flash(str(err))
         return render_template('relatorios.html',
                                oform=filtro_form,
-                               linhas=linhas, sql=sql)
+                               linhas=linhas,
+                               sql=sql,
+                               plot=plot)
 
     @app.route('/responsavelovr', methods=['POST'])
     @login_required
@@ -474,3 +483,43 @@ def ovr_app(app):
         session = app.config.get('dbsession')
         delete_objeto(session, classname, id)
         return jsonify({'msg': 'Excluído'}), 200
+
+    @app.route('/bar_plotly')
+    @login_required
+    def bar_plotly(linhas, nome):
+        """Renderiza gráfico no plotly e serializa via HTTP/HTML."""
+        meses = {1: 'Jan', 2: 'Fev', 3: 'Mar', 4: 'Abr', 5: 'Mai', 6: 'Jun',
+                 7: 'Jul', 8: 'Ago', 9: 'Set', 10: 'Out', 11: 'Nov', 12: 'Dez'}
+        # Converter decimal para float
+        linhas_float = []
+        for linha in linhas[1:]:
+            linha_float = []
+            for item in linha:
+                if isinstance(item, Decimal):
+                    linha_float.append(float(item))
+                else:
+                    linha_float.append(item)
+            linhas_float.append(linha_float)
+        df = pd.DataFrame(linhas_float, columns=linhas[0])
+        df['strmes'] = df['Mês'].apply(lambda x: meses[int(x)])
+        df['Ano e Mês'] = df['Ano'].astype(str) + ' ' + df['strmes'].astype(str)
+        df = df.drop(columns=['Ano', 'Mês', 'strmes'])
+        df = df.groupby(['Ano e Mês']).sum()
+        df = df.reset_index()
+        # print(linhas)
+        # print(df.head())
+        # print(df.dtypes)
+        x = df[['Ano e Mês']]
+        df = df.drop(columns=['Ano e Mês'])
+        numeric_columns = df.select_dtypes(include=np.number).columns.tolist()
+        data = [go.Bar(x=x, y=df[column], name=column)
+                for column in numeric_columns]
+        plot = plotly.offline.plot({
+            'data': data,
+            'layout': go.Layout(title=nome + ' soma mensal',
+                                xaxis=go.layout.XAxis(type='category'))
+        },
+            show_link=False,
+            output_type='div',
+            image_width=400)
+        return plot
