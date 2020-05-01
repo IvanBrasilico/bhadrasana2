@@ -486,40 +486,44 @@ def ovr_app(app):
 
     @app.route('/bar_plotly')
     @login_required
-    def bar_plotly(linhas, nome):
+    def bar_plotly(linhas: list, nome: str) -> str:
         """Renderiza gráfico no plotly e serializa via HTTP/HTML."""
         meses = {1: 'Jan', 2: 'Fev', 3: 'Mar', 4: 'Abr', 5: 'Mai', 6: 'Jun',
                  7: 'Jul', 8: 'Ago', 9: 'Set', 10: 'Out', 11: 'Nov', 12: 'Dez'}
-        # Converter decimal para float
-        linhas_float = []
-        for linha in linhas[1:]:
-            linha_float = []
-            for item in linha:
-                if isinstance(item, Decimal):
-                    linha_float.append(float(item))
-                else:
-                    linha_float.append(item)
-            linhas_float.append(linha_float)
-        df = pd.DataFrame(linhas_float, columns=linhas[0])
-        df['strmes'] = df['Mês'].apply(lambda x: meses[int(x)])
-        df['Ano e Mês'] = df['Ano'].astype(str) + ' ' + df['strmes'].astype(str)
-        df = df.drop(columns=['Ano', 'Mês', 'strmes'])
-        df = df.groupby(['Ano e Mês']).sum()
-        df = df.reset_index()
-        # print(linhas)
-        # print(df.head())
-        # print(df.dtypes)
-        x = df[['Ano e Mês']]
-        df = df.drop(columns=['Ano e Mês'])
-        numeric_columns = df.select_dtypes(include=np.number).columns.tolist()
-        data = [go.Bar(x=x, y=df[column], name=column)
-                for column in numeric_columns]
-        plot = plotly.offline.plot({
-            'data': data,
-            'layout': go.Layout(title=nome + ' soma mensal',
-                                xaxis=go.layout.XAxis(type='category'))
-        },
-            show_link=False,
-            output_type='div',
-            image_width=400)
-        return plot
+        try:
+            # Converter decimal para float
+            linhas_float = []
+            for linha in linhas[1:]:
+                linha_float = []
+                for item in linha:
+                    if isinstance(item, Decimal):
+                        linha_float.append(float(item))
+                    else:
+                        linha_float.append(item)
+                linhas_float.append(linha_float)
+            df = pd.DataFrame(linhas_float, columns=linhas[0])
+            df['strmes'] = df['Mês'].apply(lambda x: meses[int(x)])
+            df['Ano e Mês'] = df['Ano'].astype(str) + ' ' + df['strmes'].astype(str)
+            df = df.drop(columns=['Ano', 'Mês', 'strmes'])
+            df = df.groupby(['Ano e Mês']).sum()
+            df = df.reset_index()
+            # print(linhas)
+            # print(df.head())
+            # print(df.dtypes)
+            x = df[['Ano e Mês']]
+            df = df.drop(columns=['Ano e Mês'])
+            numeric_columns = df.select_dtypes(include=np.number).columns.tolist()
+            data = [go.Bar(x=x, y=df[column], name=column)
+                    for column in numeric_columns]
+            plot = plotly.offline.plot({
+                'data': data,
+                'layout': go.Layout(title=nome + ' soma mensal',
+                                    xaxis=go.layout.XAxis(type='category'))
+            },
+                show_link=False,
+                output_type='div',
+                image_width=400)
+            return plot
+        except Exception as err:
+            logger.log(err, exc_info=True)
+            return ''
