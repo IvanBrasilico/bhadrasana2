@@ -46,11 +46,12 @@ tipoStatusOVR = [
 
 tipoOperacao = [
     'Mercadoria Abandonada',
-    'Análise de risco',
-    'Operação',
-    'Denúncia',
-    'Demanda interna',
-    'Demanda externa'
+    'Análise de risco na importação',
+    'Operação / análise de risco na exportação',
+    'Denúncia na importação',
+    'Denúncia na exportação',
+    'Demanda externa',
+    'Registro de operação de outros órgãos/países'
 ]
 
 faseOVR = [
@@ -194,6 +195,18 @@ class TipoEventoOVR(Base):
     create_date = Column(TIMESTAMP, index=True,
                          server_default=func.current_timestamp())
     eventoespecial = Column(Integer(), index=True)
+
+
+
+class RoteiroOperacaoOVR(Base):
+    """Classe para confecção de roteiros/checklists por tipo de operação."""
+    __tablename__ = 'ovr_roteiros'
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
+    tipooperacao = Column(Integer(), index=True, default=0)
+    tipoevento_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
+                           ForeignKey('ovr_tiposevento.id'))
+    tipoevento = relationship('TipoEventoOVR')
+    descricao = Column(VARCHAR(400), index=True)
 
 
 class Recinto(Base):
@@ -376,7 +389,7 @@ def create_tipomercadoria(session):
                        'Automotivo',
                        'Bagagem',
                        'Brinquedos',
-                       'Eletro-eletrônico'
+                       'Eletro-eletrônico',
                        'Livro',
                        'Informática',
                        'Máquinas',
@@ -418,6 +431,7 @@ if __name__ == '__main__':  # pragma: no-cover
         # metadata.drop_all(engine)
         metadata.create_all(engine,
                             [
+                                metadata.tables['ovr_roteiros']
                                 # metadata.tables['ovr_flags'],
                                 # metadata.tables['ovr_flags_ovr'],
                             ])
@@ -433,3 +447,5 @@ if __name__ == '__main__':  # pragma: no-cover
         # create_tiposevento(session)
         # create_marcas(session)
         # create_tipomercadoria(session)
+        # create_flags(session)
+        # create_tiposprocesso(session)
