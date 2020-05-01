@@ -428,7 +428,8 @@ def get_marcas_choice(session):
 
 def get_itens_roteiro(session, tipooperacao: int)-> List[RoteiroOperacaoOVR]:
     return session.query(RoteiroOperacaoOVR)\
-        .filter(RoteiroOperacaoOVR.tipooperacao == tipooperacao).all()
+        .filter(RoteiroOperacaoOVR.tipooperacao == tipooperacao)\
+        .order_by(RoteiroOperacaoOVR.ordem).all()
 
 
 def get_tiposmercadoria_choice(session):
