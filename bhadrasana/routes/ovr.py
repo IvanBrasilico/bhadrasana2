@@ -24,7 +24,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     cadastra_tgovr, get_ovr_responsavel, importa_planilha, exporta_planilhaovr, \
     get_tiposmercadoria_choice, \
     inclui_flag_ovr, exclui_flag_ovr, get_flags, informa_lavratura_auto, get_relatorios, \
-    executa_relatorio, get_relatorio, get_afrfb
+    executa_relatorio, get_relatorio, get_afrfb, get_itens_roteiro
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.rvfmanager import lista_rvfovr
 from bhadrasana.views import get_user_save_path, valid_file
@@ -53,6 +53,7 @@ def ovr_app(app):
         ncms = []
         containers = []
         flags_ovr = []
+        itens_roteiro = []
         ovr = OVR()
         qtdervfs = 0
         try:
@@ -93,6 +94,14 @@ def ovr_app(app):
                         listahistorico = ovr.historico
                         processos = ovr.processos
                         flags_ovr = ovr.flags
+                        roteiros = get_itens_roteiro(session, ovr.tipooperacao)
+                        ids_evento_na_ovr = set([evento.tipoevento.id for evento in ovr.historico])
+                        for roteiro in roteiros:
+                            item_roteiro = (roteiro.descricao,
+                                            roteiro.tipoevento.nome,
+                                            roteiro.tipoevento_id in ids_evento_na_ovr)
+                            itens_roteiro.append(item_roteiro)
+                        print(itens_roteiro)
                         qtdervfs = len(lista_rvfovr(session, ovr_id))
         except Exception as err:
             logger.error(err, exc_info=True)
@@ -112,7 +121,8 @@ def ovr_app(app):
                                listahistorico=listahistorico,
                                processos=processos,
                                flags=flags,
-                               flags_ovr=flags_ovr)
+                               flags_ovr=flags_ovr,
+                               itens_roteiro=itens_roteiro)
 
     @app.route('/ovr/<id>', methods=['POST', 'GET'])
     @login_required

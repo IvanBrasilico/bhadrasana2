@@ -11,6 +11,7 @@
                     </div>
                     <div class="col-sm-2">
                         <label for="tipooperacao">Tipo de Operação</label>
+                        <span id="btn_roteiro" data-toggle="modal" data-target="#roteiro">(?)</span>
                     </div>
                     <div class="col-sm-3">
                         <label for="numero">Recinto</label>
@@ -423,6 +424,30 @@
 </div>
 {% endif %}
 {% endfor %}
+<div class="modal fade" id="roteiro" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                {% if itens_roteiro %}
+                    <ol>
+                    {% for roteirooperacao in itens_roteiro %}
+                        <li style="font-size:20px">
+                            {% if roteirooperacao[2] %} <del> {% endif %}
+                            {{ roteirooperacao[0] }} ({{roteirooperacao[1]}})
+                            {% if roteirooperacao[2] %} </del>{% endif %}
+                        </li>
+                    {% endfor %}
+                    </ol>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %} {% block scripts %} {{super()}}
 <script>
     function change_anexo(ev){
