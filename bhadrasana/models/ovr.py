@@ -197,7 +197,6 @@ class TipoEventoOVR(Base):
     eventoespecial = Column(Integer(), index=True)
 
 
-
 class RoteiroOperacaoOVR(Base):
     """Classe para confecção de roteiros/checklists por tipo de operação."""
     __tablename__ = 'ovr_roteiros'
