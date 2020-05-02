@@ -426,10 +426,23 @@ def get_marcas_choice(session):
     marcas = session.query(Marca).all()
     return [(marca.id, marca.nome) for marca in marcas]
 
-def get_itens_roteiro(session, tipooperacao: int)-> List[RoteiroOperacaoOVR]:
-    return session.query(RoteiroOperacaoOVR)\
-        .filter(RoteiroOperacaoOVR.tipooperacao == tipooperacao)\
+
+def get_roteirosoperacao(session, tipooperacao: int) -> List[RoteiroOperacaoOVR]:
+    return session.query(RoteiroOperacaoOVR) \
+        .filter(RoteiroOperacaoOVR.tipooperacao == tipooperacao) \
         .order_by(RoteiroOperacaoOVR.ordem).all()
+
+
+def get_itens_roteiro_checked(session, ovr: OVR) -> List[Tuple[str, str, bool]]:
+    roteiros = get_roteirosoperacao(session, ovr.tipooperacao)
+    ids_evento_na_ovr = set([evento.tipoevento.id for evento in ovr.historico])
+    itens_roteiro = []
+    for roteiro in roteiros:
+        item_roteiro = (roteiro.descricao,
+                        roteiro.tipoevento.nome,
+                        roteiro.tipoevento_id in ids_evento_na_ovr)
+        itens_roteiro.append(item_roteiro)
+    return itens_roteiro
 
 
 def get_tiposmercadoria_choice(session):
