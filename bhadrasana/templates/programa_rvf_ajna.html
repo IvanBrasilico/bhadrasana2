@@ -1,0 +1,76 @@
+{% extends "layout.html" %} {% block content %}{{super()}}
+<div id="main" class="container-fluid">
+    <div id="top" class="row">
+        <div class="col-sm-8">
+            {% if conhecimento %}
+            Conhecimento: {{ conhecimento.numeroCEmercante }}<br>
+            Embarcador: {{ conhecimento.embarcador }}<br>
+            Consignatário: {{ conhecimento.consignatario }}<br>
+            Descrição Mercadoria:{{ conhecimento.descricao }}<br>
+            {% endif %}
+        </div>
+        <div class="col-sm-4">
+            <br>&nbsp;
+            <h4>{{ containers|length }} contêineres declarados no CE</h4>
+            <h4>{{ imagens|length }} imagens na lista</h4>
+        </div>
+    </div>
+    <div id="list" class="row">
+    <div class="col-sm-1">
+    </div>
+    <div class="table table-responsive col-sm-10">
+        <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive">
+            <thead>
+                <tr>
+                    <td width="300" style="text-align:left">Contêineres</td>
+                    <td>Imagem contêiner</td>
+                    <td>Z Score</td>
+                </tr>
+            </thead>
+            {% for imagem in imagens %}
+            <tr>
+                <td width="300" style="text-align:left">
+                    Conteiner nº <b>{{ imagem['container'] }}
+                </td>
+                <td>
+                        <img src="/virasana/image/{{ imagem['_id'] }}?contrast={{ contrast }}&color={{ color }}" alt="Sem imagem" width="auto" height="auto"
+                             style="border: 1px solid #000; max-width:800px; max-height:320px;"
+                        onmouseover="showMsg(this, '{{ imagem['_id'] }}')" onmouseout="clearMsg(this)"
+                        />
+                </td>
+                <td>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div class="col-sm-1">
+        &nbsp;
+    </div>
+</div>
+<div id="bottom" class="row">
+    AJNA - Receita Federal do Brasil 2017
+</div>
+</div>
+<!-- /#main -->
+{% endblock %} {% block scripts %} {{super()}}
+<script type="text/javascript">
+
+    function showMsg(img,_id) {
+        xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4) {
+                if (this.status == 200) {
+                    img.title = this.responseText;
+                }
+            }
+        }
+        xhttp.open("GET", "/virasana/summary/" + _id, true);
+        xhttp.send();
+    }
+    function clearMsg(img) {
+        img.title = "";
+    }
+
+
+</script> {% endblock %}

@@ -1,6 +1,7 @@
 import base64
 from datetime import date, timedelta
 
+import requests
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
 from gridfs import GridFS
@@ -21,6 +22,7 @@ from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, \
     make_and_save_transformation, exclui_lacre_verificado, \
     inclui_lacre_verificado, get_imagemrvf, inclui_nova_ordem_arquivo
 from bhadrasana.views import csrf, valid_file
+from virasana.integracao.mercante.mercantealchemy import Conhecimento, Item
 
 
 def rvf_app(app):
@@ -367,3 +369,41 @@ def rvf_app(app):
 
         return redirect(url_for('rvf',
                                 rvf_id=oform.rvf_id.data))
+
+    @app.route('/programa_rvf_ajna/<numero>')
+    @login_required
+    def cemercante(numero):
+        """Tela para exibição de um CE Mercante do GridFS.
+
+        Exibe o CE Mercante e os arquivos associados a ele.
+        """
+        session = app.config.get('dbsession')
+        imagens = {}
+        conhecimento = session.query(Conhecimento).filter(
+            Conhecimento.numeroCEmercante == numero).one_or_none()
+        containers = list(session.query(Item).filter(
+            Item.numeroCEmercante == numero).all())
+        VIRASANA_URL = 'https://localhost/virasana/'
+        params = {'query':
+                      {'metadata.carga.conhecimento.conhecimento': numero,
+                       'metadata.contentType': 'image/jpeg'
+                       },
+                  'projection':
+                      {'metadata.numeroinformado': 1,
+                       'metadata.dataescaneamento': 1}
+                  }
+        try:
+            r = requests.get(VIRASANA_URL + "grid_data",
+                             json=params,
+                             verify=False)
+            imagens_json = r.json()
+            imagens = {item['metadata']['numeroinformado']: str(item['_id'])
+                       for item in imagens_json}
+        except Exception as err:
+            flash(str(err))
+            logger.error(err, exc_info=True)
+            logger.error(str(r.status_code) + ' ' + r.text)
+        return render_template('programa_rvf_ajna.html',
+                               conhecimento=conhecimento,
+                               containers=containers,
+                               imagens=imagens)
