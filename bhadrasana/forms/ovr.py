@@ -23,6 +23,7 @@ class OVRForm(FlaskForm):
     numerodeclaracao = StringField(u'DUE ou DUIMP ou DTA',
                                    default='')
     adata = DateField(u'Data')
+    dataentrada = DateField(u'Data')
     ahora = TimeField(u'Horário')
 
     def __init__(self, *args, **kwargs):
