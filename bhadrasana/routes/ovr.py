@@ -484,12 +484,11 @@ def ovr_app(app):
         delete_objeto(session, classname, id)
         return jsonify({'msg': 'Excluído'}), 200
 
-    @app.route('/bar_plotly')
-    @login_required
     def bar_plotly(linhas: list, nome: str) -> str:
         """Renderiza gráfico no plotly e serializa via HTTP/HTML."""
-        meses = {1: 'Jan', 2: 'Fev', 3: 'Mar', 4: 'Abr', 5: 'Mai', 6: 'Jun',
-                 7: 'Jul', 8: 'Ago', 9: 'Set', 10: 'Out', 11: 'Nov', 12: 'Dez'}
+        meses = {1: 'Janeiro', 2: 'Fevereiro', 3: 'Março', 4: 'Abril',
+                 5: 'Maio', 6: 'Junho', 7: 'Julho', 8: 'Agosto',
+                 9: 'Setembro', 10: 'Outubro', 11: 'Novembro', 12: 'Dezembro'}
         try:
             # Converter decimal para float
             linhas_float = []
@@ -503,17 +502,17 @@ def ovr_app(app):
                 linhas_float.append(linha_float)
             df = pd.DataFrame(linhas_float, columns=linhas[0])
             df['strmes'] = df['Mês'].apply(lambda x: meses[int(x)])
-            df['Ano e Mês'] = df['Ano'].astype(str) + ' ' + df['strmes'].astype(str)
+            df['Ano e Mês'] = df['strmes'].astype(str) + ' de ' + df['Ano'].astype(str)
             df = df.drop(columns=['Ano', 'Mês', 'strmes'])
             df = df.groupby(['Ano e Mês']).sum()
             df = df.reset_index()
             # print(linhas)
-            # print(df.head())
+            print(df.head())
             # print(df.dtypes)
-            x = df[['Ano e Mês']]
+            x = df['Ano e Mês'].tolist()
             df = df.drop(columns=['Ano e Mês'])
             numeric_columns = df.select_dtypes(include=np.number).columns.tolist()
-            data = [go.Bar(x=x, y=df[column], name=column)
+            data = [go.Bar(x=x, y=df[column].tolist(), name=column)
                     for column in numeric_columns]
             plot = plotly.offline.plot({
                 'data': data,
@@ -525,7 +524,7 @@ def ovr_app(app):
                 image_width=400)
             return plot
         except Exception as err:
-            logger.log(err, exc_info=True)
+            logger.log(str(err), exc_info=True)
             return ''
 
     @app.route('/programa_rvf_ajna')
@@ -559,14 +558,14 @@ def ovr_app(app):
             if lista_rvf:
                 containers_com_rvf = {rvf.numerolote: rvf.id for rvf in lista_rvf}
             if container:
-                rvf = programa_rvf_container(mongodb, mongo_risco, session,
+                rvf = programa_rvf_container(mongodb, mongo_risco, session, current_user.id,
                                              ovr.id, container, imagens.get(container))
                 # Atualizar lista_rvf quando container passado
                 if rvf:
                     containers_com_rvf[rvf.numerolote] = rvf.id
         except Exception as err:
             flash(str(err))
-            logger.error(err, exc_info=True)
+            logger.error(str(err), exc_info=True)
         return render_template('programa_rvf_ajna.html',
                                ovr=ovr,
                                conhecimento=conhecimento,
