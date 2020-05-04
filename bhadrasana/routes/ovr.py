@@ -26,9 +26,10 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     inclui_flag_ovr, exclui_flag_ovr, get_flags, informa_lavratura_auto, get_relatorios, \
     executa_relatorio, get_relatorio, get_afrfb, get_itens_roteiro_checked
 from bhadrasana.models.ovrmanager import get_marcas_choice
-from bhadrasana.models.rvfmanager import lista_rvfovr
+from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container
+from bhadrasana.models.virasana_manager import get_imagens_json, get_conhecimento, \
+    get_containers_conhecimento, get_ncms_conhecimento
 from bhadrasana.views import get_user_save_path, valid_file
-from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, Item
 
 
 def ovr_app(app):
@@ -78,15 +79,9 @@ def ovr_app(app):
                         # talvez um Endpoint para consulta JavaScript
                         numeroCEmercante = ovr.numeroCEmercante
                         try:
-                            conhecimento = session.query(Conhecimento).filter(
-                                Conhecimento.numeroCEmercante == numeroCEmercante
-                            ).one_or_none()
-                            ncms = session.query(NCMItem).filter(
-                                NCMItem.numeroCEMercante == numeroCEmercante
-                            ).all()
-                            containers = session.query(Item).filter(
-                                Item.numeroCEmercante == numeroCEmercante
-                            ).all()
+                            conhecimento = get_conhecimento(session, ovr.numeroCEmercante)
+                            containers = get_containers_conhecimento(session, ovr.numeroCEmercante)
+                            ncms = get_ncms_conhecimento(session, ovr.numeroCEmercante)
                         except Exception as err:
                             logger.info(err)
                             pass
@@ -530,3 +525,47 @@ def ovr_app(app):
         except Exception as err:
             logger.log(err, exc_info=True)
             return ''
+
+    @app.route('/programa_rvf_ajna')
+    @login_required
+    def programa_rvf_ajna():
+        """Tela para exibição de um CE Mercante do GridFS.
+
+        Exibe o CE Mercante e os arquivos associados a ele.
+        """
+        session = app.config.get('dbsession')
+        mongodb = app.config['mongodb']
+        mongo_risco = app.config['mongo_risco']
+        ovr = None
+        conhecimento = None
+        containers = []
+        containers_com_rvf = {}
+        imagens = {}
+        try:
+            ovr_id = request.args.get('ovr_id')
+            container = request.args.get('container')
+            ovr = get_ovr(session, ovr_id)
+            if ovr is None or ovr.id is None:
+                raise KeyError('OVR não encontrada')
+            conhecimento = get_conhecimento(session, ovr.numeroCEmercante)
+            containers = get_containers_conhecimento(session, ovr.numeroCEmercante)
+            imagens_json = get_imagens_json(ovr.numeroCEmercante)
+            print(imagens_json)
+            imagens = {item['metadata']['numeroinformado']: str(item['_id'])
+                       for item in imagens_json}
+            print(imagens)
+            if container:
+                programa_rvf_container(mongodb, mongo_risco, session,
+                                       ovr.id, container, imagens.get(container))
+            lista_rvf = lista_rvfovr(session, ovr_id)
+            if lista_rvf:
+                containers_com_rvf = {rvf.numerolote: rvf.id for rvf in lista_rvf}
+        except Exception as err:
+            flash(str(err))
+            logger.error(err, exc_info=True)
+        return render_template('programa_rvf_ajna.html',
+                               ovr=ovr,
+                               conhecimento=conhecimento,
+                               containers=containers,
+                               containers_com_rvf=containers_com_rvf,
+                               imagens=imagens)
