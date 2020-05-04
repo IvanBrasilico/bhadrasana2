@@ -48,6 +48,7 @@ class FiltroOVRForm(FlaskForm):
     fase = SelectField('fase', default=-1)
     recinto_id = SelectField('recinto_id', default=0)
     tipoevento_id = SelectField('tipoevento', default=0)
+    flags = SelectField('flags', default=0)
     numero = StringField(u'Numero OVR',
                          default='')
     numeroCEmercante = StringField(u'CE Mercante',
@@ -70,6 +71,9 @@ class FiltroOVRForm(FlaskForm):
         self.recinto_id.choices = [(None, 'Selecione')]
         if kwargs.get('recintos'):
             self.recinto_id.choices.extend(kwargs.get('recintos'))
+        self.flags.choices = [(None, 'Selecione')]
+        if kwargs.get('flags'):
+            self.flags.choices.extend(kwargs.get('flags'))
 
 
 class FiltroRelatorioForm(FlaskForm):
