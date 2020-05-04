@@ -77,10 +77,12 @@ def ovr_app(app):
                                            recintos=recintos)
                         # TODO: Extrair visualização do conhecimento para uma função,
                         # talvez um Endpoint para consulta JavaScript
-                        numeroCEmercante = ovr.numeroCEmercante
                         try:
-                            conhecimento = get_conhecimento(session, ovr.numeroCEmercante)
-                            containers = get_containers_conhecimento(session, ovr.numeroCEmercante)
+                            conhecimento = get_conhecimento(session,
+                                                            ovr.numeroCEmercante)
+                            containers = get_containers_conhecimento(
+                                session,
+                                ovr.numeroCEmercante)
                             ncms = get_ncms_conhecimento(session, ovr.numeroCEmercante)
                         except Exception as err:
                             logger.info(err)
