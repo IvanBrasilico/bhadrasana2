@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, List
 
 from bson import ObjectId
 from gridfs import GridFS
@@ -49,7 +49,7 @@ def get_imagemrvf_or_none(session, rvf_id: int, _id: str):
         ImagemRVF.imagem == _id).one_or_none()
 
 
-def lista_rvfovr(session, ovr_id):
+def lista_rvfovr(session, ovr_id: int) -> List[RVF]:
     try:
         ovr_id = int(ovr_id)
     except (ValueError, TypeError):
@@ -60,7 +60,7 @@ def lista_rvfovr(session, ovr_id):
 def cadastra_rvf(session,
                  user_name: str,
                  params: dict = None,
-                 ovr_id: int = None):
+                 ovr_id: int = None) -> RVF:
     rvf = None
     if ovr_id:
         ovr = get_ovr(session, ovr_id)
@@ -95,6 +95,25 @@ def cadastra_rvf(session,
             logger.error(err, exc_info=True)
             raise err
     return rvf
+
+
+def programa_rvf_container(mongodb, mongodb_risco, session,
+                           ovr_id: int, container: str, id_imagem: str) -> RVF:
+    rvf = cadastra_rvf(session, user_name='', ovr_id=ovr_id)
+    rvf.numerolote = container
+    # copia imagem do Banco virasana para bhadrasana
+    fs = GridFS(mongodb)
+    grid_out = fs.get(ObjectId(id_imagem))
+    # gera objeto ImagemRVF
+    inclui_imagemrvf(mongodb_risco, session, grid_out.read(),
+                     grid_out.filename, rvf.id)
+    try:
+        session.add(rvf)
+        session.commit()
+    except Exception as err:
+        session.rollback()
+        logger.error(err, exc_info=True)
+        raise err
 
 
 def gerencia_infracao_encontrada(session, rvf_id, infracao_id, inclui=True):
