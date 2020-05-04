@@ -29,6 +29,19 @@ def get_imagens_json(conhecimento: str) -> dict:
         raise err
 
 
+def get_imagens(mongodb, conhecimento: str) -> dict:
+    if conhecimento is None or conhecimento == '':
+        raise ValueError('get_imagens: Informe o conhecimento!')
+    query = {'metadata.carga.conhecimento.conhecimento': conhecimento,
+             'metadata.contentType': 'image/jpeg'
+             }
+    projection = {'metadata.numeroinformado': 1,
+                  'metadata.dataescaneamento': 1}
+
+    cursor = mongodb['fs.files'].find(query, projection)
+    return cursor
+
+
 def get_conhecimento(session, numero: str) -> List[Conhecimento]:
     return session.query(Conhecimento).filter(
         Conhecimento.numeroCEmercante == numero).one_or_none()

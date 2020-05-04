@@ -27,8 +27,8 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     executa_relatorio, get_relatorio, get_afrfb, get_itens_roteiro_checked
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container
-from bhadrasana.models.virasana_manager import get_imagens_json, get_conhecimento, \
-    get_containers_conhecimento, get_ncms_conhecimento
+from bhadrasana.models.virasana_manager import get_conhecimento, \
+    get_containers_conhecimento, get_ncms_conhecimento, get_imagens
 from bhadrasana.views import get_user_save_path, valid_file
 
 
@@ -549,20 +549,19 @@ def ovr_app(app):
                 raise KeyError('OVR não encontrada')
             conhecimento = get_conhecimento(session, ovr.numeroCEmercante)
             containers = get_containers_conhecimento(session, ovr.numeroCEmercante)
-            imagens_json = get_imagens_json(ovr.numeroCEmercante)
-            print(imagens_json)
+            imagens = get_imagens(mongodb, ovr.numeroCEmercante)
             imagens = {item['metadata']['numeroinformado']: str(item['_id'])
-                       for item in imagens_json}
+                       for item in imagens}
             print(imagens)
             lista_rvf = lista_rvfovr(session, ovr_id)
             if lista_rvf:
                 containers_com_rvf = {rvf.numerolote: rvf.id for rvf in lista_rvf}
             if container:
                 rvf = programa_rvf_container(mongodb, mongo_risco, session,
-                                       ovr.id, container, imagens.get(container))
+                                             ovr.id, container, imagens.get(container))
                 # Atualizar lista_rvf quando container passado
                 if rvf:
-                    containers_com_rvf[rvf.numerolote] =  rvf.id
+                    containers_com_rvf[rvf.numerolote] = rvf.id
         except Exception as err:
             flash(str(err))
             logger.error(err, exc_info=True)
