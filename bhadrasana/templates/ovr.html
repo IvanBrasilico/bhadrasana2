@@ -80,20 +80,26 @@
                         {{ oform.observacoes(class='form-control') }}
                     </div>
                     <div class="col-sm-3">
-                        <label for="adata">Dia da emissão</label>
+                        <label for="adata">Data da emissão</label>
                     </div>
-                    <div class="col-sm-9">
+                    <div class="col-sm-3">
+                        <label for="adata">Data da Entrada da Carga</label>
+                    </div>
+                    <div class="col-sm-6">
                         <label for="responsavel">Responsável</label>
                     </div>
                     <div class="col-sm-3">
                         {{ oform.adata(class='form-control') }}
                     </div>
-                    <div class="col-sm-4">
+                    <div class="col-sm-3">
+                        {{ oform.dataentrada(class='form-control') }}
+                    </div>
+                    <div class="col-sm-3">
                         <div class="form-control ">
                             {{ ovr.responsavel.nome }}
                         </div>
                     </div>
-                    <div class="col-sm-4">
+                    <div class="col-sm-3">
                         {% if oform.id.data %}
                         <button id="btn_responsavel" type="button" class="btn btn-warning form-control"
                                 data-toggle="modal" data-target="#responsavel">

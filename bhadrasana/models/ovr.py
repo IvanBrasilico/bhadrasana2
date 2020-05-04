@@ -141,6 +141,7 @@ class OVR(BaseRastreavel):
     numerodeclaracao = Column(VARCHAR(20), index=True)
     observacoes = Column(VARCHAR(200), index=True)
     datahora = Column(TIMESTAMP, index=True)
+    dataentrada = Column(DateTime, index=True)
     fase = Column(Integer(), index=True, default=0)
     tipoevento_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                            ForeignKey('ovr_tiposevento.id'),
