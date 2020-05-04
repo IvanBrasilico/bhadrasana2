@@ -554,12 +554,15 @@ def ovr_app(app):
             imagens = {item['metadata']['numeroinformado']: str(item['_id'])
                        for item in imagens_json}
             print(imagens)
-            if container:
-                programa_rvf_container(mongodb, mongo_risco, session,
-                                       ovr.id, container, imagens.get(container))
             lista_rvf = lista_rvfovr(session, ovr_id)
             if lista_rvf:
                 containers_com_rvf = {rvf.numerolote: rvf.id for rvf in lista_rvf}
+            if container:
+                rvf = programa_rvf_container(mongodb, mongo_risco, session,
+                                       ovr.id, container, imagens.get(container))
+                # Atualizar lista_rvf
+                if rvf:
+                    containers_com_rvf[rvf.numerolote] =  rvf.id
         except Exception as err:
             flash(str(err))
             logger.error(err, exc_info=True)

@@ -114,6 +114,7 @@ def programa_rvf_container(mongodb, mongodb_risco, session,
         session.rollback()
         logger.error(err, exc_info=True)
         raise err
+    return rvf
 
 
 def gerencia_infracao_encontrada(session, rvf_id, infracao_id, inclui=True):
