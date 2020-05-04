@@ -46,7 +46,7 @@ def get_relatorio(session, relatorio_id: int) -> List[Relatorio]:
 def executa_relatorio(session, user_name: str, relatorio: Relatorio,
                       data_inicial: datetime, data_final: datetime,
                       filtrar_setor=False):
-    params = {'datainicio': data_inicial, 'datafim': data_final}
+    params = {'datainicio': data_inicial, 'datafim': data_final + timedelta(days=1)}
     # (datetime.strftime(data_inicial, '%Y-%m-%d'),
     # datetime.strftime(data_final, '%Y-%m-%d'))
     sql_query = text(relatorio.sql)

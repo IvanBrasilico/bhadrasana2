@@ -1,7 +1,7 @@
 from typing import Callable, List
 
 from bson import ObjectId
-from gridfs import GridFS
+from gridfs import GridFS, NoFile
 from sqlalchemy import and_
 
 from ajna_commons.flask.log import logger
@@ -66,9 +66,10 @@ def cadastra_rvf(session,
         ovr = get_ovr(session, ovr_id)
         if not ovr:
             return None
-        rvf = RVF()
-        rvf.ovr_id = ovr.id
-        rvf.numeroCEmercante = ovr.numeroCEmercante
+        rvf = cadastra_rvf(session, user_name,
+                           {'ovr_id': ovr.id,
+                            'numeroCEmercante': ovr.numeroCEmercante}
+                           )
         tipoevento = session.query(TipoEventoOVR).filter(
             TipoEventoOVR.eventoespecial == EventoEspecial.RVF.value).first()
         params = {'tipoevento_id': tipoevento.id,
@@ -83,6 +84,8 @@ def cadastra_rvf(session,
         usuario = get_usuario_logado(session, user_name)
         if rvf.user_name and rvf.user_name != usuario.cpf:
             raise ESomenteMesmoUsuario()
+        if not rvf.user_name:
+            rvf.user_name = usuario.cpf
         for key, value in params.items():
             setattr(rvf, key, value)
         rvf.datahora = handle_datahora(params)
@@ -97,16 +100,18 @@ def cadastra_rvf(session,
     return rvf
 
 
-def programa_rvf_container(mongodb, mongodb_risco, session,
+def programa_rvf_container(mongodb, mongodb_risco, session, user_name,
                            ovr_id: int, container: str, id_imagem: str) -> RVF:
-    rvf = cadastra_rvf(session, user_name='', ovr_id=ovr_id)
+    rvf = cadastra_rvf(session, user_name, ovr_id=ovr_id)
     rvf.numerolote = container
-    # copia imagem do Banco virasana para bhadrasana
+    # copia imagem do Banco virasana para bhadrasana e gera objeto ImagemRVF
     fs = GridFS(mongodb)
-    grid_out = fs.get(ObjectId(id_imagem))
-    # gera objeto ImagemRVF
-    inclui_imagemrvf(mongodb_risco, session, grid_out.read(),
-                     grid_out.filename, rvf.id)
+    try:
+        grid_out = fs.get(ObjectId(id_imagem))
+        inclui_imagemrvf(mongodb_risco, session, grid_out.read(),
+                         grid_out.filename, rvf.id)
+    except NoFile as err:
+        logger.error(err)
     try:
         session.add(rvf)
         session.commit()
