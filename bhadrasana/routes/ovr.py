@@ -560,7 +560,7 @@ def ovr_app(app):
             if container:
                 rvf = programa_rvf_container(mongodb, mongo_risco, session,
                                        ovr.id, container, imagens.get(container))
-                # Atualizar lista_rvf
+                # Atualizar lista_rvf quando container passado
                 if rvf:
                     containers_com_rvf[rvf.numerolote] =  rvf.id
         except Exception as err:
