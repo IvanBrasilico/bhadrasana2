@@ -20,7 +20,7 @@ def get_imagens_json(conhecimento: str) -> dict:
                       {'metadata.numeroinformado': 1,
                        'metadata.dataescaneamento': 1}
                   }
-        r = requests.post(VIRASANA_URL + "grid_data",
+        r = requests.post(VIRASANA_URL + 'grid_data',
                           json=params,
                           verify=False)
         return r.json()
