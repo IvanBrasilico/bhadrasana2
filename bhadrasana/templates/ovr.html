@@ -11,6 +11,7 @@
                     </div>
                     <div class="col-sm-2">
                         <label for="tipooperacao">Tipo de Operação</label>
+                        <span id="btn_roteiro" data-toggle="modal" data-target="#roteiro">(?)</span>
                     </div>
                     <div class="col-sm-3">
                         <label for="numero">Recinto</label>
@@ -49,15 +50,23 @@
                         <div class="panel panel-info rounded-pill">
                             <div class="panel-heading rounded-pill">
                                 {% if conhecimento %}
-                                Embarcador: {{ conhecimento.embarcador }}<br>
-                                Consignatário: {{ conhecimento.consignatario }}<br>
-                                Descrição Mercadoria:{{ conhecimento.descricao }}<br>
+                                Embarcador: {{ conhecimento.embarcador }}
+                                <font size="+1"><b>&nbsp;&nbsp;&nbsp; --- &nbsp;
+                                    <a href="programa_rvf_ajna?ovr_id={{ovr.id}}" target="_blank">
+                                    Ver imagens e mais informações / programar verificação física</a></b> </font>
+                                <br>
+                                Consignatário: {{ conhecimento.consignatario }}
+                                <br>
+                                Descrição Mercadoria:{{ conhecimento.descricao }}
+                                <br>
                                 <!--Nº BL original: {{ conhecimento.descricao }} -->
                                 Contêineres: {% for container in containers %}
                                 nº: {{container.codigoConteiner}} - {{"%.2f"|format(container.pesoBruto|float)}}kg
-                                {% endfor %}<br>
+                                {% endfor %}
+                                <br>
                                 Cubagem total: {{ "%.2f"|format(conhecimento.cubagem|float) }}m³
-                                NCMs: {% for ncm in ncms %}{{ ncm.identificacaoNCM }} {% endfor %}<br>
+                                NCMs: {% for ncm in ncms %}{{ ncm.identificacaoNCM }} {% endfor %}
+                                <br>
                                 {% endif %}
                             </div>
                         </div>
@@ -71,20 +80,26 @@
                         {{ oform.observacoes(class='form-control') }}
                     </div>
                     <div class="col-sm-3">
-                        <label for="adata">Dia da emissão</label>
+                        <label for="adata">Data da Emissão</label>
                     </div>
-                    <div class="col-sm-9">
+                    <div class="col-sm-3">
+                        <label for="adata">Data da Entrada da Carga</label>
+                    </div>
+                    <div class="col-sm-6">
                         <label for="responsavel">Responsável</label>
                     </div>
                     <div class="col-sm-3">
                         {{ oform.adata(class='form-control') }}
                     </div>
-                    <div class="col-sm-4">
+                    <div class="col-sm-3">
+                        {{ oform.dataentrada(class='form-control') }}
+                    </div>
+                    <div class="col-sm-3">
                         <div class="form-control ">
                             {{ ovr.responsavel.nome }}
                         </div>
                     </div>
-                    <div class="col-sm-4">
+                    <div class="col-sm-3">
                         {% if oform.id.data %}
                         <button id="btn_responsavel" type="button" class="btn btn-warning form-control"
                                 data-toggle="modal" data-target="#responsavel">
@@ -423,6 +438,30 @@
 </div>
 {% endif %}
 {% endfor %}
+<div class="modal fade" id="roteiro" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                {% if itens_roteiro %}
+                    <ol>
+                    {% for roteirooperacao in itens_roteiro %}
+                        <li style="font-size:20px">
+                            {% if roteirooperacao[2] %} <del> {% endif %}
+                            {{ roteirooperacao[0] }} ({{roteirooperacao[1]}})
+                            {% if roteirooperacao[2] %} </del>{% endif %}
+                        </li>
+                    {% endfor %}
+                    </ol>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %} {% block scripts %} {{super()}}
 <script>
     function change_anexo(ev){

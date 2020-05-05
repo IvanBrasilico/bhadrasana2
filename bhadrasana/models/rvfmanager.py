@@ -1,7 +1,7 @@
-from typing import Callable
+from typing import Callable, List
 
 from bson import ObjectId
-from gridfs import GridFS
+from gridfs import GridFS, NoFile
 from sqlalchemy import and_
 
 from ajna_commons.flask.log import logger
@@ -49,7 +49,7 @@ def get_imagemrvf_or_none(session, rvf_id: int, _id: str):
         ImagemRVF.imagem == _id).one_or_none()
 
 
-def lista_rvfovr(session, ovr_id):
+def lista_rvfovr(session, ovr_id: int) -> List[RVF]:
     try:
         ovr_id = int(ovr_id)
     except (ValueError, TypeError):
@@ -60,15 +60,16 @@ def lista_rvfovr(session, ovr_id):
 def cadastra_rvf(session,
                  user_name: str,
                  params: dict = None,
-                 ovr_id: int = None):
+                 ovr_id: int = None) -> RVF:
     rvf = None
     if ovr_id:
         ovr = get_ovr(session, ovr_id)
         if not ovr:
             return None
-        rvf = RVF()
-        rvf.ovr_id = ovr.id
-        rvf.numeroCEmercante = ovr.numeroCEmercante
+        rvf = cadastra_rvf(session, user_name,
+                           {'ovr_id': ovr.id,
+                            'numeroCEmercante': ovr.numeroCEmercante}
+                           )
         tipoevento = session.query(TipoEventoOVR).filter(
             TipoEventoOVR.eventoespecial == EventoEspecial.RVF.value).first()
         params = {'tipoevento_id': tipoevento.id,
@@ -83,6 +84,8 @@ def cadastra_rvf(session,
         usuario = get_usuario_logado(session, user_name)
         if rvf.user_name and rvf.user_name != usuario.cpf:
             raise ESomenteMesmoUsuario()
+        if not rvf.user_name:
+            rvf.user_name = usuario.cpf
         for key, value in params.items():
             setattr(rvf, key, value)
         rvf.datahora = handle_datahora(params)
@@ -94,6 +97,28 @@ def cadastra_rvf(session,
             session.rollback()
             logger.error(err, exc_info=True)
             raise err
+    return rvf
+
+
+def programa_rvf_container(mongodb, mongodb_risco, session, user_name,
+                           ovr_id: int, container: str, id_imagem: str) -> RVF:
+    rvf = cadastra_rvf(session, user_name, ovr_id=ovr_id)
+    rvf.numerolote = container
+    # copia imagem do Banco virasana para bhadrasana e gera objeto ImagemRVF
+    fs = GridFS(mongodb)
+    try:
+        grid_out = fs.get(ObjectId(id_imagem))
+        inclui_imagemrvf(mongodb_risco, session, grid_out.read(),
+                         grid_out.filename, rvf.id)
+    except NoFile as err:
+        logger.error(err)
+    try:
+        session.add(rvf)
+        session.commit()
+    except Exception as err:
+        session.rollback()
+        logger.error(err, exc_info=True)
+        raise err
     return rvf
 
 
@@ -313,8 +338,10 @@ def make_and_save_transformation(mongodb, session, imagemrvf: ImagemRVF,
     fs.delete(old_id)
     return new_id
 
-def inclui_nova_ordem_arquivo(session,imagem, ordem):
-    # print(f'inclui_nova_ordem_arquivo.... imagem.rvf_id: {imagem.rvf_id} e imagem: {imagem.imagem}')
+
+def inclui_nova_ordem_arquivo(session, imagem, ordem):
+    # print(f'inclui_nova_ordem_arquivo.... '
+    # 'imagem.rvf_id: {imagem.rvf_id} e imagem: {imagem.imagem}')
     arquivo = session.query(ImagemRVF).filter(
         ImagemRVF.rvf_id == imagem.rvf_id).filter(
         ImagemRVF.imagem == imagem.imagem).one_or_none()

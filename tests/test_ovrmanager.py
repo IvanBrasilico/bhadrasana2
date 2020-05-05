@@ -10,11 +10,11 @@ sys.path.append('.')
 
 from bhadrasana.models import Usuario, Setor
 from bhadrasana.models.ovr import metadata, OVR, Enumerado, Recinto, \
-    create_tiposevento
+    create_tiposevento, create_tiposprocesso, create_flags, Flag
 
 from bhadrasana.models.ovrmanager import get_usuarios, cadastra_ovr, gera_eventoovr, \
     gera_processoovr, cadastra_tgovr, atribui_responsavel_ovr, get_recintos, \
-    get_setores_filhos_recursivo, get_tipos_evento
+    get_setores_filhos_recursivo, get_tipos_evento, get_tipos_processo, get_flags_choice, get_flags
 
 engine = create_engine('sqlite://')
 Session = sessionmaker(bind=engine)
@@ -22,6 +22,8 @@ session = Session()
 metadata.create_all(engine)
 
 create_tiposevento(session)
+create_tiposprocesso(session)
+create_flags(session)
 
 
 class TestCase(unittest.TestCase):
@@ -188,7 +190,6 @@ class TestCase(unittest.TestCase):
         print([(setor.id, setor.nome) for setor in setores])
         assert len(setores) == 5
 
-
     def assert_choices(self, tipos: List[Tuple[int, float]]):
         assert tipos is not None
         assert isinstance(tipos, list)
@@ -198,18 +199,24 @@ class TestCase(unittest.TestCase):
         assert isinstance(umtipoevento[0], int)
         assert isinstance(umtipoevento[1], str)
 
-
-
     def test_tiposevento(self):
         tiposevento = get_tipos_evento(session)
         self.assert_choices(tiposevento)
-        assert tiposevento is not None
-        assert isinstance(tiposevento, list)
-        assert len(tiposevento) > 0
-        umtipoevento = tiposevento[0]
-        assert isinstance(umtipoevento, tuple)
-        assert isinstance(umtipoevento[0], int)
-        assert isinstance(umtipoevento[1], str)
+
+    def test_tiposprocesso(self):
+        tiposprocesso = get_tipos_processo(session)
+        self.assert_choices(tiposprocesso)
+
+    def test_flags_choice(self):
+        flags = get_flags_choice(session)
+
+    def test_flags(self):
+        flags = get_flags(session)
+        assert flags is not None
+        assert isinstance(flags, list)
+        assert len(flags) > 0
+        assert isinstance(flags[0], Flag)
+
 
 
 if __name__ == '__main__':

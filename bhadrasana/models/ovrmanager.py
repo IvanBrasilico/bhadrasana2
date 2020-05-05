@@ -11,7 +11,7 @@ from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto
     get_usuario_logado
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
     TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria, \
-    EventoEspecial, Flag, Relatorio
+    EventoEspecial, Flag, Relatorio, RoteiroOperacaoOVR, flags_table
 
 
 def get_recintos(session) -> List[Tuple[int, str]]:
@@ -29,24 +29,24 @@ def get_tipos_evento(session) -> List[Tuple[int, str]]:
     return [(tipo.id, tipo.nome) for tipo in tiposeventos]
 
 
-def get_tipos_processo(session):
+def get_tipos_processo(session) -> List[Tuple[int, str]]:
     tiposprocesso = session.query(TipoProcessoOVR).all()
     return [(tipo.id, tipo.descricao) for tipo in tiposprocesso]
 
 
-def get_relatorios(session):
+def get_relatorios(session) -> List[Tuple[int, str]]:
     relatorios = session.query(Relatorio).order_by(Relatorio.nome).all()
     return [(relatorio.id, relatorio.nome) for relatorio in relatorios]
 
 
-def get_relatorio(session, relatorio_id: int):
+def get_relatorio(session, relatorio_id: int) -> List[Relatorio]:
     return session.query(Relatorio).filter(Relatorio.id == relatorio_id).one_or_none()
 
 
 def executa_relatorio(session, user_name: str, relatorio: Relatorio,
                       data_inicial: datetime, data_final: datetime,
                       filtrar_setor=False):
-    params = {'datainicio': data_inicial, 'datafim': data_final}
+    params = {'datainicio': data_inicial, 'datafim': data_final + timedelta(days=1)}
     # (datetime.strftime(data_inicial, '%Y-%m-%d'),
     # datetime.strftime(data_final, '%Y-%m-%d'))
     sql_query = text(relatorio.sql)
@@ -107,7 +107,7 @@ def get_ovr(session, ovr_id: int = None) -> OVR:
     return ovr
 
 
-def get_ovr_responsavel(session, user_name: str):
+def get_ovr_responsavel(session, user_name: str) -> List[OVR]:
     return session.query(OVR).filter(OVR.responsavel_cpf == user_name).all()
 
 
@@ -141,19 +141,22 @@ def get_ovr_filtro(session, user_name: str, pfiltro: dict = None, filtrar_setor=
             filtro = and_(OVR.recinto_id == int(pfiltro.get('recinto_id')), filtro)
         if pfiltro.get('numero') and pfiltro.get('numero') != 'None':
             filtro = and_(OVR.numero == int(pfiltro.get('numero')), filtro)
-
+        if pfiltro.get('flags') and pfiltro.get('flags') != 'None':
+            filtro = and_(Flag.id == int(pfiltro.get('flags')), filtro)
+            ovrs = session.query(OVR).join(flags_table).join(Flag).filter(filtro).all()
+            return [ovr for ovr in ovrs]
     ovrs = session.query(OVR).filter(filtro).all()
     logger.info(str(pfiltro))
     logger.info(str(filtro))
     return [ovr for ovr in ovrs]
 
 
-def get_flags(session):
+def get_flags(session) -> List[Flag]:
     flags = session.query(Flag).all()
     return [flag for flag in flags]
 
 
-def get_flags_choice(session):
+def get_flags_choice(session) -> List[Tuple[int, str]]:
     flags = session.query(Flag).all()
     return [(flag.id, flag.nome) for flag in flags]
 
@@ -427,6 +430,24 @@ def get_marcas_choice(session):
     return [(marca.id, marca.nome) for marca in marcas]
 
 
+def get_roteirosoperacao(session, tipooperacao: int) -> List[RoteiroOperacaoOVR]:
+    return session.query(RoteiroOperacaoOVR) \
+        .filter(RoteiroOperacaoOVR.tipooperacao == tipooperacao) \
+        .order_by(RoteiroOperacaoOVR.ordem).all()
+
+
+def get_itens_roteiro_checked(session, ovr: OVR) -> List[Tuple[str, str, bool]]:
+    roteiros = get_roteirosoperacao(session, ovr.tipooperacao)
+    ids_evento_na_ovr = set([evento.tipoevento.id for evento in ovr.historico])
+    itens_roteiro = []
+    for roteiro in roteiros:
+        item_roteiro = (roteiro.descricao,
+                        roteiro.tipoevento.nome,
+                        roteiro.tipoevento_id in ids_evento_na_ovr)
+        itens_roteiro.append(item_roteiro)
+    return itens_roteiro
+
+
 def get_tiposmercadoria_choice(session):
     tipos = session.query(TipoMercadoria).all()
     return [(tipo.id, tipo.nome) for tipo in tipos]
@@ -472,8 +493,6 @@ def exporta_planilhaovr(session: Session, user_name: str, filename: str):
     :param user_name: Nome do Usuário
     :param filename: Nome do arquivo a gerar com caminho completo
     """
-    # FIXME: Bandit está erroneamente identificando como sql injection abaixo.
-    # Ignorando...
     sql_processos = """
         SELECT o.id, tipoprocesso_id, p.numero FROM
         ovr_ovrs o inner join ovr_processos p on o.id = p.ovr_id

@@ -46,11 +46,12 @@ tipoStatusOVR = [
 
 tipoOperacao = [
     'Mercadoria Abandonada',
-    'Análise de risco',
-    'Operação',
-    'Denúncia',
-    'Demanda interna',
-    'Demanda externa'
+    'Análise de risco na importação',
+    'Operação / análise de risco na exportação',
+    'Denúncia na importação',
+    'Denúncia na exportação',
+    'Demanda externa',
+    'Registro de operação de outros órgãos/países'
 ]
 
 faseOVR = [
@@ -140,6 +141,7 @@ class OVR(BaseRastreavel):
     numerodeclaracao = Column(VARCHAR(20), index=True)
     observacoes = Column(VARCHAR(200), index=True)
     datahora = Column(TIMESTAMP, index=True)
+    dataentrada = Column(DateTime, index=True)
     fase = Column(Integer(), index=True, default=0)
     tipoevento_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                            ForeignKey('ovr_tiposevento.id'),
@@ -181,7 +183,7 @@ class OVR(BaseRastreavel):
 
 class Flag(Base):
     __tablename__ = 'ovr_flags'
-    id = Column(BigInteger(), primary_key=True)
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
     nome = Column(VARCHAR(100), index=True)
 
 
@@ -194,6 +196,19 @@ class TipoEventoOVR(Base):
     create_date = Column(TIMESTAMP, index=True,
                          server_default=func.current_timestamp())
     eventoespecial = Column(Integer(), index=True)
+
+
+class RoteiroOperacaoOVR(Base):
+    """Classe para confecção de roteiros/checklists por tipo de operação."""
+    __tablename__ = 'ovr_roteiros'
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
+    tipooperacao = Column(Integer(), index=True, default=0)
+    tipoevento_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
+                           ForeignKey('ovr_tiposevento.id'))
+    tipoevento = relationship('TipoEventoOVR')
+    descricao = Column(VARCHAR(400), index=True)
+    ordem = Column(Integer(), index=True)
+    quem = Column(VARCHAR(10), index=True)
 
 
 class Recinto(Base):
@@ -225,7 +240,7 @@ class EventoOVR(BaseRastreavel):
     tipoevento = relationship('TipoEventoOVR')
     fase = Column(Integer(), index=True, default=0)
     motivo = Column(VARCHAR(50), index=True)
-    anexo_filename = Column(VARCHAR(100), index=True)   # ID no Mongo
+    anexo_filename = Column(VARCHAR(100), index=True)  # ID no Mongo
 
 
 class ProcessoOVR(BaseRastreavel):
@@ -273,8 +288,8 @@ class TGOVR(BaseRastreavel):
     numerolote = Column(VARCHAR(20), index=True, nullable=False)
     descricao = Column(VARCHAR(200), index=True, nullable=False)
     unidadedemedida = Column(Integer(), index=True)
-    qtde = Column(Numeric(10, 4))
-    valor = Column(Numeric(10, 4))
+    qtde = Column(Numeric(10, 2))
+    valor = Column(Numeric(10, 2))
     marcas = relationship('Marca',
                           secondary=marcas_table)
     tipomercadoria_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
@@ -298,9 +313,9 @@ class ItemTG(BaseRastreavel):
     tg = relationship('TGOVR', back_populates='itenstg')
     numero = Column(Integer, index=True, nullable=False)
     descricao = Column(VARCHAR(200), index=True, nullable=False)
-    qtde = Column(Numeric(10, 4))
+    qtde = Column(Numeric(10, 2))
     unidadedemedida = Column(Integer(), index=True)
-    valor = Column(Numeric(10, 4), index=True)
+    valor = Column(Numeric(10, 2), index=True)
     ncm = Column(VARCHAR(8), index=True)
     marca_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                       ForeignKey('ovr_marcas.id'))
@@ -331,6 +346,28 @@ def create_marcas(session):
     session.commit()
 
 
+def create_tiposprocesso(session):
+    """Cria testes para classe TipoProcesso"""
+    for descricao in ('Dossiê',
+                      'Auto de infração',
+                      'RFPFP'):
+        tipo = TipoProcessoOVR()
+        tipo.descricao = descricao
+        session.add(tipo)
+    session.commit()
+
+
+def create_flags(session):
+    """Cria testes para classe TipoProcesso"""
+    for nome in ('Dossiê',
+                 'Auto de infração',
+                 'RFPFP'):
+        flag = Flag()
+        flag.nome = nome
+        session.add(flag)
+    session.commit()
+
+
 def create_tiposevento(session):
     """Cria dados da tabela básica de Eventos"""
     fases = [0, 1, 2, 2, 2, 2, 2, 1, 2, 1, 2, 3, 4]
@@ -354,7 +391,7 @@ def create_tipomercadoria(session):
                        'Automotivo',
                        'Bagagem',
                        'Brinquedos',
-                       'Eletro-eletrônico'
+                       'Eletro-eletrônico',
                        'Livro',
                        'Informática',
                        'Máquinas',
@@ -396,6 +433,7 @@ if __name__ == '__main__':  # pragma: no-cover
         # metadata.drop_all(engine)
         metadata.create_all(engine,
                             [
+                                metadata.tables['ovr_roteiros']
                                 # metadata.tables['ovr_flags'],
                                 # metadata.tables['ovr_flags_ovr'],
                             ])
@@ -411,3 +449,5 @@ if __name__ == '__main__':  # pragma: no-cover
         # create_tiposevento(session)
         # create_marcas(session)
         # create_tipomercadoria(session)
+        # create_flags(session)
+        # create_tiposprocesso(session)
