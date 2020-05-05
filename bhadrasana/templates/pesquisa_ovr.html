@@ -33,8 +33,13 @@
                 <div class="col-sm-4">
                     <label for="datainicio">Início e fim de período de pesquisa</label>
                 </div>
-                <div class="col-sm-8">
+                <div class="col-sm-2">
                     <label for="tipoevento">Status</label>
+                </div>
+                <div class="col-sm-2">
+                    <label for="flags">Alertas</label>
+                </div>
+                <div class="col-sm-4">
                 </div>
             </div>
             <div class="row">
@@ -47,6 +52,14 @@
                 <div class="col-sm-2">
                     {{ oform.tipoevento_id(class='form-control') }}
                 </div>
+                <div class="col-sm-2">
+                    {{ oform.flags(class='form-control') }}
+                </div>
+                <div class="col-sm-4">
+                </div>
+            </div>
+            &nbsp;
+            <div class="row">
                 <div class="col-sm-3">
                     <button class="btn btn-default btn-info form-control" onclick="submit">
                         Pesquisar
@@ -56,6 +69,8 @@
                     <button class="btn btn-primary btn-warning form-control" onclick="window.open('ovr')">
                         Nova Ficha
                     </button>
+                </div>
+                <div class="col-sm-6">
                 </div>
             </div>
         </form>
