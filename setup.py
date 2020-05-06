@@ -55,6 +55,7 @@ setup(
             'isort',
             'autopep8',
             'mkdocs',
+            'mkdocs-material',
             'pandas',
             'pylint',
             'pytest',
