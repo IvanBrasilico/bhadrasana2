@@ -11,7 +11,12 @@ nav:
         - "Solicitando Laudos - Equipe 221b": exemplos/221bd.md
         - "Saneamento, auto, RFFP - Equipe 221b": exemplos/221be.md
         - "Analise geral da Divisão": exemplos/221bf.md
-        - "Resumo do roteiro": exemplos/roteiro1completo.md
+        - "Resumo do roteiro (parte 1 - 221b)": exemplos/roteiro1completo.md
+        - "Cadastrando ficha - Equipe SY": exemplos/SYa.md
+        - "Verificação física, Intimação, Saneamento - Equipe SY": exemplos/SYb.md
+        - "Auto, RFFP, check-list - Equipe SY": exemplos/SYc.md
+        - "Analise geral da Divisão": exemplos/SYd.md
+        - "Resumo do roteiro (parte 2 - SY)": exemplos/roteiro1completo.md
 
 
 theme:
