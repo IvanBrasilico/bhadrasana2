@@ -27,7 +27,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     executa_relatorio, get_relatorio, get_afrfb, get_itens_roteiro_checked, \
     get_flags_choice
 from bhadrasana.models.ovrmanager import get_marcas_choice
-from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container
+from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, get_infracoes_choice
 from bhadrasana.models.virasana_manager import get_conhecimento, \
     get_containers_conhecimento, get_ncms_conhecimento, get_imagens
 from bhadrasana.views import get_user_save_path, valid_file
@@ -159,17 +159,20 @@ def ovr_app(app):
         tiposeventos = get_tipos_evento(session)
         recintos = get_recintos(session)
         flags = get_flags_choice(session)
+        infracoes = get_infracoes_choice(session)
         filtro_form = FiltroOVRForm(
             datainicio=datetime.date.today() - datetime.timedelta(days=10),
             datafim=datetime.date.today(),
             tiposeventos=tiposeventos,
             recintos=recintos,
-            flags=flags
+            flags=flags,
+            infracoes=infracoes
         )
         try:
             if request.method == 'POST':
                 filtro_form = FiltroOVRForm(request.form, tiposeventos=tiposeventos,
-                                            recintos=recintos, flags=flags)
+                                            recintos=recintos, flags=flags,
+                                            infracoes=infracoes)
                 filtro_form.validate()
                 ovrs = get_ovr_filtro(session, current_user.name,
                                       dict(filtro_form.data.items()),
