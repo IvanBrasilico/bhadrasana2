@@ -25,6 +25,7 @@ class OVRForm(FlaskForm):
     adata = DateField(u'Data')
     dataentrada = DateField(u'Data')
     ahora = TimeField(u'Horário')
+    user_name = StringField()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -58,6 +58,7 @@ def ovr_app(app):
         itens_roteiro = []
         ovr = OVR()
         qtdervfs = 0
+        qtdeimagens = 0
         try:
             if request.method == 'POST':
                 ovr_form = OVRForm(request.form)
@@ -93,7 +94,10 @@ def ovr_app(app):
                         processos = ovr.processos
                         flags_ovr = ovr.flags
                         itens_roteiro = get_itens_roteiro_checked(session, ovr)
-                        qtdervfs = len(lista_rvfovr(session, ovr_id))
+                        rvfs = lista_rvfovr(session, ovr_id)
+                        qtdervfs = len(rvfs)
+                        for rvf in rvfs:
+                            qtdeimagens += len(rvf.imagens)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
@@ -106,6 +110,7 @@ def ovr_app(app):
                                ncms=ncms,
                                containers=containers,
                                qtdervfs=qtdervfs,
+                               qtdeimagens=qtdeimagens,
                                historico_form=historico_form,
                                processo_form=processo_form,
                                responsavel_form=responsavel_form,

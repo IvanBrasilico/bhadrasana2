@@ -12,6 +12,7 @@
                     <th style="word-wrap: break-word; max-width: 210px; min-width: 200px;">Descrição</th>
                     <th style="max-width: 50px;">Peso</th>
                     <th style="max-width: 50px;">Volume</th>
+                    <th style="max-width: 50px;">Qtde fotos</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -21,13 +22,14 @@
                     <td style="max-width: 40px;">
                         {{ rvf.numerolote }}
                     </td>
-                    <td style="word-wrap: break-word; max-width: 500px; min-width: 400px;">
+                    <td style="word-wrap: break-word; max-width: 500px; min-width: 300px;">
                         {{ rvf.descricao }}
                     </td>
                     <td style="max-width: 40px;">
                         {{ rvf.peso }}
                     </td>
                     <td style="max-width: 50px;">{{ rvf.volume }}</td>
+                    <td style="max-width: 50px;">{{ rvf.imagens|length }}</td>
                 </tr>
                 {% endfor %}
                 </tbody>

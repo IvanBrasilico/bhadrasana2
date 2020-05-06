@@ -6,20 +6,29 @@
             <input type="hidden" name="id" value="{{ oform.id.data }}"/>
             <div class="row">
                 <div class="form-group">
-                    <div class="col-sm-2">
-                        <label for="numero">Número</label>
+                    <div class="col-sm-1">
+                        <label for="id">ID</label>
+                    </div>
+                    <div class="col-sm-1">
+                        <label for="numero">Número doc. ext.</label>
                     </div>
                     <div class="col-sm-2">
                         <label for="tipooperacao">Tipo de Operação</label>
                         <span id="btn_roteiro" data-toggle="modal" data-target="#roteiro">(?)</span>
                     </div>
                     <div class="col-sm-3">
-                        <label for="numero">Recinto</label>
+                        <label>Recinto</label>
                     </div>
-                    <div class="col-sm-5">
-                        <label for="numero">Status</label>
+                    <div class="col-sm-4">
+                        <label>Status</label>
                     </div>
-                    <div class="col-sm-2">
+                    <div class="col-sm-1">
+                        <label for="user_name">Cadastrador</label>
+                    </div>
+                    <div class="col-sm-1">
+                        <label>{{ oform.id.data }}</label>
+                    </div>
+                    <div class="col-sm-1">
                         {{ oform.numero(class='form-control')}}
                     </div>
                     <div class="col-sm-2">
@@ -28,7 +37,7 @@
                     <div class="col-sm-3">
                         {{ oform.recinto_id(class='form-control')}}
                     </div>
-                    <div class="col-sm-2">
+                    <div class="col-sm-1">
                         <div class="form-control">
                             <span class="{{ ovr.get_class() }}">
                                 {{ ovr.get_fase() }}
@@ -41,6 +50,9 @@
                                 {{ ovr.tipoevento.nome }}
                             </span>
                         </div>
+                    </div>
+                    <div class="col-sm-1">
+                        <label>{{ oform.user_name.data }}</label>
                     </div>
                     <div class="col-sm-12">
                         CE Mercante
@@ -141,7 +153,7 @@
                     {% if oform.id.data %}
                     <button id="btn_rvf" type="button" class="btn btn-primary btn-success form-control"
                             onclick="window.open('lista_rvfovr?ovr_id={{oform.id.data}}')">
-                        Verificações físicas ({{ qtdervfs }})
+                        Verificações físicas ({{ qtdervfs }}) ({{ qtdeimagens }})
                     </button>
                     {% endif %}
                 </div>

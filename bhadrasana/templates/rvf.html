@@ -8,6 +8,14 @@
                 <input type="hidden" name="ovr_id" value="{{ oform.ovr_id.data }}"/>
                 <div class="row">
                     <div class="form-group">
+                        <div class="col-sm-1">
+                            ID<br>
+                            {{ oform.id.data }}
+                        </div>
+                        <div class="col-sm-1">
+                            Criador<br>
+                            {{ oform.user_name.data }}
+                        </div>
                         <div class="col-sm-3">
                             CE Mercante
                             {{ oform.numeroCEmercante(class='form-control')}}
@@ -16,10 +24,10 @@
                             Número do contêiner ou Lote
                             {{ oform.numerolote(class='form-control')}}
                         </div>
-                        <div class="col-sm-6">
+                        <div class="col-sm-4">
                             {% if oform.ovr_id.data %}
                             <h2><b>
-                                <a href="ovr?id={{oform.ovr_id.data}}" target="_blank" class="text-warning">
+                                <a href="ovr?id={{oform.ovr_id.data}}" target="_blank" class="text-default">
                                     Ver Ficha de Carga</a>
                             </b>
                             </h2>
