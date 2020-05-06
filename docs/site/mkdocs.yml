@@ -1,0 +1,19 @@
+site_name: Risco e Ficha de Controle de Carga
+site_description: Análise de risco e controle de fluxo de procedimentos em cargas
+
+nav:
+    - Home: index.md
+    - "Roteiro de uso da ficha de controle - fluxo de importação":
+        - "Descrição": exemplos/inicio.md
+        - "Cadastrando ficha - Equipe 221B": exemplos/221ba.md
+        - "Preenchendo a verificação física - Equipe 221B": exemplos/221bb.md
+        - "Analisando a primeira parte - Equipe 221b": exemplos/221bc.md
+
+theme:
+  name: 'material'
+  language: 'pt-br'
+  palette:
+    primary: 'indigo'
+    accent: 'Green'
+  logo: 'images/material_logo.svg'
+
