@@ -5,9 +5,14 @@ nav:
     - Home: index.md
     - "Roteiro de uso da ficha de controle - fluxo de importação":
         - "Introdução": exemplos/inicio.md
-        - "Cadastrando ficha - Equipe 221B": exemplos/221ba.md
+        - "Cadastrando ficha e programando verificação - Equipe 221B": exemplos/221ba.md
         - "Preenchendo a verificação física - Equipe 221B": exemplos/221bb.md
         - "Analisando a primeira parte - Equipe 221b": exemplos/221bc.md
+        - "Solicitando Laudos - Equipe 221b": exemplos/221bd.md
+        - "Saneamento, auto, RFFP - Equipe 221b": exemplos/221be.md
+        - "Analise geral da Divisão": exemplos/221bf.md
+        - "Resumo do roteiro": exemplos/roteiro1completo.md
+
 
 theme:
   name: 'material'
