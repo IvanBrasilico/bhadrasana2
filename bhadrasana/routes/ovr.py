@@ -24,7 +24,8 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     cadastra_tgovr, get_ovr_responsavel, importa_planilha, exporta_planilhaovr, \
     get_tiposmercadoria_choice, \
     inclui_flag_ovr, exclui_flag_ovr, get_flags, informa_lavratura_auto, get_relatorios, \
-    executa_relatorio, get_relatorio, get_afrfb, get_itens_roteiro_checked, get_flags_choice
+    executa_relatorio, get_relatorio, get_afrfb, get_itens_roteiro_checked, \
+    get_flags_choice
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container
 from bhadrasana.models.virasana_manager import get_conhecimento, \
@@ -560,8 +561,10 @@ def ovr_app(app):
             if lista_rvf:
                 containers_com_rvf = {rvf.numerolote: rvf.id for rvf in lista_rvf}
             if container:
-                rvf = programa_rvf_container(mongodb, mongo_risco, session, current_user.id,
-                                             ovr.id, container, imagens.get(container))
+                rvf = programa_rvf_container(
+                    mongodb, mongo_risco, session, current_user.id,
+                    ovr.id, container, imagens.get(container)
+                )
                 # Atualizar lista_rvf quando container passado
                 if rvf:
                     containers_com_rvf[rvf.numerolote] = rvf.id
