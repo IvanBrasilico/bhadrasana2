@@ -82,9 +82,10 @@ def cadastra_rvf(session,
     elif params:
         rvf = get_rvf(session, params.get('id'))
         usuario = get_usuario_logado(session, user_name)
-        if rvf.user_name and rvf.user_name != usuario.cpf \
-                and rvf.ovr.responsavel_cpf != usuario.cpf:
-            raise ESomenteMesmoUsuario()
+        if rvf.user_name and rvf.user_name != usuario.cpf:
+            ovr = get_ovr(session, rvf.ovr_id)
+            if ovr.responsavel_cpf != usuario.cpf:
+                raise ESomenteMesmoUsuario()
         if not rvf.user_name:
             rvf.user_name = usuario.cpf
         for key, value in params.items():
