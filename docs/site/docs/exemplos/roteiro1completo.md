@@ -39,7 +39,7 @@ Watson entra no Sistema
 
 4. Devolve para Holmes
 
-Holmes enxerga uma marca possivelmente contrafeita. 
+Holmes enxerga uma marca possivelmente contrafeita.
 
 1. Distribui para Irene Adler para tratar
 
