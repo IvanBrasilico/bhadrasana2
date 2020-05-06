@@ -37,7 +37,7 @@ def get_rvfs_filtro(session, pfiltro):
     return [rvf for rvf in rvfs]
 
 
-def get_rvf(session, rvf_id=None):
+def get_rvf(session, rvf_id: int = None) -> RVF:
     if rvf_id is None:
         return RVF()
     return session.query(RVF).filter(RVF.id == rvf_id).one_or_none()
@@ -82,7 +82,8 @@ def cadastra_rvf(session,
     elif params:
         rvf = get_rvf(session, params.get('id'))
         usuario = get_usuario_logado(session, user_name)
-        if rvf.user_name and rvf.user_name != usuario.cpf:
+        if rvf.user_name and rvf.user_name != usuario.cpf \
+                and rvf.ovr.responsavel_cpf != usuario.cpf:
             raise ESomenteMesmoUsuario()
         if not rvf.user_name:
             rvf.user_name = usuario.cpf
