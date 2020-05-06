@@ -12,6 +12,7 @@ from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
     TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria, \
     EventoEspecial, Flag, Relatorio, RoteiroOperacaoOVR, flags_table
+from bhadrasana.models.rvf import Infracao, infracoesencontradas_table, RVF
 
 
 def get_recintos(session) -> List[Tuple[int, str]]:
@@ -145,6 +146,12 @@ def get_ovr_filtro(session, user_name: str, pfiltro: dict = None, filtrar_setor=
         if pfiltro.get('flags') and pfiltro.get('flags') != 'None':
             filtro = and_(Flag.id == int(pfiltro.get('flags')), filtro)
             ovrs = session.query(OVR).join(flags_table).join(Flag).filter(filtro).all()
+            return [ovr for ovr in ovrs]
+        # TODO: E se selecionar flags e infracoes????
+        if pfiltro.get('infracoes') and pfiltro.get('infracoes') != 'None':
+            filtro = and_(Infracao.id == int(pfiltro.get('infracoes')), filtro)
+            ovrs = session.query(OVR).join(RVF).join(infracoesencontradas_table). \
+                join(Infracao).filter(filtro).all()
             return [ovr for ovr in ovrs]
     ovrs = session.query(OVR).filter(filtro).all()
     logger.info(str(pfiltro))

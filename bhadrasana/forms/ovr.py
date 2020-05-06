@@ -50,6 +50,7 @@ class FiltroOVRForm(FlaskForm):
     recinto_id = SelectField('recinto_id', default=0)
     tipoevento_id = SelectField('tipoevento', default=0)
     flags = SelectField('flags', default=0)
+    infracoes = SelectField('infracoes', default=0)
     numero = StringField(u'Numero OVR',
                          default='')
     numeroCEmercante = StringField(u'CE Mercante',
@@ -75,6 +76,9 @@ class FiltroOVRForm(FlaskForm):
         self.flags.choices = [(None, 'Selecione')]
         if kwargs.get('flags'):
             self.flags.choices.extend(kwargs.get('flags'))
+        self.infracoes.choices = [(None, 'Selecione')]
+        if kwargs.get('infracoes'):
+            self.infracoes.choices.extend(kwargs.get('infracoes'))
 
 
 class FiltroRelatorioForm(FlaskForm):
