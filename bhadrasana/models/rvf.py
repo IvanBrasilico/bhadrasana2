@@ -47,7 +47,7 @@ class RVF(BaseRastreavel):
     numeroDI = Column(VARCHAR(10), index=True)
     numeroDUE = Column(VARCHAR(10), index=True)
     numerolote = Column(VARCHAR(20), index=True)
-    descricao = Column(VARCHAR(400), index=True)
+    descricao = Column(VARCHAR(500), index=True)
     peso = Column(Numeric(10, 2), index=True)
     volume = Column(Numeric(10, 2), index=True)
     imagens = relationship('ImagemRVF', back_populates='rvf')

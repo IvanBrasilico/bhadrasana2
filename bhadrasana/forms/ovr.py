@@ -18,7 +18,7 @@ class OVRForm(FlaskForm):
     numeroCEmercante = StringField(u'CE Mercante',
                                    default='')
     observacoes = TextAreaField(u'Observações',
-                                render_kw={'rows': 3, 'cols': 100},
+                                render_kw={'rows': 3, 'cols': 100, 'maxlength': 500},
                                 default='')
     numerodeclaracao = StringField(u'DUE ou DUIMP ou DTA',
                                    default='')
@@ -138,7 +138,7 @@ class TGOVRForm(FlaskForm):
     numerolote = StringField(u'Número do contêiner, ou do lote do terminal'
                              u' se não houver contêiner', default='')
     descricao = TextAreaField(u'Descrição',
-                              render_kw={'rows': 2, 'cols': 100},
+                              render_kw={'rows': 2, 'cols': 100, 'maxlength': 500},
                               default='')
     unidadedemedida = SelectField('Unidade de Medida', default=1)
     qtde = DecimalField(u'Quantidade total',
@@ -150,7 +150,7 @@ class TGOVRForm(FlaskForm):
     afrfb = SelectField(u'CPF do AFRFB Responsável')
     identificacao = StringField(u'Identificação(marca) da carga', default='')
     observacoes = TextAreaField(u'Observações',
-                                render_kw={'rows': 2, 'cols': 100},
+                                render_kw={'rows': 2, 'cols': 100, 'maxlength': 500},
                                 default='')
 
     def __init__(self, *args, **kwargs):
@@ -169,7 +169,7 @@ class ItemTGForm(FlaskForm):
     tg_id = IntegerField('TG')
     numero = IntegerField('numero')
     descricao = TextAreaField(u'Descrição',
-                              render_kw={'rows': 5, 'cols': 100},
+                              render_kw={'rows': 5, 'cols': 100, 'maxlength': 500},
                               default='')
     unidadedemedida = SelectField('Unidade de Medida', default=1)
     qtde = DecimalField(u'Quantidade total',

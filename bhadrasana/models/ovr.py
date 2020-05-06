@@ -139,7 +139,7 @@ class OVR(BaseRastreavel):
     tipooperacao = Column(Integer(), index=True)
     numeroCEmercante = Column(VARCHAR(15), index=True)
     numerodeclaracao = Column(VARCHAR(20), index=True)
-    observacoes = Column(VARCHAR(200), index=True)
+    observacoes = Column(VARCHAR(500), index=True)
     datahora = Column(TIMESTAMP, index=True)
     dataentrada = Column(DateTime, index=True)
     fase = Column(Integer(), index=True, default=0)
@@ -206,7 +206,7 @@ class RoteiroOperacaoOVR(Base):
     tipoevento_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                            ForeignKey('ovr_tiposevento.id'))
     tipoevento = relationship('TipoEventoOVR')
-    descricao = Column(VARCHAR(400), index=True)
+    descricao = Column(VARCHAR(500), index=True)
     ordem = Column(Integer(), index=True)
     quem = Column(VARCHAR(10), index=True)
 
@@ -286,7 +286,7 @@ class TGOVR(BaseRastreavel):
     ovr = relationship('OVR', back_populates='tgs')
     # Número do contêiner ou de lote
     numerolote = Column(VARCHAR(20), index=True, nullable=False)
-    descricao = Column(VARCHAR(200), index=True, nullable=False)
+    descricao = Column(VARCHAR(500), index=True, nullable=False)
     unidadedemedida = Column(Integer(), index=True)
     qtde = Column(Numeric(10, 2))
     valor = Column(Numeric(10, 2))
@@ -299,7 +299,7 @@ class TGOVR(BaseRastreavel):
     numerotg = Column(VARCHAR(20), index=True)
     afrfb = Column(VARCHAR(20), index=True)
     identificacao = Column(VARCHAR(50), index=True)
-    observacoes = Column(VARCHAR(200), index=True)
+    observacoes = Column(VARCHAR(500), index=True)
 
     def get_unidadedemedida(self):
         return Enumerado.unidadeMedida(self.unidadedemedida)
@@ -312,7 +312,7 @@ class ItemTG(BaseRastreavel):
                    ForeignKey('ovr_tgovr.id'), nullable=False)
     tg = relationship('TGOVR', back_populates='itenstg')
     numero = Column(Integer, index=True, nullable=False)
-    descricao = Column(VARCHAR(200), index=True, nullable=False)
+    descricao = Column(VARCHAR(500), index=True, nullable=False)
     qtde = Column(Numeric(10, 2))
     unidadedemedida = Column(Integer(), index=True)
     valor = Column(Numeric(10, 2), index=True)
