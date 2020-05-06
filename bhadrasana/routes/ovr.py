@@ -27,7 +27,8 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     executa_relatorio, get_relatorio, get_afrfb, get_itens_roteiro_checked, \
     get_flags_choice
 from bhadrasana.models.ovrmanager import get_marcas_choice
-from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, get_infracoes_choice
+from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
+    get_infracoes_choice
 from bhadrasana.models.virasana_manager import get_conhecimento, \
     get_containers_conhecimento, get_ncms_conhecimento, get_imagens
 from bhadrasana.views import get_user_save_path, valid_file
