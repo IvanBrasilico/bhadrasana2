@@ -74,7 +74,8 @@ def executa_relatorio(session, user_name: str, relatorio: Relatorio,
 def cadastra_ovr(session, params: dict, user_name: str) -> OVR:
     usuario = get_usuario_logado(session, user_name)
     ovr = get_ovr(session, params.get('id'))
-    if ovr.user_name and ovr.user_name != user_name:
+    if ovr.user_name and ovr.user_name != usuario.cpf \
+            and ovr.responsavel_cpf != usuario.cpf:
         raise ESomenteMesmoUsuario()
     if not ovr.user_name:
         ovr.setor_id = usuario.setor_id
