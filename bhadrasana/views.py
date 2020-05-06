@@ -186,5 +186,5 @@ def mynavbar():
              View('Relatórios', 'ver_relatorios'),
              ]
     if current_user.is_authenticated:
-        items.append(View('Sair', 'commons.logout'))
+        items.append(View('Sair (%s)' % current_user.id, 'commons.logout'))
     return Navbar(logo, *items)
