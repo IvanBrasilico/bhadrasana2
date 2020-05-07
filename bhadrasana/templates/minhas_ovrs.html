@@ -3,10 +3,11 @@
     <div id="options" class="row col-sm-12">
         <div class="col-sm-5">
             <ul class="nav nav-pills">
-                <li class="{% if active_tab!='minhas_ovrs'  %}active{% endif %}"><a href="ovrs_meus_setores">Fichas do meu
-                    Setor</a></li>
-                <li class="{% if active_tab=='minhas_ovrs'  %}active{% endif %}"><a href="minhas_ovrs">Fichas sob minha
-                    responsabilidade</a></li>
+                <li class="{% if active_tab=='minhas_ovrs'  %}active{% endif %}"><a href="minhas_ovrs">Fichas a mim
+                    atribuídas</a></li>
+                <li class="{% if active_tab!='minhas_ovrs'  %}active{% endif %}"><a href="ovrs_meus_setores">Fichas dos
+                    meus
+                    Setores</a></li>
             </ul>
         </div>
         <div class="col-sm-3">
@@ -17,33 +18,24 @@
     <div id="list" class="row col-sm-12">
         &nbsp;<br>
         {% for fase in listasovrs.keys()|sort() %}
-        <h2 class="{{listasovrs[fase][0].get_class()}}">{{ fase }}</h2>
+        <h2>{{ fase }}</h2>
         <div class="table">
             <table class="inlineTable table table-bordered table-hover table-responsive"
                    id="filtro_personalizado_table">
                 <thead>
                 <tr>
-                    <th>Ficha Nº</th>
-                    <th>Tipo Operação</th>
-                    <th>Recinto</th>
-                    <th>Ano</th>
-                    <th>Número doc.</th>
-                    <th>CE Mercante</th>
-                    <th>Data</th>
-                    <th>Último Evento</th>
+                    {% for col in titulos %}
+                    <th>{{ col }}</th>
+                    {% endfor %}
                 </tr>
                 </thead>
                 <tbody>
                 {% for ovr in listasovrs[fase] %}
                 <tr>
-                    <td><a href="ovr?id={{ ovr.id }}">{{ ovr.id }}</a></td>
-                    <td>{{ ovr.get_tipooperacao() }}</td>
-                    <td>{{ ovr.recinto.nome }}</td>
-                    <td>{{ ovr.get_ano() }}</td>
-                    <td>{{ ovr.numero }}</td>
-                    <td>{{ ovr.numeroCEmercante }}</td>
-                    <td>{{ ovr.datahora }}</td>
-                    <td>{{ ovr.tipoevento.nome }}</td>
+                    <td><a href="ovr?id={{ovr[0]}}">{{ ovr[0] }}</a></td>
+                    {% for col in ovr[1:] %}
+                    <td>{{ col }}</td>
+                    {% endfor %}
                 </tr>
                 {% endfor %}
                 </tbody>
@@ -60,5 +52,9 @@
     function exporta_planilhaovr() {
         window.location.assign('exportaplanilhaovr');
     }
+
+
+
+
 </script>
 {% endblock %}

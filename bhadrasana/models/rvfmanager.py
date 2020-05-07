@@ -70,15 +70,6 @@ def cadastra_rvf(session,
                            {'ovr_id': ovr.id,
                             'numeroCEmercante': ovr.numeroCEmercante}
                            )
-        tipoevento = session.query(TipoEventoOVR).filter(
-            TipoEventoOVR.eventoespecial == EventoEspecial.RVF.value).first()
-        params = {'tipoevento_id': tipoevento.id,
-                  'motivo': 'RVF %s' % rvf.id,
-                  'user_name': rvf.user_name,
-                  'ovr_id': rvf.ovr_id
-                  }
-        evento = gera_eventoovr(session, params, commit=False)
-        session.add(evento)
     elif params:
         rvf = get_rvf(session, params.get('id'))
         usuario = get_usuario_logado(session, user_name)
@@ -86,8 +77,17 @@ def cadastra_rvf(session,
             ovr = get_ovr(session, rvf.ovr_id)
             if ovr.responsavel_cpf != usuario.cpf:
                 raise ESomenteMesmoUsuario()
-        if not rvf.user_name:
+        if not rvf.user_name: # RVF criada agora ou programada por outro usuário
             rvf.user_name = usuario.cpf
+            tipoevento = session.query(TipoEventoOVR).filter(
+                TipoEventoOVR.eventoespecial == EventoEspecial.RVF.value).first()
+            params = {'tipoevento_id': tipoevento.id,
+                      'motivo': 'RVF %s' % rvf.id,
+                      'user_name': rvf.user_name,
+                      'ovr_id': rvf.ovr_id
+                      }
+            evento = gera_eventoovr(session, params, commit=False)
+            session.add(evento)
         for key, value in params.items():
             setattr(rvf, key, value)
         rvf.datahora = handle_datahora(params)
