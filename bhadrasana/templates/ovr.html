@@ -4,63 +4,57 @@
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <input type="hidden" name="id" value="{{ oform.id.data }}"/>
         <div class="form-group">
-            <div class="row col=sm-12">
+            <div class="row">
                 <div class="col-sm-1">
                     <label for="id">ID</label>
+                    <div class="form-control">
+                        <span>{{ oform.id.data }}</span>
+                    </div>
                 </div>
                 <div class="col-sm-1">
                     <label for="numero">Número doc</label>
+                    {{ oform.numero(class='form-control')}}
                 </div>
                 <div class="col-sm-2">
                     <label for="tipooperacao">Tipo de Operação</label>
                     <span id="btn_roteiro" data-toggle="modal" data-target="#roteiro">(?)</span>
-                </div>
-                <div class="col-sm-3">
-                    <label>Recinto</label>
-                </div>
-                <div class="col-sm-4">
-                    <label>Status</label>
-                </div>
-                <div class="col-sm-1">
-                    <label for="user_name">Cadastrador</label>
-                </div>
-            </div>
-            <div class="row col=sm-12">
-                <div class="col-sm-1">
-                    <label>{{ oform.id.data }}</label>
-                </div>
-                <div class="col-sm-1">
-                    {{ oform.numero(class='form-control')}}
-                </div>
-                <div class="col-sm-2">
                     {{ oform.tipooperacao(class='form-control')}}
                 </div>
                 <div class="col-sm-3">
+                    <label>Recinto</label>
                     {{ oform.recinto_id(class='form-control')}}
                 </div>
-                <div class="col-sm-1">
-                    <div class="form-control">
+                <div class="col-sm-3">
+                    <label>Status</label>
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-control">
                             <span class="{{ ovr.get_class() }}">
                                 {{ ovr.get_fase() }}
                             </span>
-                    </div>
-                </div>
-                <div class="col-sm-3">
-                    <div class="form-control">
+                            </div>
+                        </div>
+                        <div class="col-sm-8">
+                            <div class="form-control">
                             <span class="{{ ovr.get_class() }}">
                                 {{ ovr.tipoevento.nome }}
                             </span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="col-sm-1">
-                    <label>{{ oform.user_name.data }}</label>
+                <div class="col-sm-2">
+                    <label for="user_name">Cadastrador</label>
+                    <div class="form-control">
+                        <span>{{ oform.user_name.data }}</span>
+                    </div>
                 </div>
             </div>
-            <div class="col-sm-12">
+            <div class="row col-sm-12">
                 CE Mercante
                 {{ oform.numeroCEmercante(class='form-control')}}
             </div>
-            <div class="col-sm-12">
+            <div class="row col-sm-12">
                 <div class="panel panel-info rounded-pill">
                     <div class="panel-heading rounded-pill">
                         {% if conhecimento %}
@@ -85,94 +79,91 @@
                     </div>
                 </div>
             </div>
-            <div class="col-sm-12">
+            <div class="row col-sm-12">
                 Declaração: DUE, DUIMP, etc
                 {{ oform.numerodeclaracao(class='form-control')}}
             </div>
-            <div class="col-sm-12">
+            <div class="row col-sm-12">
                 Observações
                 {{ oform.observacoes(class='form-control') }}
             </div>
-            <div class="col-sm-3">
-                <label for="adata">Data da Emissão</label>
-            </div>
-            <div class="col-sm-3">
-                <label for="adata">Data da Entrada da Carga</label>
-            </div>
-            <div class="col-sm-6">
-                <label for="responsavel">Responsável</label>
-            </div>
-            <div class="col-sm-3">
-                {{ oform.adata(class='form-control') }}
-            </div>
-            <div class="col-sm-3">
-                {{ oform.dataentrada(class='form-control') }}
-            </div>
-            <div class="col-sm-3">
-                <div class="form-control ">
-                    {{ ovr.responsavel.nome }}
+            <div class="row">
+                <div class="col-sm-3">
+                    <label for="adata">Data da Emissão</label>
+                    {{ oform.adata(class='form-control') }}
+                </div>
+                <div class="col-sm-3">
+                    <label for="adata">Data da Entrada da Carga</label>
+                    {{ oform.dataentrada(class='form-control') }}
+                </div>
+                <div class="col-sm-3">
+                    <label for="responsavel">Responsável</label>
+                    <div class="form-control">
+                        {{ ovr.responsavel.nome }}
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    &nbsp;
+                    {% if oform.id.data %}
+                    <button id="btn_responsavel" type="button" class="btn btn-warning form-control"
+                            data-toggle="modal" data-target="#responsavel">
+                        Atribuir responsável
+                    </button>
+                    {% endif %}
                 </div>
             </div>
-            <div class="col-sm-3">
-                {% if oform.id.data %}
-                <button id="btn_responsavel" type="button" class="btn btn-warning form-control"
-                        data-toggle="modal" data-target="#responsavel">
-                    Atribuir responsável
-                </button>
-                {% endif %}
-            </div>
-        </div>
-        <div class="row col-sm-12">
-            <div class="col-sm-3">
-                <h3>Observações importantes</h3>
-            </div>
-            <div class="col-sm-9">
-                <br>
-                <div class="ui-widget">
-                    <input id="flags" class="form-control">
+            <div class="row">
+                <div class="col-sm-3">
+                    <h3>Alertas / Observações importantes</h3>
+                </div>
+                <div class="col-sm-9">
+                    <br>
+                    <div class="ui-widget">
+                        <input id="flags" class="form-control">
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="row col-sm-12">
-            <div class="col-sm-12" id="div_flags_ovr">
-                {% for flag in flags_ovr %}
-                <button type="button" class="btn btn-primary">
-                    {{ flag.nome }} <span class="badge"
-                                          onclick="exclui_flag_ovr({{oform.id.data}}, {{ flag.id }})">X</span>
-                </button>
-                {% endfor %}
+            <div class="row">
+                <div class="col-sm-12" id="div_flags_ovr">
+                    {% for flag in flags_ovr %}
+                    <button type="button" class="btn btn-primary">
+                        {{ flag.nome }} <span class="badge"
+                                              onclick="exclui_flag_ovr({{oform.id.data}}, {{ flag.id }})">X</span>
+                    </button>
+                    {% endfor %}
+                </div>
             </div>
-        </div>
-        <div class="row col-sm-12">
-            &nbsp;<br>
-            <div class="col-sm-3">
-                <button class="btn btn-default btn-primary form-control" onclick="submit">
-                    Salvar
-                </button>
-            </div>
-            <div class="col-sm-3">
-                {% if oform.id.data %}
-                <button id="btn_rvf" type="button" class="btn btn-primary btn-success form-control"
-                        onclick="window.open('lista_rvfovr?ovr_id={{oform.id.data}}')">
-                    Verificações físicas ({{ qtdervfs }}) ({{ qtdeimagens }})
-                </button>
-                {% endif %}
-            </div>
-            <div class="col-sm-3">
-                {% if oform.id.data %}
-                <button id="btn_tg" type="button" class="btn btn-primary btn-success form-control"
-                        onclick="window.open('lista_tgovr?ovr_id={{oform.id.data}}')">
-                    Termo de Guarda de Mercadoria
-                </button>
-                {% endif %}
-            </div>
-            <div class="col-sm-3">
-                {% if oform.id.data %}
-                <button id="btn_auto" type="button" class="btn btn-primary btn-warning form-control"
-                        data-toggle="modal" data-target="#lavratura">
-                    Informar lavratura do Auto de Infração
-                </button>
-                {% endif %}
+            <div class="row">
+                &nbsp;<br>
+                <div class="col-sm-3">
+                    <button class="btn btn-default btn-primary form-control" onclick="submit">
+                        Salvar
+                    </button>
+                </div>
+                <div class="col-sm-3">
+                    {% if oform.id.data %}
+                    <button id="btn_rvf" type="button" class="btn btn-primary btn-success form-control"
+                            onclick="window.open('lista_rvfovr?ovr_id={{oform.id.data}}')">
+                        Verificações físicas ({{ qtdervfs }}) ({{ qtdeimagens }})
+                    </button>
+                    {% endif %}
+                </div>
+                <div class="col-sm-3">
+                    {% if oform.id.data %}
+                    <button id="btn_tg" type="button" class="btn btn-primary btn-success form-control"
+                            onclick="window.open('lista_tgovr?ovr_id={{oform.id.data}}')">
+                        Termos de Guarda
+                    </button>
+                    {% endif %}
+                </div>
+                <div class="col-sm-3">
+                    {% if oform.id.data %}
+                    <button id="btn_auto" type="button" class="btn btn-primary btn-warning form-control"
+                            data-toggle="modal" data-target="#lavratura">
+                        Lavratura do Auto de Infração
+                    </button>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </form>
@@ -538,6 +529,11 @@
         event.preventDefault();
       }
     });
+
+
+
+
+
 
 
 
