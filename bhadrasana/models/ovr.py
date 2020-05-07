@@ -332,6 +332,15 @@ class Relatorio(Base):
     sql = Column(Text())
 
 
+class VisualizacaoOVR(BaseRastreavel):
+    """Classe para registrar ultima visualizacao de um usuario."""
+    __tablename__ = 'ovr_visualizacoes'
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
+    ovr_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
+                    ForeignKey('ovr_ovrs.id'))
+    ovr = relationship('OVR')
+
+
 def create_marcas(session):
     """Cria testes para classe Marcas"""
     for nome in ('Adidas',
@@ -433,7 +442,8 @@ if __name__ == '__main__':  # pragma: no-cover
         # metadata.drop_all(engine)
         metadata.create_all(engine,
                             [
-                                metadata.tables['ovr_roteiros']
+                                metadata.tables['ovr_visualizacoes']
+                                # metadata.tables['ovr_roteiros'],
                                 # metadata.tables['ovr_flags'],
                                 # metadata.tables['ovr_flags_ovr'],
                             ])

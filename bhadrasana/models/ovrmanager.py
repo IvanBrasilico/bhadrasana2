@@ -11,7 +11,7 @@ from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto
     get_usuario_logado
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
     TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria, \
-    EventoEspecial, Flag, Relatorio, RoteiroOperacaoOVR, flags_table
+    EventoEspecial, Flag, Relatorio, RoteiroOperacaoOVR, flags_table, VisualizacaoOVR
 from bhadrasana.models.rvf import Infracao, infracoesencontradas_table, RVF
 
 
@@ -513,3 +513,16 @@ def exporta_planilhaovr(session: Session, user_name: str, filename: str):
     ovrs = pd.read_sql(sql_ovrs, session.get_bind())
     df = pd.merge(ovrs, processsos, how='outer', on='id')
     df.to_csv(filename)
+
+
+def cadastra_visualizacao(session, ovr: OVR, user_name: str) -> List[VisualizacaoOVR]:
+    visualizacao = VisualizacaoOVR()
+    return gera_objeto(visualizacao, session,
+                       {'ovr_id': ovr.id,
+                        'user_name': user_name}
+                       )
+
+
+def get_visualizacoes(session, ovr, user_name):
+    return session.query(VisualizacaoOVR).filter(VisualizacaoOVR.ovr_id == ovr.id). \
+        filter(VisualizacaoOVR.user_name == user_name).all()
