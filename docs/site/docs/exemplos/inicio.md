@@ -18,7 +18,7 @@ Seguem nomes de usuários e senhas para acesso:
 
 #####Equipe: Scotland Yard
 ######Chefe 
-*lestrade senha inspetor
+* lestrade senha inspetor
 ######Membros
 * macdonald senha inspetor
 
