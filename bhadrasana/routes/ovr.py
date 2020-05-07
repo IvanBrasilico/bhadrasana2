@@ -34,6 +34,8 @@ from bhadrasana.models.virasana_manager import get_conhecimento, \
 from bhadrasana.views import get_user_save_path, valid_file
 
 
+
+
 def ovr_app(app):
     def trata_ovr(request, ovr_id):
         session = app.config.get('dbsession')
@@ -200,14 +202,18 @@ def ovr_app(app):
             else:
                 active_tab = 'ovrs_meus_setores'
                 ovrs = get_ovr_filtro(session, current_user.name)
+            exibicao = ExibicaoOVR()
+            titulos_exibicao = exibicao.get_titulos()
             for ovr in ovrs:
-                listasovrs[str(ovr.fase) + '-' + ovr.get_fase()].append(ovr)
+                exibicao_ovr = exibicao.get_linha(ovr)
+                listasovrs[str(ovr.fase) + '-' + ovr.get_fase()].append(exibicao_ovr)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
             flash(type(err))
             flash(str(err))
         return render_template('minhas_ovrs.html',
+                               titulos=titulos_exibicao,
                                listasovrs=listasovrs,
                                active_tab=active_tab)
 
