@@ -195,6 +195,7 @@ def ovr_app(app):
     def minhas_ovrs():
         session = app.config.get('dbsession')
         listasovrs = defaultdict(list)
+        titulos_exibicao = []
         try:
             if 'minhas_ovrs' in request.url:
                 active_tab = 'minhas_ovrs'
@@ -202,11 +203,11 @@ def ovr_app(app):
             else:
                 active_tab = 'ovrs_meus_setores'
                 ovrs = get_ovr_filtro(session, current_user.name)
-            exibicao = ExibicaoOVR()
-            titulos_exibicao = exibicao.get_titulos()
+            # exibicao = ExibicaoOVR()
+            # titulos_exibicao = exibicao.get_titulos()
             for ovr in ovrs:
-                exibicao_ovr = exibicao.get_linha(ovr)
-                listasovrs[str(ovr.fase) + '-' + ovr.get_fase()].append(exibicao_ovr)
+                # exibicao_ovr = exibicao.get_linha(ovr)
+                listasovrs[str(ovr.fase) + '-' + ovr.get_fase()].append(ovr)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
