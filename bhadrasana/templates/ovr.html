@@ -347,6 +347,20 @@
                     <input type="hidden" name="ovr_id" value="{{ oform.id.data }}"/>
                     <div class="row">
                         <div class="col-sm-3">
+                            <label for="tipoevento">Status Atual</label>
+                        </div>
+                        <div class="col-sm-5">
+                            <div class="form-control">{{ovr.tipoevento.nome}}</div>
+                        </div>
+                        <div class="col-sm-1">
+                            <label for="tipoevento">Fase</label>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="form-control">{{ovr.get_fase()}}</div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-3">
                             <label for="tipoevento">Novo Status</label>
                         </div>
                         <div class="col-sm-9">
