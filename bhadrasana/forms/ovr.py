@@ -3,6 +3,7 @@ from wtforms import StringField, IntegerField, TextAreaField, SelectField
 from wtforms.fields.html5 import DateField, TimeField, DecimalField
 
 from bhadrasana.models.ovr import Enumerado
+from bhadrasana.forms.exibicao_ovr import TipoExibicao
 
 
 class OVRForm(FlaskForm):
@@ -191,3 +192,14 @@ class ItemTGForm(FlaskForm):
         self.marca_id.choices = [(None, 'Nenhuma')]
         if kwargs.get('marcas'):
             self.marca_id.choices.extend(kwargs.get('marcas'))
+
+
+class FiltroMinhasOVRsForm(FlaskForm):
+    datainicio = DateField(u'Data inicial da pesquisa')
+    datafim = DateField(u'Data final da pesquisa')
+    tipoexibicao = SelectField('Campos a serem exibidos na tela', default=1)
+    activetab = StringField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.tipoexibicao.choices = [(tipo.value, tipo.name) for tipo in TipoExibicao]

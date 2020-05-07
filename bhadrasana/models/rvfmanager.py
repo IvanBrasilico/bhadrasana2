@@ -77,7 +77,7 @@ def cadastra_rvf(session,
             ovr = get_ovr(session, rvf.ovr_id)
             if ovr.responsavel_cpf != usuario.cpf:
                 raise ESomenteMesmoUsuario()
-        if not rvf.user_name: # RVF criada agora ou programada por outro usuário
+        if not rvf.user_name:  # RVF criada agora ou programada por outro usuário
             rvf.user_name = usuario.cpf
             tipoevento = session.query(TipoEventoOVR).filter(
                 TipoEventoOVR.eventoespecial == EventoEspecial.RVF.value).first()

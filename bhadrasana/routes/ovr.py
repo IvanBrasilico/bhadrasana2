@@ -15,7 +15,8 @@ from werkzeug.utils import redirect
 from ajna_commons.flask.log import logger
 from bhadrasana.forms.exibicao_ovr import ExibicaoOVR
 from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
-    ProcessoOVRForm, ItemTGForm, ResponsavelOVRForm, TGOVRForm, FiltroRelatorioForm
+    ProcessoOVRForm, ItemTGForm, ResponsavelOVRForm, TGOVRForm, FiltroRelatorioForm, \
+    FiltroMinhasOVRsForm
 from bhadrasana.models import delete_objeto
 from bhadrasana.models.ovr import ItemTG, OVR
 from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
@@ -26,7 +27,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_tiposmercadoria_choice, \
     inclui_flag_ovr, exclui_flag_ovr, get_flags, informa_lavratura_auto, get_relatorios, \
     executa_relatorio, get_relatorio, get_afrfb, get_itens_roteiro_checked, \
-    get_flags_choice
+    get_flags_choice, cadastra_visualizacao
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
     get_infracoes_choice
@@ -91,6 +92,9 @@ def ovr_app(app):
                         except Exception as err:
                             logger.info(err)
                             pass
+                        # Extrai informacoes da OVR
+                        # Registra Visualização
+                        cadastra_visualizacao(session, ovr, current_user.id)
                         ovr_form.id.data = ovr.id
                         listahistorico = ovr.historico
                         processos = ovr.processos
@@ -188,21 +192,33 @@ def ovr_app(app):
                                oform=filtro_form,
                                ovrs=ovrs)
 
-    @app.route('/minhas_ovrs', methods=['GET'])
-    @app.route('/ovrs_meus_setores', methods=['GET'])
+    @app.route('/ovrs_meus_setores', methods=['GET', 'POST'])
+    @app.route('/minhas_ovrs', methods=['GET', 'POST'])
     @login_required
     def minhas_ovrs():
         session = app.config.get('dbsession')
         listasovrs = defaultdict(list)
         titulos_exibicao = []
+        today = datetime.date.today()
+        inicio = datetime.date(year=today.year, month=today.month, day=1)
+        if 'minhas_ovrs' in request.url:
+            active_tab = 'minhas_ovrs'
+        else:
+            active_tab = 'ovrs_meus_setores'
+        if request.method == 'POST':
+            oform = FiltroMinhasOVRsForm(request.form, active_tab=active_tab)
+        else:
+            oform = FiltroMinhasOVRsForm(datainicio=inicio,
+                                         datafim=datetime.date.today(),
+                                         active_tab=active_tab)
         try:
-            if 'minhas_ovrs' in request.url:
-                active_tab = 'minhas_ovrs'
+            oform.validate()
+            if active_tab == 'minhas_ovrs':
                 ovrs = get_ovr_responsavel(session, current_user.name)
             else:
-                active_tab = 'ovrs_meus_setores'
-                ovrs = get_ovr_filtro(session, current_user.name)
-            exibicao = ExibicaoOVR(ExibicaoOVR.tipos.descritivo)
+                ovrs = get_ovr_filtro(session, current_user.name,
+                                      dict(oform.data.items()))
+            exibicao = ExibicaoOVR(session, int(oform.tipoexibicao.data), current_user.id)
             titulos_exibicao = exibicao.get_titulos()
             for ovr in ovrs:
                 exibicao_ovr = exibicao.get_linha(ovr)
@@ -214,6 +230,7 @@ def ovr_app(app):
             flash(type(err))
             flash(str(err))
         return render_template('minhas_ovrs.html',
+                               oform=oform,
                                titulos=titulos_exibicao,
                                listasovrs=listasovrs,
                                active_tab=active_tab)
