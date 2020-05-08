@@ -109,6 +109,7 @@ def rvf_app(app):
                 usuario = get_usuario(session, arvf.user_name)
                 if usuario:
                     rvf_form.user_descricao.data = usuario.nome
+
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')

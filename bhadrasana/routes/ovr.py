@@ -583,27 +583,24 @@ def ovr_app(app):
         imagens = {}
         try:
             ovr_id = request.args.get('ovr_id')
-            container = request.args.get('container')
             ovr = get_ovr(session, ovr_id)
             if ovr is None or ovr.id is None:
                 raise KeyError('OVR não encontrada')
-            conhecimento = get_conhecimento(session, ovr.numeroCEmercante)
-            containers = get_containers_conhecimento(session, ovr.numeroCEmercante)
+            container = request.args.get('container')
             imagens = get_imagens(mongodb, ovr.numeroCEmercante)
             imagens = {item['metadata']['numeroinformado']: str(item['_id'])
                        for item in imagens}
-            print(imagens)
+            if container:
+                programa_rvf_container(
+                    mongodb, mongo_risco, session,
+                    ovr, container, imagens.get(container)
+                )
+                return redirect(url_for('programa_rvf_ajna', ovr_id=ovr_id))
+            conhecimento = get_conhecimento(session, ovr.numeroCEmercante)
+            containers = get_containers_conhecimento(session, ovr.numeroCEmercante)
             lista_rvf = lista_rvfovr(session, ovr_id)
             if lista_rvf:
                 containers_com_rvf = {rvf.numerolote: rvf.id for rvf in lista_rvf}
-            if container:
-                rvf = programa_rvf_container(
-                    mongodb, mongo_risco, session, current_user.id,
-                    ovr.id, container, imagens.get(container)
-                )
-                # Atualizar lista_rvf quando container passado
-                if rvf:
-                    containers_com_rvf[rvf.numerolote] = rvf.id
         except Exception as err:
             flash(str(err))
             logger.error(str(err), exc_info=True)

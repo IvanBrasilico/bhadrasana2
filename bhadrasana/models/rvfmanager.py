@@ -8,7 +8,7 @@ from ajna_commons.flask.log import logger
 from ajna_commons.models.bsonimage import BsonImage
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, \
     get_usuario_logado, gera_objeto
-from bhadrasana.models.ovr import Marca, TipoEventoOVR, EventoEspecial
+from bhadrasana.models.ovr import Marca, TipoEventoOVR, EventoEspecial, OVR
 from bhadrasana.models.ovrmanager import get_ovr, gera_eventoovr
 from bhadrasana.models.rvf import RVF, Infracao, ImagemRVF, Lacre
 
@@ -102,10 +102,20 @@ def cadastra_rvf(session,
     return rvf
 
 
-def programa_rvf_container(mongodb, mongodb_risco, session, user_name,
-                           ovr_id: int, container: str, id_imagem: str) -> RVF:
-    rvf = cadastra_rvf(session, user_name, ovr_id=ovr_id)
+def programa_rvf_container(mongodb, mongodb_risco, session,
+                           ovr: OVR, container: str, id_imagem: str) -> RVF:
+    rvf = RVF()
+    rvf.ovr_id = ovr.id
+    rvf.numeroCEmercante = ovr.numeroCEmercante
     rvf.numerolote = container
+    try:
+        session.add(rvf)
+        session.commit()
+        session.refresh(rvf)
+    except Exception as err:
+        session.rollback()
+        logger.error(err, exc_info=True)
+        raise err
     # copia imagem do Banco virasana para bhadrasana e gera objeto ImagemRVF
     fs = GridFS(mongodb)
     try:
@@ -114,13 +124,6 @@ def programa_rvf_container(mongodb, mongodb_risco, session, user_name,
                          grid_out.filename, rvf.id)
     except NoFile as err:
         logger.error(err)
-    try:
-        session.add(rvf)
-        session.commit()
-    except Exception as err:
-        session.rollback()
-        logger.error(err, exc_info=True)
-        raise err
     return rvf
 
 
@@ -243,9 +246,14 @@ def swap_ordem(session, imagem_rvf: ImagemRVF, ordem_nova: int):
     if imagem_rvf_ordem:
         imagem_rvf_ordem.ordem = imagem_rvf.ordem
         imagem_rvf.ordem = ordem_nova
-        session.add(imagem_rvf_ordem)
-        session.add(imagem_rvf)
-        session.commit()
+        try:
+            session.add(imagem_rvf_ordem)
+            session.add(imagem_rvf)
+            session.commit()
+        except Exception as err:
+            session.rollback()
+            logger.error(err, exc_info=True)
+            raise err
 
 
 def inclui_imagemrvf(mongodb, session, image, filename, rvf_id):
@@ -260,8 +268,13 @@ def inclui_imagemrvf(mongodb, session, image, filename, rvf_id):
     imagem.imagem = str(_id)
     imagem.descricao = filename
     imagem.ordem = len(rvf.imagens) + 1
-    session.add(imagem)
-    session.commit()
+    try:
+        session.add(imagem)
+        session.commit()
+    except Exception as err:
+        session.rollback()
+        logger.error(err, exc_info=True)
+        raise err
 
 
 def cadastra_imagemrvf(session, params=None):

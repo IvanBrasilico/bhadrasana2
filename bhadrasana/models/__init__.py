@@ -91,8 +91,6 @@ def get_usuario_logado(session, user_name: str) -> Usuario:
 
 
 def get_usuario(session, user_name: str) -> Usuario:
-    if user_name is None:
-        raise KeyError('Usuário não foi informado!')
     return session.query(Usuario).filter(
         Usuario.cpf == user_name).one_or_none()
 
