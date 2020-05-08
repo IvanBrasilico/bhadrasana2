@@ -27,19 +27,13 @@ Mac Donald entra no Sistema
 
 5 - Informa intimação
 
-![Equipe SY](../images/Yb4.png)
-
 ![Equipe SY](../images/Yb5.png)
 
 6 - Recebe saneamento e informa
-
-![Equipe SY](../images/Yb4.png)
 
 ![Equipe SY](../images/Yb6.png)
 
 7 - Devolve para Lestrade
 
 ![Equipe SY](../images/Yb7.png)
-
-![Equipe SY](../images/Yb7b.png)
 
