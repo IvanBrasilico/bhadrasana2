@@ -83,6 +83,7 @@ def rvf_app(app):
             # ELSE
             ovr_id = request.args.get('ovr')
             if ovr_id is not None:
+                print()
                 arvf = cadastra_rvf(session, ovr_id=ovr_id,
                                     user_name=current_user.name)
                 session.refresh(arvf)
