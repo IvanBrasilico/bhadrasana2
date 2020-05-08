@@ -21,6 +21,7 @@ from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, \
     make_and_save_transformation, exclui_lacre_verificado, \
     inclui_lacre_verificado, get_imagemrvf, inclui_nova_ordem_arquivo
 from bhadrasana.views import csrf, valid_file
+from bhadrasana.models import get_usuario_logado, get_usuario
 
 
 def rvf_app(app):
@@ -59,6 +60,7 @@ def rvf_app(app):
     @login_required
     def rvf():
         session = app.config.get('dbsession')
+        get_usuario_logado(session, current_user.id)
         infracoes = []
         infracoes_encontradas = []
         marcas = []
@@ -104,6 +106,9 @@ def rvf_app(app):
                 # Temporário - para recuperar imagens "perdidas" na transição
                 ressuscita_anexos_perdidos(db, session, arvf)
                 anexos = get_ids_anexos_ordenado(arvf)
+                usuario = get_usuario(session, arvf.user_name)
+                if usuario:
+                    rvf_form.user_descricao.data = usuario.nome
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')

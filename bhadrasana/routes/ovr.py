@@ -17,7 +17,7 @@ from bhadrasana.forms.exibicao_ovr import ExibicaoOVR
 from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
     ProcessoOVRForm, ItemTGForm, ResponsavelOVRForm, TGOVRForm, FiltroRelatorioForm, \
     FiltroMinhasOVRsForm
-from bhadrasana.models import delete_objeto
+from bhadrasana.models import delete_objeto, get_usuario
 from bhadrasana.models.ovr import ItemTG, OVR
 from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_ovr_filtro, gera_eventoovr, get_tipos_evento, \
@@ -104,6 +104,9 @@ def ovr_app(app):
                         qtdervfs = len(rvfs)
                         for rvf in rvfs:
                             qtdeimagens += len(rvf.imagens)
+                        usuario = get_usuario(session, ovr.user_name)
+                        if usuario:
+                            ovr_form.user_descricao.data = usuario.nome
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
