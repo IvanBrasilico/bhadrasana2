@@ -79,15 +79,22 @@ def handle_datahora(params):
     return datetime.datetime.combine(data, hora)
 
 
-def get_usuario_logado(session, user_name: str):
+def get_usuario_logado(session, user_name: str) -> Usuario:
     if user_name is None:
         raise KeyError('Usuário não foi informado!')
     usuario = session.query(Usuario).filter(
         Usuario.cpf == user_name).one_or_none()
     if not usuario:
         raise ENaoAutorizado('Usuário %s inválido ou não informado.' % user_name +
-                             'Somente Usuários habilitados podem salvar.')
+                             'Somente Usuários habilitados podem acessar.')
     return usuario
+
+
+def get_usuario(session, user_name: str) -> Usuario:
+    if user_name is None:
+        raise KeyError('Usuário não foi informado!')
+    return session.query(Usuario).filter(
+        Usuario.cpf == user_name).one_or_none()
 
 
 def gera_objeto(instance: object, session, params):
