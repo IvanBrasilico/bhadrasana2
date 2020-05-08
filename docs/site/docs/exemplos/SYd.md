@@ -1,11 +1,18 @@
 Mycroft entra no Sistema para acompanhar 
 
-1 - Acompanha fichas do Setor (exibe das duas equipes)
+1 - Acompanha fichas do Setor 
 
-![Equipe SY](../images/Yd1.png)
+Note-se que, como o Usuário mycroft está um uma divisão que possui duas equipes, fichas 
+das duas equipes são exibidas. É possível optar por diversos conuntos de campos mudando 
+a seleção "Campos a visualizar".
 
-Mycroft pesquisa por documento falso, interposição, etc
+![Equipe SY](../images/SYd1.png)
+
+![Equipe SY](../images/SYd1.png)
 
 2 - Roda pesquisa Ficha
 
-![Equipe SY](../images/Yd2.png)
+Além da visualização rápida de fichas de interesse em "Minhas Fichas", é possível fazer pesquisa por filtros
+ personalizados. Abaixo, pesquisa por intervalo de datas de fichas com alerta de "Perecível".
+ 
+![Equipe SY](../images/SYd3.png)
