@@ -19,6 +19,6 @@ Registrar a geração de arquivos CTMA com o Evento específico do botão "Movim
 
 Os números dos processos do Auto e da RFFP podem ser informados no botão "Informar Processo" 
 
-![Equipe SY](../images/Yc3.png
+![Equipe SY](../images/Yc3.png)
 
 
