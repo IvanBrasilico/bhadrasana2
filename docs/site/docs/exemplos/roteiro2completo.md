@@ -3,7 +3,7 @@ Roteiro de uso da ficha de controle de carga - fluxo importação
 Segunda parte - Equipe Scotland Yard
 
 
-Inspetor Lestrade, da Equipe , seleciona o CEs-Mercante 152005080025807 para verificação:
+Inspetor Lestrade, da Equipe SY, seleciona o CEs-Mercante 152005080025807 para verificação:
 
 1 - Criar ficha para CE 152005080025807 (Interposta/Documento Falso)
 
@@ -25,7 +25,7 @@ Mac Donald entra no Sistema
 
 7 - Devolve para Lestrade
 
-Holmes recebe de volta a ficha
+Lestrade recebe de volta a ficha
 
 1 - Consulta suas fichas
 

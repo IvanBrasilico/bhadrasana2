@@ -57,6 +57,19 @@ def lista_rvfovr(session, ovr_id: int) -> List[RVF]:
     return session.query(RVF).filter(RVF.ovr_id == ovr_id).all()
 
 
+def gera_evento_rvf(session, rvf):
+    tipoevento = session.query(TipoEventoOVR).filter(
+        TipoEventoOVR.eventoespecial == EventoEspecial.RVF.value).first()
+    params = {'tipoevento_id': tipoevento.id,
+              'motivo': 'RVF %s' % rvf.id,
+              'user_name': rvf.user_name,
+              'ovr_id': rvf.ovr_id
+              }
+    evento = gera_eventoovr(session, params, commit=False)
+    session.add(evento)
+    return evento
+
+
 def cadastra_rvf(session,
                  user_name: str,
                  params: dict = None,
@@ -70,6 +83,7 @@ def cadastra_rvf(session,
                            {'ovr_id': ovr.id,
                             'numeroCEmercante': ovr.numeroCEmercante}
                            )
+        # gera_evento_rvf(session, rvf)
     elif params:
         rvf = get_rvf(session, params.get('id'))
         usuario = get_usuario_logado(session, user_name)
@@ -79,15 +93,7 @@ def cadastra_rvf(session,
                 raise ESomenteMesmoUsuario()
         if not rvf.user_name:  # RVF criada agora ou programada por outro usuário
             rvf.user_name = usuario.cpf
-            tipoevento = session.query(TipoEventoOVR).filter(
-                TipoEventoOVR.eventoespecial == EventoEspecial.RVF.value).first()
-            params = {'tipoevento_id': tipoevento.id,
-                      'motivo': 'RVF %s' % rvf.id,
-                      'user_name': rvf.user_name,
-                      'ovr_id': rvf.ovr_id
-                      }
-            evento = gera_eventoovr(session, params, commit=False)
-            session.add(evento)
+            gera_evento_rvf(session, rvf)
         for key, value in params.items():
             setattr(rvf, key, value)
         rvf.datahora = handle_datahora(params)
