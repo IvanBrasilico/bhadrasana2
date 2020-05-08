@@ -6,12 +6,19 @@ Lestrade recebe de volta a ficha
 
 2 - Consulta check-list
 
+Clicar no ? ao lado do Tipo de Operação, no alto da tela.
+
 ![Equipe SY](../images/Yc2.png)
 
-3 - Faz Auto de Infração, RFFP, arquivos CTMA/Secta e informa
+3 - Faz Auto de Infração, RFFP, arquivos CTMA/Secta, atualiza bloqueio do CARGA, etc,
+ e informa Eventos e Processos
 
-![Equipe SY](../images/Yc3.png)
+O Auto de Infração é informado no botão "Lavratura de Auto"
 
-4 - Atualiza bloqueio do CARGA e informa Evento
+Registrar a geração de arquivos CTMA com o Evento específico do botão "Movimentar" 
 
-![Equipe SY](../images/Yc4.png)
+Os números dos processos do Auto e da RFFP podem ser informados no botão "Informar Processo" 
+
+![Equipe SY](../images/Yc3.png
+
+

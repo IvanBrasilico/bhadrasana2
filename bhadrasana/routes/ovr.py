@@ -304,19 +304,20 @@ def ovr_app(app):
     @login_required
     def informalavraturaauto():
         session = app.config.get('dbsession')
-        ovr_id = None
+        ovr_id = 0
         try:
+            print(request.form)
             responsavel_ovr_form = ResponsavelOVRForm(request.form)
+            responsavel_ovr_form.validate()
             ovr_id = responsavel_ovr_form.ovr_id.data
             informa_lavratura_auto(session,
                                    ovr_id=ovr_id,
                                    responsavel=responsavel_ovr_form.responsavel.data
                                    )
-            return redirect(url_for('ovr', id=ovr_id))
         except Exception as err:
-            logger.error(err, exc_info=True)
+            logger.error(str(err), exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
-            flash(type(err))
+            flash(str(type(err)))
             flash(str(err))
         return redirect(url_for('ovr', id=ovr_id))
 

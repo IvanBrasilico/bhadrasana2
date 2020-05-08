@@ -83,7 +83,8 @@ def cadastra_rvf(session,
                            {'ovr_id': ovr.id,
                             'numeroCEmercante': ovr.numeroCEmercante}
                            )
-        # gera_evento_rvf(session, rvf)
+        session.refresh(rvf)
+        gera_evento_rvf(session, rvf)
     elif params:
         rvf = get_rvf(session, params.get('id'))
         usuario = get_usuario_logado(session, user_name)
@@ -93,7 +94,6 @@ def cadastra_rvf(session,
                 raise ESomenteMesmoUsuario()
         if not rvf.user_name:  # RVF criada agora ou programada por outro usuário
             rvf.user_name = usuario.cpf
-            gera_evento_rvf(session, rvf)
         for key, value in params.items():
             setattr(rvf, key, value)
         rvf.datahora = handle_datahora(params)
