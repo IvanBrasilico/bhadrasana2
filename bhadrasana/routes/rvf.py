@@ -138,8 +138,6 @@ def rvf_app(app):
                 flash('rvf %s não encontrado.' % rvf_id)
                 return redirect(url_for('pesquisa_rvf'))
             marcas_encontradas = rvf.marcasencontradas
-            # Temporário - para recuperar imagens "perdidas" na transição
-            ressuscita_anexos_perdidos(db, session, rvf)
             anexos = get_ids_anexos_ordenado(rvf)
         except Exception as err:
             logger.error(err, exc_info=True)
@@ -212,7 +210,7 @@ def rvf_app(app):
     @login_required
     def rvf_imgupload():
         db = app.config['mongo_risco']
-        fs = GridFS(db)
+        session = app.config.get('dbsession')
         rvf_id = request.form.get('rvf_id')
         if rvf_id is None:
             flash('Escolha um RVF antes')
@@ -225,9 +223,7 @@ def rvf_app(app):
                 print('Não é válido %s' % mensagem)
                 return redirect(url_for('rvf', id=rvf_id))
             content = file.read()
-            bson_img = BsonImage()
-            bson_img.set_campos(file.filename, content, rvf_id=rvf_id)
-            bson_img.tomongo(fs)
+            inclui_imagemrvf(db, session, content, file.filename, rvf_id)
         return redirect(url_for('rvf', id=rvf_id))
 
     @csrf.exempt
@@ -264,8 +260,12 @@ def rvf_app(app):
         _id = request.args.get('_id')
         db = app.config['mongo_risco']
         session = app.config.get('dbsession')
-        rvf_id = delete_imagemrvf(db, session, _id)
-        return redirect(url_for('rvf', id=rvf_id))
+        try:
+            rvf_id = delete_imagemrvf(db, session, _id)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            return jsonify({'msg': str(err)}), 500
+        return jsonify({'msg': ' RVF %s excluída' % rvf_id}), 204
 
     @app.route('/ver_imagens_rvf', methods=['GET'])
     @login_required
@@ -282,9 +282,7 @@ def rvf_app(app):
             idimagemativa = request.args.get('imagem')
             if rvf_id is None:
                 raise Exception('RVF não informado!!!')
-            # Temporário - para recuperar imagens "perdidas" na transição
             rvf = get_rvf(session, rvf_id)
-            ressuscita_anexos_perdidos(db, session, rvf)
             anexos = get_ids_anexos_ordenado(rvf)
             aimagemrvf = get_imagemrvf_or_none(session, rvf_id, idimagemativa)
             if aimagemrvf is not None:
