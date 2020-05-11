@@ -185,11 +185,10 @@ def mynavbar():
              Subgroup(
                  'Pesquisas',
                  View('Minhas Fichas', 'minhas_ovrs'),
-                 View('Pesquisa Contêiner', 'minhas_ovrs'),
+                 View('Pesquisa Contêiner', 'consulta_container'),
                  Separator(),
                  View('Relatórios', 'ver_relatorios')
-             )
-             ]
+             )]
     if current_user.is_authenticated:
         items.append(View('Sair (%s)' % current_user.id, 'commons.logout'))
     return Navbar(logo, *items)
