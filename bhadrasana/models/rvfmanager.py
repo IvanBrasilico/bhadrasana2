@@ -302,7 +302,7 @@ def delete_imagemrvf(mongodb, session, _id: str):
     elif grid_out.get('metadata'):
         rvf_id = grid_out.get('metadata').get('rvf_id')
     session.delete(imagemrvf)
-    session.commmit()
+    session.commit()
     mongodb['fs.files'].delete_one({'_id': ObjectId(_id)})
     return rvf_id
 
