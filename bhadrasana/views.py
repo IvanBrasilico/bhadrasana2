@@ -21,21 +21,21 @@ import io
 import os
 import tempfile
 
-import ajna_commons.flask.login as login_ajna
 from PIL import Image
-from ajna_commons.flask.conf import ALLOWED_EXTENSIONS, SECRET, logo
-from ajna_commons.flask.log import logger
-from ajna_commons.flask.user import DBUser
-from ajna_commons.utils.images import mongo_image, PIL_tobytes
 from flask import (Flask, redirect, render_template, request,
                    url_for, Response)
 from flask_bootstrap import Bootstrap
 # from flask_cors import CORS
 from flask_login import current_user
 from flask_nav import Nav
-from flask_nav.elements import Navbar, View
+from flask_nav.elements import Navbar, View, Separator, Subgroup
 from flask_wtf.csrf import CSRFProtect
 
+import ajna_commons.flask.login as login_ajna
+from ajna_commons.flask.conf import ALLOWED_EXTENSIONS, SECRET, logo
+from ajna_commons.flask.log import logger
+from ajna_commons.flask.user import DBUser
+from ajna_commons.utils.images import mongo_image, PIL_tobytes
 from bhadrasana.conf import APP_PATH
 
 tmpdir = tempfile.mkdtemp()
@@ -182,8 +182,13 @@ def mynavbar():
              View('Editar Riscos', 'edita_risco'),
              View('Verificações físicas', 'pesquisa_rvf'),
              View('Ficha de Carga', 'pesquisa_ovr'),
-             View('Minhas Fichas', 'minhas_ovrs'),
-             View('Relatórios', 'ver_relatorios'),
+             Subgroup(
+                 'Pesquisas',
+                 View('Minhas Fichas', 'minhas_ovrs'),
+                 View('Pesquisa Contêiner', 'minhas_ovrs'),
+                 Separator(),
+                 View('Relatórios', 'ver_relatorios')
+             )
              ]
     if current_user.is_authenticated:
         items.append(View('Sair (%s)' % current_user.id, 'commons.logout'))

@@ -41,7 +41,8 @@ lacresverificados_table = Table('ovr_lacresverificados', metadata,
 
 class RVF(BaseRastreavel):
     __tablename__ = 'ovr_verificacoesfisicas'
-    id = Column(BigInteger(), primary_key=True)
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'),
+                primary_key=True)
     ovr_id = Column(BigInteger(), ForeignKey('ovr_ovrs.id'), index=True)
     ovr = relationship('OVR')
     numeroCEmercante = Column(VARCHAR(15), index=True)

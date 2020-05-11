@@ -2,26 +2,20 @@
 <div id="main" class="container-fluid">
     <div id="top" class="row col-sm-12">
         <div class="form-group">
-            <form method="POST" id="filtroformrvf" action="pesquisa_rvf">
+            <form method="POST" id="filtrocontainer" action="consulta_container">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="row">
-                    <div class="col-sm-2">
-                        <label for="numeroCEmercante">Número CE-Mercante</label>
-                    </div>
                     <div class="col-sm-2">
                         <label for="numerolote">Número do Contêiner ou Lote</label>
                     </div>
                     <div class="col-sm-4">
                         <label for="datainicio">Início e fim de período de pesquisa</label>
                     </div>
-                    <div class="col-sm-4">
+                    <div class="col-sm-6">
                     </div>
                 </div>
                 <div class="row">
                     <div class="form-group">
-                        <div class="col-sm-2">
-                            {{ oform.numeroCEmercante(class='form-control') }}
-                        </div>
                         <div class="col-sm-2">
                             {{ oform.numerolote(class='form-control') }}
                         </div>
@@ -31,7 +25,7 @@
                         <div class="col-sm-2">
                             {{ oform.datafim(class='form-control') }}
                         </div>
-                        <div class="col-sm-4">
+                        <div class="col-sm-6">
                         </div>
                     </div>
                 </div>
@@ -51,11 +45,58 @@
             </form>
         </div>
     </div>
-    <div id="list" class="row col-sm-12">
+    <div class="row">
+        &nbsp;<br>
+    </div>
+    <div class="row">
+        <h2>Fichas</h2>
+    </div>
+    <div id="list_ovr" class="row col-sm-12">
         &nbsp;<br>
         <div class="table">
             <table class="inlineTable table table-bordered table-hover table-responsive"
-                   id="filtro_personalizado_table">
+                   id="ovr_table">
+                <thead>
+                <tr>
+                    <th>Ficha Nº</th>
+                    <th>Tipo Operação</th>
+                    <th>Recinto</th>
+                    <th>Ano</th>
+                    <th>Número doc.</th>
+                    <th>CE Mercante</th>
+                    <th>Data</th>
+                    <th>Último Evento</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for ovr in ovrs %}
+                <tr>
+                    <td><a href="ovr?id={{ ovr.id }}">{{ ovr.id }}</a></td>
+                    <td>{{ ovr.get_tipooperacao() }}</td>
+                    <td>{{ ovr.recinto.nome }}</td>
+                    <td>{{ ovr.get_ano() }}</td>
+                    <td>{{ ovr.numero }}</td>
+                    <td>{{ ovr.numeroCEmercante }}</td>
+                    <td>{{ ovr.datahora }}</td>
+                    <td>{{ ovr.tipoevento.nome }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="row">
+        &nbsp;<br>
+    </div>
+    <div class="row">
+        &nbsp;<br>
+        <h2> Verificações físicas</h2>
+    </div>
+    <div id="list_rvf" class="row col-sm-12">
+        &nbsp;<br>
+        <div class="table">
+            <table class="inlineTable table table-bordered table-hover table-responsive"
+                   id="rvf_table">
                 <thead>
                 <tr>
                     <th></th>

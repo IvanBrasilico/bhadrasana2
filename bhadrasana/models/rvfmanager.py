@@ -1,3 +1,4 @@
+from datetime import timedelta
 from typing import Callable, List
 
 from bson import ObjectId
@@ -33,6 +34,10 @@ def get_rvfs_filtro(session, pfiltro):
             pfiltro.get('numerolote') + '%'), filtro)
     if pfiltro.get('datainicio'):
         filtro = and_(RVF.datahora >= pfiltro.get('datainicio'), filtro)
+    datafim = pfiltro.get('datafim')
+    if datafim:
+        datafim = datafim + timedelta(days=1)
+        filtro = and_(RVF.datahora <= datafim, filtro)
     rvfs = session.query(RVF).filter(filtro).all()
     return [rvf for rvf in rvfs]
 
@@ -262,9 +267,9 @@ def swap_ordem(session, imagem_rvf: ImagemRVF, ordem_nova: int):
             raise err
 
 
-def inclui_imagemrvf(mongodb, session, image, filename, rvf_id):
+def inclui_imagemrvf(mongodb, session, image, filename, rvf_id: int):
     bson_img = BsonImage()
-    bson_img.set_campos(filename, image, rvf_id=rvf_id)
+    bson_img.set_campos(filename, image, rvf_id=str(rvf_id))
     fs = GridFS(mongodb)
     _id = bson_img.tomongo(fs)
     print(rvf_id, filename)

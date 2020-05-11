@@ -13,6 +13,7 @@ from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
     TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria, \
     EventoEspecial, Flag, Relatorio, RoteiroOperacaoOVR, flags_table, VisualizacaoOVR
 from bhadrasana.models.rvf import Infracao, infracoesencontradas_table, RVF
+from virasana.integracao.mercante.mercantealchemy import Item
 
 
 def get_recintos(session) -> List[Tuple[int, str]]:
@@ -121,7 +122,9 @@ def get_ovr_responsavel(session, user_name: str) -> List[OVR]:
     return session.query(OVR).filter(OVR.responsavel_cpf == user_name).all()
 
 
-def get_ovr_filtro(session, user_name: str, pfiltro: dict = None, filtrar_setor=True):
+def get_ovr_filtro(session, user_name: str,
+                   pfiltro: dict = None,
+                   filtrar_setor=True) -> List[OVR]:
     filtro = and_()
     if filtrar_setor:
         ids_setores = [setor.id for setor in get_setores_cpf(session, user_name)]
@@ -164,6 +167,23 @@ def get_ovr_filtro(session, user_name: str, pfiltro: dict = None, filtrar_setor=
     ovrs = session.query(OVR).filter(filtro).all()
     logger.info(str(pfiltro))
     logger.info(str(filtro))
+    return [ovr for ovr in ovrs]
+
+
+def get_ovr_container(session, numerolote: str,
+                      datainicio: datetime = None,
+                      datafim: datetime = None) -> List[OVR]:
+    itens = session.query(Item).filter(
+        Item.codigoConteiner.ilike(numerolote)).all()
+    listaCE = [item.numeroCEmercante for item in itens]
+    filtro = and_()
+    if datainicio:
+        filtro = and_(OVR.datahora >= datainicio, filtro)
+    if datafim:
+        datafim = datafim + timedelta(days=1)
+        filtro = and_(OVR.datahora <= datafim, filtro)
+    filtro = and_(OVR.numeroCEmercante.in_(listaCE), filtro)
+    ovrs = session.query(OVR).filter(filtro).all()
     return [ovr for ovr in ovrs]
 
 
