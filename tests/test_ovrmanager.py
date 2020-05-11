@@ -6,6 +6,8 @@ from typing import List, Tuple
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+import virasana.integracao.mercante.mercantealchemy as mercante
+
 sys.path.append('.')
 
 from bhadrasana.models import Usuario, Setor
@@ -14,70 +16,29 @@ from bhadrasana.models.ovr import metadata, OVR, Enumerado, Recinto, \
 
 from bhadrasana.models.ovrmanager import get_usuarios, cadastra_ovr, gera_eventoovr, \
     gera_processoovr, cadastra_tgovr, atribui_responsavel_ovr, get_recintos, \
-    get_setores_filhos_recursivo, get_tipos_evento, get_tipos_processo, get_flags_choice, get_flags
+    get_setores_filhos_recursivo, get_tipos_evento, get_tipos_processo, get_flags_choice, get_flags, get_ovr_container
 
 engine = create_engine('sqlite://')
 Session = sessionmaker(bind=engine)
 session = Session()
 metadata.create_all(engine)
+mercante.metadata.create_all(engine, [
+    mercante.metadata.tables['itensresumo']
+])
 
 create_tiposevento(session)
 create_tiposprocesso(session)
 create_flags(session)
 
+from test_base import BaseTestCase
 
-class TestCase(unittest.TestCase):
+class OVRTestCase(BaseTestCase):
 
     def setUp(self) -> None:
-        pass
+        super().setUp(session)
 
     def debug(self) -> None:
         pass
-
-    def create_usuario(self, cpf, nome):
-        usuario = session.query(Usuario).filter(Usuario.cpf == cpf).one_or_none()
-        if usuario:
-            return usuario
-        usuarios = get_usuarios(session)
-        numeroatual = len(usuarios)
-        usuario = Usuario()
-        usuario.cpf = cpf
-        usuario.nome = nome
-        session.add(usuario)
-        session.commit()
-        usuarios = get_usuarios(session)
-        assert usuarios[numeroatual][0] == usuario.cpf
-        return usuario
-
-    def create_recinto(self, nome):
-        recintos = get_recintos(session)
-        numeroatual = len(recintos)
-        recinto = Recinto()
-        recinto.nome = nome
-        session.add(recinto)
-        session.commit()
-        recintos = get_recintos(session)
-        assert recintos[numeroatual][1] == recinto.nome
-        return recinto
-
-    def create_OVR_valido(self) -> OVR:
-        params = {}
-        # params['id'] = 0
-        recinto = self.create_recinto('Teste OVR')
-        usuario = self.create_usuario('123', 'user1')
-        session.refresh(recinto)
-        params['fase'] = 0
-        params['numero'] = 1
-        params['numeroCEmercante'] = 11
-        params['adata'] = '2020-01-01'
-        params['ahora'] = '13:13'
-        params['recinto_id'] = recinto.id
-        params['user_name'] = usuario.cpf
-        ovr = cadastra_ovr(session, params, '123')
-        assert ovr.id is not None
-        assert ovr.datahora == datetime(2020, 1, 1, 13, 13)
-        assert ovr.recinto_id == recinto.id
-        return ovr
 
     def test_OVR_Evento(self):
         ovr = self.create_OVR_valido()
@@ -216,6 +177,21 @@ class TestCase(unittest.TestCase):
         assert isinstance(flags, list)
         assert len(flags) > 0
         assert isinstance(flags[0], Flag)
+
+    def test_get_ovrs_container(self):
+        ovr1, ovr2 = self.create_OVRs_test_ovrs_container()
+        ovrs = get_ovr_container(session, '1')
+        assert len(ovrs) == 1
+        assert ovr1 in ovrs
+        ovrs = get_ovr_container(session, '2')
+        assert len(ovrs) == 1
+        assert ovr1 in ovrs
+        ovrs = get_ovr_container(session, '3')
+        assert len(ovrs) == 1
+        assert ovr2 in ovrs
+        ovrs = get_ovr_container(session, '4')
+        assert len(ovrs) == 0
+
 
 
 

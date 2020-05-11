@@ -14,6 +14,7 @@ from werkzeug.utils import redirect
 
 from ajna_commons.flask.log import logger
 from bhadrasana.forms.exibicao_ovr import ExibicaoOVR
+from bhadrasana.forms.filtro_container import FiltroContainerForm
 from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
     ProcessoOVRForm, ItemTGForm, ResponsavelOVRForm, TGOVRForm, FiltroRelatorioForm, \
     FiltroMinhasOVRsForm
@@ -27,10 +28,11 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_tiposmercadoria_choice, \
     inclui_flag_ovr, exclui_flag_ovr, get_flags, informa_lavratura_auto, get_relatorios, \
     executa_relatorio, get_relatorio, get_afrfb, get_itens_roteiro_checked, \
-    get_flags_choice, cadastra_visualizacao, get_tipos_evento_comfase_choice
+    get_flags_choice, cadastra_visualizacao, get_tipos_evento_comfase_choice, \
+    get_ovr_container
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
-    get_infracoes_choice
+    get_infracoes_choice, get_rvfs_filtro
 from bhadrasana.models.virasana_manager import get_conhecimento, \
     get_containers_conhecimento, get_ncms_conhecimento, get_imagens
 from bhadrasana.views import get_user_save_path, valid_file
@@ -611,3 +613,36 @@ def ovr_app(app):
                                containers=containers,
                                containers_com_rvf=containers_com_rvf,
                                imagens=imagens)
+
+    @app.route('/consulta_container', methods=['GET', 'POST'])
+    @login_required
+    def consulta_container():
+        """Tela para consulta única de número de contêiner
+
+        Dentro do intervalo de datas, traz lista de ojetos do sistema que contenham
+        alguma referência ao contêiner.
+        """
+        session = app.config.get('dbsession')
+        ovrs = []
+        rvfs = []
+        filtro_form = FiltroContainerForm(
+            datainicio=datetime.date.today() - datetime.timedelta(days=10),
+            datafim=datetime.date.today()
+        )
+        try:
+            if request.method == 'POST':
+                filtro_form = FiltroContainerForm(request.form)
+                filtro_form.validate()
+                rvfs = get_rvfs_filtro(session, dict(filtro_form.data.items()))
+                ovrs = get_ovr_container(session, filtro_form.numerolote.data,
+                                         filtro_form.datainicio.data,
+                                         filtro_form.datafim.data)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return render_template('pesquisa_container.html',
+                               oform=filtro_form,
+                               rvfs=rvfs,
+                               ovrs=ovrs)
