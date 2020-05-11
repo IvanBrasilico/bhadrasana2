@@ -299,8 +299,8 @@ def delete_imagemrvf(mongodb, session, _id: str):
     grid_out = mongodb['fs.files'].find_one({'_id': ObjectId(_id)})
     rvf_id = grid_out['metadata']['rvf_id']
     session.delete(imagemrvf)
-    mongodb['fs.files'].delete_one({'_id': ObjectId(_id)})
     session.commmit()
+    mongodb['fs.files'].delete_one({'_id': ObjectId(_id)})
     return rvf_id
 
 
@@ -315,7 +315,7 @@ def get_ids_anexos_mongo(db, rvf):
     filtro = {'metadata.rvf_id': str(rvf.id)}
     count = db['fs.files'].count_documents(filtro)
     result = [str(row['_id']) for row in db['fs.files'].find(filtro)]
-    print(filtro, result, count)
+    # print(filtro, result, count)
     return result
 
 

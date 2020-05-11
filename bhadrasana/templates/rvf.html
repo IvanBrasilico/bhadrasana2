@@ -328,6 +328,7 @@
             console.log(i);
             file = filesToUpload[i];
             var reader = new FileReader();
+            reader.fileName = file.name;
             reader.onloadend = function(e)
             {
                 var img = document.createElement("img");
@@ -361,7 +362,7 @@
                     dataurl = canvas.toDataURL("image/jpeg");
                     // Post the data
                     var fd = new FormData();
-                    fd.append("filename", e.target);
+                    fd.append("filename", e.target.fileName);
                     fd.append("content", dataurl);
                     fd.append("rvf_id",  {{ oform.id.data }});
                     $.ajax({
