@@ -299,8 +299,9 @@ def delete_imagemrvf(mongodb, session, _id: str):
     grid_out = mongodb['fs.files'].find_one({'_id': ObjectId(_id)})
     if imagemrvf:
         rvf_id = imagemrvf.rvf_id
-    elif grid_out.get('metadata'):
-        rvf_id = grid_out.get('metadata').get('rvf_id')
+    elif grid_out:
+        if grid_out.get('metadata'):
+            rvf_id = grid_out.get('metadata').get('rvf_id')
     session.delete(imagemrvf)
     session.commit()
     mongodb['fs.files'].delete_one({'_id': ObjectId(_id)})
