@@ -297,7 +297,10 @@ def cadastra_imagemrvf(session, params=None):
 def delete_imagemrvf(mongodb, session, _id: str):
     imagemrvf = get_imagemrvf_imagem_or_none(session, _id)
     grid_out = mongodb['fs.files'].find_one({'_id': ObjectId(_id)})
-    rvf_id = grid_out['metadata']['rvf_id']
+    if imagemrvf:
+        rvf_id = imagemrvf.rvf_id
+    elif grid_out.get('metadata'):
+        rvf_id = grid_out.get('metadata').get('rvf_id')
     session.delete(imagemrvf)
     session.commmit()
     mongodb['fs.files'].delete_one({'_id': ObjectId(_id)})
