@@ -3,14 +3,13 @@ from datetime import date, timedelta
 
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
-from gridfs import GridFS
 from werkzeug.utils import redirect
 
 from ajna_commons.flask.log import logger
-from ajna_commons.models.bsonimage import BsonImage
 from ajna_commons.utils.images import ImageBytesTansformations
 from bhadrasana.forms.filtro_rvf import FiltroRVFForm
 from bhadrasana.forms.rvf import RVFForm, ImagemRVFForm
+from bhadrasana.models import get_usuario_logado, get_usuario
 from bhadrasana.models.ovrmanager import get_marcas, get_marcas_choice
 from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, \
     get_ids_anexos_ordenado, \
@@ -21,7 +20,6 @@ from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, \
     make_and_save_transformation, exclui_lacre_verificado, \
     inclui_lacre_verificado, get_imagemrvf, inclui_nova_ordem_arquivo
 from bhadrasana.views import csrf, valid_file
-from bhadrasana.models import get_usuario_logado, get_usuario
 
 
 def rvf_app(app):
@@ -128,7 +126,6 @@ def rvf_app(app):
     @login_required
     def rvf_impressao(rvf_id):
         session = app.config.get('dbsession')
-        db = app.config['mongo_risco']
         marcas_encontradas = []
         anexos = []
         rvf = None
@@ -270,7 +267,6 @@ def rvf_app(app):
     @app.route('/ver_imagens_rvf', methods=['GET'])
     @login_required
     def ver_imagens_rvf():
-        db = app.config['mongo_risco']
         session = app.config.get('dbsession')
         rvf_id = None
         idimagemativa = None

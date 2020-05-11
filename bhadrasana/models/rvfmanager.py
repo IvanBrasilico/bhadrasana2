@@ -317,7 +317,7 @@ def get_ids_anexos_ordenado(rvf):
 
 def get_ids_anexos_mongo(db, rvf):
     filtro = {'metadata.rvf_id': str(rvf.id)}
-    count = db['fs.files'].count_documents(filtro)
+    # count = db['fs.files'].count_documents(filtro)
     result = [str(row['_id']) for row in db['fs.files'].find(filtro)]
     # print(filtro, result, count)
     return result
