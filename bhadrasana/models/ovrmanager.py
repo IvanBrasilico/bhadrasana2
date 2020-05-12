@@ -174,7 +174,7 @@ def get_ovr_container(session, numerolote: str,
                       datainicio: datetime = None,
                       datafim: datetime = None) -> Tuple[List[str], List[OVR]]:
     itens = session.query(Item).filter(
-        Item.codigoConteiner.ilike(numerolote)).all()
+        Item.codigoConteiner.ilike(numerolote.strip())).all()
     listaCE = [item.numeroCEmercante for item in itens]
     filtro = and_()
     if datainicio:
