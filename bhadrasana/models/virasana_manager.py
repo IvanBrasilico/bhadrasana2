@@ -29,6 +29,19 @@ def get_imagens_json(conhecimento: str) -> dict:
         raise err
 
 
+def get_imagens_container(mongodb, numero: str) -> list:
+    if numero is None or numero == '':
+        raise ValueError('get_imagens: Informe o número do contêiner!')
+    query = {'metadata.carga.container.container': numero.lower().strip(),
+             'metadata.contentType': 'image/jpeg'
+             }
+    projection = {'metadata.numeroinformado': 1,
+                  'metadata.dataescaneamento': 1}
+
+    cursor = mongodb['fs.files'].find(query, projection)
+    return list(cursor)
+
+
 def get_imagens(mongodb, conhecimento: str) -> dict:
     if conhecimento is None or conhecimento == '':
         raise ValueError('get_imagens: Informe o conhecimento!')
@@ -40,6 +53,13 @@ def get_imagens(mongodb, conhecimento: str) -> dict:
 
     cursor = mongodb['fs.files'].find(query, projection)
     return cursor
+
+
+def get_imagens_dict_container_id(mongodb, conhecimento: str) -> dict:
+    """Retorna lista de imagens no formato numeroContainer: _id imagem"""
+    imagens = get_imagens(mongodb, conhecimento)
+    return {item['metadata']['numeroinformado']: str(item['_id'])
+            for item in imagens}
 
 
 def get_conhecimento(session, numero: str) -> List[Conhecimento]:

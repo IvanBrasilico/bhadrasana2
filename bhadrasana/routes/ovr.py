@@ -34,7 +34,8 @@ from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
     get_infracoes_choice, get_rvfs_filtro
 from bhadrasana.models.virasana_manager import get_conhecimento, \
-    get_containers_conhecimento, get_ncms_conhecimento, get_imagens
+    get_containers_conhecimento, get_ncms_conhecimento, get_imagens_dict_container_id, \
+    get_imagens_container
 from bhadrasana.views import get_user_save_path, valid_file
 
 
@@ -590,9 +591,7 @@ def ovr_app(app):
             if ovr is None or ovr.id is None:
                 raise KeyError('OVR não encontrada')
             container = request.args.get('container')
-            imagens = get_imagens(mongodb, ovr.numeroCEmercante)
-            imagens = {item['metadata']['numeroinformado']: str(item['_id'])
-                       for item in imagens}
+            imagens = get_imagens_dict_container_id(mongodb, ovr.numeroCEmercante)
             if container:
                 programa_rvf_container(
                     mongodb, mongo_risco, session,
@@ -623,9 +622,11 @@ def ovr_app(app):
         alguma referência ao contêiner.
         """
         session = app.config.get('dbsession')
+        mongodb = app.config['mongodb']
         ovrs = []
         rvfs = []
         infoces = []
+        imagens = []
         filtro_form = FiltroContainerForm(
             datainicio=datetime.date.today() - datetime.timedelta(days=10),
             datafim=datetime.date.today()
@@ -650,6 +651,7 @@ def ovr_app(app):
                         infoces.append(linha)
                     except Exception as err:
                         logger.info(err)
+                imagens = list(get_imagens_container(mongodb, filtro_form.numerolote.data))
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
@@ -659,4 +661,5 @@ def ovr_app(app):
                                oform=filtro_form,
                                rvfs=rvfs,
                                ovrs=ovrs,
-                               infoces=infoces)
+                               infoces=infoces,
+                               imagens=imagens)
