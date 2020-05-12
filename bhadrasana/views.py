@@ -180,14 +180,16 @@ def mynavbar():
     items = [View('Home', 'index'),
              View('Risco', 'risco'),
              View('Editar Riscos', 'edita_risco'),
-             View('Verificações físicas', 'pesquisa_rvf'),
-             View('Ficha de Carga', 'pesquisa_ovr'),
+             View('Fichas de Carga', 'pesquisa_ovr'),
+             View('Minhas Fichas', 'minhas_ovrs'),
              Subgroup(
                  'Pesquisas',
-                 View('Minhas Fichas', 'minhas_ovrs'),
                  View('Pesquisa Contêiner', 'consulta_container'),
+                 View('Verificações físicas', 'pesquisa_rvf'),
                  Separator(),
-                 View('Relatórios', 'ver_relatorios')
+                 View('Relatórios', 'ver_relatorios'),
+                 Separator(),
+                 View('Importa planilhas recintos', 'importa_planilha_recinto')
              )]
     if current_user.is_authenticated:
         items.append(View('Sair (%s)' % current_user.id, 'commons.logout'))
