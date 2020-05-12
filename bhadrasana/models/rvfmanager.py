@@ -28,7 +28,7 @@ def get_rvfs_filtro(session, pfiltro):
     filtro = and_()
     if pfiltro.get('numeroCEmercante'):
         filtro = and_(RVF.numeroCEmercante.ilike(
-            pfiltro.get('numeroCEmercante') + '%'), filtro)
+            pfiltro.get('numeroCEmercante').strip() + '%'), filtro)
     if pfiltro.get('numerolote'):
         filtro = and_(RVF.numerolote.ilike(
             pfiltro.get('numerolote') + '%'), filtro)
