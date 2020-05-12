@@ -81,33 +81,24 @@ def configure_app(app, sqlsession, mongodb):
     # Aceitar qualquer login
     DBUser.dbsession = None
     app.config['dbsession'] = sqlsession
-    app.config['mongodb'] = mongodb
+    app.config['mongodb'] = mongodb['test']
+    app.config['mongo_risco'] = mongodb['risco']
     return app
+
 
 engine = create_engine('sqlite://')
 Session = sessionmaker(bind=engine)
 session = Session()
 mongodb = mongomock.MongoClient()
 
-try:
-    create_tables(engine, session)
-    configure_app(app, session, mongodb)
-    risco_app(app)
-    rvf_app(app)
-    ovr_app(app)
-except:
-    pass
+create_tables(engine, session)
+configure_app(app, session, mongodb)
+risco_app(app)
+rvf_app(app)
+ovr_app(app)
 
-try:
-    create_setores(session)
-except Exception as err:
-    print(err)
-    session.rollback()
-try:
-    create_usuarios(session)
-except Exception as err:
-    print(err)
-    session.rollback()
+create_setores(session)
+create_usuarios(session)
 
 
 class OVRAppTestCase(BaseTestCase):
@@ -179,7 +170,6 @@ class OVRAppTestCase(BaseTestCase):
         assert status_code == 200
         assert '1234' not in text
 
-
     def create_CE_containeres_teste(self):
         ce1 = mercante.Conhecimento()
         ce1.numeroCEmercante = '152005079623267'
@@ -193,7 +183,6 @@ class OVRAppTestCase(BaseTestCase):
         self.session.add(item1)
         self.session.add(item2)
         self.session.commit()
-
 
     def test_a1_criaFichaCE(self):
         recinto = self.create_recinto('Londres')
@@ -227,8 +216,15 @@ class OVRAppTestCase(BaseTestCase):
     def test_a3_programa_container(self):
         self.create_CE_containeres_teste()
         self.login('holmes', 'holmes')
-        rv = self.app.get('/ovr?id=%s' % 1)
-        text = str(rv.data)
+        rv = self.app.get('/programa_rvf_ajna?ovr_id=%s' % 1)
+        assert b'container=1' in rv.data
+        assert b'container=2' in rv.data
+        rv = self.app.get('/programa_rvf_ajna?ovr_id=%s&container=%s' % (1, 1),
+                          follow_redirects=True)
+        print(str(rv.data))
+        assert b'container=1' not in rv.data
+        assert 'n. 1' in str(rv.data)
+        assert b'container=1' not in rv.data
 
 
 if __name__ == '__main__':

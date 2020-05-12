@@ -51,7 +51,11 @@ def get_imagens(mongodb, conhecimento: str) -> dict:
     projection = {'metadata.numeroinformado': 1,
                   'metadata.dataescaneamento': 1}
 
-    cursor = mongodb['fs.files'].find(query, projection)
+    try:
+        cursor = mongodb['fs.files'].find(query, projection)
+    except Exception as err:
+        logger.error(err, exc_info=True)
+        return {}
     return cursor
 
 
