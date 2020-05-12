@@ -98,19 +98,21 @@ try:
 except:
     pass
 
+try:
+    create_setores(session)
+except Exception as err:
+    print(err)
+    session.rollback()
+try:
+    create_usuarios(session)
+except Exception as err:
+    print(err)
+    session.rollback()
+
+
 class OVRAppTestCase(BaseTestCase):
 
     def setUp(self) -> None:
-        try:
-            create_setores(session)
-        except Exception as err:
-            print(err)
-            session.rollback()
-        try:
-            create_usuarios(session)
-        except Exception as err:
-            print(err)
-            session.rollback()
         super().setUp(session)
         self.app = app.test_client()
 
@@ -129,6 +131,54 @@ class OVRAppTestCase(BaseTestCase):
                                            'username': username,
                                            'senha': senha},
                            follow_redirects=True)
+
+    def test_home(self):
+        rv = self.app.get('/')
+        assert rv.status_code == 302
+
+    def test_ovr_1(self):
+        self.login('ivan', 'ivan')
+        recinto = self.create_recinto('Teste OVR')
+        usuario = self.create_usuario('123', 'user1')
+        self.session.refresh(recinto)
+        params = {'numeroCEmercante': 'CE Teste',
+                  'recinto_id': recinto.id,
+                  'adata': '2020-01-01',
+                  'ahora': '13:13'}
+        ovr = self.create_OVR(params, '123')
+        self.session.refresh(ovr)
+        rv = self.app.get('/ovr?id=%s' % ovr.id)
+        assert b'CE Teste' in rv.data
+        assert rv.status_code == 200
+
+    def get_consulta_container(self, numero):
+        rv = self.app.get('/consulta_container')
+        assert rv.data is not None
+        # print(rv.data)
+        token_text = self.get_token(str(rv.data))
+        # print(token_text)
+        payload = {'csrf_token': token_text, 'numerolote': numero}
+        rv = self.app.post('/consulta_container', data=payload)
+        # print(rv.data)
+        # print(rv.status_code)
+        return str(rv.data), rv.status_code
+
+    def test_consulta_conteiner(self):
+        ovr1, ovr2 = self.create_OVRs_test_ovrs_container()
+        self.login('ivan', 'ivan')
+        text, status_code = self.get_consulta_container('1')
+        assert status_code == 200
+        assert '1234' in text
+        text, status_code = self.get_consulta_container('2')
+        assert status_code == 200
+        assert '1234' in text
+        text, status_code = self.get_consulta_container('3')
+        assert status_code == 200
+        assert '12345' in text
+        text, status_code = self.get_consulta_container('4')
+        assert status_code == 200
+        assert '1234' not in text
+
 
     def create_CE_containeres_teste(self):
         ce1 = mercante.Conhecimento()
