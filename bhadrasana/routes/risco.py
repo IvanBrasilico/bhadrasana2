@@ -218,3 +218,31 @@ def risco_app(app):
                                 valor=valor,
                                 motivo=motivo)
         return redirect(url_for('edita_risco'))
+
+
+
+    @app.route('/importa_planilha_recinto', methods=['POST', 'GET'])
+    @login_required
+    def importa_planilha_recinto():
+        """Importar arquivo.
+
+        """
+        session = app.config.get('dbsession')
+        if request.method == 'POST':
+            csvf = get_csv_valido(request)
+            if csvf:
+                filename = secure_filename(csvf.filename)
+                save_name = os.path.join(tmpdir, filename)
+                csvf.save(save_name)
+                logger.info('CSV RECEBIDO: %s' % save_name)
+                with open(save_name) as in_csv:
+                    lines = in_csv.readlines()
+                user_name = current_user.name
+                for line in lines:
+                    campo, valor, motivo = line.split(';')
+                    insererisco(session,
+                                user_name=user_name,
+                                campo=campo,
+                                valor=valor,
+                                motivo=motivo)
+        return redirect(url_for('importa_planilha_recinto'))

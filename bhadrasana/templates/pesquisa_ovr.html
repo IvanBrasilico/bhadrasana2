@@ -1,8 +1,18 @@
 {% extends "layout.html" %} {% block content %} {{super()}}
 <div id="main" class="container-fluid">
-    <div id="top" class="row col-sm-12 form-group">
+    <div id="top" class="row form-group">
         <form method="POST" id="filtroformovr" action="pesquisa_ovr">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <div class="row">
+                <div class="col-sm-4">
+                    <button class="btn btn-primary btn-warning form-control" onclick="window.open('ovr')">
+                        Nova Ficha
+                    </button>
+                </div>
+            </div>
+            <div class="row col-sm-12">
+                <hr>
+            </div>
             <div class="row">
                 <div class="col-sm-2">
                     <label for="numeroCEmercante">Número CE-Mercante</label>
@@ -66,20 +76,16 @@
             </div>
             &nbsp;
             <div class="row">
-                <div class="col-sm-3">
+                <div class="col-sm-4">
                     <button class="btn btn-default btn-info form-control" onclick="submit">
                         Pesquisar
                     </button>
                 </div>
-                <div class="col-sm-3">
-                    <button class="btn btn-primary btn-warning form-control" onclick="window.open('ovr')">
-                        Nova Ficha
-                    </button>
-                </div>
-                <div class="col-sm-6">
-                </div>
             </div>
         </form>
+    </div>
+    <div class="row col-sm-12">
+        <hr>
     </div>
     <div id="list" class="row col-sm-12">
         &nbsp;<br>
