@@ -172,7 +172,7 @@ def get_ovr_filtro(session, user_name: str,
 
 def get_ovr_container(session, numerolote: str,
                       datainicio: datetime = None,
-                      datafim: datetime = None) -> List[OVR]:
+                      datafim: datetime = None) -> Tuple[List[str], List[OVR]]:
     itens = session.query(Item).filter(
         Item.codigoConteiner.ilike(numerolote)).all()
     listaCE = [item.numeroCEmercante for item in itens]
@@ -184,7 +184,7 @@ def get_ovr_container(session, numerolote: str,
         filtro = and_(OVR.datahora <= datafim, filtro)
     filtro = and_(OVR.numeroCEmercante.in_(listaCE), filtro)
     ovrs = session.query(OVR).filter(filtro).all()
-    return [ovr for ovr in ovrs]
+    return listaCE, [ovr for ovr in ovrs]
 
 
 def get_flags(session) -> List[Flag]:

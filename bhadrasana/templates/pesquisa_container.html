@@ -118,6 +118,38 @@
             </table>
         </div>
     </div>
+    <div class="row">
+        &nbsp;<br>
+    </div>
+    <div class="row">
+        <h2>Conhecimentos de Carga</h2>
+    </div>
+    <div id="list_infoces" class="row col-sm-12">
+    {% for infoce in infoces %}
+            <div class="row col-sm-12">
+                <div class="panel panel-info rounded-pill">
+                    <div class="panel-heading rounded-pill">
+                        {% if infoce.conhecimento %}
+                        Número CE Mercante: {{ infoce.conhecimento.numeroCEmercante }}<br>
+                        Embarcador: {{ infoce.conhecimento.embarcador }}<br>
+                        Consignatário: {{ infoce.conhecimento.consignatario }}
+                        <br>
+                        Descrição Mercadoria:{{ infoce.conhecimento.descricao }}
+                        <br>
+                        <!--Nº BL original: {{ infoce.conhecimento.descricao }} -->
+                        Contêineres: {% for container in infoce.containers %}
+                        nº: {{container.codigoConteiner}} - {{"%.2f"|format(container.pesoBruto|float)}}kg
+                        {% endfor %}
+                        <br>
+                        Cubagem total: {{ "%.2f"|format(infoce.conhecimento.cubagem|float) }}m³
+                        NCMs: {% for ncm in infoce.ncms %}{{ ncm.identificacaoNCM }} {% endfor %}
+                        <br>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+    {% endfor %}
+    </div>
     <div id="bottom" class="row col-sm-12">
         AJNA - Receita Federal do Brasil 2017
     </div>
