@@ -651,7 +651,8 @@ def ovr_app(app):
                         infoces.append(linha)
                     except Exception as err:
                         logger.info(err)
-                imagens = list(get_imagens_container(mongodb, filtro_form.numerolote.data))
+                imagens = list(get_imagens_container(mongodb,
+                                                     filtro_form.numerolote.data))
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')

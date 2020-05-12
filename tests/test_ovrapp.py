@@ -24,19 +24,24 @@ SECRET = 'teste'
 
 
 def create_tables(engine, session):
+    drop_tables(engine)
     metadata.create_all(engine)
     create_tiposevento(session)
     create_tiposprocesso(session)
     create_flags(session)
     mercante.metadata.create_all(engine, [
-        mercante.metadata.tables['itensresumo']
+        mercante.metadata.tables['itensresumo'],
+        mercante.metadata.tables['ncmitemresumo'],
+        mercante.metadata.tables['conhecimentosresumo']
     ])
 
 
 def drop_tables(engine):
     metadata.drop_all(engine)
     mercante.metadata.drop_all(engine, [
-        mercante.metadata.tables['itensresumo']
+        mercante.metadata.tables['itensresumo'],
+        mercante.metadata.tables['ncmitemresumo'],
+        mercante.metadata.tables['conhecimentosresumo']
     ])
 
 
@@ -59,6 +64,8 @@ Session = sessionmaker(bind=engine)
 session = Session()
 mongodb = mongomock.MongoClient()
 
+create_tables(engine, session)
+
 configure_app(app, session, mongodb)
 risco_app(app)
 rvf_app(app)
@@ -68,12 +75,8 @@ ovr_app(app)
 class OVRAppTestCase(BaseTestCase):
 
     def setUp(self) -> None:
-        create_tables(engine, session)
         super().setUp(session)
         self.app = app.test_client()
-
-    def tearDown(self) -> None:
-        drop_tables(engine)
 
     def get_token(self, text):
         token_start = text.find('name="csrf_token" value="')

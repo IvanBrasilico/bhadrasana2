@@ -45,7 +45,6 @@ class BaseTestCase(unittest.TestCase):
         assert recintos[numeroatual][1] == recinto.nome
         return recinto
 
-
     def create_usuario(self, cpf, nome):
         usuario = self.session.query(Usuario).filter(Usuario.cpf == cpf).one_or_none()
         if usuario:
