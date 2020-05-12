@@ -2,6 +2,7 @@ import sys
 import unittest
 
 # from flask_testing import TestCase
+import mongomock
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -39,7 +40,7 @@ def drop_tables(engine):
     ])
 
 
-def configure_app(app, sqlsession):
+def configure_app(app, sqlsession, mongodb):
     """Configurações gerais e de Banco de Dados da Aplicação."""
     app.config['DEBUG'] = False
     app.secret_key = SECRET
@@ -49,13 +50,16 @@ def configure_app(app, sqlsession):
     # Aceitar qualquer login
     DBUser.dbsession = None
     app.config['dbsession'] = sqlsession
+    app.config['mongodb'] = mongodb
     return app
 
 
 engine = create_engine('sqlite://')
 Session = sessionmaker(bind=engine)
 session = Session()
-configure_app(app, session)
+mongodb = mongomock.MongoClient()
+
+configure_app(app, session, mongodb)
 risco_app(app)
 rvf_app(app)
 ovr_app(app)
@@ -109,9 +113,9 @@ class OVRAppTestCase(BaseTestCase):
     def get_consulta_container(self, numero):
         rv = self.app.get('/consulta_container')
         assert rv.data is not None
-        print(rv.data)
+        # print(rv.data)
         token_text = self.get_token(str(rv.data))
-        print(token_text)
+        # print(token_text)
         payload = {'csrf_token': token_text, 'numerolote': numero}
         rv = self.app.post('/consulta_container', data=payload)
         # print(rv.data)
