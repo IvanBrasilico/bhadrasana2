@@ -180,16 +180,16 @@ class OVRTestCase(BaseTestCase):
 
     def test_get_ovrs_container(self):
         ovr1, ovr2 = self.create_OVRs_test_ovrs_container()
-        ovrs = get_ovr_container(session, '1')
+        ces, ovrs = get_ovr_container(session, '1')
         assert len(ovrs) == 1
         assert ovr1 in ovrs
-        ovrs = get_ovr_container(session, '2')
+        ces, ovrs = get_ovr_container(session, '2')
         assert len(ovrs) == 1
         assert ovr1 in ovrs
-        ovrs = get_ovr_container(session, '3')
+        ces, ovrs = get_ovr_container(session, '3')
         assert len(ovrs) == 1
         assert ovr2 in ovrs
-        ovrs = get_ovr_container(session, '4')
+        ces, ovrs = get_ovr_container(session, '4')
         assert len(ovrs) == 0
 
 

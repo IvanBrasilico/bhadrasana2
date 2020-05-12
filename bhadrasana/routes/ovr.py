@@ -625,6 +625,7 @@ def ovr_app(app):
         session = app.config.get('dbsession')
         ovrs = []
         rvfs = []
+        infoces = []
         filtro_form = FiltroContainerForm(
             datainicio=datetime.date.today() - datetime.timedelta(days=10),
             datafim=datetime.date.today()
@@ -634,9 +635,21 @@ def ovr_app(app):
                 filtro_form = FiltroContainerForm(request.form)
                 filtro_form.validate()
                 rvfs = get_rvfs_filtro(session, dict(filtro_form.data.items()))
-                ovrs = get_ovr_container(session, filtro_form.numerolote.data,
-                                         filtro_form.datainicio.data,
-                                         filtro_form.datafim.data)
+                ces, ovrs = get_ovr_container(session, filtro_form.numerolote.data,
+                                              filtro_form.datainicio.data,
+                                              filtro_form.datafim.data)
+                for numeroCEmercante in ces:
+                    try:
+                        linha = dict()
+                        linha['conhecimento'] = get_conhecimento(session,
+                                                                 numeroCEmercante)
+                        linha['containers'] = get_containers_conhecimento(
+                            session,
+                            numeroCEmercante)
+                        linha['ncms'] = get_ncms_conhecimento(session, numeroCEmercante)
+                        infoces.append(linha)
+                    except Exception as err:
+                        logger.info(err)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
@@ -645,4 +658,5 @@ def ovr_app(app):
         return render_template('pesquisa_container.html',
                                oform=filtro_form,
                                rvfs=rvfs,
-                               ovrs=ovrs)
+                               ovrs=ovrs,
+                               infoces=infoces)
