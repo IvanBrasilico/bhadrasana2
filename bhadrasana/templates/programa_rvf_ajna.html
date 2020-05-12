@@ -45,7 +45,7 @@
                     <td>
                         {% if container.codigoConteiner in containers_com_rvf.keys() %}
                         <a href="rvf?id={{containers_com_rvf[container.codigoConteiner]}}" target="_blank">
-                            Programação n. {{ containers_com_rvf[container.codigoConteiner] }}</a>
+                            Programação n. {{containers_com_rvf[container.codigoConteiner]}}</a>
                         {% else %}
                         <button class="btn btn-default"
                                 onclick="location.href='programa_rvf_ajna?ovr_id={{ovr.id}}&container={{container.codigoConteiner}}';">
