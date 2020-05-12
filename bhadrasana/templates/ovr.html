@@ -439,13 +439,17 @@
 </div>
 {% for historico in listahistorico %}
 {% if historico.anexo_filename %}
-<div class="modal fade" id="anexomodal{{historico.id}}" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+<div class="modal fade modal-lg" id="anexomodal{{historico.id}}" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
      aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-body">
                 <span>
-                    <embed src="anexo?evento={{historico.id}}" height="600px" width="600px"/>
+                    {% if historico.anexo_filename[-3:] in ['jpg', 'png'] %}
+                    <img src="anexo?evento={{historico.id}}" height="100%" width="100%"/>
+                    {% else %}
+                    <embed src="anexo?evento={{historico.id}}" height="800px" width="800px"/>
+                    {% endif %}
                 </span>
             </div>
             <div class="modal-footer">
