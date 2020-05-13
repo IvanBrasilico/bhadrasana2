@@ -2,7 +2,7 @@ from datetime import timedelta, datetime
 from typing import List, Tuple
 
 import pandas as pd
-from sqlalchemy import and_, text
+from sqlalchemy import and_, text, or_
 from sqlalchemy.orm import Session
 
 from ajna_commons.flask.log import logger
@@ -170,19 +170,26 @@ def get_ovr_filtro(session, user_name: str,
     return [ovr for ovr in ovrs]
 
 
-def get_ovr_container(session, numerolote: str,
-                      datainicio: datetime = None,
-                      datafim: datetime = None) -> Tuple[List[str], List[OVR]]:
+def get_ce_due_ovr_container(session, numerolote: str,
+                             datainicio: datetime = None,
+                             datafim: datetime = None,
+                             lista_numeroDUEs=[]) -> Tuple[List[str], List[OVR]]:
+    filtro_data = and_()
+    if datainicio:
+        filtro_data = and_(OVR.datahora >= datainicio, filtro_data)
+    if datafim:
+        datafim = datafim + timedelta(days=1)
+        filtro_data = and_(OVR.datahora <= datafim, filtro_data)
+    # Lista CEs
     itens = session.query(Item).filter(
         Item.codigoConteiner.ilike(numerolote.strip())).all()
     listaCE = [item.numeroCEmercante for item in itens]
-    filtro = and_()
-    if datainicio:
-        filtro = and_(OVR.datahora >= datainicio, filtro)
-    if datafim:
-        datafim = datafim + timedelta(days=1)
-        filtro = and_(OVR.datahora <= datafim, filtro)
-    filtro = and_(OVR.numeroCEmercante.in_(listaCE), filtro)
+    # Filtra OVRs
+    filtro = and_(filtro_data,
+                  or_(
+                      OVR.numeroCEmercante.in_(listaCE),
+                      OVR.numerodeclaracao.in_(lista_numeroDUEs)
+                  ))
     ovrs = session.query(OVR).filter(filtro).all()
     return listaCE, [ovr for ovr in ovrs]
 
