@@ -4,16 +4,17 @@ from datetime import datetime
 
 import pandas as pd
 import requests
+from flask import (flash, redirect, render_template, request,
+                   url_for)
+from flask_login import current_user, login_required
+from werkzeug.utils import secure_filename
+
 from ajna_commons.flask.log import logger
 from bhadrasana.forms.editarisco import get_edita_risco_form
 from bhadrasana.forms.riscosativos import RiscosAtivosForm
 from bhadrasana.models.riscomanager import mercanterisco, riscosativos, \
     insererisco, exclui_risco, CAMPOS_RISCO, get_lista_csv, save_planilharisco
 from bhadrasana.views import get_user_save_path, tmpdir
-from flask import (flash, redirect, render_template, request,
-                   url_for)
-from flask_login import current_user, login_required
-from werkzeug.utils import secure_filename
 
 
 def risco_app(app):
@@ -218,8 +219,6 @@ def risco_app(app):
                                 valor=valor,
                                 motivo=motivo)
         return redirect(url_for('edita_risco'))
-
-
 
     @app.route('/importa_planilha_recinto', methods=['POST', 'GET'])
     @login_required

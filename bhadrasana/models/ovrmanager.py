@@ -44,7 +44,7 @@ def get_tipos_processo(session) -> List[Tuple[int, str]]:
     return [(tipo.id, tipo.descricao) for tipo in tiposprocesso]
 
 
-def get_relatorios(session) -> List[Tuple[int, str]]:
+def get_relatorios_choice(session) -> List[Tuple[int, str]]:
     relatorios = session.query(Relatorio).order_by(Relatorio.nome).all()
     return [(relatorio.id, relatorio.nome) for relatorio in relatorios]
 
@@ -338,7 +338,7 @@ def cadastra_tgovr(session, params, user_name: str) -> TGOVR:
                        session, params)
 
 
-def lista_tgovr(session, ovr_id):
+def lista_tgovr(session, ovr_id) -> List[TGOVR]:
     try:
         ovr_id = int(ovr_id)
     except (ValueError, TypeError):
@@ -346,7 +346,7 @@ def lista_tgovr(session, ovr_id):
     return session.query(TGOVR).filter(TGOVR.ovr_id == ovr_id).all()
 
 
-def get_tgovr(session, tg_id: int = None):
+def get_tgovr(session, tg_id: int = None) -> TGOVR:
     if tg_id is None or tg_id == 'None':
         tgovr = TGOVR()
         print('Criando TGOVR zerado...')
@@ -354,13 +354,13 @@ def get_tgovr(session, tg_id: int = None):
     return session.query(TGOVR).filter(TGOVR.id == tg_id).one_or_none()
 
 
-def cadastra_itemtg(session, params):
+def cadastra_itemtg(session, params: dict) -> ItemTG:
     item_tg = get_itemtg(session, params.get('id'))
     return gera_objeto(item_tg,
                        session, params)
 
 
-def lista_itemtg(session, tg_id):
+def lista_itemtg(session, tg_id: str) -> List[ItemTG]:
     try:
         tg_id = int(tg_id)
     except (ValueError, TypeError):
@@ -368,7 +368,7 @@ def lista_itemtg(session, tg_id):
     return session.query(ItemTG).filter(ItemTG.tg_id == tg_id).all()
 
 
-def get_itemtg(session, itemid: int = None):
+def get_itemtg(session, itemid: int = None) -> ItemTG:
     if itemid is None or itemid == 'None':
         itemtg = ItemTG()
         print('Criando ItemTG zerado...')
@@ -379,20 +379,20 @@ def get_itemtg(session, itemid: int = None):
 def get_itemtg_numero(session, tg: TGOVR, numero: int) -> ItemTG:
     """Retorna ItemTG do TG e numero passados. Se não existir, retorna ItemTG vazio."""
     itemtg = session.query(ItemTG).filter(ItemTG.tg_id == tg.id).filter(
-        ItemTG.ncm == numero).one_or_none()
+        ItemTG.numero == numero).one_or_none()
     if itemtg is None:
         itemtg = ItemTG()
     return itemtg
 
 
 # TODO: mover Setores e Usuários daqui e do models/ovr para módulos específicos
-def get_usuarios(session):
+def get_usuarios(session) -> List[Tuple[str, str]]:
     usuarios = session.query(Usuario).all()
     usuarios_list = [(usuario.cpf, usuario.nome) for usuario in usuarios]
     return sorted(usuarios_list, key=lambda x: x[1])
 
 
-def get_afrfb(session):
+def get_afrfb(session) -> Usuario:
     # TODO: Filtrar Usuários do Setor/ Unidade / AFRFB ???
     return get_usuarios(session)
 
@@ -412,11 +412,11 @@ def usuario_index(usuarios: list, pcpf: str) -> int:
     return index
 
 
-def get_setores_filhos(session, setor: Setor) -> list:
+def get_setores_filhos(session, setor: Setor) -> List[Setor]:
     return session.query(Setor).filter(Setor.pai_id == setor.id).all()
 
 
-def get_setores_filhos_recursivo(session, setor: Setor) -> list:
+def get_setores_filhos_recursivo(session, setor: Setor) -> List[Setor]:
     setores_total = []
     setores_filhos = get_setores_filhos(session, setor)
     print([setor.nome for setor in setores_filhos])
@@ -428,13 +428,13 @@ def get_setores_filhos_recursivo(session, setor: Setor) -> list:
     return setores_total
 
 
-def get_setores(session) -> list:
+def get_setores(session) -> List[Tuple[str, str]]:
     setores = session.query(Setor).all()
     setores_list = [(setor.id, setor.nome) for setor in setores]
     return sorted(setores_list, key=lambda x: x[1])
 
 
-def get_setores_usuario(session, usuario: Usuario) -> list:
+def get_setores_usuario(session, usuario: Usuario) -> List[Setor]:
     setores = [usuario.setor]
     setores_filhos = get_setores_filhos_recursivo(session, usuario.setor)
     setores.extend(setores_filhos)
@@ -443,7 +443,7 @@ def get_setores_usuario(session, usuario: Usuario) -> list:
     # return sorted(setores_list, key=lambda x: x[1])
 
 
-def get_setores_cpf(session, cpf_usuario: str) -> list:
+def get_setores_cpf(session, cpf_usuario: str) -> List[Setor]:
     usuario = session.query(Usuario).filter(Usuario.cpf == cpf_usuario).one_or_none()
     print(usuario, type(usuario))
     if usuario is None:

@@ -26,7 +26,8 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     cadastra_itemtg, get_usuarios, atribui_responsavel_ovr, lista_tgovr, get_tgovr, \
     cadastra_tgovr, get_ovr_responsavel, importa_planilha, exporta_planilhaovr, \
     get_tiposmercadoria_choice, \
-    inclui_flag_ovr, exclui_flag_ovr, get_flags, informa_lavratura_auto, get_relatorios, \
+    inclui_flag_ovr, exclui_flag_ovr, get_flags, informa_lavratura_auto, \
+    get_relatorios_choice, \
     executa_relatorio, get_relatorio, get_afrfb, get_itens_roteiro_checked, \
     get_flags_choice, cadastra_visualizacao, get_tipos_evento_comfase_choice, \
     get_ovr_container
@@ -245,7 +246,7 @@ def ovr_app(app):
     @login_required
     def ver_relatorios():
         session = app.config.get('dbsession')
-        lista_relatorios = get_relatorios(session)
+        lista_relatorios = get_relatorios_choice(session)
         linhas = []
         sql = ''
         plot = ''
