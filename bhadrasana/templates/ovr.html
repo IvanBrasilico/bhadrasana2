@@ -84,6 +84,17 @@
                 {{ oform.numerodeclaracao(class='form-control')}}
             </div>
             <div class="row col-sm-12">
+                <div class="panel panel-info rounded-pill">
+                    <div class="panel-heading rounded-pill">
+                        {% if due %}
+                        Canal: {{ due.canal }}  Data Processamento: {{ due.dataProcessamentoTa }}
+                        <br>
+                        Exportador: {{ due.Declarante }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="row col-sm-12">
                 Observações
                 {{ oform.observacoes(class='form-control') }}
             </div>
