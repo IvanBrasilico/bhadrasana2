@@ -93,8 +93,8 @@
                         <br>
                         Recinto: {% if due.get('recintoAduaneiroDespacho') %} {{ due.recintoAduaneiroDespacho.nome }} {% endif %}
                         <br>
-                            {% if due.get('Itens') %}
-                            Itens: {% for item in due.get('Itens') %}{{ item.get('descricaoMercadoria') }} {% endfor %}
+                            {% if due.get('itens') %}
+                            Itens: {% for item in due.get('itens') %}{{ item.get('descricaoMercadoria') }} {% endfor %}
                             {% endif %}
                         {% endif %}
                     </div>
