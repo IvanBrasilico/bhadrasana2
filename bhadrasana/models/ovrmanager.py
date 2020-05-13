@@ -170,7 +170,7 @@ def get_ovr_filtro(session, user_name: str,
     return [ovr for ovr in ovrs]
 
 
-def get_ce_due_ovr_container(session, numerolote: str,
+def get_ovr_container(session, numerolote: str,
                              datainicio: datetime = None,
                              datafim: datetime = None,
                              lista_numeroDUEs=[]) -> Tuple[List[str], List[OVR]]:
