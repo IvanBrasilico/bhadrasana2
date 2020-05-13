@@ -26,7 +26,7 @@ tipoStatusOVREspecial = [
     ('Atribuição de responsável', EventoEspecial.Responsavel.value, 1),
     ('RVF incluída', EventoEspecial.RVF.value, 1),
     ('TG incluído', EventoEspecial.TG.value, 1),
-    ('Emissão de Auto de Infração', EventoEspecial.Autuação.value, 4)
+    ('Emissão de Auto de Infração', EventoEspecial.Autuação.value, 3)
 ]
 
 tipoStatusOVR = [
