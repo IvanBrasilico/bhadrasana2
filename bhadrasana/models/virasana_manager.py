@@ -49,7 +49,14 @@ def get_dues_container(mongodb, numero: str) -> list:
              }
     projection = {'metadata.due': 1}
     cursor = mongodb['fs.files'].find(query, projection)
-    return list(cursor)
+    result = []
+    for row in cursor:
+        metadata = row.get('metadata')
+        if metadata:
+            due = due.get('due')
+            if due:
+                result.append(due[0])
+    return result
 
 
 def get_imagens(mongodb, conhecimento: str) -> dict:
