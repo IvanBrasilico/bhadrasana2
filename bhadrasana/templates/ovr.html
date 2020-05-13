@@ -88,10 +88,15 @@
                     <div class="panel-heading rounded-pill">
                         {% if due %}
                         {{ due }}
-                        Canal: {{ due.canal }}  Data Processamento: {{ due.dataProcessamentoTa }}
+                        País Importador: {{ due.get('PaisImportador') }}Canal: {{ due.get('canal') }}  Data Processamento: {{ due.get('dataProcessamentoTa') }}
                         <br>
-                        Exportador: {{ due.Declarante }} - {{ due.get('Nome Declarante') }}
+                        Exportador: {{ due.get('Declarante') }} - {{ due.get('Nome Declarante') }}
                         <br>
+                        Recinto: {% if due.get('recintoAduaneiroDespacho') %} {{ due.recintoAduaneiroDespacho.nome }} {% endif %}
+                        <br>
+                            {% if due.get('Itens') %}
+                            Itens: {% for item in due.get('Itens') %}{{ item.get('descricaoMercadoria') }} {% endfor %}
+                            {% endif %}
                         {% endif %}
                     </div>
                 </div>
