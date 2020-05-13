@@ -651,9 +651,13 @@ def ovr_app(app):
                 filtro_form = FiltroContainerForm(request.form)
                 filtro_form.validate()
                 rvfs = get_rvfs_filtro(session, dict(filtro_form.data.items()))
+                dues = get_dues_container(mongodb,
+                                          filtro_form.numerolote.data)
+                lista_numeroDUEs = [due['numero'] for due in dues]
                 ces, ovrs = get_ovr_container(session, filtro_form.numerolote.data,
                                               filtro_form.datainicio.data,
-                                              filtro_form.datafim.data)
+                                              filtro_form.datafim.data,
+                                              lista_numeroDUEs)
                 for numeroCEmercante in ces:
                     try:
                         linha = dict()
@@ -668,8 +672,6 @@ def ovr_app(app):
                         logger.info(err)
                 imagens = get_imagens_container(mongodb,
                                                 filtro_form.numerolote.data)
-                dues = get_dues_container(mongodb,
-                                          filtro_form.numerolote.data)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
