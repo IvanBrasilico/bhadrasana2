@@ -150,21 +150,27 @@
         </div>
         {% endfor %}
     </div>
+    <div class="row">
+        &nbsp;<br>
+    </div>
+    <div class="row">
+        <h2>DUEs</h2>
+    </div>
     <div id="list_dues" class="row col-sm-12">
         {% for due in dues %}
         <div class="row col-sm-12">
             <div class="panel panel-info rounded-pill">
                 <div class="panel-heading rounded-pill">
                     {% if due %}
-                    País Importador: {{ due.get('PaisImportador') }} Canal: {{ due.get('canal') }} Data Processamento:
-                    {{ due.get('dataProcessamentoTa') }}
+                    País Importador: {{ due[0].get('PaisImportador') }} Canal: {{ due[0].get('canal') }} Data Processamento:
+                    {{ due[0].get('dataProcessamentoTa') }}
                     <br>
-                    Exportador: {{ due.get('Declarante') }} - {{ due.get('Nome Declarante') }}
+                    Exportador: {{ due[0].get('Declarante') }} - {{ due[0].get('Nome Declarante') }}
                     <br>
-                    Recinto: {% if due.get('recintoAduaneiroDespacho') %} {{ due.recintoAduaneiroDespacho.nome }} {%
+                    Recinto: {% if due[0].get('recintoAduaneiroDespacho') %} {{ due[0].recintoAduaneiroDespacho.nome }} {%
                     endif %}
                     <br>
-                    {% if due.get('itens') %}
+                    {% if due[0].get('itens') %}
                     Itens: {% for item in due.get('itens') %}{{ item.get('descricaoMercadoria') }} {% endfor %}
                     {% endif %}
                     {% endif %}
