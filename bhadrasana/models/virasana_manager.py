@@ -32,7 +32,7 @@ def get_imagens_json(conhecimento: str) -> dict:
 def get_imagens_container(mongodb, numero: str) -> list:
     if numero is None or numero == '':
         raise ValueError('get_imagens: Informe o número do contêiner!')
-    query = {'metadata.carga.container.container': numero.lower().strip(),
+    query = {'metadata.numeroinformado': numero.strip(),
              'metadata.contentType': 'image/jpeg'
              }
     projection = {'metadata.numeroinformado': 1,
