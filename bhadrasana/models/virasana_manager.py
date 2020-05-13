@@ -44,7 +44,7 @@ def get_imagens_container(mongodb, numero: str) -> list:
 def get_dues_container(mongodb, numero: str) -> list:
     if numero is None or numero == '':
         raise ValueError('get_dues: Informe o número do contêiner!')
-    query = {'metadata.carga.container.container': numero.lower().strip(),
+    query = {'metadata.numeroinformado': numero.strip(),
              'metadata.contentType': 'image/jpeg'
              }
     projection = {'metadata.due': 1}
