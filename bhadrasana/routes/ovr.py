@@ -107,7 +107,7 @@ def ovr_app(app):
                                 due = due[len(due) - 1]
                                 due = due.get('metadata')
                                 if due:
-                                    due = due.get('due')
+                                    due = due.get('due')[0]
                         # Extrai informacoes da OVR
                         # Registra Visualização
                         cadastra_visualizacao(session, ovr, current_user.id)
