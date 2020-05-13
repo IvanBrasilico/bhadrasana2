@@ -163,7 +163,8 @@
                 <div class="panel-heading rounded-pill">
                     {% if due %}
                     {{ due }}
-                    {{ due.numero }}
+                    Número: {{ due.numero }}
+                    <br>
                     País Importador: {{ due.get('PaisImportador') }} Canal: {{ due.get('canal') }} Data Processamento:
                     {{ due.get('dataProcessamentoTa') }}
                     <br>
