@@ -90,7 +90,8 @@
                         {{ due }}
                         Canal: {{ due.canal }}  Data Processamento: {{ due.dataProcessamentoTa }}
                         <br>
-                        Exportador: {{ due.Declarante }}
+                        Exportador: {{ due.Declarante }} - {{ due.get('Nome Declarante') }}
+                        <br>
                         {% endif %}
                     </div>
                 </div>
