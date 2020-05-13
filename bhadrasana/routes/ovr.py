@@ -43,6 +43,7 @@ from bhadrasana.views import get_user_save_path, valid_file
 def ovr_app(app):
     def trata_ovr(request, ovr_id):
         session = app.config.get('dbsession')
+        mongodb = app.config['mongodb']
         listahistorico = []
         processos = []
         tiposeventos = get_tipos_evento_comfase_choice(session)
@@ -63,6 +64,7 @@ def ovr_app(app):
         containers = []
         flags_ovr = []
         itens_roteiro = []
+        due = {}
         ovr = OVR()
         qtdervfs = 0
         qtdeimagens = 0
@@ -84,7 +86,7 @@ def ovr_app(app):
                         ovr_form = OVRForm(**ovr.__dict__,
                                            tiposeventos=tiposeventos,
                                            recintos=recintos)
-                        # TODO: Extrair visualização do conhecimento para uma função,
+                        # TODO: Extrair visualização do conhecimento e due funções
                         # talvez um Endpoint para consulta JavaScript
                         try:
                             conhecimento = get_conhecimento(session,
@@ -96,6 +98,16 @@ def ovr_app(app):
                         except Exception as err:
                             logger.info(err)
                             pass
+                        if ovr.numerodeclaracao:
+                            cursor = mongodb.fs.files.find(
+                                {'metadata.due.numero': ovr.numerodeclaracao},
+                                {'metadata.due': 1})
+                            due = list(cursor)
+                            if due and len(due) > 0:
+                                due = due[len(due) - 1]
+                                due = due.get('metadata')
+                                if due:
+                                    due = due.get('due')
                         # Extrai informacoes da OVR
                         # Registra Visualização
                         cadastra_visualizacao(session, ovr, current_user.id)
@@ -131,7 +143,8 @@ def ovr_app(app):
                                processos=processos,
                                flags=flags,
                                flags_ovr=flags_ovr,
-                               itens_roteiro=itens_roteiro)
+                               itens_roteiro=itens_roteiro,
+                               due=due)
 
     @app.route('/ovr/<id>', methods=['POST', 'GET'])
     @login_required
