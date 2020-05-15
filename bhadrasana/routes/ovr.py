@@ -650,14 +650,18 @@ def ovr_app(app):
             if request.method == 'POST':
                 filtro_form = FiltroContainerForm(request.form)
                 filtro_form.validate()
+                logger.info('get_rvfs_filtro')
                 rvfs = get_rvfs_filtro(session, dict(filtro_form.data.items()))
+                logger.info('get_dues_container')
                 dues = get_dues_container(mongodb,
                                           filtro_form.numerolote.data)
                 lista_numeroDUEs = [due['numero'] for due in dues]
+                logger.info('get_ovr_container')
                 ces, ovrs = get_ovr_container(session, filtro_form.numerolote.data,
                                               filtro_form.datainicio.data,
                                               filtro_form.datafim.data,
                                               lista_numeroDUEs)
+                logger.info('get detalhes CE Mercante')
                 for numeroCEmercante in ces:
                     try:
                         linha = dict()
@@ -670,6 +674,7 @@ def ovr_app(app):
                         infoces.append(linha)
                     except Exception as err:
                         logger.info(err)
+                logger.info('get_imagens_container')
                 imagens = get_imagens_container(mongodb,
                                                 filtro_form.numerolote.data)
         except Exception as err:
