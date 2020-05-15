@@ -1,0 +1,94 @@
+{
+  "tipoOperacao": "I",
+  "idEvento": "string",
+  "dtHrOcorrencia": "2020-04-01T10:50:30.150-0300",
+  "dtHrRegistro": "2020-04-01T10:50:30.150-0300",
+  "cpfOperOcor": "55555555555",
+  "cpfOperReg": "55555555555",
+  "protocoloEventoRetifCanc": "string",
+  "contingencia": false,
+  "operacao": "C",
+  "direcao": "E",
+  "protocoloAgenda": "string",
+  "dtHrAgenda": "2020-04-01T10:50:30.150-0300",
+  "listaManifestos": [
+    {
+      "num": "string",
+      "tipo": "DAT",
+      "listaConhecimentos": [
+        {
+          "num": "string",
+          "tipo": "AWB"
+        }
+      ]
+    }
+  ],
+  "listaDiDue": [
+    {
+      "num": "string",
+      "tipo": "DUIMP"
+    }
+  ],
+  "listaNfe": "nrNfe1, nrNfe2",
+  "listaMalas": [
+    "string"
+  ],
+  "tipoGranel": "S",
+  "listaChassi": "chassi1, chassi2",
+  "placa": "string",
+  "ocrPlaca": false,
+  "oogDimensao": false,
+  "oogPeso": false,
+  "listaSemirreboque": [
+    {
+      "placa": "string",
+      "ocrPlaca": false,
+      "vazio": false,
+      "listaLacres": [
+        {
+          "num": 99,
+          "tipo": "REC",
+          "localSif": "string"
+        }
+      ],
+      "avaria": false,
+      "cnpjCliente": "44444444444444",
+      "nmCliente": "string"
+    }
+  ],
+  "listaConteineresUld": [
+    {
+      "num": "string",
+      "tipo": "ULD",
+      "ocrNum": false,
+      "vazio": false,
+      "numBooking": "string",
+      "listaLacres": [
+        {
+          "num": 99,
+          "tipo": "REC",
+          "localSif": "string"
+        }
+      ],
+      "avaria": false,
+      "portoDescarga": "string",
+      "destinoCarga": "string",
+      "imoNavio": "string",
+      "cnpjCliente": "44444444444444",
+      "nmCliente": "string"
+    }
+  ],
+  "cnpjTransportador": "44444444444444",
+  "nmTransportador": "string",
+  "motorista": {
+    "protocoloCredenciamento": "string",
+    "cpf": "55555555555",
+    "nome": "string"
+  },
+  "codRecintoDestino": 0,
+  "modal": "R",
+  "gate": "string",
+  "listaCameras": "['camera1', 'camera2']"
+}
+Parameter content type
+
