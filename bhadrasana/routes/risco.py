@@ -24,20 +24,24 @@ def risco_app(app):
         for linha in lista_risco:
             ce = linha.get('numeroCEmercante')
             conteiner = linha.get('codigoConteiner')
-            if ce and conteiner:
-                params = {'query':
+            _id = ''
+            if conteiner:
+                if ce:
+                    params = {'query':
                               {'metadata.carga.conhecimento.conhecimento': ce,
                                'metadata.numeroinformado': conteiner},
                           'projection': {'_id': 1}
                           }
-                r = requests.post('https://ajna.labin.rf08.srf/virasana/grid_data',
+                    r = requests.post('https://ajna.labin.rf08.srf/virasana/grid_data',
                                   json=params, verify=False)
-                lista = r.json()
-                _id = ''
+                    lista = r.json()
+                if conteiner:
+                    # TODO: Em caso de não haver CE, recuperar imagem com data mais próxima
+                    pass
                 if lista and len(lista) > 0:
                     _id = lista[0]['_id']
-                linha['_id'] = _id
-                lista_risco_nova.append(linha)
+            linha['_id'] = _id
+            lista_risco_nova.append(linha)
         return lista_risco_nova
 
     def le_csv(filename):
@@ -45,26 +49,16 @@ def risco_app(app):
                          header=5)
         return [row[1].to_dict() for row in df.iterrows()]
 
-    @app.route('/risco', methods=['POST', 'GET'])
-    @login_required
-    def risco():
-        """Função para aplicar parâmetros de risco nas tabelas do Mercante
-
-        Args:
-        """
+    @app.route('/aplica_risco', methods=['POST', 'GET'])
+    def aplica_risco():
+        """Função para escolher parâmetros de risco e visualizar resultados."""
         dbsession = app.config.get('dbsession')
         user_name = current_user.name
-        lista_risco = []
-        total_linhas = 0
-        csv_salvo = None
-        planilha_atual = ''
-        str_filtros = ''
-        lista_csv = get_lista_csv(get_user_save_path())
         active_tab = request.values.get('active_tab', 'carga')
         forms = {'carga': RiscosAtivosForm,
                  'recintos': RecintoRiscosAtivosForm}
         dict_risco_function = {'carga': mercanterisco,
-                          'recintos': recintosrisco}
+                               'recintos': recintosrisco}
         FormClass = forms[active_tab]
         risco_function = dict_risco_function[active_tab]
         if request.method == 'POST':
@@ -82,28 +76,58 @@ def risco_app(app):
                         filtros[fieldname] = riscos_ativos_campo
                 lista_risco, str_filtros = risco_function(dbsession, filtros)
                 # print('***********', lista_risco)
+                destino = save_planilharisco(lista_risco, get_user_save_path(), str_filtros)
+                return redirect(url_for('risco', planilha_atual=destino), code=307)
+                # active_tab=active_tab))000
             except Exception as err:
                 logger.error(err, exc_info=True)
                 flash('Erro ao aplicar risco! '
                       'Detalhes no log da aplicação.')
                 flash(str(type(err)))
                 flash(str(err))
-            # Salvar resultado um arquivo para donwload
-            destino = save_planilharisco(lista_risco, get_user_save_path(), str_filtros)
-            return redirect(url_for('risco', planilha_atual=destino,
-                                    active_tab=active_tab))
+        # Em caso de exceção ou em um get aqui...
+        riscos_ativos_form = FormClass(
+            datainicio=date.today() - timedelta(days=5),
+            datafim=date.today()
+        )
+        return render_template('aplica_risco.html',
+                               oform=riscos_ativos_form,
+                               lista_risco=[],
+                               total_linhas=0,
+                               csv_salvo='',
+                               lista_csv=[],
+                               planilha_atual='',
+                               active_tab=active_tab)
+
+    @app.route('/risco', methods=['POST', 'GET'])
+    @login_required
+    def risco():
+        """Função para escolher parâmetros de risco e visualizar resultados."""
+        dbsession = app.config.get('dbsession')
+        user_name = current_user.name
+        lista_risco = []
+        total_linhas = 0
+        csv_salvo = None
+        planilha_atual = request.args.get('planilha_atual', '')
+        active_tab = request.values.get('active_tab', 'carga')
+        forms = {'carga': RiscosAtivosForm,
+                 'recintos': RecintoRiscosAtivosForm}
+        FormClass = forms[active_tab]
+        if request.method == 'POST':
+            riscos_ativos_form = FormClass(request.form)
         else:
-            riscos_ativos_form = FormClass(
-                datainicio=date.today() - timedelta(days=5),
-                datafim=date.today()
-            )
-            planilha_atual = request.args.get('planilha_atual', '')
-            if planilha_atual:
-                csv_salvo = planilha_atual
-                lista_risco = le_csv(os.path.join(get_user_save_path(), csv_salvo))
-                total_linhas = len(lista_risco)
-                # Limita resultados em 100 linhas na tela
-                lista_risco = append_images(lista_risco[:100])
+            riscos_ativos_form = FormClass(request.values,
+                                           datainicio=date.today() - timedelta(days=5),
+                                           datafim=date.today()
+                                           )
+        lista_csv = get_lista_csv(get_user_save_path())
+        if planilha_atual:
+            csv_salvo = planilha_atual
+            lista_risco = le_csv(os.path.join(get_user_save_path(), csv_salvo))
+            print(lista_risco)
+            total_linhas = len(lista_risco)
+            # Limita resultados em 100 linhas na tela e adiciona imagens
+            lista_risco = append_images(lista_risco[:100])
         return render_template('aplica_risco.html',
                                oform=riscos_ativos_form,
                                lista_risco=lista_risco,

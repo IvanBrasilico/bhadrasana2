@@ -64,13 +64,13 @@ def mercanterisco(session, pfiltros: dict, limit=1000):
         Conhecimento, NCMItem,
         Conhecimento.numeroCEmercante == NCMItem.numeroCEMercante
     )
-    s = select([Conhecimento, NCMItem]).select_from(j). \
+    query = select([Conhecimento, NCMItem]).select_from(j). \
         where(filtros). \
         order_by(Conhecimento.numeroCEmercante). \
         limit(limit)
-    logger.info(str(s))
+    logger.info(str(query))
     logger.info(str(pfiltros))
-    str_filtros = str(s) + '\n' + json.dumps(pfiltros, default=myconverter)
+    str_filtros = str(query) + '\n' + json.dumps(pfiltros, default=myconverter)
     logger.info(str_filtros)
     resultproxy = session.execute(s)
     result = []
@@ -95,17 +95,19 @@ def recintosrisco(session, pfiltros: dict, limit=1000):
                 *[and_(getattr(AcessoVeiculo, key).ilike(item + '%')) for item in lista]
             )
             filtros = and_(filtros, filtro)
-    eventos = session.query(AcessoVeiculo).filter(
+    q = session.query(AcessoVeiculo).filter(
         filtros
-    ).outerjoin(ConteinerUld).limit(limit).all()
-    # logger.info(str(s))
+    ).outerjoin(ConteinerUld).limit(limit)
+    query = q.statement.compile()
+    logger.info(str(query))
     logger.info(str(pfiltros))
-    str_filtros = json.dumps(pfiltros, default=myconverter)
+    str_filtros = str(query) + '\n' + json.dumps(pfiltros, default=myconverter)
     logger.info(str_filtros)
+    eventos = q.all()
     result = []
     for evento in eventos:
-        result.append(OrderedDict([(key, getattr(evento, key))
-                                   for key in evento.__table__.columns]))
+        result.append(OrderedDict([(column.name, getattr(evento, column.name))
+                                   for column in evento.__table__.columns]))
     return result, str_filtros
 
 
