@@ -6,8 +6,8 @@ from datetime import date, datetime
 from sqlalchemy import select, and_, join, or_
 
 from ajna_commons.flask.log import logger
-from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, RiscoAtivo
 from ajnaapi.recintosapi.models import AcessoVeiculo, ConteinerUld
+from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, RiscoAtivo
 
 CAMPOS_RISCO = {'carga':
                     [('0', 'Selecione'),
@@ -84,10 +84,10 @@ def recintosrisco(session, pfiltros: dict, limit=1000):
     filtros = and_()
     datainicio = pfiltros.get('datainicio')
     if datainicio:
-        filtros = and_(AcessoVeiculo.create_date >= datainicio, filtros)
+        filtros = and_(AcessoVeiculo.dtHrOcorrencia >= datainicio, filtros)
     datafim = pfiltros.get('datafim')
     if datafim:
-        filtros = and_(AcessoVeiculo.create_date <= datafim, filtros)
+        filtros = and_(AcessoVeiculo.dtHrOcorrencia <= datafim, filtros)
     for key in keys:
         lista = pfiltros.get(key)
         if lista is not None:
@@ -95,7 +95,7 @@ def recintosrisco(session, pfiltros: dict, limit=1000):
                 *[and_(getattr(AcessoVeiculo, key).ilike(item + '%')) for item in lista]
             )
             filtros = and_(filtros, filtro)
-    resultproxy = session.query(AcessoVeiculo).filter(
+    eventos = session.query(AcessoVeiculo).filter(
         filtros
     ).outerjoin(ConteinerUld).limit(limit).all()
     # logger.info(str(s))
@@ -103,8 +103,9 @@ def recintosrisco(session, pfiltros: dict, limit=1000):
     str_filtros = json.dumps(pfiltros, default=myconverter)
     logger.info(str_filtros)
     result = []
-    for row in resultproxy:
-        result.append(OrderedDict([(key, row[key]) for key in keys]))
+    for evento in eventos:
+        result.append(OrderedDict([(key, getattr(evento, key))
+                                   for key in evento.__table__.columns]))
     return result, str_filtros
 
 
@@ -117,7 +118,8 @@ def save_planilharisco(lista_risco: list, save_path: str, filtros: str):
                     '.csv'
         destino = os.path.join(save_path, csv_salvo)
         with open(destino, 'w') as out_file:
-            out_file.write(filtros + '\n')
+            if filtros:
+                out_file.write(filtros + '\n')
             out_file.write(';'.join([key for key in lista_risco[0].keys()]) + '\n')
             for row in lista_risco:
                 campos = [str(value).replace(';', ',') for value in row.values()]

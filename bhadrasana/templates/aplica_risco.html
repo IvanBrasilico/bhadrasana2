@@ -10,100 +10,103 @@
             </ul>
         </div>
     </div>
-    <div id="top" class="row">
-        <div class="col-sm-12">
-            <form method="POST" id="formfiltro" action="risco">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                <div class="row">
-                    <h2>Filtros ativos</h2>
-                    <div class="form-group">
-                        <div class="row">
-                            <div class="col-sm-2" align="right">
-                                Data de atualização:
-                            </div>
-                            <div class="col-sm-2">
-                                {{ oform.datainicio(class='form-control') }}
-                            </div>
-                            <div class="col-sm-2">
-                                {{ oform.datafim(class='form-control') }}
-                            </div>
-                            <div class="col-sm-6">
-                                <button class="btn btn-default btn-info form-control" onclick="submit">
-                                    Aplicar risco
-                                </button>
-                            </div>
+    <div id="top" class="row col-sm-12">
+        <form method="POST" id="formfiltro" action="risco">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <input type="hidden" name="active_tab" value="{{active_tab}}"/>
+            <div class="row col-sm-12">
+                <h2>Filtros ativos</h2>
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-sm-2" align="right">
+                            {% if active_tab=='carga' %}
+                            Data de atualização:
+                            {% else %}
+                            Data de ocorrência:
+                            {% endif %}
                         </div>
-                        {% if active_tab=='carga' %}
-                        <div class="row">
-                            &nbsp;<br>
-                            <div class="col-sm-2">
-                                <input type="checkbox" name="consignatario" {% if oform.consignatario.data %} checked {%
-                                       endif %}/>
-                                Consignatário
-                            </div>
-                            <div class="col-sm-2">
-                                <input type="checkbox" name="ncm" {% if oform.ncm.data %} checked {% endif %}/>
-                                NCM
-                            </div>
-                            <div class="col-sm-2">
-                                <input type="checkbox" name="codigoConteiner" {% if oform.codigoConteiner.data %}
-                                       checked {% endif %}/>
-                                Número do Contêiner
-                            </div>
-                            <div class="col-sm-2">
-                                <input type="checkbox" name="portoOrigemCarga" {% if oform.portoOrigemCarga.data %}
-                                       checked {% endif %}/>
-                                Porto de Origem
-                            </div>
-                            <div class="col-sm-2">
-                                <input type="checkbox" name="embarcador" {% if oform.embarcador.data %} checked {% endif
-                                       %}/>
-                                Embarcador
-                            </div>
-                            <div class="col-sm-2">
-                                <input type="checkbox" name="descricao" {% if oform.descricao.data %} checked {% endif
-                                       %}/>
-                                Descrição
-                            </div>
+                        <div class="col-sm-2">
+                            {{ oform.datainicio(class='form-control') }}
                         </div>
-                        <div class="row">
-                            <div class="col-sm-2">
-                                <input type="checkbox" name="portoDestFinal" {% if oform.portoDestFinal.data %} checked
-                                       {% endif %}/>
-                                Porto de Destino
-                            </div>
+                        <div class="col-sm-2">
+                            {{ oform.datafim(class='form-control') }}
                         </div>
-                        {% endif %}
-                        {% if active_tab=='recintos' %}
-                        <div class="row">
-                            &nbsp;<br>
-                            <div class="col-sm-3">
-                                <input type="checkbox" name="cnpjTransportador" {% if oform.cnpjTransportador.data %}
-                                       checked {%
-                                       endif %}/>
-                                CNPJ do Transportador
-                            </div>
-                            <div class="col-sm-3">
-                                <input type="checkbox" name="motorista_cpf" {% if oform.motorista_cpf.data %} checked {%
-                                       endif %}/>
-                                CPF do Motorista
-                            </div>
-                            <div class="col-sm-3">
-                                <input type="checkbox" name="login" {% if oform.login.data %}
-                                       checked {% endif %}/>
-                                Login do Operador de Escâner
-                            </div>
-                            <div class="col-sm-3">
-                                <input type="checkbox" name="mercadoria" {% if oform.mercadoria.data %}
-                                       checked {% endif %}/>
-                                Descrição da mercadoria
-                            </div>
+                        <div class="col-sm-6">
+                            <button class="btn btn-default btn-info form-control" onclick="submit">
+                                Aplicar risco
+                            </button>
                         </div>
-                        {% endif %}
                     </div>
+                    {% if active_tab=='carga' %}
+                    <div class="row">
+                        &nbsp;<br>
+                        <div class="col-sm-2">
+                            <input type="checkbox" name="consignatario" {% if oform.consignatario.data %} checked {%
+                                   endif %}/>
+                            Consignatário
+                        </div>
+                        <div class="col-sm-2">
+                            <input type="checkbox" name="ncm" {% if oform.ncm.data %} checked {% endif %}/>
+                            NCM
+                        </div>
+                        <div class="col-sm-2">
+                            <input type="checkbox" name="codigoConteiner" {% if oform.codigoConteiner.data %}
+                                   checked {% endif %}/>
+                            Número do Contêiner
+                        </div>
+                        <div class="col-sm-2">
+                            <input type="checkbox" name="portoOrigemCarga" {% if oform.portoOrigemCarga.data %}
+                                   checked {% endif %}/>
+                            Porto de Origem
+                        </div>
+                        <div class="col-sm-2">
+                            <input type="checkbox" name="embarcador" {% if oform.embarcador.data %} checked {% endif
+                                   %}/>
+                            Embarcador
+                        </div>
+                        <div class="col-sm-2">
+                            <input type="checkbox" name="descricao" {% if oform.descricao.data %} checked {% endif
+                                   %}/>
+                            Descrição
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-2">
+                            <input type="checkbox" name="portoDestFinal" {% if oform.portoDestFinal.data %} checked
+                                   {% endif %}/>
+                            Porto de Destino
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if active_tab=='recintos' %}
+                    <div class="row">
+                        &nbsp;<br>
+                        <div class="col-sm-3">
+                            <input type="checkbox" name="cnpjTransportador" {% if oform.cnpjTransportador.data %}
+                                   checked {%
+                                   endif %}/>
+                            CNPJ do Transportador
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="checkbox" name="motorista_cpf" {% if oform.motorista_cpf.data %} checked {%
+                                   endif %}/>
+                            CPF do Motorista
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="checkbox" name="login" {% if oform.login.data %}
+                                   checked {% endif %}/>
+                            Login do Operador de Escâner
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="checkbox" name="mercadoria" {% if oform.mercadoria.data %}
+                                   checked {% endif %}/>
+                            Descrição da mercadoria
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
-            </form>
-        </div>
+            </div>
+        </form>
         <div class="table-responsive col-sm-12">
             <h3>Pesquisas anteriores</h3>
             <div class="table">
@@ -191,7 +194,7 @@
             &nbsp;
         </div>
     </div>
-    <div id="bottom" class="row">
+    <div id="bottom" class="row col-sm-12">
         AJNA - Receita Federal do Brasil 2017
     </div>
 </div>
