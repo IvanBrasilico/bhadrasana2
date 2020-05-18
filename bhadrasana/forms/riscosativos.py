@@ -20,3 +20,16 @@ class RiscosAtivosForm(FlaskForm):
                              default=0)
     embarcador = BooleanField(u'Embarcador',
                               default=0)
+
+
+class RecintoRiscosAtivosForm(FlaskForm):
+    datainicio = DateField(u'Data inicial da pesquisa')
+    datafim = DateField(u'Data final da pesquisa')
+    cnpjTransportador = BooleanField(u'CNPJ do Transportador',
+                                  default=0)
+    motorista_cpf = BooleanField(u'CPF do Motorista',
+                                 default=0)
+    login = BooleanField(u'Login do Operador de Escâner',
+                       default=0)
+    mercadoria = BooleanField(u'Descrição da mercadoria',
+                                   default=0)

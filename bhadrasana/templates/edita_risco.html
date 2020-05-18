@@ -1,5 +1,15 @@
 {% extends "layout.html" %} {% block content %} {{super()}}
 <div id="main" class="container-fluid">
+    <div id="options" class="row col-sm-12">
+        <div class="col-sm-6">
+            <ul class="nav nav-pills">
+                <li class="{% if active_tab=='carga'  %}active{% endif %}"><a href="edita_risco">
+                    Importação - Mercante</a></li>
+                <li class="{% if active_tab=='recintos'  %}active{% endif %}"><a href="edita_risco?active_tab=recintos">
+                    API Recintos - Gate</a></li>
+            </ul>
+        </div>
+    </div>
     <div id="top" class="row">
         <div class="col-sm-12">
             <form method="POST" id="formfiltro" action="inclui_risco">

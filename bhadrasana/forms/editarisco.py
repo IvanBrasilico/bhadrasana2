@@ -11,7 +11,7 @@ class EditaRiscoForm(FlaskForm):
     motivo = StringField(u'Motivo')
 
 
-def get_edita_risco_form():
+def get_edita_risco_form(tipo):
     edita_risco_form = EditaRiscoForm()
-    edita_risco_form.campo.choices = CAMPOS_RISCO
+    edita_risco_form.campo.choices = CAMPOS_RISCO[tipo]
     return edita_risco_form
