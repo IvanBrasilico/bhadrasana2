@@ -1,5 +1,15 @@
 {% extends "layout.html" %} {% block content %} {{super()}}
 <div id="main" class="container-fluid">
+    <div id="options" class="row col-sm-12">
+        <div class="col-sm-6">
+            <ul class="nav nav-pills">
+                <li class="{% if active_tab=='carga'  %}active{% endif %}"><a href="risco">
+                    Importação - Mercante</a></li>
+                <li class="{% if active_tab=='recintos'  %}active{% endif %}"><a href="risco?active_tab=recintos">
+                    API Recintos - Gate</a></li>
+            </ul>
+        </div>
+    </div>
     <div id="top" class="row">
         <div class="col-sm-12">
             <form method="POST" id="formfiltro" action="risco">
@@ -17,17 +27,13 @@
                             <div class="col-sm-2">
                                 {{ oform.datafim(class='form-control') }}
                             </div>
-                            <div class="col-sm-2">
-                                <input type="checkbox" name="portoDestFinal" {% if oform.portoDestFinal.data %} checked
-                                       {% endif %}/>
-                                Porto de Destino
-                            </div>
-                            <div class="col-sm-4">
+                            <div class="col-sm-6">
                                 <button class="btn btn-default btn-info form-control" onclick="submit">
                                     Aplicar risco
                                 </button>
                             </div>
                         </div>
+                        {% if active_tab=='carga' %}
                         <div class="row">
                             &nbsp;<br>
                             <div class="col-sm-2">
@@ -60,6 +66,40 @@
                                 Descrição
                             </div>
                         </div>
+                        <div class="row">
+                            <div class="col-sm-2">
+                                <input type="checkbox" name="portoDestFinal" {% if oform.portoDestFinal.data %} checked
+                                       {% endif %}/>
+                                Porto de Destino
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if active_tab=='recintos' %}
+                        <div class="row">
+                            &nbsp;<br>
+                            <div class="col-sm-3">
+                                <input type="checkbox" name="cnpjTransportador" {% if oform.cnpjTransportador.data %}
+                                       checked {%
+                                       endif %}/>
+                                CNPJ do Transportador
+                            </div>
+                            <div class="col-sm-3">
+                                <input type="checkbox" name="motorista_cpf" {% if oform.motorista_cpf.data %} checked {%
+                                       endif %}/>
+                                CPF do Motorista
+                            </div>
+                            <div class="col-sm-3">
+                                <input type="checkbox" name="login" {% if oform.login.data %}
+                                       checked {% endif %}/>
+                                Login do Operador de Escâner
+                            </div>
+                            <div class="col-sm-3">
+                                <input type="checkbox" name="mercadoria" {% if oform.mercadoria.data %}
+                                       checked {% endif %}/>
+                                Descrição da mercadoria
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </form>

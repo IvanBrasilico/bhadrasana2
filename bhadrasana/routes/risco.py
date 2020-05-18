@@ -11,9 +11,9 @@ from werkzeug.utils import secure_filename
 
 from ajna_commons.flask.log import logger
 from bhadrasana.forms.editarisco import get_edita_risco_form
-from bhadrasana.forms.riscosativos import RiscosAtivosForm
+from bhadrasana.forms.riscosativos import RiscosAtivosForm, RecintoRiscosAtivosForm
 from bhadrasana.models.riscomanager import mercanterisco, riscosativos, \
-    insererisco, exclui_risco, CAMPOS_RISCO, get_lista_csv, save_planilharisco
+    insererisco, exclui_risco, CAMPOS_RISCO, get_lista_csv, save_planilharisco, recintosrisco
 from bhadrasana.views import get_user_save_path, tmpdir
 
 
@@ -58,9 +58,16 @@ def risco_app(app):
         csv_salvo = None
         planilha_atual = ''
         lista_csv = get_lista_csv(get_user_save_path())
+        active_tab = request.args.get('active_tab', 'carga')
+        forms = {'carga': RiscosAtivosForm,
+                 'recintos': RecintoRiscosAtivosForm}
+        risco_function = {'carga': mercanterisco,
+                          'recintos': recintosrisco}
+        FormClass = forms[active_tab]
+        RiscoClass = risco_function[active_tab]
         if request.method == 'POST':
             try:
-                riscos_ativos_form = RiscosAtivosForm(request.form)
+                riscos_ativos_form = FormClass(request.form)
                 riscos_ativos_form.planilha_atual = ''
                 riscos_ativos = riscosativos(dbsession, user_name)
                 filtros = {}
@@ -71,7 +78,7 @@ def risco_app(app):
                         riscos_ativos_campo = [risco.valor for risco in riscos_ativos
                                                if risco.campo == fieldname]
                         filtros[fieldname] = riscos_ativos_campo
-                lista_risco, str_filtros = mercanterisco(dbsession, filtros)
+                lista_risco, str_filtros = risco_function(dbsession, filtros)
                 # print('***********', lista_risco)
             except Exception as err:
                 logger.error(err, exc_info=True)
@@ -83,7 +90,7 @@ def risco_app(app):
             destino = save_planilharisco(lista_risco, get_user_save_path(), str_filtros)
             return redirect(url_for('risco', planilha_atual=destino))
         else:
-            riscos_ativos_form = RiscosAtivosForm(
+            riscos_ativos_form = FormClass(
                 datainicio=date.today() - timedelta(days=5),
                 datafim=date.today()
             )
@@ -100,18 +107,21 @@ def risco_app(app):
                                total_linhas=total_linhas,
                                csv_salvo=csv_salvo,
                                lista_csv=lista_csv,
-                               planilha_atual=planilha_atual)
+                               planilha_atual=planilha_atual,
+                               active_tab=active_tab)
 
     @app.route('/edita_risco', methods=['POST', 'GET'])
     @login_required
     def edita_risco():
         session = app.config.get('dbsession')
+        active_tab = request.args.get('active_tab', 'carga')
         user_name = current_user.name
         riscos_ativos = riscosativos(session, user_name)
-        edita_risco_form = get_edita_risco_form()
+        edita_risco_form = get_edita_risco_form(active_tab)
         return render_template('edita_risco.html',
                                riscos_ativos=riscos_ativos,
-                               oform=edita_risco_form)
+                               oform=edita_risco_form,
+                               active_tab=active_tab)
 
     @app.route('/inclui_risco', methods=['POST'])
     @login_required

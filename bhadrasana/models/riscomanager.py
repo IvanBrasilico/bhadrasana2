@@ -3,19 +3,30 @@ import os
 from collections import OrderedDict
 from datetime import date, datetime
 
-from ajna_commons.flask.log import logger
 from sqlalchemy import select, and_, join, or_
-from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, RiscoAtivo
 
-CAMPOS_RISCO = [('0', 'Selecione'),
-                ('1', 'consignatario'),
-                ('2', 'ncm'),
-                ('3', 'portoOrigemCarga'),
-                ('4', 'codigoConteiner'),
-                ('5', 'descricao'),
-                ('6', 'embarcador'),
-                ('7', 'portoDestFinal')
-                ]
+from ajna_commons.flask.log import logger
+from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, RiscoAtivo
+from ajnaapi.recintosapi.models import AcessoVeiculo, ConteinerUld
+
+CAMPOS_RISCO = {'carga':
+                    [('0', 'Selecione'),
+                     ('1', 'consignatario'),
+                     ('2', 'ncm'),
+                     ('3', 'portoOrigemCarga'),
+                     ('4', 'codigoConteiner'),
+                     ('5', 'descricao'),
+                     ('6', 'embarcador'),
+                     ('7', 'portoDestFinal')
+                     ],
+                'recintos':
+                    [('0', 'Selecione'),
+                     ('1', 'cnpjTransportador'),
+                     ('2', 'motorista_cpf'),
+                     ('3', 'login'),
+                     ('4', 'mercadoria')
+                     ]
+                }
 
 
 def myconverter(o):
@@ -26,11 +37,9 @@ def myconverter(o):
 
 
 def mercanterisco(session, pfiltros: dict, limit=1000):
-    # conhecimentos = session.query(Conhecimento).\
-    #    join(NCMItem, Conhecimento.numeroCEmercante == NCMItem.numeroCEMercante).\
-    #    limit(10).all()
-    keys = ['numeroCEmercante', 'descricao', 'embarcador',
+    keys = ['numeroCEmercante', 'descricao', 'embarcador', 'portoDestFinal',
             'consignatario', 'portoOrigemCarga', 'codigoConteiner', 'identificacaoNCM']
+
     filtros = and_()
     datainicio = pfiltros.get('datainicio')
     if datainicio:
@@ -45,13 +54,6 @@ def mercanterisco(session, pfiltros: dict, limit=1000):
                 *[and_(getattr(Conhecimento, key).ilike(porto + '%')) for porto in lista]
             )
             filtros = and_(filtros, filtro)
-    destinos = pfiltros.get('portoDestFinal')
-    if destinos:
-        filtro = or_(
-            *[and_(Conhecimento.portoDestFinal.ilike(destino + '%'))
-              for destino in destinos]
-        )
-        filtros = and_(filtro, filtros)
     if pfiltros.get('ncm'):
         filtro = or_(
             *[and_(NCMItem.identificacaoNCM.ilike(ncm + '%'))
@@ -71,11 +73,38 @@ def mercanterisco(session, pfiltros: dict, limit=1000):
     str_filtros = str(s) + '\n' + json.dumps(pfiltros, default=myconverter)
     logger.info(str_filtros)
     resultproxy = session.execute(s)
-
     result = []
     for row in resultproxy:
         result.append(OrderedDict([(key, row[key]) for key in keys]))
+    return result, str_filtros
 
+
+def recintosrisco(session, pfiltros: dict, limit=1000):
+    keys = [item[1] for item in CAMPOS_RISCO['recintos']]
+    filtros = and_()
+    datainicio = pfiltros.get('datainicio')
+    if datainicio:
+        filtros = and_(AcessoVeiculo.create_date >= datainicio, filtros)
+    datafim = pfiltros.get('datafim')
+    if datafim:
+        filtros = and_(AcessoVeiculo.create_date <= datafim, filtros)
+    for key in keys:
+        lista = pfiltros.get(key)
+        if lista is not None:
+            filtro = or_(
+                *[and_(getattr(AcessoVeiculo, key).ilike(item + '%')) for item in lista]
+            )
+            filtros = and_(filtros, filtro)
+    resultproxy = session.query(AcessoVeiculo).filter(
+        filtros
+    ).outerjoin(ConteinerUld).limit(limit).all()
+    # logger.info(str(s))
+    logger.info(str(pfiltros))
+    str_filtros = json.dumps(pfiltros, default=myconverter)
+    logger.info(str_filtros)
+    result = []
+    for row in resultproxy:
+        result.append(OrderedDict([(key, row[key]) for key in keys]))
     return result, str_filtros
 
 
