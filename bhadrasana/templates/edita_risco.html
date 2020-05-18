@@ -29,6 +29,7 @@
                 </div>
                 <div class="row">
                     <div class="form-group">
+                        <input type="hidden" name="active_tab" value="{{active_tab}}">
                         <div class="col-sm-2">
                             {{ oform.campo(class='form-control') }}
                         </div>
@@ -61,6 +62,19 @@
                 <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive"
                        cellspacing="0"
                        cellpadding="0">
+                    <tr>
+                        <th align="center">
+                            Campo
+                        </th>
+                        <th align="center">
+                            Valor
+                        </th>
+                        <th align="center">
+                            Motivo
+                        </th>
+                        <th align="center">
+                        </th>
+                    </tr>
                     {% for risco in riscos_ativos %}
                     <tr>
                         <td align="center">

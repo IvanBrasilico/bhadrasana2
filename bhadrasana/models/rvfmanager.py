@@ -240,9 +240,9 @@ def get_imagemrvf_ordem_or_none(session, rvf_id: int, ordem: int):
         ImagemRVF.ordem == ordem).one_or_none()
 
 
-def get_imagemrvf_imagem_or_none(session, _id: str):
+def get_imagemrvf_imagem_or_none(session, _id: str) -> RVF:
     return session.query(ImagemRVF).filter(
-        ImagemRVF.imagem == _id).one_or_none()
+        ImagemRVF.imagem == _id).one()
 
 
 def swap_ordem(session, imagem_rvf: ImagemRVF, ordem_nova: int):
@@ -272,20 +272,22 @@ def inclui_imagemrvf(mongodb, session, image, filename, rvf_id: int):
     bson_img.set_campos(filename, image, rvf_id=str(rvf_id))
     fs = GridFS(mongodb)
     _id = bson_img.tomongo(fs)
-    print(rvf_id, filename)
+    # print(rvf_id, filename)
     rvf = get_rvf(session, rvf_id)
-    imagem = ImagemRVF()
-    imagem.rvf_id = rvf_id
-    imagem.imagem = str(_id)
-    imagem.descricao = filename
-    imagem.ordem = len(rvf.imagens) + 1
-    try:
-        session.add(imagem)
-        session.commit()
-    except Exception as err:
-        session.rollback()
-        logger.error(err, exc_info=True)
-        raise err
+    imagem = get_imagemrvf_imagem_or_none(session, _id)
+    if imagem is None:
+        imagem = ImagemRVF()
+        imagem.rvf_id = rvf_id
+        imagem.imagem = str(_id)
+        imagem.descricao = filename
+        imagem.ordem = len(rvf.imagens) + 1
+        try:
+            session.add(imagem)
+            session.commit()
+        except Exception as err:
+            session.rollback()
+            logger.error(err, exc_info=True)
+            raise err
 
 
 def cadastra_imagemrvf(session, params=None):

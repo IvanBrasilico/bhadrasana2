@@ -13,7 +13,8 @@ from ajna_commons.flask.log import logger
 from bhadrasana.forms.editarisco import get_edita_risco_form
 from bhadrasana.forms.riscosativos import RiscosAtivosForm, RecintoRiscosAtivosForm
 from bhadrasana.models.riscomanager import mercanterisco, riscosativos, \
-    insererisco, exclui_risco, CAMPOS_RISCO, get_lista_csv, save_planilharisco, recintosrisco
+    insererisco, exclui_risco, CAMPOS_RISCO, get_lista_csv, save_planilharisco, \
+    recintosrisco
 from bhadrasana.views import get_user_save_path, tmpdir
 
 
@@ -57,14 +58,15 @@ def risco_app(app):
         total_linhas = 0
         csv_salvo = None
         planilha_atual = ''
+        str_filtros = ''
         lista_csv = get_lista_csv(get_user_save_path())
-        active_tab = request.args.get('active_tab', 'carga')
+        active_tab = request.values.get('active_tab', 'carga')
         forms = {'carga': RiscosAtivosForm,
                  'recintos': RecintoRiscosAtivosForm}
-        risco_function = {'carga': mercanterisco,
+        dict_risco_function = {'carga': mercanterisco,
                           'recintos': recintosrisco}
         FormClass = forms[active_tab]
-        RiscoClass = risco_function[active_tab]
+        risco_function = dict_risco_function[active_tab]
         if request.method == 'POST':
             try:
                 riscos_ativos_form = FormClass(request.form)
@@ -88,7 +90,8 @@ def risco_app(app):
                 flash(str(err))
             # Salvar resultado um arquivo para donwload
             destino = save_planilharisco(lista_risco, get_user_save_path(), str_filtros)
-            return redirect(url_for('risco', planilha_atual=destino))
+            return redirect(url_for('risco', planilha_atual=destino,
+                                    active_tab=active_tab))
         else:
             riscos_ativos_form = FormClass(
                 datainicio=date.today() - timedelta(days=5),
@@ -129,10 +132,11 @@ def risco_app(app):
         session = app.config.get('dbsession')
         user_name = current_user.name
         campoid = request.form.get('campo')
+        active_tab = request.form.get('active_tab', 'carga')
         if campoid == '0':
             flash('Selecionar campo')
             return redirect(url_for('edita_risco'))
-        campo = dict(CAMPOS_RISCO)[campoid]
+        campo = dict(CAMPOS_RISCO[active_tab])[campoid]
         valor = request.form.get('valor')
         motivo = request.form.get('motivo')
         # print(user_name, campo, valor, motivo)
@@ -149,7 +153,7 @@ def risco_app(app):
             flash(str(type(err)))
             flash(str(err))
 
-        return redirect(url_for('edita_risco'))
+        return redirect(url_for('edita_risco', active_tab=active_tab))
 
     @app.route('/exclui_risco/<id>', methods=['GET'])
     @login_required
