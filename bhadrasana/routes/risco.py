@@ -179,9 +179,9 @@ def risco_app(app):
 
         return redirect(url_for('edita_risco', active_tab=active_tab))
 
-    @app.route('/exclui_risco/<id>', methods=['GET'])
+    @app.route('/exclui_risco/<id>/<active_tab>', methods=['GET'])
     @login_required
-    def excluir_risco(id):
+    def excluir_risco(id, active_tab):
         session = app.config.get('dbsession')
         try:
             exclui_risco(session, id)
@@ -191,7 +191,7 @@ def risco_app(app):
                   'Detalhes no log da aplicação.')
             flash(str(type(err)))
             flash(str(err))
-        return redirect(url_for('edita_risco'))
+        return redirect(url_for('edita_risco', active_tab=active_tab))
 
     @app.route('/exporta_csv', methods=['POST', 'GET'])
     @login_required
@@ -228,6 +228,20 @@ def risco_app(app):
         if '.' in csvf.filename and csvf.filename.rsplit('.', 1)[1].lower() == 'csv':
             return csvf
         return False
+
+    def get_csv_valido(request):
+        if 'csv' not in request.files:
+            flash('Arquivo não repassado')
+            return False
+        csvf = request.files['csv']
+        if csvf.filename == '':
+            flash('Nome de arquivo vazio')
+            return False
+        logger.info('FILE***' + csvf.filename)
+        if '.' in csvf.filename and csvf.filename.rsplit('.', 1)[1].lower() == 'csv':
+            return csvf
+        return False
+
 
     @app.route('/importacsv', methods=['POST', 'GET'])
     @login_required
@@ -282,4 +296,4 @@ def risco_app(app):
                                 campo=campo,
                                 valor=valor,
                                 motivo=motivo)
-        return redirect(url_for('importa_planilha_recinto'))
+        return render_template('importa_planilha_recinto.html')
