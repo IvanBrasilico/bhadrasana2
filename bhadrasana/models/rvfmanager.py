@@ -31,7 +31,7 @@ def get_rvfs_filtro(session, pfiltro):
             pfiltro.get('numeroCEmercante').strip() + '%'), filtro)
     if pfiltro.get('numerolote'):
         filtro = and_(RVF.numerolote.ilike(
-            pfiltro.get('numerolote') + '%'), filtro)
+            pfiltro.get('numerolote').strip() + '%'), filtro)
     if pfiltro.get('datainicio'):
         filtro = and_(RVF.datahora >= pfiltro.get('datainicio'), filtro)
     datafim = pfiltro.get('datafim')
