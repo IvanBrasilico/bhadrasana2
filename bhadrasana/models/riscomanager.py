@@ -88,6 +88,9 @@ def recintosrisco(session, pfiltros: dict, limit=1000):
     datafim = pfiltros.get('datafim')
     if datafim:
         filtros = and_(AcessoVeiculo.dtHrOcorrencia <= datafim, filtros)
+    mercadoria = pfiltros.pop('mercadoria', None)
+    if mercadoria:
+        filtros = and_(AcessoVeiculo.mercadoria.ilike('%' + mercadoria.strip() + '%'))
     for key in keys:
         lista = pfiltros.get(key)
         if lista is not None:
