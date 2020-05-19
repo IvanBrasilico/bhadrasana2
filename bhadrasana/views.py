@@ -174,6 +174,19 @@ def anexo():
     return 'Sem Anexo'
 
 
+@app.route('/tui-image-editor')
+def tui_image_editor():
+    """Exibe o editor Open Source JS (licença MIT) TUI Image Editor."""
+    db = app.config['mongodb']
+    return render_template('tui_image_editor.html')
+
+
+@app.route('/image-editor/<_id>')
+def image_editor(_id):
+    """Exibe o editor Open Source JS (licença MIT) FileRobot."""
+    db = app.config['mongodb']
+    return render_template('filerobot.html', _id=_id)
+
 @nav.navigation()
 def mynavbar():
     """Menu da aplicação."""
