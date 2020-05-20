@@ -182,7 +182,7 @@ def get_ovr_container(session, numerolote: str,
         filtro_data = and_(OVR.datahora <= datafim, filtro_data)
     # Lista CEs
     itens = session.query(Item).filter(
-        Item.codigoConteiner.ilike(numerolote.strip())).all()
+        Item.codigoConteiner.like(numerolote.strip())).all()
     listaCE = [item.numeroCEmercante for item in itens]
     # Filtra OVRs
     filtro = and_(filtro_data,
