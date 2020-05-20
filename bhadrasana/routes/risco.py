@@ -28,16 +28,21 @@ def risco_app(app):
             if conteiner:
                 if ce:
                     params = {'query':
-                              {'metadata.carga.conhecimento.conhecimento': ce,
-                               'metadata.numeroinformado': conteiner},
-                          'projection': {'_id': 1}
-                          }
-                    r = requests.post('https://ajna.labin.rf08.srf/virasana/grid_data',
-                                  json=params, verify=False)
-                    lista = r.json()
-                if conteiner:
-                    # TODO: Em caso de não haver CE, recuperar imagem com data mais próxima
+                                  {'metadata.carga.conhecimento.conhecimento': ce,
+                                   'metadata.numeroinformado': conteiner},
+                              'projection': {'_id': 1}
+                              }
+                else:
+                    # TODO: Em caso de não haver CE, recuperar imagem com data + próxima
+                    params = {'query':
+                                  {'metadata.carga.conhecimento.conhecimento': ce},
+                              'projection': {'_id': 1}
+                              }
                     pass
+                r = requests.post('https://ajna.labin.rf08.srf/virasana/grid_data',
+                                  json=params, verify=False)
+                lista = r.json()
+                print(lista)
                 if lista and len(lista) > 0:
                     _id = lista[0]['_id']
             linha['_id'] = _id
@@ -76,7 +81,8 @@ def risco_app(app):
                         filtros[fieldname] = riscos_ativos_campo
                 lista_risco, str_filtros = risco_function(dbsession, filtros)
                 # print('***********', lista_risco)
-                destino = save_planilharisco(lista_risco, get_user_save_path(), str_filtros)
+                destino = save_planilharisco(lista_risco, get_user_save_path(),
+                                             str_filtros)
                 return redirect(url_for('risco', planilha_atual=destino), code=307)
                 # active_tab=active_tab))000
             except Exception as err:
@@ -103,8 +109,6 @@ def risco_app(app):
     @login_required
     def risco():
         """Função para escolher parâmetros de risco e visualizar resultados."""
-        dbsession = app.config.get('dbsession')
-        user_name = current_user.name
         lista_risco = []
         total_linhas = 0
         csv_salvo = None
@@ -228,20 +232,6 @@ def risco_app(app):
         if '.' in csvf.filename and csvf.filename.rsplit('.', 1)[1].lower() == 'csv':
             return csvf
         return False
-
-    def get_csv_valido(request):
-        if 'csv' not in request.files:
-            flash('Arquivo não repassado')
-            return False
-        csvf = request.files['csv']
-        if csvf.filename == '':
-            flash('Nome de arquivo vazio')
-            return False
-        logger.info('FILE***' + csvf.filename)
-        if '.' in csvf.filename and csvf.filename.rsplit('.', 1)[1].lower() == 'csv':
-            return csvf
-        return False
-
 
     @app.route('/importacsv', methods=['POST', 'GET'])
     @login_required

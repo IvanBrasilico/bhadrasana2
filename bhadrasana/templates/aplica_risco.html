@@ -103,6 +103,25 @@
                             Descrição da mercadoria
                         </div>
                     </div>
+                    <div class="row">
+                        &nbsp;<br>
+                        <div class="col-sm-3">
+                            <input type="checkbox" name="portoDescarga" {% if oform.portoDescarga.data %}
+                                   checked {%
+                                   endif %}/>
+                            Porto de Descarga
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="checkbox" name="destinoCarga" {% if oform.destinoCarga.data %} checked {%
+                                   endif %}/>
+                            Porto / destino final
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="checkbox" name="imoNavio" {% if oform.imoNavio.data %}
+                                   checked {% endif %}/>
+                            Nome do Navio
+                        </div>
+                    </div>
                     {% endif %}
                 </div>
             </div>
@@ -169,6 +188,10 @@
                                 Criar OVR
                             </a>
                             {% elif key=='codigoConteiner' %}
+                            <a href="https://ajna.labin.rf08.srf/virasana/files?numero={{value}}" target="_BLANK">
+                                {{value}}
+                            </a>
+                            {% elif key=='num' %}
                             <a href="https://ajna.labin.rf08.srf/virasana/files?numero={{value}}" target="_BLANK">
                                 {{value}}
                             </a>

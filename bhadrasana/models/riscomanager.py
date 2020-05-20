@@ -24,7 +24,10 @@ CAMPOS_RISCO = {'carga':
                      ('1', 'cnpjTransportador'),
                      ('2', 'motorista_cpf'),
                      ('3', 'login'),
-                     ('4', 'mercadoria')
+                     ('4', 'mercadoria'),
+                     ('5', 'portoDescarga'),
+                     ('6', 'destinoCarga'),
+                     ('7', 'imoNavio'),
                      ]
                 }
 
@@ -97,10 +100,16 @@ def recintosrisco(session, pfiltros: dict, limit=1000):
     for key in keys:
         lista = pfiltros.get(key)
         if lista is not None:
-            filtro = or_(
-                *[and_(getattr(AcessoVeiculo, key).like(item.strip() + '%'))
-                  for item in lista]
-            )
+            if hasattr(AcessoVeiculo, key):
+                filtro = or_(
+                    *[and_(getattr(AcessoVeiculo, key).like(item.strip() + '%'))
+                      for item in lista]
+                )
+            if hasattr(ConteinerUld, key):
+                filtro = or_(
+                    *[and_(getattr(ConteinerUld, key).like(item.strip() + '%'))
+                      for item in lista]
+                )
             filtros = and_(filtros, filtro)
     q = session.query(AcessoVeiculo).filter(
         filtros
@@ -111,8 +120,14 @@ def recintosrisco(session, pfiltros: dict, limit=1000):
     eventos = q.all()
     result = []
     for evento in eventos:
-        result.append(OrderedDict([(column.name, getattr(evento, column.name))
-                                   for column in evento.__table__.columns]))
+        linha = OrderedDict([(column.name, getattr(evento, column.name))
+                             for column in evento.__table__.columns])
+        print(linha)
+        print(evento.listaConteineresUld, len(evento.listaConteineresUld))
+        for container in evento.listaConteineresUld:
+            linha_container = OrderedDict([(column.name, getattr(container, column.name))
+                                           for column in container.__table__.columns])
+        result.append({**linha, **linha_container})
     return result, str_filtros
 
 
