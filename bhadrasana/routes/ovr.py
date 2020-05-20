@@ -650,6 +650,7 @@ def ovr_app(app):
             if request.method == 'POST':
                 filtro_form = FiltroContainerForm(request.form)
                 filtro_form.validate()
+                logger.info('Consultando contêiner %s' % filtro_form.numerolote)
                 logger.info('get_rvfs_filtro')
                 rvfs = get_rvfs_filtro(session, dict(filtro_form.data.items()))
                 logger.info('get_dues_container')
