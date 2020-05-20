@@ -51,12 +51,12 @@ def mercanterisco(session, pfiltros: dict, limit=1000):
         lista = pfiltros.get(key)
         if lista is not None:
             filtro = or_(
-                *[and_(getattr(Conhecimento, key).ilike(porto + '%')) for porto in lista]
+                *[and_(getattr(Conhecimento, key).like(porto + '%')) for porto in lista]
             )
             filtros = and_(filtros, filtro)
     if pfiltros.get('ncm'):
         filtro = or_(
-            *[and_(NCMItem.identificacaoNCM.ilike(ncm + '%'))
+            *[and_(NCMItem.identificacaoNCM.like(ncm + '%'))
               for ncm in pfiltros.get('ncm')]
         )
         filtros = and_(filtros, filtro)
@@ -91,14 +91,14 @@ def recintosrisco(session, pfiltros: dict, limit=1000):
         filtros = and_(AcessoVeiculo.dtHrOcorrencia <= datafim, filtros)
     mercadoria = pfiltros.pop('mercadoria', None)
     if mercadoria:
-        filtros = or_(*[and_(AcessoVeiculo.mercadoria.ilike('%' + item.strip() + '%'))
+        filtros = or_(*[and_(AcessoVeiculo.mercadoria.like('%' + item.strip() + '%'))
                         for item in mercadoria]
                       )
     for key in keys:
         lista = pfiltros.get(key)
         if lista is not None:
             filtro = or_(
-                *[and_(getattr(AcessoVeiculo, key).ilike(item.strip() + '%'))
+                *[and_(getattr(AcessoVeiculo, key).like(item.strip() + '%'))
                   for item in lista]
             )
             filtros = and_(filtros, filtro)
