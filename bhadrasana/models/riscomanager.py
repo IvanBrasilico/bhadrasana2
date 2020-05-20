@@ -72,7 +72,7 @@ def mercanterisco(session, pfiltros: dict, limit=1000):
     logger.info(str(pfiltros))
     str_filtros = str(query) + '\n' + json.dumps(pfiltros, default=myconverter)
     logger.info(str_filtros)
-    resultproxy = session.execute(s)
+    resultproxy = session.execute(query)
     result = []
     for row in resultproxy:
         result.append(OrderedDict([(key, row[key]) for key in keys]))
@@ -81,6 +81,7 @@ def mercanterisco(session, pfiltros: dict, limit=1000):
 
 def recintosrisco(session, pfiltros: dict, limit=1000):
     keys = [item[1] for item in CAMPOS_RISCO['recintos']]
+    str_filtros = json.dumps(pfiltros, default=myconverter)
     filtros = and_()
     datainicio = pfiltros.get('datainicio')
     if datainicio:
@@ -90,21 +91,22 @@ def recintosrisco(session, pfiltros: dict, limit=1000):
         filtros = and_(AcessoVeiculo.dtHrOcorrencia <= datafim, filtros)
     mercadoria = pfiltros.pop('mercadoria', None)
     if mercadoria:
-        filtros = and_(AcessoVeiculo.mercadoria.ilike('%' + mercadoria.strip() + '%'))
+        filtros = or_(*[and_(AcessoVeiculo.mercadoria.ilike('%' + item.strip() + '%'))
+                        for item in mercadoria]
+                      )
     for key in keys:
         lista = pfiltros.get(key)
         if lista is not None:
             filtro = or_(
-                *[and_(getattr(AcessoVeiculo, key).ilike(item + '%')) for item in lista]
+                *[and_(getattr(AcessoVeiculo, key).ilike(item.strip() + '%'))
+                  for item in lista]
             )
             filtros = and_(filtros, filtro)
     q = session.query(AcessoVeiculo).filter(
         filtros
     ).outerjoin(ConteinerUld).limit(limit)
     query = q.statement.compile()
-    logger.info(str(query))
-    logger.info(str(pfiltros))
-    str_filtros = str(query) + '\n' + json.dumps(pfiltros, default=myconverter)
+    str_filtros = str(query) + '\n' + str_filtros
     logger.info(str_filtros)
     eventos = q.all()
     result = []
