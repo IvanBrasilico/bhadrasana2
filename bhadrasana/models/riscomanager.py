@@ -72,7 +72,7 @@ def mercanterisco(session, pfiltros: dict, limit=1000):
     logger.info(str(pfiltros))
     str_filtros = str(query) + '\n' + json.dumps(pfiltros, default=myconverter)
     logger.info(str_filtros)
-    resultproxy = session.execute(s)
+    resultproxy = session.execute(query)
     result = []
     for row in resultproxy:
         result.append(OrderedDict([(key, row[key]) for key in keys]))
