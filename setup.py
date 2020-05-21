@@ -22,6 +22,7 @@ setup(
         'Flask-session',
         'Flask-wtf',
         'gunicorn',
+        'json2html',
         'lxml',
         'Pillow',   # Centralizar acesso imagens no virasana??
         'plotly', # Ver como retirar necessidade
