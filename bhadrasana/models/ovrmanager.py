@@ -48,6 +48,7 @@ def get_relatorios_choice(session) -> List[Tuple[int, str]]:
     relatorios = session.query(Relatorio).order_by(Relatorio.nome).all()
     return [(relatorio.id, relatorio.nome) for relatorio in relatorios]
 
+
 def get_relatorio(session, relatorio_id: int) -> List[Relatorio]:
     return session.query(Relatorio).filter(Relatorio.id == relatorio_id).one_or_none()
 
@@ -170,9 +171,9 @@ def get_ovr_filtro(session, user_name: str,
 
 
 def get_ovr_container(session, numerolote: str,
-                             datainicio: datetime = None,
-                             datafim: datetime = None,
-                             lista_numeroDUEs=[]) -> Tuple[List[str], List[OVR]]:
+                      datainicio: datetime = None,
+                      datafim: datetime = None,
+                      lista_numeroDUEs=[]) -> Tuple[List[str], List[OVR]]:
     filtro_data = and_()
     if datainicio:
         filtro_data = and_(OVR.datahora >= datainicio, filtro_data)
