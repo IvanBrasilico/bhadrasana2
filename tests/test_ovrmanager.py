@@ -12,7 +12,7 @@ sys.path.append('.')
 
 from bhadrasana.models import Setor, Usuario
 from bhadrasana.models.ovr import metadata, Enumerado, create_tiposevento, create_tiposprocesso, create_flags, Flag, \
-    Relatorio, create_tipomercadoria, create_marcas, Marca
+    Relatorio, create_tipomercadoria, create_marcas, Marca, ItemTG
 
 from bhadrasana.models.ovrmanager import gera_eventoovr, \
     gera_processoovr, cadastra_tgovr, atribui_responsavel_ovr, get_setores_filhos_recursivo, get_tipos_evento, \
@@ -109,10 +109,17 @@ class OVRTestCase(BaseTestCase):
         assert itens[0] == itemtg
         _itemtg = get_itemtg(session, itemtg.id)
         assert _itemtg == itemtg
-        _itemtg = get_itemtg_numero(session, tg, 13)
         # assert _itemtg.id == itemtg.id
         assert _itemtg.descricao == itemtg.descricao
         assert _itemtg.numero == itemtg.numero
+        _itemtg = get_itemtg_numero(session, tg, 13)
+        assert _itemtg is not None
+        assert isinstance(_itemtg, ItemTG)
+        _itemtg = get_itemtg_numero(session, tg, 0)
+        assert _itemtg is not None
+        assert isinstance(_itemtg, ItemTG)
+
+
 
     def test_Responsavel(self):
         # Atribui responsável válido
