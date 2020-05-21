@@ -7,7 +7,7 @@ from typing import List
 from sqlalchemy import select, and_, join, or_
 
 from ajna_commons.flask.log import logger
-from ajnaapi.recintosapi.models import AcessoVeiculo, ConteinerUld, EventoBase
+from ajnaapi.recintosapi.models import AcessoVeiculo, ConteinerUld
 from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, RiscoAtivo
 
 CAMPOS_RISCO = {'carga':
@@ -204,6 +204,7 @@ def get_lista_csv(csvpath):
                 linha = in_file.readline()
         lista_comentada.append((os.path.basename(arquivo), linha))
     return lista_comentada
+
 
 def get_eventos_conteiner(session, numero: str) -> List[dict]:
     result = []

@@ -10,11 +10,9 @@ import plotly.graph_objs as go
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
 from gridfs import GridFS
-from json2html import json2html
 from werkzeug.utils import redirect
 
 from ajna_commons.flask.log import logger
-from ajnaapi.recintosapi.models import AcessoVeiculo
 from bhadrasana.forms.exibicao_ovr import ExibicaoOVR
 from bhadrasana.forms.filtro_container import FiltroContainerForm
 from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
@@ -698,17 +696,3 @@ def ovr_app(app):
                                dues=dues,
                                eventos=eventos,
                                imagens=imagens)
-
-    # TODO: Extrair este endpoint para a API
-    @app.route('/evento', methods=['GET'])
-    # @login_required
-    def get_evento_html():
-        session = app.config.get('dbsession')
-        recinto = request.args['recinto']
-        tipo = request.args['tipo']
-        id = request.args['id']
-        evento = session.query(AcessoVeiculo).filter(
-            AcessoVeiculo.recinto == recinto).filter(
-            AcessoVeiculo.idEvento == id).first()
-        return json2html.convert(evento.dump())
-
