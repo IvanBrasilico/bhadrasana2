@@ -3,10 +3,9 @@ import unittest
 from datetime import datetime, timedelta
 from typing import List, Tuple
 
+import virasana.integracao.mercante.mercantealchemy as mercante
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-
-import virasana.integracao.mercante.mercantealchemy as mercante
 
 sys.path.append('.')
 
@@ -19,7 +18,7 @@ from bhadrasana.models.ovrmanager import gera_eventoovr, \
     get_tipos_processo, get_flags_choice, get_flags, get_ovr_container, \
     get_relatorios_choice, get_relatorio, executa_relatorio, get_setores, get_setores_cpf, get_setores_usuario, \
     inclui_flag_ovr, get_tiposmercadoria_choice, get_marcas_choice, lista_tgovr, get_tgovr, cadastra_itemtg, \
-    lista_itemtg, get_itemtg, get_itemtg_numero, informa_lavratura_auto, get_marcas
+    lista_itemtg, get_itemtg, get_itemtg_numero, informa_lavratura_auto, get_marcas, usuario_index
 
 engine = create_engine('sqlite://')
 Session = sessionmaker(bind=engine)
@@ -145,6 +144,13 @@ class OVRTestCase(BaseTestCase):
         evento = eventos[1]
         assert evento.fase == 1
         assert evento.motivo == 'Anterior: ' + usuario.cpf
+
+        # testa usuario_index
+        list_user = [usuario, usuario2]
+        index = usuario_index(list_user, usuario.cpf)
+        assert index is not None
+        assert isinstance(index, int)
+
 
     def test_Setores_Filhos(self):
         setorpai = Setor()

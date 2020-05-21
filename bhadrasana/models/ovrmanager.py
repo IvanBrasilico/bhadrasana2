@@ -48,7 +48,6 @@ def get_relatorios_choice(session) -> List[Tuple[int, str]]:
     relatorios = session.query(Relatorio).order_by(Relatorio.nome).all()
     return [(relatorio.id, relatorio.nome) for relatorio in relatorios]
 
-
 def get_relatorio(session, relatorio_id: int) -> List[Relatorio]:
     return session.query(Relatorio).filter(Relatorio.id == relatorio_id).one_or_none()
 
@@ -413,7 +412,7 @@ def usuario_index(usuarios: list, pcpf: str) -> int:
     index = -1
     pcpf = pcpf.strip()
     for ind, tuple in enumerate(usuarios):
-        if pcpf == tuple[0].strip():
+        if pcpf == tuple.cpf.strip():
             index = ind
             break
     return index
