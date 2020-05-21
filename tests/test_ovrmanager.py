@@ -12,14 +12,14 @@ sys.path.append('.')
 
 from bhadrasana.models import Setor, Usuario
 from bhadrasana.models.ovr import metadata, Enumerado, create_tiposevento, create_tiposprocesso, create_flags, Flag, \
-    Relatorio, create_tipomercadoria, create_marcas
+    Relatorio, create_tipomercadoria, create_marcas, Marca
 
 from bhadrasana.models.ovrmanager import gera_eventoovr, \
     gera_processoovr, cadastra_tgovr, atribui_responsavel_ovr, get_setores_filhos_recursivo, get_tipos_evento, \
     get_tipos_processo, get_flags_choice, get_flags, get_ovr_container, \
     get_relatorios_choice, get_relatorio, executa_relatorio, get_setores, get_setores_cpf, get_setores_usuario, \
     inclui_flag_ovr, get_tiposmercadoria_choice, get_marcas_choice, lista_tgovr, get_tgovr, cadastra_itemtg, \
-    lista_itemtg, get_itemtg, get_itemtg_numero, informa_lavratura_auto
+    lista_itemtg, get_itemtg, get_itemtg_numero, informa_lavratura_auto, get_marcas
 
 engine = create_engine('sqlite://')
 Session = sessionmaker(bind=engine)
@@ -300,9 +300,16 @@ class OVRTestCase(BaseTestCase):
         tiposmercadoria = get_tiposmercadoria_choice(session)
         self.assert_choices(tiposmercadoria)
 
-    def test_marcas(self):
+    def test_marcas_choice(self):
         marcas = get_marcas_choice(session)
         self.assert_choices(marcas)
+
+    def test_marcas(self):
+        marcas = get_marcas(session)
+        assert marcas is not None
+        assert isinstance(marcas, list)
+        assert len(marcas) > 0
+        assert isinstance(marcas[0], Marca)
 
     def test_Lavratura(self):
         ovr = self.create_OVR_valido()
