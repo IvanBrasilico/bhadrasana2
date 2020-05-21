@@ -14,31 +14,40 @@ from bhadrasana.forms.editarisco import get_edita_risco_form
 from bhadrasana.forms.riscosativos import RiscosAtivosForm, RecintoRiscosAtivosForm
 from bhadrasana.models.riscomanager import mercanterisco, riscosativos, \
     insererisco, exclui_risco, CAMPOS_RISCO, get_lista_csv, save_planilharisco, \
-    recintosrisco
+    recintosrisco, CAMPOS_FILTRO_IMAGEM
 from bhadrasana.views import get_user_save_path, tmpdir
 
 
 def risco_app(app):
-    def append_images(lista_risco):
+    def append_images(lista_risco, active_tab):
         lista_risco_nova = []
+        campos_filtro = CAMPOS_FILTRO_IMAGEM[active_tab]
+        campo_cemercante = campos_filtro.get('campo_cemercante')
+        campo_container = campos_filtro.get('campo_cemercante')
+        campo_data = campos_filtro.get('campo_data')
         for linha in lista_risco:
-            ce = linha.get('numeroCEmercante')
-            conteiner = linha.get('codigoConteiner')
             _id = ''
+            conteiner = linha.get(campo_container)
             if conteiner:
-                if ce:
+                if campo_cemercante:
+                    ce = linha.get(campo_cemercante)
                     params = {'query':
                                   {'metadata.carga.conhecimento.conhecimento': ce,
                                    'metadata.numeroinformado': conteiner},
                               'projection': {'_id': 1}
                               }
-                else:
+                elif campo_data:
                     # TODO: Em caso de não haver CE, recuperar imagem com data + próxima
+                    data = linha.get(campo_data)
                     params = {'query':
-                                  {'metadata.carga.conhecimento.conhecimento': ce},
+                                  {'metadata.numeroinformado': conteiner,
+                                   'metadata.dataescaneamento': data},
                               'projection': {'_id': 1}
                               }
-                    pass
+                else:
+                    raise NotImplementedError('Não foram definidos campos mínimos.'
+                                              'append_images active_tab %s ' % active_tab
+                                              )
                 r = requests.post('https://ajna.labin.rf08.srf/virasana/grid_data',
                                   json=params, verify=False)
                 lista = r.json()
@@ -117,13 +126,13 @@ def risco_app(app):
         forms = {'carga': RiscosAtivosForm,
                  'recintos': RecintoRiscosAtivosForm}
         FormClass = forms[active_tab]
-        if request.method == 'POST':
-            riscos_ativos_form = FormClass(request.form)
-        else:
+        if request.method == 'GET':
             riscos_ativos_form = FormClass(request.values,
                                            datainicio=date.today() - timedelta(days=5),
                                            datafim=date.today()
                                            )
+        else:
+            riscos_ativos_form = FormClass(request.form)
         lista_csv = get_lista_csv(get_user_save_path())
         if planilha_atual:
             csv_salvo = planilha_atual
@@ -131,7 +140,7 @@ def risco_app(app):
             print(lista_risco)
             total_linhas = len(lista_risco)
             # Limita resultados em 100 linhas na tela e adiciona imagens
-            lista_risco = append_images(lista_risco[:100])
+            lista_risco = append_images(lista_risco[:100], active_tab)
         return render_template('aplica_risco.html',
                                oform=riscos_ativos_form,
                                lista_risco=lista_risco,

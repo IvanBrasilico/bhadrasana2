@@ -2,11 +2,12 @@ import json
 import os
 from collections import OrderedDict
 from datetime import date, datetime
+from typing import List
 
 from sqlalchemy import select, and_, join, or_
 
 from ajna_commons.flask.log import logger
-from ajnaapi.recintosapi.models import AcessoVeiculo, ConteinerUld
+from ajnaapi.recintosapi.models import AcessoVeiculo, ConteinerUld, EventoBase
 from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, RiscoAtivo
 
 CAMPOS_RISCO = {'carga':
@@ -30,6 +31,15 @@ CAMPOS_RISCO = {'carga':
                      ('7', 'imoNavio'),
                      ]
                 }
+
+CAMPOS_FILTRO_IMAGEM = {
+    'carga':
+        {'campo_container': 'codigoConteiner',
+         'campo_cemercante': 'numeroCEmercante'},
+    'recintos':
+        {'campo_container': 'num',
+         'campo_data': 'dtHrOcorrencia'},
+}
 
 
 def myconverter(o):
@@ -194,3 +204,19 @@ def get_lista_csv(csvpath):
                 linha = in_file.readline()
         lista_comentada.append((os.path.basename(arquivo), linha))
     return lista_comentada
+
+def get_eventos_conteiner(session, numero: str) -> List[dict]:
+    result = []
+    eventos = session.query(AcessoVeiculo).join(ConteinerUld).filter(
+        ConteinerUld.num == numero).all()
+    for evento in eventos:
+        linha = {}
+        linha['id'] = evento.idEvento
+        linha['tipo'] = 'AcessoVeiculo'
+        linha['data'] = datetime.strftime(evento.dtHrOcorrencia, '%d/%m/%Y %H:%M')
+        linha['recinto'] = evento.recinto
+        linha['cpf'] = evento.cpfOperOcor
+        linha['info'] = 'Placa: %s Motorista: %s' % \
+                        (getattr(evento, 'placa'), getattr(evento, 'motorista_nome'))
+        result.append(linha)
+    return result

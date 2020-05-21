@@ -1,0 +1,43 @@
+{
+  "tipoOperacao": "I",
+  "idEvento": "string",
+  "dtHrOcorrencia": "2020-04-01T10:50:30.150-0300",
+  "dtHrRegistro": "2020-04-01T10:50:30.150-0300",
+  "cpfOperOcor": "55555555555",
+  "cpfOperReg": "55555555555",
+  "protocoloEventoRetifCanc": "string",
+  "contingencia": false,
+  "listaManifestos": [
+    {
+      "num": "string",
+      "tipo": "DAT",
+      "listaConhecimentos": [
+        {
+          "num": "string",
+          "tipo": "AWB"
+        }
+      ]
+    }
+  ],
+  "pesoBrutoManifesto": 20,
+  "placa": "string",
+  "tara": 100,
+  "listaSemirreboque": [
+    {
+      "placa": "string",
+      "tara": 50
+    }
+  ],
+  "taraConjunto": 100,
+  "numConteinerUld": "string",
+  "tipoConteinerUld": "Dry 40",
+  "taraConteinerUld": 100,
+  "pesoBrutoBalanca": 200,
+  "capturaAutoPeso": false,
+  "dutos": "E",
+  "volume": 30,
+  "balanca": "string",
+  "listaCameras": [
+    "string"
+  ]
+}

@@ -185,6 +185,44 @@
         &nbsp;<br>
     </div>
     <div class="row">
+        <h2>Eventos Recintos</h2>
+    </div>
+    <div id="list_eventos" class="row col-sm-12">
+        <div class="table">
+            <table class="inlineTable table table-bordered table-hover table-responsive"
+                   id="eventos_table">
+                <thead>
+                <tr>
+                    <th></th>
+                    <th>Data do Evento</th>
+                    <th>Recinto</th>
+                    <th>Operador</th>
+                    <th>Tipo de Evento</th>
+                    <th>Informação</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for evento in eventos %}
+                <tr onmouseover="showEvento(this, '{{evento.recinto}}', '{{evento.tipo}}', '{{evento.id}}')" onmouseout="clearEvento(this)">
+                    <td>
+                        <a href="https://localhost/ajnaapi/api/resumo_evento?recinto={{evento.recinto}}&tipo={{evento.tipo}}&id={{evento.id}}" target="_blank">
+                            Ver</a>
+                    </td>
+                    <td>{{ evento.data }}</td>
+                    <td>{{ evento.recinto }}</td>
+                    <td>{{ evento.cpf }}</td>
+                    <td>{{ evento.tipo }}</td>
+                    <td>{{ evento.info }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="row">
+        &nbsp;<br>
+    </div>
+    <div class="row">
         <h2>Inspeções por raio X - escaneamento</h2>
     </div>
     <div class="table table-responsive col-sm-10">
@@ -215,6 +253,24 @@
 </div>
 {% endblock %} {% block scripts %} {{super()}}
 <script>
+    function showEvento(obj, recinto, tipo, evid) {
+        xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4) {
+                if (this.status == 200) {
+                    obj.title = this.responseText;
+                    // console.log(obj.text);
+                }
+            }
+        }
+        var url = "https://localhost/ajnaapi/api/resumo_evento?format=text&recinto=" + recinto + "&tipo=" + tipo + "&id=" + evid
+        // console.log(url);
+        xhttp.open("GET", url, true);
+        xhttp.send();
+    }
+    function clearEvento(obj) {
+        obj.title = "";
+    }
 
 </script>
 {% endblock %}

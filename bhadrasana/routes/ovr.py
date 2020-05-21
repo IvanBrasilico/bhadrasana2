@@ -10,9 +10,11 @@ import plotly.graph_objs as go
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
 from gridfs import GridFS
+from json2html import json2html
 from werkzeug.utils import redirect
 
 from ajna_commons.flask.log import logger
+from ajnaapi.recintosapi.models import AcessoVeiculo
 from bhadrasana.forms.exibicao_ovr import ExibicaoOVR
 from bhadrasana.forms.filtro_container import FiltroContainerForm
 from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
@@ -32,6 +34,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_flags_choice, cadastra_visualizacao, get_tipos_evento_comfase_choice, \
     get_ovr_container
 from bhadrasana.models.ovrmanager import get_marcas_choice
+from bhadrasana.models.riscomanager import get_eventos_conteiner
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
     get_infracoes_choice, get_rvfs_filtro
 from bhadrasana.models.virasana_manager import get_conhecimento, \
@@ -641,6 +644,7 @@ def ovr_app(app):
         rvfs = []
         infoces = []
         dues = []
+        eventos = []
         imagens = []
         filtro_form = FiltroContainerForm(
             datainicio=datetime.date.today() - datetime.timedelta(days=10),
@@ -675,6 +679,9 @@ def ovr_app(app):
                         infoces.append(linha)
                     except Exception as err:
                         logger.info(err)
+                logger.info('get_eventos_container')
+                eventos = get_eventos_conteiner(session,
+                                                filtro_form.numerolote.data)
                 logger.info('get_imagens_container')
                 imagens = get_imagens_container(mongodb,
                                                 filtro_form.numerolote.data)
@@ -689,4 +696,19 @@ def ovr_app(app):
                                ovrs=ovrs,
                                infoces=infoces,
                                dues=dues,
+                               eventos=eventos,
                                imagens=imagens)
+
+    # TODO: Extrair este endpoint para a API
+    @app.route('/evento', methods=['GET'])
+    # @login_required
+    def get_evento_html():
+        session = app.config.get('dbsession')
+        recinto = request.args['recinto']
+        tipo = request.args['tipo']
+        id = request.args['id']
+        evento = session.query(AcessoVeiculo).filter(
+            AcessoVeiculo.recinto == recinto).filter(
+            AcessoVeiculo.idEvento == id).first()
+        return json2html.convert(evento.dump())
+
