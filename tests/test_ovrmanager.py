@@ -3,23 +3,22 @@ import unittest
 from datetime import datetime, timedelta
 from typing import List, Tuple
 
+import virasana.integracao.mercante.mercantealchemy as mercante
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-
-import virasana.integracao.mercante.mercantealchemy as mercante
 
 sys.path.append('.')
 
 from bhadrasana.models import Setor, Usuario
 from bhadrasana.models.ovr import metadata, Enumerado, create_tiposevento, create_tiposprocesso, create_flags, Flag, \
-    Relatorio, create_tipomercadoria, create_marcas
+    Relatorio, create_tipomercadoria, create_marcas, Marca, ItemTG
 
 from bhadrasana.models.ovrmanager import gera_eventoovr, \
     gera_processoovr, cadastra_tgovr, atribui_responsavel_ovr, get_setores_filhos_recursivo, get_tipos_evento, \
     get_tipos_processo, get_flags_choice, get_flags, get_ovr_container, \
     get_relatorios_choice, get_relatorio, executa_relatorio, get_setores, get_setores_cpf, get_setores_usuario, \
     inclui_flag_ovr, get_tiposmercadoria_choice, get_marcas_choice, lista_tgovr, get_tgovr, cadastra_itemtg, \
-    lista_itemtg, get_itemtg, get_itemtg_numero, informa_lavratura_auto
+    lista_itemtg, get_itemtg, get_itemtg_numero, informa_lavratura_auto, get_marcas, usuario_index
 
 engine = create_engine('sqlite://')
 Session = sessionmaker(bind=engine)
@@ -109,10 +108,17 @@ class OVRTestCase(BaseTestCase):
         assert itens[0] == itemtg
         _itemtg = get_itemtg(session, itemtg.id)
         assert _itemtg == itemtg
-        _itemtg = get_itemtg_numero(session, tg, 13)
         # assert _itemtg.id == itemtg.id
         assert _itemtg.descricao == itemtg.descricao
         assert _itemtg.numero == itemtg.numero
+        _itemtg = get_itemtg_numero(session, tg, 13)
+        assert _itemtg is not None
+        assert isinstance(_itemtg, ItemTG)
+        _itemtg = get_itemtg_numero(session, tg, 0)
+        assert _itemtg is not None
+        assert isinstance(_itemtg, ItemTG)
+
+
 
     def test_Responsavel(self):
         # Atribui responsável válido
@@ -138,6 +144,13 @@ class OVRTestCase(BaseTestCase):
         evento = eventos[1]
         assert evento.fase == 1
         assert evento.motivo == 'Anterior: ' + usuario.cpf
+
+        # testa usuario_index
+        list_user = [usuario, usuario2]
+        index = usuario_index(list_user, usuario.cpf)
+        assert index is not None
+        assert isinstance(index, int)
+
 
     def test_Setores_Filhos(self):
         setorpai = Setor()
@@ -300,9 +313,16 @@ class OVRTestCase(BaseTestCase):
         tiposmercadoria = get_tiposmercadoria_choice(session)
         self.assert_choices(tiposmercadoria)
 
-    def test_marcas(self):
+    def test_marcas_choice(self):
         marcas = get_marcas_choice(session)
         self.assert_choices(marcas)
+
+    def test_marcas(self):
+        marcas = get_marcas(session)
+        assert marcas is not None
+        assert isinstance(marcas, list)
+        assert len(marcas) > 0
+        assert isinstance(marcas[0], Marca)
 
     def test_Lavratura(self):
         ovr = self.create_OVR_valido()
