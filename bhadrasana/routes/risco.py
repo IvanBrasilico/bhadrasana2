@@ -26,6 +26,7 @@ def risco_app(app):
         campo_cemercante = campos_filtro.get('campo_cemercante')
         campo_container = campos_filtro.get('campo_container')
         campo_data = campos_filtro.get('campo_data')
+        logger.info('Filtros: %s ' % campos_filtro)
         for linha in lista_risco:
             _id = ''
             conteiner = linha.get(campo_container)
@@ -39,6 +40,7 @@ def risco_app(app):
                               }
                 elif campo_data:
                     # TODO: Em caso de não haver CE, recuperar imagem com data + próxima
+                    logger.info()
                     data = parser.isoparse(linha.get(campo_data))
                     inicio = data - timedelta(days=2)
                     fim = data + timedelta(days=2)
@@ -52,11 +54,12 @@ def risco_app(app):
                                               'append_images active_tab %s ' % active_tab
                                               )
                 print(params)
+                logger.info(params)
                 r = requests.post('https://ajna.labin.rf08.srf/virasana/grid_data',
                                   json=params, verify=False)
                 print(r.text)
                 lista = r.json()
-                print(lista)
+                # print(lista)
                 if lista and len(lista) > 0:
                     _id = lista[0]['_id']
             linha['_id'] = _id
