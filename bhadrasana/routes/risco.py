@@ -33,7 +33,7 @@ def risco_app(app):
                 if campo_cemercante:
                     ce = linha.get(campo_cemercante)
                     params = {'query':
-                                  {'metadata.carga.conhecimento.conhecimento': ce,
+                                  {'metadata.carga.conhecimento.conhecimento': str(ce),
                                    'metadata.numeroinformado': conteiner},
                               'projection': {'_id': 1}
                               }
