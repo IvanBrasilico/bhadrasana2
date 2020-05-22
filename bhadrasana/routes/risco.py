@@ -24,7 +24,7 @@ def risco_app(app):
         lista_risco_nova = []
         campos_filtro = CAMPOS_FILTRO_IMAGEM[active_tab]
         campo_cemercante = campos_filtro.get('campo_cemercante')
-        campo_container = campos_filtro.get('campo_cemercante')
+        campo_container = campos_filtro.get('campo_container')
         campo_data = campos_filtro.get('campo_data')
         for linha in lista_risco:
             _id = ''
