@@ -217,7 +217,8 @@
                     {{ historico.tipoevento.nome }}
                 </td>
                 <td align="center">
-                    {{ historico.user_name }}
+                    {{ historico.user_name }} -
+                    {{ dict(responsavel_form.responsavel.choices)[historico.user_name] }}
                 </td>
                 <td align="center">
                     {{ historico.motivo }}
