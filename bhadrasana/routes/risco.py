@@ -49,7 +49,8 @@ def risco_app(app):
                     fim = data + timedelta(days=2)
                     params = {'query':
                                   {'metadata.numeroinformado': conteiner,
-                                   'metadata.dataescaneamento': {'$gte': inicio, '$lte': fim}},
+                                   'metadata.dataescaneamento': {'$gte': inicio.isoformat(),
+                                                                 '$lte': fim.isoformat()}},
                               'projection': {'_id': 1}
                               }
                 else:
