@@ -1,13 +1,13 @@
 import json
 import os
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 from datetime import date, datetime
 from typing import List
 
 from sqlalchemy import select, and_, join, or_
 
 from ajna_commons.flask.log import logger
-from ajnaapi.recintosapi.models import AcessoVeiculo, ConteinerUld
+from ajnaapi.recintosapi.models import AcessoVeiculo, ConteinerUld, PesagemVeiculo, EventoBase, Semirreboque
 from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, RiscoAtivo
 
 CAMPOS_RISCO = {'carga':
@@ -207,17 +207,32 @@ def get_lista_csv(csvpath):
 
 
 def get_eventos_conteiner(session, numero: str) -> List[dict]:
-    result = []
+    Atributo = namedtuple('Atributo', ['descricao', 'campo'])
+
+    def lista_eventos(eventos: List[EventoBase],
+                      atributos_info: List[Atributo]) -> List[dict]:
+        result = []
+        for evento in eventos:
+            linha = {}
+            linha['id'] = evento.idEvento
+            linha['tipo'] = 'AcessoVeiculo'
+            linha['data'] = datetime.strftime(evento.dtHrOcorrencia, '%d/%m/%Y %H:%M')
+            linha['recinto'] = evento.recinto
+            linha['cpf'] = evento.cpfOperOcor
+            info = ['%s: %s  ' % (atributo.descricao, getattr(evento, atributo.campo))
+                    for atributo in atributos_info]
+            linha['info'] = ' '.join(info)
+            result.append(linha)
+        return result
+
     eventos = session.query(AcessoVeiculo).join(ConteinerUld).filter(
         ConteinerUld.num == numero).all()
-    for evento in eventos:
-        linha = {}
-        linha['id'] = evento.idEvento
-        linha['tipo'] = 'AcessoVeiculo'
-        linha['data'] = datetime.strftime(evento.dtHrOcorrencia, '%d/%m/%Y %H:%M')
-        linha['recinto'] = evento.recinto
-        linha['cpf'] = evento.cpfOperOcor
-        linha['info'] = 'Placa: %s Motorista: %s' % \
-                        (getattr(evento, 'placa'), getattr(evento, 'motorista_nome'))
-        result.append(linha)
-    return result
+    acessos = lista_eventos(eventos, [Atributo('Placa', 'placa'),
+                                      Atributo('Motorista', 'motorista_nome')])
+    eventos = session.query(PesagemVeiculo).join(Semirreboque).filter(
+        PesagemVeiculo.numConteinerUld == numero).all()
+    pesagens = lista_eventos(eventos, [Atributo('Placa', 'placa'),
+                                       Atributo('Peso', 'pesoBrutoBalanca'),
+                                       Atributo('Tara', 'taraConjunto'), ])
+
+    return [*acessos, *pesagens]
