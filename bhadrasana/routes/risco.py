@@ -41,7 +41,7 @@ def risco_app(app):
                 elif campo_data:
                     # TODO: Em caso de não haver CE, recuperar imagem com data + próxima
                     logger.info('Entrou no campo data... %s ' % linha.get(campo_data))
-                    data = parser.isoparse(linha.get(campo_data))
+                    data = parser.parse(linha.get(campo_data))
                     inicio = data - timedelta(days=2)
                     fim = data + timedelta(days=2)
                     params = {'query':
