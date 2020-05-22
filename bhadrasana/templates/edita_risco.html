@@ -112,7 +112,7 @@
                     <h1 class="modal-title" id="ModalLabel">Importar CSV</h1>
                 </div>
                 <div class="modal-body">
-                    <form method="POST" action="/importacsv" enctype="multipart/form-data">
+                    <form method="POST" action="importacsv" enctype="multipart/form-data">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         <label class="btn btn-default btn-choose" for="csv">
                             <input id="csv" name="csv" type="file" style="display:none"
