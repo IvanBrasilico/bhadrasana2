@@ -4,6 +4,7 @@ from datetime import datetime
 
 import pandas as pd
 import requests
+from dateutil.parser import parser
 from flask import (flash, redirect, render_template, request,
                    url_for)
 from flask_login import current_user, login_required
@@ -38,18 +39,22 @@ def risco_app(app):
                               }
                 elif campo_data:
                     # TODO: Em caso de não haver CE, recuperar imagem com data + próxima
-                    data = linha.get(campo_data)
+                    data = parser.isoparse(linha.get(campo_data))
+                    inicio = data - timedelta(days=2)
+                    fim = data + timedelta(days=2)
                     params = {'query':
                                   {'metadata.numeroinformado': conteiner,
-                                   'metadata.dataescaneamento': data},
+                                   'metadata.dataescaneamento': {'$gte': inicio, '$lte': fim}},
                               'projection': {'_id': 1}
                               }
                 else:
                     raise NotImplementedError('Não foram definidos campos mínimos.'
                                               'append_images active_tab %s ' % active_tab
                                               )
+                print(params)
                 r = requests.post('https://ajna.labin.rf08.srf/virasana/grid_data',
                                   json=params, verify=False)
+                print(r.text)
                 lista = r.json()
                 print(lista)
                 if lista and len(lista) > 0:
