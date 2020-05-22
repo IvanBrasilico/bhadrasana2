@@ -20,7 +20,7 @@ from bhadrasana.views import get_user_save_path, tmpdir
 
 
 def risco_app(app):
-    def append_images(lista_risco, active_tab):
+    def append_images(mongodb, lista_risco, active_tab):
         lista_risco_nova = []
         campos_filtro = CAMPOS_FILTRO_IMAGEM[active_tab]
         campo_cemercante = campos_filtro.get('campo_cemercante')
@@ -49,8 +49,8 @@ def risco_app(app):
                     fim = data + timedelta(days=2)
                     params = {'query':
                                   {'metadata.numeroinformado': conteiner,
-                                   'metadata.dataescaneamento': {'$gte': inicio.isoformat(),
-                                                                 '$lte': fim.isoformat()}},
+                                   'metadata.dataescaneamento': {'$gte': inicio,
+                                                                 '$lte': fim}},
                               'projection': {'_id': 1}
                               }
                 else:
@@ -59,10 +59,12 @@ def risco_app(app):
                                               )
                 print(params)
                 logger.info(params)
-                r = requests.post('https://ajna.labin.rf08.srf/virasana/grid_data',
-                                  json=params, verify=False)
-                print(r.text)
-                lista = r.json()
+                # r = requests.post('https://ajna.labin.rf08.srf/virasana/grid_data',
+                #                  json=params, verify=False)
+                # print(r.text)
+                # lista = r.json()
+                cursor = mongodb['fs.files'].find(params['query'], params['projection'])
+                lista = list(cursor)
                 # print(lista)
                 if lista and len(lista) > 0:
                     _id = lista[0]['_id']
@@ -130,6 +132,7 @@ def risco_app(app):
     @login_required
     def risco():
         """Função para escolher parâmetros de risco e visualizar resultados."""
+        mongodb = app.config['mongodb']
         lista_risco = []
         total_linhas = 0
         csv_salvo = None
@@ -152,7 +155,7 @@ def risco_app(app):
             print(lista_risco)
             total_linhas = len(lista_risco)
             # Limita resultados em 100 linhas na tela e adiciona imagens
-            lista_risco = append_images(lista_risco[:100], active_tab)
+            lista_risco = append_images(mongodb, lista_risco[:100], active_tab)
         return render_template('aplica_risco.html',
                                oform=riscos_ativos_form,
                                lista_risco=lista_risco,
