@@ -7,8 +7,10 @@ from typing import List
 from sqlalchemy import select, and_, join, or_
 
 from ajna_commons.flask.log import logger
-from ajnaapi.recintosapi.models import AcessoVeiculo, ConteinerUld, PesagemVeiculo, EventoBase, Semirreboque
-from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, RiscoAtivo
+from ajnaapi.recintosapi.models import AcessoVeiculo, ConteinerUld, PesagemVeiculo, \
+    EventoBase, Semirreboque
+from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, \
+    RiscoAtivo
 
 CAMPOS_RISCO = {'carga':
                     [('0', 'Selecione'),

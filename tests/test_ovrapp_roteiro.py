@@ -22,6 +22,18 @@ from test_base import BaseTestCase
 
 SECRET = 'teste'
 
+"""
+Divisão:    God Save the Queen
+Chefe:      mycroft senha m5
+Equipe:     221B Baker Street
+Chefe:      holmes senha sherlock
+Membros:    watson senha dr
+            adler senha irene
+Equipe: Scotland Yard
+Chefe:         lestrade senha inspetor
+Membros:       macdonald senha inspetor
+"""
+
 
 def create_setores(session):
     setores = [(1, 'God Save the Queen', None),
@@ -39,6 +51,10 @@ def create_setores(session):
 def create_usuarios(session):
     usuarios = [('mycroft', 'm5', 1),
                 ('holmes', 'sherlock', 2),
+                ('watson', 'dr', 2),
+                ('adler', 'irene', 2),
+                ('lestrade', 'inspetor', 3),
+                ('macdonald', 'inspetor', 3),
                 ]
     for linha in usuarios:
         usuario = Usuario()
@@ -171,6 +187,8 @@ class OVRAppTestCase(BaseTestCase):
         assert '1234' not in text
 
     def create_CE_containeres_teste(self):
+        """Sherlock Holmes, da Equipe 221B Baker Street, seleciona os CEs-Mercante
+        152005079623267 e 152005080025807 para verificação"""
         ce1 = mercante.Conhecimento()
         ce1.numeroCEmercante = '152005079623267'
         item1 = mercante.Item()
@@ -185,6 +203,7 @@ class OVRAppTestCase(BaseTestCase):
         self.session.commit()
 
     def test_a1_criaFichaCE(self):
+        """1. Criar ficha para CE 152005079623267"""
         recinto = self.create_recinto('Londres')
         self.session.refresh(recinto)
         self.recinto_id = recinto.id
@@ -201,6 +220,7 @@ class OVRAppTestCase(BaseTestCase):
         assert rv.status_code == 200
 
     def test_a2_atribuir_responsabilidade_watson(self):
+        """2. Atribuir responsabilidade para Watson"""
         self.login('holmes', 'holmes')
         rv = self.app.get('/ovr?id=%s' % 1)
         text = str(rv.data)
@@ -214,6 +234,7 @@ class OVRAppTestCase(BaseTestCase):
         assert b'watson' in rv.data
 
     def test_a3_programa_container(self):
+        """3. Entrar na programação/lista de contêineres e imagens e programar verificação física de um dos contêineres"""
         self.create_CE_containeres_teste()
         self.login('holmes', 'holmes')
         rv = self.app.get('/programa_rvf_ajna?ovr_id=%s' % 1)
@@ -225,6 +246,25 @@ class OVRAppTestCase(BaseTestCase):
         assert b'container=1' not in rv.data
         assert 'n. 1' in str(rv.data)
         assert b'container=1' not in rv.data
+
+    def test_b1_consulta_fichas(self):
+        """Watson entra no Sistema
+            1. Consulta suas fichas
+        """
+        self.login('watson', 'watson')
+        rv = self.app.get('/minhas_ovrs')
+        print(str(rv.data))
+        assert rv.status_code == 200
+        # Agora vamos assegurar que Holmes, como já distribuiu a OVR para Watson,
+        # não a vê mais em minhas_ovrs (mas vê em ovrs_criadospor)
+        assert b'152005079623267' in rv.data
+        self.login('holmes', 'holmes')
+        rv = self.app.get('/minhas_ovrs')
+        assert rv.status_code == 200
+        assert b'152005079623267' not in rv.data
+        rv = self.app.get('/ovrs_criador')
+        assert rv.status_code == 200
+        assert b'152005079623267' in rv.data
 
 
 if __name__ == '__main__':

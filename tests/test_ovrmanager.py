@@ -3,22 +3,24 @@ import unittest
 from datetime import datetime, timedelta
 from typing import List, Tuple
 
-import virasana.integracao.mercante.mercantealchemy as mercante
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
+import virasana.integracao.mercante.mercantealchemy as mercante
 
 sys.path.append('.')
 
 from bhadrasana.models import Setor, Usuario
 from bhadrasana.models.ovr import metadata, Enumerado, create_tiposevento, create_tiposprocesso, create_flags, Flag, \
-    Relatorio, create_tipomercadoria, create_marcas, Marca, ItemTG
+    Relatorio, create_tipomercadoria, create_marcas, Marca, ItemTG, VisualizacaoOVR, OVR
 
 from bhadrasana.models.ovrmanager import gera_eventoovr, \
     gera_processoovr, cadastra_tgovr, atribui_responsavel_ovr, get_setores_filhos_recursivo, get_tipos_evento, \
     get_tipos_processo, get_flags_choice, get_flags, get_ovr_container, \
     get_relatorios_choice, get_relatorio, executa_relatorio, get_setores, get_setores_cpf, get_setores_usuario, \
     inclui_flag_ovr, get_tiposmercadoria_choice, get_marcas_choice, lista_tgovr, get_tgovr, cadastra_itemtg, \
-    lista_itemtg, get_itemtg, get_itemtg_numero, informa_lavratura_auto, get_marcas, usuario_index
+    lista_itemtg, get_itemtg, get_itemtg_numero, informa_lavratura_auto, get_marcas, usuario_index, \
+    cadastra_visualizacao, get_visualizacoes, get_ovr_filtro, cadastra_ovr
 
 engine = create_engine('sqlite://')
 Session = sessionmaker(bind=engine)
@@ -118,8 +120,6 @@ class OVRTestCase(BaseTestCase):
         assert _itemtg is not None
         assert isinstance(_itemtg, ItemTG)
 
-
-
     def test_Responsavel(self):
         # Atribui responsável válido
         ovr = self.create_OVR_valido()
@@ -150,7 +150,6 @@ class OVRTestCase(BaseTestCase):
         index = usuario_index(list_user, usuario.cpf)
         assert index is not None
         assert isinstance(index, int)
-
 
     def test_Setores_Filhos(self):
         setorpai = Setor()
@@ -339,6 +338,83 @@ class OVRTestCase(BaseTestCase):
         evento = eventos[0]
         assert evento.fase == 3
         assert evento.motivo == 'Ficha encerrada, auto lavrado'
+
+    def test_VisualizacaoOVR(self):
+        ovr1 = self.create_OVR_valido()
+        ovr2 = self.create_OVR_valido()
+        ovr1.numero = 'teste1'
+        ovr2.numero = 'teste2'
+        session.add(ovr1)
+        session.add(ovr2)
+        session.commit()
+        session.refresh(ovr1)
+        session.refresh(ovr2)
+        visualizacao1 = VisualizacaoOVR()
+        visualizacao2 = VisualizacaoOVR()
+        visualizacao1.ovr_id = ovr1.id
+        visualizacao1.user_name = 'adriano'
+        visualizacao2.ovr_id = ovr1.id
+        visualizacao2.user_name = 'ivan'
+        session.add(visualizacao1)
+        session.add(visualizacao2)
+        session.commit()
+        visualizacao3 = cadastra_visualizacao(session, ovr2, 'ivan')
+        visualizacoes_ovr1_user1 = get_visualizacoes(session, ovr1, 'adriano')
+        assert isinstance(visualizacoes_ovr1_user1, list)
+        assert len(visualizacoes_ovr1_user1) == 1
+        visualizacoes_ovr1_user2 = get_visualizacoes(session, ovr1, 'ivan')
+        assert isinstance(visualizacoes_ovr1_user2, list)
+        assert len(visualizacoes_ovr1_user2) == 1
+        visualizacoes_ovr2_user1 = get_visualizacoes(session, ovr2, 'adriano')
+        assert isinstance(visualizacoes_ovr2_user1, list)
+        assert len(visualizacoes_ovr2_user1) == 0
+        visualizacoes_ovr2_user2 = get_visualizacoes(session, ovr2, 'ivan')
+        assert isinstance(visualizacoes_ovr2_user2, list)
+        assert len(visualizacoes_ovr2_user2) == 1
+
+    def create_OVR_campos(self, nome_recinto, cpf_usuario, numeroCEmercante,
+                          data_registro, numero, setor) -> OVR:
+        params = {}
+        recinto = self.create_recinto(nome_recinto)
+        usuario = self.create_usuario(cpf_usuario, cpf_usuario, setor)
+        self.session.refresh(recinto)
+        params['numeroCEmercante'] = numeroCEmercante
+        params['adata'] = data_registro
+        params['ahora'] = '00:00'
+        params['recinto_id'] = recinto.id
+        params['user_name'] = usuario.cpf
+        params['numero'] = numero
+        return cadastra_ovr(self.session, params, usuario.cpf)
+
+    def test_0_FiltrosOVR(self):
+        setor = Setor()
+        setor.id = 9991
+        setor.nome = 'Setor 1'
+        session.add(setor)
+        setor2 = Setor()
+        setor2.id = 9992
+        setor2.nome = 'Setor 2'
+        session.add(setor2)
+        session.commit()
+        ovr1 = self.create_OVR_campos('R1', 'U1', 'C1', '2020-05-01', 'teste1', setor)
+        ovr2 = self.create_OVR_campos('R2', 'U2', 'C2', '2020-05-02', 'teste2', setor2)
+        ovr3 = self.create_OVR_campos('R3', 'U3', 'C3', '2020-05-03', 'teste3', setor)
+        ovr4 = self.create_OVR_campos('R4', 'U4', 'C4', '2020-05-01', 'teste4', setor)
+        ovrs = get_ovr_filtro(session, 'U1', {}, False)
+        assert isinstance(ovrs, list)
+        assert len(ovrs) == 4
+        ovrs = get_ovr_filtro(session, 'U1', {'numero': 'teste1'}, False)
+        assert len(ovrs) == 1
+        ovrs = get_ovr_filtro(session, 'U2', {'numeroCEmercante': 'C2'}, True)
+        assert len(ovrs) == 1
+        ovrs = get_ovr_filtro(session, 'U1', {'numeroCEmercante': 'C2'}, True)
+        assert len(ovrs) == 0
+        ovrs = get_ovr_filtro(session, 'U1', {'numeroCEmercante': 'Non ecsiste'}, False)
+        assert len(ovrs) == 0
+        ovrs = get_ovr_filtro(session, 'U4', {'numero': 'teste4'}, False)
+        assert len(ovrs) == 1
+        ovrs = get_ovr_filtro(session, 'U4', {'numero': 'teste'}, False)
+        assert len(ovrs) == 4
 
 
 if __name__ == '__main__':

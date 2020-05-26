@@ -122,6 +122,10 @@ def get_ovr_responsavel(session, user_name: str) -> List[OVR]:
     return session.query(OVR).filter(OVR.responsavel_cpf == user_name).all()
 
 
+def get_ovr_criadaspor(session, user_name: str) -> List[OVR]:
+    return session.query(OVR).filter(OVR.user_name == user_name).all()
+
+
 def get_ovr_filtro(session, user_name: str,
                    pfiltro: dict = None,
                    filtrar_setor=True) -> List[OVR]:
@@ -152,8 +156,6 @@ def get_ovr_filtro(session, user_name: str,
             filtro = and_(OVR.responsavel_cpf == pfiltro.get('responsavel'), filtro)
         if pfiltro.get('recinto_id') and pfiltro.get('recinto_id') != 'None':
             filtro = and_(OVR.recinto_id == int(pfiltro.get('recinto_id')), filtro)
-        if pfiltro.get('numero') and pfiltro.get('numero') != 'None':
-            filtro = and_(OVR.numero == int(pfiltro.get('numero')), filtro)
         if pfiltro.get('flags') and pfiltro.get('flags') != 'None':
             filtro = and_(Flag.id == int(pfiltro.get('flags')), filtro)
             ovrs = session.query(OVR).join(flags_table).join(Flag).filter(filtro).all()
@@ -426,8 +428,9 @@ def get_setores_filhos(session, setor: Setor) -> List[Setor]:
 def get_setores_filhos_recursivo(session, setor: Setor) -> List[Setor]:
     setores_total = []
     setores_filhos = get_setores_filhos(session, setor)
-    print([setor.nome for setor in setores_filhos])
-    setores_total.extend(setores_filhos)
+    # print([setor.nome for setor in setores_filhos])
+    if setores_filhos:
+        setores_total.extend(setores_filhos)
     for setor in setores_filhos:
         setores_filhos = get_setores_filhos_recursivo(session, setor)
         setores_total.extend(setores_filhos)
@@ -444,7 +447,8 @@ def get_setores(session) -> List[Tuple[str, str]]:
 def get_setores_usuario(session, usuario: Usuario) -> List[Setor]:
     setores = [usuario.setor]
     setores_filhos = get_setores_filhos_recursivo(session, usuario.setor)
-    setores.extend(setores_filhos)
+    if setores_filhos:
+        setores.extend(setores_filhos)
     return setores
     # setores_list = [(setor.id, setor.nome) for setor in setores]
     # return sorted(setores_list, key=lambda x: x[1])
@@ -552,7 +556,7 @@ def exporta_planilhaovr(session: Session, user_name: str, filename: str):
     df.to_csv(filename)
 
 
-def cadastra_visualizacao(session, ovr: OVR, user_name: str) -> List[VisualizacaoOVR]:
+def cadastra_visualizacao(session, ovr: OVR, user_name: str) -> VisualizacaoOVR:
     visualizacao = VisualizacaoOVR()
     return gera_objeto(visualizacao, session,
                        {'ovr_id': ovr.id,
@@ -560,6 +564,6 @@ def cadastra_visualizacao(session, ovr: OVR, user_name: str) -> List[Visualizaca
                        )
 
 
-def get_visualizacoes(session, ovr, user_name):
+def get_visualizacoes(session, ovr, user_name) -> List[VisualizacaoOVR]:
     return session.query(VisualizacaoOVR).filter(VisualizacaoOVR.ovr_id == ovr.id). \
         filter(VisualizacaoOVR.user_name == user_name).all()

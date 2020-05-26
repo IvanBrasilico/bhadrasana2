@@ -3,7 +3,6 @@ from datetime import date, timedelta
 from datetime import datetime
 
 import pandas as pd
-import requests
 from dateutil import parser
 from flask import (flash, redirect, render_template, request,
                    url_for)

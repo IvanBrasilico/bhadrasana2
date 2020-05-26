@@ -30,7 +30,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_relatorios_choice, \
     executa_relatorio, get_relatorio, get_afrfb, get_itens_roteiro_checked, \
     get_flags_choice, cadastra_visualizacao, get_tipos_evento_comfase_choice, \
-    get_ovr_container
+    get_ovr_container, get_ovr_criadaspor
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import get_eventos_conteiner
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
@@ -214,6 +214,7 @@ def ovr_app(app):
                                ovrs=ovrs)
 
     @app.route('/ovrs_meus_setores', methods=['GET', 'POST'])
+    @app.route('/ovrs_criador', methods=['GET', 'POST'])
     @app.route('/minhas_ovrs', methods=['GET', 'POST'])
     @login_required
     def minhas_ovrs():
@@ -224,8 +225,10 @@ def ovr_app(app):
         inicio = datetime.date(year=today.year, month=today.month, day=1)
         if 'minhas_ovrs' in request.url:
             active_tab = 'minhas_ovrs'
-        else:
+        elif 'ovrs_meus_setores' in request.url:
             active_tab = 'ovrs_meus_setores'
+        else:
+            active_tab = 'ovrs_criador'
         if request.method == 'POST':
             oform = FiltroMinhasOVRsForm(request.form, active_tab=active_tab)
         else:
@@ -236,9 +239,11 @@ def ovr_app(app):
             oform.validate()
             if active_tab == 'minhas_ovrs':
                 ovrs = get_ovr_responsavel(session, current_user.name)
-            else:
+            elif active_tab == 'ovrs_meus_setores':
                 ovrs = get_ovr_filtro(session, current_user.name,
                                       dict(oform.data.items()))
+            else:
+                ovrs = get_ovr_criadaspor(session, current_user.name)
             exibicao = ExibicaoOVR(session, int(oform.tipoexibicao.data), current_user.id)
             titulos_exibicao = exibicao.get_titulos()
             for ovr in ovrs:

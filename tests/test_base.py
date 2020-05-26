@@ -4,7 +4,7 @@ from datetime import datetime
 
 sys.path.append('.')
 
-from bhadrasana.models import Usuario
+from bhadrasana.models import Usuario, Setor
 from bhadrasana.models.ovr import OVR, Recinto
 import virasana.integracao.mercante.mercantealchemy as mercante
 
@@ -19,7 +19,7 @@ class BaseTestCase(unittest.TestCase):
     def debug(self) -> None:
         pass
 
-    def create_usuario(self, cpf, nome):
+    def create_usuario(self, cpf, nome, setor: Setor = None):
         usuario = self.session.query(Usuario).filter(Usuario.cpf == cpf).one_or_none()
         if usuario:
             return usuario
@@ -28,36 +28,12 @@ class BaseTestCase(unittest.TestCase):
         usuario = Usuario()
         usuario.cpf = cpf
         usuario.nome = nome
+        if setor:
+            usuario.setor_id = setor.id
         self.session.add(usuario)
         self.session.commit()
         usuarios = get_usuarios(self.session)
-        assert usuarios[numeroatual][0] == usuario.cpf
-        return usuario
-
-    def create_recinto(self, nome):
-        recintos = get_recintos(self.session)
-        numeroatual = len(recintos)
-        recinto = Recinto()
-        recinto.nome = nome
-        self.session.add(recinto)
-        self.session.commit()
-        recintos = get_recintos(self.session)
-        assert recintos[numeroatual][1] == recinto.nome
-        return recinto
-
-    def create_usuario(self, cpf, nome):
-        usuario = self.session.query(Usuario).filter(Usuario.cpf == cpf).one_or_none()
-        if usuario:
-            return usuario
-        usuarios = get_usuarios(self.session)
-        numeroatual = len(usuarios)
-        usuario = Usuario()
-        usuario.cpf = cpf
-        usuario.nome = nome
-        self.session.add(usuario)
-        self.session.commit()
-        usuarios = get_usuarios(self.session)
-        assert usuarios[numeroatual][0] == usuario.cpf
+        # assert usuarios[numeroatual][0] == usuario.cpf
         return usuario
 
     def create_recinto(self, nome):
