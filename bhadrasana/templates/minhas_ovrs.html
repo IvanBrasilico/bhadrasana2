@@ -5,8 +5,10 @@
             <ul class="nav nav-pills">
                 <li class="{% if active_tab=='minhas_ovrs'  %}active{% endif %}"><a href="minhas_ovrs">
                     Fichas a mim atribuídas</a></li>
-                <li class="{% if active_tab!='minhas_ovrs'  %}active{% endif %}"><a href="ovrs_meus_setores">
+                <li class="{% if active_tab=='ovrs_meus_setores'  %}active{% endif %}"><a href="ovrs_meus_setores">
                     Fichas dos meus Setores</a></li>
+                <li class="{% if active_tab=='ovrs_criador'  %}active{% endif %}"><a href="ovrs_criador">
+                    Fichas criadas por mim</a></li>
             </ul>
         </div>
         <div class="col-sm-3">
@@ -16,7 +18,7 @@
     </div>
     <div class="row col-sm-12">&nbsp;</div>
     <div class="form-group">
-        <form method="POST" id="filtrominhasovrs" action="{{activetab}}">
+        <form method="POST" id="filtrominhasovrs" action="{{active_tab}}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div class="row">
                 <div class="col-sm-4">
