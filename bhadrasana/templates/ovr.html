@@ -87,15 +87,17 @@
                 <div class="panel panel-info rounded-pill">
                     <div class="panel-heading rounded-pill">
                         {% if due %}
-                        País Importador: {{ due.get('PaisImportador') }} Canal: {{ due.get('canal') }}  Data Processamento: {{ due.get('dataProcessamentoTa') }}
+                        País Importador: {{ due.get('PaisImportador') }} Canal: {{ due.get('canal') }} Data
+                        Processamento: {{ due.get('dataProcessamentoTa') }}
                         <br>
                         Exportador: {{ due.get('Declarante') }} - {{ due.get('Nome Declarante') }}
                         <br>
-                        Recinto: {% if due.get('recintoAduaneiroDespacho') %} {{ due.recintoAduaneiroDespacho.nome }} {% endif %}
+                        Recinto: {% if due.get('recintoAduaneiroDespacho') %} {{ due.recintoAduaneiroDespacho.nome }} {%
+                        endif %}
                         <br>
-                            {% if due.get('itens') %}
-                            Itens: {% for item in due.get('itens') %}{{ item.get('descricaoMercadoria') }} {% endfor %}
-                            {% endif %}
+                        {% if due.get('itens') %}
+                        Itens: {% for item in due.get('itens') %}{{ item.get('descricaoMercadoria') }} {% endfor %}
+                        {% endif %}
                         {% endif %}
                     </div>
                 </div>
@@ -203,7 +205,9 @@
     <div class="table-responsive table row col-sm-12">
         <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive"
                cellspacing="0"
-               cellpadding="0">
+               cellpadding="0"
+               id="table_eventos"
+        >
             <tr>
                 <th>Tipo de Evento</th>
                 <th>Usuário</th>
@@ -262,7 +266,9 @@
     <div class="table-responsive table row col-sm-12">
         <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive"
                cellspacing="0"
-               cellpadding="0">
+               cellpadding="0"
+               id="table_processos"
+        >
             <tr>
                 <th>Tipo de Processo</th>
                 <th>Número</th>
@@ -457,7 +463,8 @@
 </div>
 {% for historico in listahistorico %}
 {% if historico.anexo_filename %}
-<div class="modal fade modal-lg" id="anexomodal{{historico.id}}" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+<div class="modal fade modal-lg" id="anexomodal{{historico.id}}" tabindex="-1" role="dialog"
+     aria-labelledby="ModalLabel"
      aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -565,6 +572,7 @@
         event.preventDefault();
       }
     });
+
 
 
 

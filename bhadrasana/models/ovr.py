@@ -296,7 +296,7 @@ class TGOVR(BaseRastreavel):
                                ForeignKey('ovr_tiposmercadoria.id'))
     tipomercadoria = relationship('TipoMercadoria')
     itenstg = relationship('ItemTG', back_populates='tg')
-    numerotg = Column(VARCHAR(20), index=True)
+    numerotg = Column(VARCHAR(50), index=True)
     afrfb = Column(VARCHAR(20), index=True)
     identificacao = Column(VARCHAR(50), index=True)
     observacoes = Column(VARCHAR(500), index=True)

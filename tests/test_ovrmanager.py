@@ -36,7 +36,7 @@ create_flags(session)
 create_tipomercadoria(session)
 create_marcas(session)
 
-from test_base import BaseTestCase
+from .test_base import BaseTestCase
 
 
 class OVRTestCase(BaseTestCase):

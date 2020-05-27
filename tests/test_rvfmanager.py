@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from bhadrasana.models.rvfmanager import cadastra_rvf, get_rvfs_filtro
-from test_base import BaseTestCase
+from .test_base import BaseTestCase
 
 sys.path.append('.')
 
