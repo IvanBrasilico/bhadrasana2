@@ -66,7 +66,8 @@ class RVF(BaseRastreavel):
 
 class ImagemRVF(BaseRastreavel):
     __tablename__ = 'ovr_imagensrvf'
-    id = Column(BigInteger(), primary_key=True)
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'),
+                primary_key=True)
     rvf_id = Column(BigInteger(), index=True)
     imagem = Column(VARCHAR(100))  # _id da imagem no GrifFS
     descricao = Column(VARCHAR(200), index=True)
@@ -83,14 +84,34 @@ class ImagemRVF(BaseRastreavel):
 
 class Infracao(Base):
     __tablename__ = 'ovr_infracoes'
-    id = Column(BigInteger(), primary_key=True)
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'),
+                primary_key=True)
     nome = Column(VARCHAR(50), index=True)
 
 
 class Lacre(Base):
     __tablename__ = 'ovr_lacres'
-    id = Column(BigInteger(), primary_key=True)
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'),
+                primary_key=True)
     numero = Column(VARCHAR(50), index=True)
+
+
+def create_infracoes(session):
+    """Cria testes para classe Infracao"""
+    for nome in ('Falsa declaração de conteúdo',
+                 'Interposição',
+                 'Contrafação',
+                 'Quantidade divergente',
+                 'Fraude de valor',
+                 'Mercadoria não declarada',
+                 'Contrabando - produto proibido',
+                 'Drogas',
+                 'Armas',
+                 'Cigarros'):
+        infracao = Infracao()
+        infracao.nome = nome
+        session.add(infracao)
+    session.commit()
 
 
 if __name__ == '__main__':
@@ -122,18 +143,5 @@ if __name__ == '__main__':
                                 # metadata.tables['ovr_imagensrvf'],
                             ])
         """
-        for nome in ('Falsa declaração de conteúdo',
-                     'Interposição',
-                     'Contrafação',
-                     'Quantidade divergente',
-                     'Fraude de valor',
-                     'Mercadoria não declarada',
-                     'Contrabando - produto proibido',
-                     'Drogas',
-                     'Armas',
-                     'Cigarros'):
-            infracao = Infracao()
-            infracao.nome = nome
-            session.add(infracao)
-        session.commit()
+        create_infracoes(session)
         """

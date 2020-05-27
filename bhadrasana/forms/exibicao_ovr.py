@@ -66,6 +66,7 @@ class ExibicaoOVR:
         evento_user_descricao = ''
         user_descricao = ''
         tipo_evento_nome = ''
+        recinto_nome = ''
         visualizado = False
         data_evento = ovr.create_date
         if len(ovr.historico) > 0:
@@ -78,6 +79,8 @@ class ExibicaoOVR:
         if ovr.user_name:
             usuario = get_usuario(self.session, ovr.user_name)
             user_descricao = usuario.nome
+        if ovr.recinto:
+            recinto_nome = ovr.recinto.nome
         visualizacoes = get_visualizacoes(self.session, ovr, self.user_name)
         if len(visualizacoes) > 0:
             max_visualizacao_date = datetime.min
@@ -92,7 +95,7 @@ class ExibicaoOVR:
             return ovr.id, visualizado, [
                 ovr.datahora,
                 ovr.get_tipooperacao(),
-                ovr.recinto.nome,
+                recinto_nome,
                 ovr.get_ano(),
                 ovr.numero,
                 ovr.numeroCEmercante,

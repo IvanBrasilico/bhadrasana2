@@ -55,25 +55,6 @@
                                 {{ oform.ahora(class='form-control') }}
                             </div>
                         </div>
-                        <div class="col-sm-3">
-                            <h3>Lacres verificados</h3>
-                        </div>
-                        <div class="col-sm-3">
-                            <br>
-                            <input id="lacres" class="form-control">
-                        </div>
-                        <div class="col-sm-6">
-                        </div>
-                        <div class="row col-sm-12">
-                            <div class="col-sm-12" id="div_lacres_verificados" border="1">
-                                {% for lacre in lacres_verificados %}
-                                <button type="button" class="btn btn-primary">
-                                    {{ lacre.numero }} <span class="badge"
-                                                             onclick="exclui_lacre_verificado({{oform.id.data}}, {{ lacre.id }})">X</span>
-                                </button>
-                                {% endfor %}
-                            </div>
-                        </div>
                     </div>
                 </div>
         </div>
@@ -93,6 +74,27 @@
             </div>
         </div>
         </form>
+    </div>
+    <div class="row col-sm-12">
+        <div class="col-sm-3">
+            <h3>Lacres verificados</h3>
+        </div>
+        <div class="col-sm-3">
+            <br>
+            <input id="lacres" class="form-control">
+        </div>
+        <div class="col-sm-6">
+        </div>
+    </div>
+    <div class="row col-sm-12">
+        <div class="col-sm-12" id="div_lacres_verificados" border="1">
+            {% for lacre in lacres_verificados %}
+            <button type="button" class="btn btn-primary">
+                {{ lacre.numero }} <span class="badge"
+                                         onclick="exclui_lacre_verificado({{oform.id.data}}, {{ lacre.id }})">X</span>
+            </button>
+            {% endfor %}
+        </div>
     </div>
     <div class="row col-sm-12">
         <div class="col-sm-3">
@@ -152,7 +154,8 @@
                     </button>
                 </div>
                 <div class="col-sm-2">
-                    <button type="button" class="btn btn-default btn-primary form-control" onclick="update_ordem_arquivos()">
+                    <button type="button" class="btn btn-default btn-primary form-control"
+                            onclick="update_ordem_arquivos()">
                         Atualizar ordem
                     </button>
                 </div>
@@ -186,6 +189,8 @@
     $(document).ready(function(){
         $("#div_imagens").sortable();
     });
+
+
 </script>
 <script>
     function mostra_lacres(lacres_verificados){
@@ -400,5 +405,7 @@
           rvf_id: rvf_id, qttd_arq: qttd_arq
         });
     }
+
+
 
 </script> {% endblock %}

@@ -148,9 +148,13 @@ def gerencia_infracao_encontrada(session, rvf_id, infracao_id, inclui=True):
                 rvf.infracoesencontradas.append(infracao)
             else:
                 rvf.infracoesencontradas.remove(infracao)
-            session.commit()
+            try:
+                session.commit()
+            except Exception as err:
+                session.rollback()
+                raise err
             return rvf.infracoesencontradas
-    return None
+    return []
 
 
 def gerencia_lacre_verificado(session, rvf_id, lacre_id, inclui=True):
@@ -164,19 +168,27 @@ def gerencia_lacre_verificado(session, rvf_id, lacre_id, inclui=True):
                     rvf.lacresverificados.append(lacre)
             else:
                 rvf.lacresverificados.remove(lacre)
-            session.commit()
+            try:
+                session.commit()
+            except Exception as err:
+                session.rollback()
+                raise err
             return rvf.lacresverificados
-    return None
+    return []
 
 
 def inclui_lacre_verificado(session, rvf_id, lacre_numero):
     lacre = session.query(Lacre).filter(
         Lacre.numero == lacre_numero).one_or_none()
-    if not lacre:
-        lacre = Lacre()
-        lacre.numero = lacre_numero
-        session.add(lacre)
-        session.commit()
+    try:
+        if not lacre:
+            lacre = Lacre()
+            lacre.numero = lacre_numero
+            session.add(lacre)
+            session.commit()
+    except Exception as err:
+        session.rollback()
+        raise err
     return gerencia_lacre_verificado(session, rvf_id,
                                      lacre.id,
                                      inclui=True)
@@ -193,7 +205,7 @@ def inclui_infracao_encontrada(session, rvf_id, infracao_nome):
         return gerencia_infracao_encontrada(session, rvf_id,
                                             infracao.id,
                                             inclui=True)
-    return None
+    return []
 
 
 def exclui_infracao_encontrada(session, rvf_id, infracao_id):
@@ -209,16 +221,20 @@ def gerencia_marca_encontrada(session, rvf_id, marca_id, inclui=True):
                 rvf.marcasencontradas.append(marca)
             else:
                 rvf.marcasencontradas.remove(marca)
-            session.commit()
+            try:
+                session.commit()
+            except Exception as err:
+                session.rollback()
+                raise err
             return rvf.marcasencontradas
-    return None
+    return []
 
 
 def inclui_marca_encontrada(session, rvf_id, marca_nome):
     marca = session.query(Marca).filter(Marca.nome == marca_nome).one_or_none()
     if marca:
         return gerencia_marca_encontrada(session, rvf_id, marca.id, inclui=True)
-    return None
+    return []
 
 
 def exclui_marca_encontrada(session, rvf_id, marca_id):
