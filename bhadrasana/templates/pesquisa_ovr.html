@@ -66,10 +66,10 @@
                     {{ oform.tipoevento_id(class='form-control') }}
                 </div>
                 <div class="col-sm-2">
-                    {{ oform.flags(class='form-control') }}
+                    {{ oform.flag_id(class='form-control') }}
                 </div>
                 <div class="col-sm-2">
-                    {{ oform.infracoes(class='form-control') }}
+                    {{ oform.infracao_id(class='form-control') }}
                 </div>
                 <div class="col-sm-2">
                 </div>
@@ -86,12 +86,13 @@
     </div>
     <div class="row col-sm-12">
         <hr>
+        <h3>Lista de Fichas encontradas - limite de 100 resultados</h3>
     </div>
     <div id="list" class="row col-sm-12">
         &nbsp;<br>
         <div class="table">
             <table class="inlineTable table table-bordered table-hover table-responsive"
-                   id="filtro_personalizado_table">
+                   id="pesquisa_ovr_table" title="Lista de OVRs encontradas - limite de 100 resultados">
                 <thead>
                 <tr>
                     <th>Ficha Nº</th>

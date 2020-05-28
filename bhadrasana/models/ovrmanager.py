@@ -130,6 +130,7 @@ def get_ovr_filtro(session, user_name: str,
                    pfiltro: dict = None,
                    filtrar_setor=True) -> List[OVR]:
     filtro = and_()
+    tables = []
     if filtrar_setor:
         ids_setores = [setor.id for setor in get_setores_cpf(session, user_name)]
         filtro = and_(OVR.setor_id.in_(ids_setores))
@@ -156,19 +157,21 @@ def get_ovr_filtro(session, user_name: str,
             filtro = and_(OVR.responsavel_cpf == pfiltro.get('responsavel'), filtro)
         if pfiltro.get('recinto_id') and pfiltro.get('recinto_id') != 'None':
             filtro = and_(OVR.recinto_id == int(pfiltro.get('recinto_id')), filtro)
-        if pfiltro.get('flags') and pfiltro.get('flags') != 'None':
-            filtro = and_(Flag.id == int(pfiltro.get('flags')), filtro)
-            ovrs = session.query(OVR).join(flags_table).join(Flag).filter(filtro).all()
-            return [ovr for ovr in ovrs]
+        if pfiltro.get('flag_id') and pfiltro.get('flag_id') != 'None':
+            filtro = and_(Flag.id == int(pfiltro.get('flag_id')), filtro)
+            tables.extend([flags_table, Flag])
         # TODO: E se selecionar flags e infracoes????
-        if pfiltro.get('infracoes') and pfiltro.get('infracoes') != 'None':
-            filtro = and_(Infracao.id == int(pfiltro.get('infracoes')), filtro)
-            ovrs = session.query(OVR).join(RVF).join(infracoesencontradas_table). \
-                join(Infracao).filter(filtro).all()
-            return [ovr for ovr in ovrs]
-    ovrs = session.query(OVR).filter(filtro).all()
-    logger.info(str(pfiltro))
-    logger.info(str(filtro))
+        if pfiltro.get('infracao_id') and pfiltro.get('infracao_id') != 'None':
+            filtro = and_(Infracao.id == int(pfiltro.get('infracao_id')), filtro)
+            tables.extend([RVF, infracoesencontradas_table, Infracao])
+    logger.info('get_ovr_filtro - pfiltro' + str(pfiltro))
+    logger.info('get_ovr_filtro - filtro' + str(filtro))
+    q = session.query(OVR)
+    if len(tables) > 0:
+        for table in tables:
+            q = q.join(table)
+        # ovrs = q.filter(filtro).limit(100).all()
+    ovrs = q.filter(filtro).limit(100).all()
     return [ovr for ovr in ovrs]
 
 
@@ -206,21 +209,22 @@ def get_flags_choice(session) -> List[Tuple[int, str]]:
     return [(flag.id, flag.nome) for flag in flags]
 
 
-def inclui_flag_ovr(session, ovr_id, flag_nome):
+def inclui_flag_ovr(session, ovr_id, flag_nome) -> List[Flag]:
     flag = session.query(Flag).filter(
         Flag.nome == flag_nome).one_or_none()
+    # logger.info(flag, flag_nome)
     if flag:
         return gerencia_flag_ovr(session, ovr_id,
                                  flag.id,
                                  inclui=True)
-    return None
+    return []
 
 
-def exclui_flag_ovr(session, ovr_id, flag_id):
+def exclui_flag_ovr(session, ovr_id, flag_id) -> List[Flag]:
     return gerencia_flag_ovr(session, ovr_id, flag_id, inclui=False)
 
 
-def gerencia_flag_ovr(session, ovr_id, flag_id, inclui=True):
+def gerencia_flag_ovr(session, ovr_id, flag_id, inclui=True) -> List[Flag]:
     ovr = session.query(OVR).filter(OVR.id == ovr_id).one_or_none()
     if ovr:
         flag = session.query(Flag).filter(
@@ -230,9 +234,13 @@ def gerencia_flag_ovr(session, ovr_id, flag_id, inclui=True):
                 ovr.flags.append(flag)
             else:
                 ovr.flags.remove(flag)
-            session.commit()
+            try:
+                session.commit()
+            except Exception as err:
+                session.rollback()
+                raise err
             return ovr.flags
-    return None
+    return []
 
 
 def atribui_responsavel_ovr(session, ovr_id: int,

@@ -367,10 +367,10 @@ def create_tiposprocesso(session):
 
 
 def create_flags(session):
-    """Cria testes para classe TipoProcesso"""
-    for nome in ('Dossiê',
-                 'Auto de infração',
-                 'RFPFP'):
+    """Cria testes para classe Flag (alertas)"""
+    for nome in ('Perecível',
+                 'Alto valor agregado',
+                 'Importação proibida'):
         flag = Flag()
         flag.nome = nome
         session.add(flag)

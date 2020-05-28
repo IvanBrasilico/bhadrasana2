@@ -83,8 +83,8 @@ def mercanterisco(session, pfiltros: dict, limit=1000):
         where(filtros). \
         order_by(Conhecimento.numeroCEmercante). \
         limit(limit)
-    logger.info(str(query))
-    logger.info(str(pfiltros))
+    logger.info('mercanterisco - query: ' + str(query))
+    logger.info('mercanterisco - params: ' + str(pfiltros))
     str_filtros = str(query) + '\n' + json.dumps(pfiltros, default=myconverter)
     logger.info(str_filtros)
     resultproxy = session.execute(query)

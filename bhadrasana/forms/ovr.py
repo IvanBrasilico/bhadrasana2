@@ -2,8 +2,8 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, TextAreaField, SelectField
 from wtforms.fields.html5 import DateField, TimeField, DecimalField
 
-from bhadrasana.models.ovr import Enumerado
 from bhadrasana.forms.exibicao_ovr import TipoExibicao
+from bhadrasana.models.ovr import Enumerado
 
 
 class OVRForm(FlaskForm):
@@ -49,10 +49,10 @@ class FiltroOVRForm(FlaskForm):
     id = IntegerField('ID')
     tipooperacao = SelectField('tipooperacao', default=-1)
     fase = SelectField('fase', default=-1)
-    recinto_id = SelectField('recinto_id', default=0)
-    tipoevento_id = SelectField('tipoevento', default=0)
-    flags = SelectField('flags', default=0)
-    infracoes = SelectField('infracoes', default=0)
+    recinto_id = SelectField('recinto_id', default=-1)
+    tipoevento_id = SelectField('tipoevento', default=-1)
+    flag_id = SelectField('flags', default=-1)
+    infracao_id = SelectField('infracoes', default=-1)
     numero = StringField(u'Numero OVR',
                          default='')
     numeroCEmercante = StringField(u'CE Mercante',
@@ -75,12 +75,12 @@ class FiltroOVRForm(FlaskForm):
         self.recinto_id.choices = [(None, 'Selecione')]
         if kwargs.get('recintos'):
             self.recinto_id.choices.extend(kwargs.get('recintos'))
-        self.flags.choices = [(None, 'Selecione')]
+        self.flag_id.choices = [(None, 'Selecione')]
         if kwargs.get('flags'):
-            self.flags.choices.extend(kwargs.get('flags'))
-        self.infracoes.choices = [(None, 'Selecione')]
+            self.flag_id.choices.extend(kwargs.get('flags'))
+        self.infracao_id.choices = [(None, 'Selecione')]
         if kwargs.get('infracoes'):
-            self.infracoes.choices.extend(kwargs.get('infracoes'))
+            self.infracao_id.choices.extend(kwargs.get('infracoes'))
 
 
 class FiltroRelatorioForm(FlaskForm):

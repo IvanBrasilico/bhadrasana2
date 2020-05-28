@@ -212,7 +212,7 @@ def exclui_infracao_encontrada(session, rvf_id, infracao_id):
     return gerencia_infracao_encontrada(session, rvf_id, infracao_id, inclui=False)
 
 
-def gerencia_marca_encontrada(session, rvf_id, marca_id, inclui=True):
+def gerencia_marca_encontrada(session, rvf_id, marca_id, inclui=True) -> List[Marca]:
     rvf = session.query(RVF).filter(RVF.id == rvf_id).one_or_none()
     if rvf:
         marca = session.query(Marca).filter(Marca.id == marca_id).one_or_none()
@@ -230,14 +230,14 @@ def gerencia_marca_encontrada(session, rvf_id, marca_id, inclui=True):
     return []
 
 
-def inclui_marca_encontrada(session, rvf_id, marca_nome):
+def inclui_marca_encontrada(session, rvf_id, marca_nome) -> List[Marca]:
     marca = session.query(Marca).filter(Marca.nome == marca_nome).one_or_none()
     if marca:
         return gerencia_marca_encontrada(session, rvf_id, marca.id, inclui=True)
     return []
 
 
-def exclui_marca_encontrada(session, rvf_id, marca_id):
+def exclui_marca_encontrada(session, rvf_id, marca_id) -> List[Marca]:
     return gerencia_marca_encontrada(session, rvf_id, marca_id, inclui=False)
 
 
