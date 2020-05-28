@@ -161,22 +161,30 @@ def ovr_app(app):
     @app.route('/inclui_flag_ovr', methods=['GET'])
     @login_required
     def inclui_flag():
-        session = app.config.get('dbsession')
-        rvf_id = request.args.get('rvf_id')
-        flag_nome = request.args.get('flag_nome')
-        novas_flags = inclui_flag_ovr(session, rvf_id, flag_nome)
+        try:
+            session = app.config.get('dbsession')
+            ovr_id = request.args.get('ovr_id')
+            flag_nome = request.args.get('flag_nome')
+            novas_flags = inclui_flag_ovr(session, ovr_id, flag_nome)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            return jsonify({'msg': str(err)}), 500
         return jsonify([{'id': flag.id, 'nome': flag.nome}
-                        for flag in novas_flags])
+                        for flag in novas_flags]), 201
 
     @app.route('/exclui_flag_ovr', methods=['GET'])
     @login_required
     def exclui_flag():
-        session = app.config.get('dbsession')
-        rvf_id = request.args.get('rvf_id')
-        flag_id = request.args.get('flag_id')
-        novas_flags = exclui_flag_ovr(session, rvf_id, flag_id)
+        try:
+            session = app.config.get('dbsession')
+            ovr_id = request.args.get('ovr_id')
+            flag_id = request.args.get('flag_id')
+            novas_flags = exclui_flag_ovr(session, ovr_id, flag_id)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            return jsonify({'msg': str(err)}), 500
         return jsonify([{'id': flag.id, 'nome': flag.nome}
-                        for flag in novas_flags])
+                        for flag in novas_flags]), 201
 
     @app.route('/pesquisa_ovr', methods=['POST', 'GET'])
     @login_required
@@ -197,13 +205,16 @@ def ovr_app(app):
         )
         try:
             if request.method == 'POST':
+                logger.info('Consulta de Ficha: ' + str(dict(request.form.items())))
                 filtro_form = FiltroOVRForm(request.form, tiposeventos=tiposeventos,
                                             recintos=recintos, flags=flags,
                                             infracoes=infracoes)
                 filtro_form.validate()
+                logger.info('filtro_form data: ' + str(dict(filtro_form.data.items())))
                 ovrs = get_ovr_filtro(session, current_user.name,
                                       dict(filtro_form.data.items()),
                                       filtrar_setor=False)
+                # print('******', ovrs)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')

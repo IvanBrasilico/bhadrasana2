@@ -533,16 +533,16 @@
             ).appendTo('#div_flags_ovr');
         });
     }
-    function exclui_flag_ovr(rvf_id, flag_id){
+    function exclui_flag_ovr(ovr_id, flag_id){
         $.getJSON('exclui_flag_ovr', {
-          rvf_id: rvf_id, flag_id: flag_id
+          ovr_id: ovr_id, flag_id: flag_id
         }, function(flags_ovr) {
           mostra_flags(flags_ovr);
         });
     }
-    function inclui_flag_ovr(rvf_id, flag_nome){
+    function inclui_flag_ovr(ovr_id, flag_nome){
         $.getJSON('inclui_flag_ovr', {
-          rvf_id: rvf_id, flag_nome: flag_nome
+          ovr_id: ovr_id, flag_nome: flag_nome
         }, function(flags_ovr) {
           mostra_flags(flags_ovr);
         });

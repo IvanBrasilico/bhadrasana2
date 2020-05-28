@@ -7,10 +7,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 import virasana.integracao.mercante.mercantealchemy as mercante
+from bhadrasana.models.rvf import create_infracoes
 from bhadrasana.routes.ovr import ovr_app
 from bhadrasana.routes.risco import risco_app
 from bhadrasana.routes.rvf import rvf_app
-from bhadrasana.models.rvf import create_infracoes
 
 sys.path.append('.')
 
@@ -226,6 +226,49 @@ class OVRAppTestCase(BaseTestCase):
         assert b'152005079623267' in rv.data
         assert rv.status_code == 200
 
+    def test_a1b_cria_flag_FichaCE(self):
+        """Pesquisar ficha para CE 152005079623267 e criar Flag"""
+        self.login('holmes', 'holmes')
+        rv = self.app.get('/pesquisa_ovr')
+        token_text = self.get_token(str(rv.data))
+        payload = {'csrf_token': token_text,
+                   'numeroCEmercante': '152005079623267',
+                   'tipooperacao': 'None',
+                   'fase': 'None',
+                   'recinto_id': 'None',
+                   'tipoevento_id': 'None',
+                   'flag_id': 'None',
+                   'infracao_id': 'None'}
+        rv = self.app.post('/pesquisa_ovr', data=payload, follow_redirects=True)
+        assert rv.status_code == 200
+        assert b'152005079623267' in rv.data
+        soup = BeautifulSoup(rv.data, features='lxml')
+        table = soup.find('table', {'id': 'pesquisa_ovr_table'})
+        rows = [str(row) for row in table.findAll("tr")]
+        # print(rows)
+        assert len(rows) == 2
+        assert '152005079623267' in ''.join(rows)
+        table_text = ''.join(rows)
+        ovr_id_pos = table_text.find('"ovr?id=')
+        ovr_id = table_text[ovr_id_pos + 8: ovr_id_pos + 9]
+        # incluir flags
+        rv = self.app.get('inclui_flag_ovr?ovr_id=%s&flag_nome=Perecível' % ovr_id)
+        assert rv.status_code == 201
+        assert b'Perec' in rv.data
+        flag_id = rv.json[0]['id']
+        rv = self.app.get('ovr?id=%s' % ovr_id)
+        soup = BeautifulSoup(rv.data, features='lxml')
+        text_div_flags = soup.find('div', {'id': 'div_flags_ovr'}).text
+        assert 'Perecível' in text_div_flags
+        rv = self.app.get('exclui_flag_ovr?ovr_id=%s&flag_id=%s' % (ovr_id, flag_id))
+        assert rv.status_code == 201
+        assert b'Perec' not in rv.data
+        assert len(rv.json) == 0
+        rv = self.app.get('ovr?id=%s' % ovr_id)
+        soup = BeautifulSoup(rv.data, features='lxml')
+        text_div_flags = soup.find('div', {'id': 'div_flags_ovr'}).text
+        assert 'Perecível' not in text_div_flags
+
     def test_a2_atribuir_responsabilidade_watson(self):
         """2. Atribuir responsabilidade para Watson"""
         self.login('holmes', 'holmes')
@@ -272,6 +315,7 @@ class OVRAppTestCase(BaseTestCase):
             """Watson entra no Sistema
                 1. Consulta suas fichas
             """
+
         # Agora vamos assegurar que Holmes, como já distribuiu a OVR para Watson,
         # não a vê mais em minhas_ovrs (mas vê em ovrs_criador E em ovrs_meus_setores)
         self.login('holmes', 'holmes')
@@ -338,7 +382,7 @@ class OVRAppTestCase(BaseTestCase):
         assert rv.status_code == 200
         texto = str(rv.data)
         for key, value in payload.items():
-            if key !='csrf_token':
+            if key != 'csrf_token':
                 assert str(value) in texto
         # Lacres
         rv = self.app.get('inclui_lacre_verificado?rvf_id=%s&lacre_numero=B3A' % rvf_id)
