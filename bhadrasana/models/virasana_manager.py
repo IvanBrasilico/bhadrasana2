@@ -83,7 +83,7 @@ def get_imagens_dict_container_id(mongodb, conhecimento: str) -> dict:
             for item in imagens}
 
 
-def get_conhecimento(session, numero: str) -> List[Conhecimento]:
+def get_conhecimento(session, numero: str) -> Conhecimento:
     return session.query(Conhecimento).filter(
         Conhecimento.numeroCEmercante == numero).one_or_none()
 
