@@ -3,10 +3,10 @@ from enum import Enum
 from typing import Tuple, List
 
 from bhadrasana.models import get_usuario
+from bhadrasana.models.laudo import Empresa
 from bhadrasana.models.ovr import OVR
 from bhadrasana.models.ovrmanager import get_visualizacoes
 from bhadrasana.models.rvfmanager import lista_rvfovr
-from bhadrasana.models.laudo import Empresa
 from bhadrasana.models.virasana_manager import get_conhecimento
 
 
@@ -85,12 +85,18 @@ class ExibicaoOVR:
             evento_atual = ovr.historico[len(ovr.historico) - 1]
             if evento_atual.user_name:
                 usuario_evento = get_usuario(self.session, evento_atual.user_name)
-                evento_user_descricao = usuario_evento.nome
+                if usuario_evento:
+                    evento_user_descricao = usuario_evento.nome
+                else:
+                    evento_user_descricao = evento_atual.user_name
             tipo_evento_nome = evento_atual.tipoevento.nome
             data_evento = evento_atual.create_date
         if ovr.user_name:
             usuario = get_usuario(self.session, ovr.user_name)
-            user_descricao = usuario.nome
+            if usuario:
+                user_descricao = usuario.nome
+            else:
+                user_descricao = ovr.user_name
         if ovr.recinto:
             recinto_nome = ovr.recinto.nome
         visualizacoes = get_visualizacoes(self.session, ovr, self.user_name)
