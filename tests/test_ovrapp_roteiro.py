@@ -18,7 +18,7 @@ import ajna_commons.flask.login as login_ajna
 from ajna_commons.flask.user import DBUser
 from bhadrasana.views import app
 from bhadrasana.models import Setor, Usuario
-from bhadrasana.models.ovr import metadata, create_tiposevento, create_tiposprocesso, create_flags, create_marcas
+from bhadrasana.models.ovr import metadata, create_tiposevento, create_tiposprocesso, create_flags, create_marcas, OVR
 
 from .test_base import BaseTestCase
 
@@ -192,6 +192,45 @@ class OVRAppTestCase(BaseTestCase):
         text, status_code = self.get_consulta_container('4')
         assert status_code == 200
         assert '1234' not in text
+
+    def test_visualizacoes(self):
+        ce1 = mercante.Conhecimento()
+        ce1.numeroCEmercante = '1234'
+        item1 = mercante.Item()
+        item1.numeroCEmercante = '1234'
+        item1.codigoConteiner = 'ABCD'
+        ovr = OVR()
+        ovr.numeroCEmercante = '1234'
+        ovr.responsavel_cpf = 'ivan'
+        self.session.add(ce1)
+        self.session.add(item1)
+        self.session.add(ovr)
+        self.session.commit()
+        self.login('ivan', 'ivan')
+        # Testar as várias visualizações.
+        # Por enquanto vai testar apenas se não dá erro e se retorna títulos dos campos.
+        # Depois precisa alimentar uma base de testes e testar retorno quanto a conteúdo
+        rv = self.app.get('/minhas_ovrs')
+        token_text = self.get_token(str(rv.data))
+        payload = {'csrf_token': token_text,
+                   'tipoexibicao': 1}
+        rv = self.app.post('/minhas_ovrs', data=payload, follow_redirects=True)
+        assert rv.status_code == 200
+        print(rv.data)
+        assert b'Alertas' in rv.data
+        payload['tipoexibicao'] = 2
+        rv = self.app.post('/minhas_ovrs', data=payload, follow_redirects=True)
+        assert rv.status_code == 200
+        assert b'Declara' in rv.data
+        payload['tipoexibicao'] = 3
+        rv = self.app.post('/minhas_ovrs', data=payload, follow_redirects=True)
+        assert rv.status_code == 200
+        assert b'Infra' in rv.data
+        payload['tipoexibicao'] = 4
+        rv = self.app.post('/minhas_ovrs', data=payload, follow_redirects=True)
+        assert rv.status_code == 200
+        assert b'CNPJ - Nome' in rv.data
+
 
     def create_CE_containeres_teste(self):
         """Sherlock Holmes, da Equipe 221B Baker Street, seleciona os CEs-Mercante

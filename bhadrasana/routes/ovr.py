@@ -19,6 +19,7 @@ from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
     ProcessoOVRForm, ItemTGForm, ResponsavelOVRForm, TGOVRForm, FiltroRelatorioForm, \
     FiltroMinhasOVRsForm
 from bhadrasana.models import delete_objeto, get_usuario
+from bhadrasana.models.laudo import Empresa, SAT
 from bhadrasana.models.ovr import ItemTG, OVR
 from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_ovr_filtro, gera_eventoovr, get_tipos_evento, \
@@ -87,8 +88,6 @@ def ovr_app(app):
                         ovr_form = OVRForm(**ovr.__dict__,
                                            tiposeventos=tiposeventos,
                                            recintos=recintos)
-                        # TODO: Extrair visualização do conhecimento e due funções
-                        # talvez um Endpoint para consulta JavaScript
                         try:
                             conhecimento = get_conhecimento(session,
                                                             ovr.numeroCEmercante)
@@ -660,6 +659,7 @@ def ovr_app(app):
         dues = []
         eventos = []
         imagens = []
+        cnpj = None
         filtro_form = FiltroContainerForm(
             datainicio=datetime.date.today() - datetime.timedelta(days=10),
             datafim=datetime.date.today()
@@ -684,15 +684,26 @@ def ovr_app(app):
                 for numeroCEmercante in ces:
                     try:
                         linha = dict()
-                        linha['conhecimento'] = get_conhecimento(session,
-                                                                 numeroCEmercante)
+                        conhecimento = get_conhecimento(session, numeroCEmercante)
+                        linha['conhecimento'] = conhecimento
                         linha['containers'] = get_containers_conhecimento(
                             session,
                             numeroCEmercante)
                         linha['ncms'] = get_ncms_conhecimento(session, numeroCEmercante)
+                        logger.info('get_laudos')
+                        if len(conhecimento) == 1:
+                            cnpj = conhecimento[0].consignatario
+                            if cnpj:
+                                empresa = session.query(Empresa).filter(
+                                    Empresa.cnpj == cnpj).one_or_none()
+                                sats = session.query(SAT).filter(
+                                    SAT.importador == cnpj).one_or_none()
+                                linha['empresa'] = empresa
+                                linha['sats'] = sats
                         infoces.append(linha)
                     except Exception as err:
                         logger.info(err)
+
                 logger.info('get_eventos_container')
                 eventos = get_eventos_conteiner(session,
                                                 filtro_form.numerolote.data)

@@ -442,7 +442,7 @@ if __name__ == '__main__':  # pragma: no-cover
         # metadata.drop_all(engine)
         metadata.create_all(engine,
                             [
-                                metadata.tables['ovr_visualizacoes']
+                                # metadata.tables['ovr_visualizacoes']
                                 # metadata.tables['ovr_roteiros'],
                                 # metadata.tables['ovr_flags'],
                                 # metadata.tables['ovr_flags_ovr'],

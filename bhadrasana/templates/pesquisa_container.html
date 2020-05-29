@@ -132,7 +132,8 @@
                     {% if infoce.conhecimento %}
                     Número CE Mercante: {{ infoce.conhecimento.numeroCEmercante }}<br>
                     Embarcador: {{ infoce.conhecimento.embarcador }}<br>
-                    Consignatário: {{ infoce.conhecimento.consignatario }}
+                    Consignatário: {{ infoce.conhecimento.consignatario }} -
+                    {% if infoce.get('empresa') %}{{ infoce.empresa.nome }} {% endif %}
                     <br>
                     Descrição Mercadoria:{{ infoce.conhecimento.descricao }}
                     <br>
@@ -144,6 +145,11 @@
                     Cubagem total: {{ "%.2f"|format(infoce.conhecimento.cubagem|float) }}m³
                     NCMs: {% for ncm in infoce.ncms %}{{ ncm.identificacaoNCM }} {% endfor %}
                     <br>
+                    {% if infoce.get('sats') %}
+                    Empresa possui pedidos de Laudo Técnico (SAT/LAB):
+                    {% for sat in infoce.sats %} {{ sat.get_numero() }} {% endfor %}
+                    {% endif %}
+
                     {% endif %}
                 </div>
             </div>

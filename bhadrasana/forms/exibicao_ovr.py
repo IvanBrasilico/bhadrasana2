@@ -6,12 +6,15 @@ from bhadrasana.models import get_usuario
 from bhadrasana.models.ovr import OVR
 from bhadrasana.models.ovrmanager import get_visualizacoes
 from bhadrasana.models.rvfmanager import lista_rvfovr
+from bhadrasana.models.laudo import Empresa
+from bhadrasana.models.virasana_manager import get_conhecimento
 
 
 class TipoExibicao(Enum):
     FMA = 1
     Descritivo = 2
     Ocorrencias = 3
+    Empresa = 4
 
 
 class ExibicaoOVR:
@@ -43,6 +46,15 @@ class ExibicaoOVR:
              'Data',
              'CE Mercante',
              'Observações',
+             'Infrações RVFs',
+             'Marcas RVFs',
+             'Último Evento',
+             'Usuário'],
+        TipoExibicao.Empresa:
+            ['ID',
+             'Data',
+             'CE Mercante',
+             'CNPJ - Nome',
              'Infrações RVFs',
              'Marcas RVFs',
              'Último Evento',
@@ -111,7 +123,8 @@ class ExibicaoOVR:
                 user_descricao,
                 tipo_evento_nome,
                 evento_user_descricao]
-        if self.tipo == TipoExibicao.Ocorrencias:
+        if (self.tipo == TipoExibicao.Ocorrencias or
+                self.tipo == TipoExibicao.Empresa):
             infracoes = set()
             marcas = set()
             rvfs = lista_rvfovr(self.session, ovr.id)
@@ -120,10 +133,23 @@ class ExibicaoOVR:
                     infracoes.add(infracao.nome)
                 for marca in rvf.marcasencontradas:
                     marcas.add(marca.nome)
+            campo_comum = ''
+            if self.tipo == TipoExibicao.Ocorrencias:
+                campo_comum = ovr.observacoes
+            else:
+                conhecimento = get_conhecimento(self.session, ovr.numeroCEmercante)
+                if conhecimento:
+                    cnpj = conhecimento.consignatario
+                    if cnpj:
+                        empresa = self.session.query(Empresa).filter(
+                            Empresa.cnpj == cnpj).one_or_none()
+                        if empresa:
+                            campo_comum = empresa.cnpj + ' - ' + empresa.nome
+
             return ovr.id, visualizado, [
                 ovr.datahora,
                 ovr.numeroCEmercante,
-                ovr.observacoes,
+                campo_comum,
                 ', '.join(infracoes),
                 ', '.join(marcas),
                 tipo_evento_nome,
