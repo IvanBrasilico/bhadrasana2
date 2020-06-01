@@ -18,7 +18,7 @@ from bhadrasana.forms.filtro_container import FiltroContainerForm
 from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
     ProcessoOVRForm, ItemTGForm, ResponsavelOVRForm, TGOVRForm, FiltroRelatorioForm, \
     FiltroMinhasOVRsForm
-from bhadrasana.models import delete_objeto, get_usuario
+from bhadrasana.models import delete_objeto, get_usuario, get_empresa
 from bhadrasana.models.laudo import Empresa, SAT
 from bhadrasana.models.ovr import ItemTG, OVR
 from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
@@ -123,6 +123,9 @@ def ovr_app(app):
                         usuario = get_usuario(session, ovr.user_name)
                         if usuario:
                             ovr_form.user_descricao.data = usuario.nome
+                        fiscalizado = get_empresa(session, ovr.cnpj_fiscalizado)
+                        if fiscalizado:
+                            ovr_form.user_descricao.data = fiscalizado.nome
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
