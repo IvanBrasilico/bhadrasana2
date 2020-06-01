@@ -229,7 +229,7 @@ class OVRAppTestCase(BaseTestCase):
         payload['tipoexibicao'] = 4
         rv = self.app.post('/minhas_ovrs', data=payload, follow_redirects=True)
         assert rv.status_code == 200
-        assert b'CNPJ - Nome' in rv.data
+        assert b'CNPJ/Nome' in rv.data
 
     def create_CE_containeres_teste(self):
         """Sherlock Holmes, da Equipe 221B Baker Street, seleciona os CEs-Mercante

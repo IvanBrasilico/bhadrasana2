@@ -2,7 +2,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Tuple, List
 
-from bhadrasana.models import get_usuario, get_empresa
+from bhadrasana.models import get_usuario
+from bhadrasana.models.laudo import get_empresa
 from bhadrasana.models.ovr import OVR
 from bhadrasana.models.ovrmanager import get_visualizacoes
 from bhadrasana.models.rvfmanager import lista_rvfovr

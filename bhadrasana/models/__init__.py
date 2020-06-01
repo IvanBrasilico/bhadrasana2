@@ -9,7 +9,6 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 
 from ajna_commons.flask.conf import SQL_URI
 from ajna_commons.flask.log import logger
-from bhadrasana.models.laudo import Empresa
 
 engine = create_engine(SQL_URI, pool_recycle=600)
 db_session = scoped_session(sessionmaker(autocommit=False,
@@ -94,19 +93,6 @@ def get_usuario_logado(session, user_name: str) -> Usuario:
 def get_usuario(session, user_name: str) -> Usuario:
     return session.query(Usuario).filter(
         Usuario.cpf == user_name).one_or_none()
-
-
-def get_empresa(session, cnpj: str) -> Empresa:
-    empresa = session.query(Empresa).filter(
-        Empresa.cnpj == cnpj).one_or_none()
-    if not empresa:
-        empresa = session.query(Empresa).filter(
-            Empresa.cnpj.like(cnpj[:8] + '%')).one_or_none()
-        # logger.info(str(session.query(Empresa).filter(
-        #    Empresa.cnpj.like(cnpj[:8] + '%'))))
-        # logger.info(cnpj[:8])
-        # logger.info(empresa.nome)
-    return empresa
 
 
 def gera_objeto(instance: object, session, params):

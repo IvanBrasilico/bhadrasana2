@@ -41,3 +41,16 @@ class SAT(Base):
         unidade = get_sigla_unidade(self.unidade)
 
         return '%s/%s/%s' % (unidade, numero, ano)
+
+
+def get_empresa(session, cnpj: str) -> Empresa:
+    empresa = session.query(Empresa).filter(
+        Empresa.cnpj == cnpj).one_or_none()
+    if not empresa:
+        empresa = session.query(Empresa).filter(
+            Empresa.cnpj.like(cnpj[:8] + '%')).one_or_none()
+        # logger.info(str(session.query(Empresa).filter(
+        #    Empresa.cnpj.like(cnpj[:8] + '%'))))
+        # logger.info(cnpj[:8])
+        # logger.info(empresa.nome)
+    return empresa
