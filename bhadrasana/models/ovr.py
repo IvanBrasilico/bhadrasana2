@@ -161,6 +161,7 @@ class OVR(BaseRastreavel):
     processos = relationship('ProcessoOVR', back_populates='ovr')
     tgs = relationship('TGOVR', back_populates='ovr')
     flags = relationship('Flag', secondary=flags_table)
+    cnpj_fiscalizado = Column(VARCHAR(15), index=True)
 
     def get_ano(self):
         if self.datahora is not None and isinstance(self.datahora, datetime):

@@ -231,7 +231,6 @@ class OVRAppTestCase(BaseTestCase):
         assert rv.status_code == 200
         assert b'CNPJ - Nome' in rv.data
 
-
     def create_CE_containeres_teste(self):
         """Sherlock Holmes, da Equipe 221B Baker Street, seleciona os CEs-Mercante
         152005079623267 e 152005080025807 para verificação"""
@@ -416,6 +415,7 @@ class OVRAppTestCase(BaseTestCase):
                    'volume': 12.45,
                    'adata': '2020-01-01',
                    'ahora': '01:01',
+                   'ovr_id': 1,
                    'user_name': 'watson'}
         rv = self.app.post('/rvf', data=payload, follow_redirects=True)
         assert rv.status_code == 200
@@ -441,8 +441,11 @@ class OVRAppTestCase(BaseTestCase):
         # Infrações
         rv = self.app.get('inclui_infracao_encontrada?rvf_id=%s&infracao_nome=Armas' % rvf_id)
         assert rv.status_code == 201
-        assert b'Armas' in rv.data
+        assert 'Armas' in str(rv.data)
         infracao_id = rv.json[0]['id']
+        rv = self.app.get('inclui_infracao_encontrada?rvf_id=%s&infracao_nome=Contrafação' % rvf_id)
+        assert rv.status_code == 201
+        assert 'Contrafação' in str(rv.json)
         # Marcas
         rv = self.app.get('inclui_marca_encontrada?rvf_id=%s&marca_nome=Adidas' % rvf_id)
         assert rv.status_code == 201
@@ -455,8 +458,8 @@ class OVRAppTestCase(BaseTestCase):
         assert b'B3A' in rv.data
         assert b'B3B' not in rv.data
         soup = BeautifulSoup(rv.data, features='lxml')
-        text_div_armas = soup.find('div', {'id': 'div_marcas_encontradas'}).text
-        assert 'Adidas' in text_div_armas
+        text_div_marcas = soup.find('div', {'id': 'div_marcas_encontradas'}).text
+        assert 'Adidas' in text_div_marcas
         text_div_infracoes = soup.find('div', {'id': 'div_infracoes_encontradas'}).text
         assert 'Armas' in text_div_infracoes
         # Excluir infracoes e marcas
@@ -477,6 +480,7 @@ class OVRAppTestCase(BaseTestCase):
         assert 'Adidas' not in text_div_armas
         text_div_infracoes = soup.find('div', {'id': 'div_infracoes_encontradas'}).text
         assert 'Armas' not in text_div_infracoes
+        assert 'Contra' in text_div_infracoes
 
     def test_b4_Devolver_para_Holmes(self):
         """4 - Devolve para Holmes"""
@@ -491,6 +495,61 @@ class OVRAppTestCase(BaseTestCase):
                    'responsavel': 'holmes'}
         rv = self.app.post('/responsavelovr', data=payload, follow_redirects=True)
         assert b'holmes' in rv.data
+
+    def test_c1_Consultar_Fichas_Modificadas(self):
+        """Holmes consulta suas fichas, vê mudanças na verificação
+        e que possivelmente há uma contrafação, distribui
+        para Irene Adler para tratar."""
+        self.login('holmes', 'holmes')
+        rv = self.app.get('/minhas_ovrs')
+        assert rv.status_code == 200
+        assert b'152005079623267' in rv.data
+        soup = BeautifulSoup(rv.data, features='lxml')
+        table_text = str(soup.find('table', {'id': 'minhas_ovrs_table'}).extract())
+        # print(table_text)
+        assert 'class="warning' in table_text
+        ovr_id_pos = table_text.find('"ovr?id=')
+        ovr_id = table_text[ovr_id_pos + 8: ovr_id_pos + 9]
+        print('*********', ovr_id)
+        rv = self.app.get('/ovr?id=%s' % ovr_id)
+        soup = BeautifulSoup(rv.data, features='lxml')
+        btn_text = str(soup.find('button', {'id': 'btn_rvf'}).extract())
+        assert 'Verificações físicas (1)' in btn_text
+        rv = self.app.get('lista_rvfovr?ovr_id=%s' % 1)
+        soup = BeautifulSoup(rv.data, features='lxml')
+        table = soup.find('table', {'id': 'table_lista_rvfovr'})
+        rows = [str(row) for row in table.findAll("tr")]
+        table_text = str(soup.find('table', {'id': 'table_lista_rvfovr'}).extract())
+        # print(rows)
+        assert len(rows) == 2  # Tem uma rvf já programada no passo anterior
+        rvf_id_pos = table_text.find('"rvf?id=')
+        rvf_id = table_text[rvf_id_pos + 8: rvf_id_pos + 9]
+        print('***********', rvf_id)
+        rv = self.app.get('rvf?id=%s' % rvf_id)
+        soup = BeautifulSoup(rv.data, features='lxml')
+        text_div_infracoes = soup.find('div', {'id': 'div_infracoes_encontradas'}).text
+        assert 'Contra' in text_div_infracoes
+        rv = self.app.get('/ovr?id=%s' % ovr_id)
+        text = str(rv.data)
+        responsavelovr_pos = text.find('action="responsavelovr"')
+        responsavelovr_text = text[responsavelovr_pos:]
+        token_text = self.get_token(responsavelovr_text)
+        payload = {'csrf_token': token_text,
+                   'ovr_id': 1,
+                   'responsavel': 'irene',
+                   'motivo': 'Solicitar Laudo das marcas encontradas!!'}
+        rv = self.app.post('/responsavelovr', data=payload, follow_redirects=True)
+        movimentaovr_pos = text.find('action="movimentaovr"')
+        movimentaovr_text = text[movimentaovr_pos:]
+        token_text = self.get_token(movimentaovr_text)
+        payload = {'csrf_token': token_text,
+                   'ovr_id': 1,
+                   'tipoevento_id': 2,
+                   'motivo': 'Solicitar Laudo das marcas encontradas!!',
+                   'user_name': 'irene'}
+        rv = self.app.post('/movimentaovr', data=payload, follow_redirects=True)
+        assert b'irene' in rv.data
+        assert b'Solicitar Laudo' in rv.data
 
 
 if __name__ == '__main__':
