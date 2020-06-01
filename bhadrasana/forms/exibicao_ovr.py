@@ -2,12 +2,10 @@ from datetime import datetime
 from enum import Enum
 from typing import Tuple, List
 
-from bhadrasana.models import get_usuario
-from bhadrasana.models.laudo import Empresa
+from bhadrasana.models import get_usuario, get_empresa
 from bhadrasana.models.ovr import OVR
 from bhadrasana.models.ovrmanager import get_visualizacoes
 from bhadrasana.models.rvfmanager import lista_rvfovr
-from bhadrasana.models.virasana_manager import get_conhecimento
 
 
 class TipoExibicao(Enum):
@@ -37,6 +35,7 @@ class ExibicaoOVR:
              'Tipo Operação',
              'CE Mercante',
              'Declaração',
+             'Fiscalizado',
              'Observações',
              'Criador',
              'Último Evento',
@@ -54,7 +53,7 @@ class ExibicaoOVR:
             ['ID',
              'Data',
              'CE Mercante',
-             'CNPJ - Nome',
+             'CNPJ/Nome Fiscalizado',
              'Infrações RVFs',
              'Marcas RVFs',
              'Último Evento',
@@ -79,6 +78,7 @@ class ExibicaoOVR:
         user_descricao = ''
         tipo_evento_nome = ''
         recinto_nome = ''
+        fiscalizado = ''
         visualizado = False
         data_evento = ovr.create_date
         if len(ovr.historico) > 0:
@@ -107,7 +107,11 @@ class ExibicaoOVR:
                                             max_visualizacao_date)
             if max_visualizacao_date > data_evento:
                 visualizado = True
-
+        if ovr.cnpj_fiscalizado:
+            fiscalizado = ovr.cnpj_fiscalizado
+            empresa = get_empresa(self.session, ovr.cnpj_fiscalizado)
+            if empresa:
+                fiscalizado = fiscalizado + ' - ' + empresa.nome
         if self.tipo == TipoExibicao.FMA:
             alertas = [flag.nome for flag in ovr.flags]
             return ovr.id, visualizado, [
@@ -125,6 +129,7 @@ class ExibicaoOVR:
                 ovr.get_tipooperacao(),
                 ovr.numeroCEmercante,
                 ovr.numerodeclaracao,
+                fiscalizado,
                 ovr.observacoes,
                 user_descricao,
                 tipo_evento_nome,
@@ -143,15 +148,7 @@ class ExibicaoOVR:
             if self.tipo == TipoExibicao.Ocorrencias:
                 campo_comum = ovr.observacoes
             else:
-                conhecimento = get_conhecimento(self.session, ovr.numeroCEmercante)
-                if conhecimento:
-                    cnpj = conhecimento.consignatario
-                    if cnpj:
-                        empresa = self.session.query(Empresa).filter(
-                            Empresa.cnpj == cnpj).one_or_none()
-                        if empresa:
-                            campo_comum = empresa.cnpj + ' - ' + empresa.nome
-
+                campo_comum = fiscalizado
             return ovr.id, visualizado, [
                 ovr.datahora,
                 ovr.numeroCEmercante,
