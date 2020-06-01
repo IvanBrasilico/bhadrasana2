@@ -100,9 +100,12 @@ def cadastra_ovr(session, params: dict, user_name: str) -> OVR:
     # Atribuir CNPJ do Mercante caso não informado expressamente
     if not ovr.cnpj_fiscalizado:
         if ovr.numeroCEmercante:
-            conhecimento = get_conhecimento(session,
+            try:
+                conhecimento = get_conhecimento(session,
                                             ovr.numeroCEmercante)
-            ovr.cnpj_fiscalizado = conhecimento.consignatario
+                ovr.cnpj_fiscalizado = conhecimento.consignatario
+            except Exception as err:
+                logger.error(str(err), exc_info=True)
     try:
         session.add(ovr)
         session.commit()

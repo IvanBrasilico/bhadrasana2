@@ -18,8 +18,8 @@ from bhadrasana.forms.filtro_container import FiltroContainerForm
 from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
     ProcessoOVRForm, ItemTGForm, ResponsavelOVRForm, TGOVRForm, FiltroRelatorioForm, \
     FiltroMinhasOVRsForm
-from bhadrasana.models import delete_objeto, get_usuario, get_empresa
-from bhadrasana.models.laudo import Empresa, SAT
+from bhadrasana.models import delete_objeto, get_usuario
+from bhadrasana.models.laudo import Empresa, SAT, get_empresa
 from bhadrasana.models.ovr import ItemTG, OVR
 from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_ovr_filtro, gera_eventoovr, get_tipos_evento, \
