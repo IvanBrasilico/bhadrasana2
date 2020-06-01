@@ -28,6 +28,8 @@ class OVRForm(FlaskForm):
     ahora = TimeField(u'Horário')
     user_name = StringField()
     user_descricao = StringField()
+    cnpj_fiscalizado = StringField()
+    nome_fiscalizado = StringField()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
