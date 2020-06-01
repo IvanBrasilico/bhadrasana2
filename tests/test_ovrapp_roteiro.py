@@ -493,7 +493,7 @@ class OVRAppTestCase(BaseTestCase):
         payload = {'csrf_token': token_text,
                    'ovr_id': 1,
                    'responsavel': 'holmes'}
-        rv = self.app.post('/responsavelovr', data=payload, follow_redirects=True)
+        rv = self.app   .post('/responsavelovr', data=payload, follow_redirects=True)
         assert b'holmes' in rv.data
 
     def test_c1_Consultar_Fichas_Modificadas(self):
