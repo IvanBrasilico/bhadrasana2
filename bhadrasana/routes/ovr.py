@@ -125,7 +125,7 @@ def ovr_app(app):
                             ovr_form.user_descricao.data = usuario.nome
                         fiscalizado = get_empresa(session, ovr.cnpj_fiscalizado)
                         if fiscalizado:
-                            ovr_form.user_descricao.data = fiscalizado.nome
+                            ovr_form.nome_fiscalizado.data = fiscalizado.nome
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')

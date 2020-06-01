@@ -103,6 +103,17 @@
                 </div>
             </div>
             <div class="row col-sm-12">
+                CNPJ Fiscalizado
+            </div>
+            <div class="row">
+                <div class="col-sm-3">
+                    {{ oform.cnpj_fiscalizado(class='form-control') }}
+                </div>
+                <div class="col-sm-9">
+                    {{ oform.nome_fiscalizado.data }}
+                </div>
+            </div>
+            <div class="row col-sm-12">
                 Observações
                 {{ oform.observacoes(class='form-control') }}
             </div>
@@ -572,6 +583,9 @@
         event.preventDefault();
       }
     });
+
+
+
 
 
 
