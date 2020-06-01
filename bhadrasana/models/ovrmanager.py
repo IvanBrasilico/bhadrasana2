@@ -152,6 +152,10 @@ def get_ovr_filtro(session, user_name: str,
             filtro = and_(OVR.numeroCEmercante.like(
                 pfiltro.get('numeroCEmercante') + '%'),
                 filtro)
+        if pfiltro.get('cnpj_fiscalizado'):
+            filtro = and_(OVR.cnpj_fiscalizado.like(
+                pfiltro.get('cnpj_fiscalizado')[:8] + '%'),
+                filtro)
         if pfiltro.get('numero'):
             filtro = and_(OVR.numero.like(pfiltro.get('numero') + '%'), filtro)
         if pfiltro.get('tipooperacao') and pfiltro.get('tipooperacao') != 'None':
