@@ -44,6 +44,9 @@
                     <label for="datainicio">Início e fim de período de pesquisa</label>
                 </div>
                 <div class="col-sm-2">
+                    <label for="cnpj_fiscalizado">Fiscalizado</label>
+                </div>
+                <div class="col-sm-2">
                     <label for="tipoevento">Status</label>
                 </div>
                 <div class="col-sm-2">
@@ -51,8 +54,6 @@
                 </div>
                 <div class="col-sm-2">
                     <label for="infracoes">Infrações</label>
-                </div>
-                <div class="col-sm-2">
                 </div>
             </div>
             <div class="row">
@@ -63,6 +64,9 @@
                     {{ oform.datafim(class='form-control') }}
                 </div>
                 <div class="col-sm-2">
+                    {{ oform.cnpj_fiscalizado(class='form-control') }}
+                </div>
+                <div class="col-sm-2">
                     {{ oform.tipoevento_id(class='form-control') }}
                 </div>
                 <div class="col-sm-2">
@@ -70,8 +74,6 @@
                 </div>
                 <div class="col-sm-2">
                     {{ oform.infracao_id(class='form-control') }}
-                </div>
-                <div class="col-sm-2">
                 </div>
             </div>
             &nbsp;
@@ -101,6 +103,7 @@
                     <th>Ano</th>
                     <th>Número doc.</th>
                     <th>CE Mercante</th>
+                    <th>Fiscalizado</th>
                     <th>Data</th>
                     <th>Último Evento</th>
                 </tr>
@@ -114,6 +117,7 @@
                     <td>{{ ovr.get_ano() }}</td>
                     <td>{{ ovr.numero }}</td>
                     <td>{{ ovr.numeroCEmercante }}</td>
+                    <td>{{ ovr.cnpj_fiscalizado }}</td>
                     <td>{{ ovr.datahora }}</td>
                     <td>{{ ovr.tipoevento.nome }}</td>
                 </tr>

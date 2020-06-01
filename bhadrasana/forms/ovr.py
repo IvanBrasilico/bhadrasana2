@@ -63,7 +63,8 @@ class FiltroOVRForm(FlaskForm):
                                    default='')
     datainicio = DateField(u'Data inicial da pesquisa')
     datafim = DateField(u'Data final da pesquisa')
-
+    cnpj_fiscalizado = StringField(u'CNPJ do Fiscalizado',
+                                   default='')
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.tipooperacao.choices = [(None, 'Selecione'),
