@@ -13,7 +13,7 @@ from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
     TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria, \
     EventoEspecial, Flag, Relatorio, RoteiroOperacaoOVR, flags_table, VisualizacaoOVR
 from bhadrasana.models.rvf import Infracao, infracoesencontradas_table, RVF
-from models.virasana_manager import get_conhecimento
+from bhadrasana.models.virasana_manager import get_conhecimento
 from virasana.integracao.mercante.mercantealchemy import Item
 
 
@@ -178,6 +178,7 @@ def get_ovr_filtro(session, user_name: str,
         for table in tables:
             q = q.join(table)
         # ovrs = q.filter(filtro).limit(100).all()
+    logger.info('get_ovr_filtro - query' + str(q))
     ovrs = q.filter(filtro).limit(100).all()
     return [ovr for ovr in ovrs]
 
