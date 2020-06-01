@@ -13,6 +13,7 @@ from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
     TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria, \
     EventoEspecial, Flag, Relatorio, RoteiroOperacaoOVR, flags_table, VisualizacaoOVR
 from bhadrasana.models.rvf import Infracao, infracoesencontradas_table, RVF
+from models.virasana_manager import get_conhecimento
 from virasana.integracao.mercante.mercantealchemy import Item
 
 
@@ -96,6 +97,12 @@ def cadastra_ovr(session, params: dict, user_name: str) -> OVR:
         if value and value != 'None':
             setattr(ovr, key, value)
     ovr.datahora = handle_datahora(params)
+    # Atribuir CNPJ do Mercante caso não informado expressamente
+    if not ovr.cnpj_fiscalizado:
+        if ovr.numeroCEmercante:
+            conhecimento = get_conhecimento(session,
+                                            ovr.numeroCEmercante)
+            ovr.cnpj_fiscalizado = conhecimento.consignatario
     try:
         session.add(ovr)
         session.commit()
