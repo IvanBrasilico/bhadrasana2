@@ -102,7 +102,7 @@ def cadastra_ovr(session, params: dict, user_name: str) -> OVR:
         if ovr.numeroCEmercante:
             try:
                 conhecimento = get_conhecimento(session,
-                                            ovr.numeroCEmercante)
+                                                ovr.numeroCEmercante)
                 ovr.cnpj_fiscalizado = conhecimento.consignatario
             except Exception as err:
                 logger.error(str(err), exc_info=True)
@@ -212,6 +212,23 @@ def get_ovr_container(session, numerolote: str,
                   ))
     ovrs = session.query(OVR).filter(filtro).all()
     return listaCE, [ovr for ovr in ovrs]
+
+
+def get_ovr_empresa(session, cnpj: str,
+                    datainicio: datetime = None,
+                    datafim: datetime = None) -> List[OVR]:
+    if not cnpj or len(cnpj) <  8:
+        raise ValueError('CNPJ deve ser informado com mínimo de 8 dígitos.')
+    filtro_data = and_()
+    if datainicio:
+        filtro_data = and_(OVR.datahora >= datainicio, filtro_data)
+    if datafim:
+        datafim = datafim + timedelta(days=1)
+        filtro_data = and_(OVR.datahora <= datafim, filtro_data)
+    # Filtra OVRs
+    filtro = and_(filtro_data, OVR.cnpj_fiscalizado.like(cnpj[:8] + '%'))
+    ovrs = session.query(OVR).filter(filtro).all()
+    return [ovr for ovr in ovrs]
 
 
 def get_flags(session) -> List[Flag]:

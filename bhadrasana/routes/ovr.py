@@ -2,6 +2,7 @@ import datetime
 import os
 from _collections import defaultdict
 from decimal import Decimal
+from typing import List
 
 import numpy as np
 import pandas as pd
@@ -15,11 +16,12 @@ from werkzeug.utils import redirect
 from ajna_commons.flask.log import logger
 from bhadrasana.forms.exibicao_ovr import ExibicaoOVR
 from bhadrasana.forms.filtro_container import FiltroContainerForm
+from bhadrasana.forms.filtro_empresa import FiltroEmpresaForm
 from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
     ProcessoOVRForm, ItemTGForm, ResponsavelOVRForm, TGOVRForm, FiltroRelatorioForm, \
     FiltroMinhasOVRsForm
 from bhadrasana.models import delete_objeto, get_usuario
-from bhadrasana.models.laudo import Empresa, SAT, get_empresa
+from bhadrasana.models.laudo import get_empresa, get_empresas_nome, get_empresas, get_sats_cnpj
 from bhadrasana.models.ovr import ItemTG, OVR
 from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_ovr_filtro, gera_eventoovr, get_tipos_evento, \
@@ -31,14 +33,14 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_relatorios_choice, \
     executa_relatorio, get_relatorio, get_afrfb, get_itens_roteiro_checked, \
     get_flags_choice, cadastra_visualizacao, get_tipos_evento_comfase_choice, \
-    get_ovr_container, get_ovr_criadaspor
+    get_ovr_container, get_ovr_criadaspor, get_ovr_empresa
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import get_eventos_conteiner
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
     get_infracoes_choice, get_rvfs_filtro
 from bhadrasana.models.virasana_manager import get_conhecimento, \
     get_containers_conhecimento, get_ncms_conhecimento, get_imagens_dict_container_id, \
-    get_imagens_container, get_dues_container
+    get_imagens_container, get_dues_container, get_dues_empresa, get_ces_empresa
 from bhadrasana.views import get_user_save_path, valid_file
 
 
@@ -646,6 +648,30 @@ def ovr_app(app):
                                containers_com_rvf=containers_com_rvf,
                                imagens=imagens)
 
+    def get_detalhes_mercante(session, ces: list) -> List[dict]:
+        infoces = {}
+        for numeroCEmercante in ces:
+            try:
+                linha = dict()
+                conhecimento = get_conhecimento(session, numeroCEmercante)
+                linha['conhecimento'] = conhecimento
+                linha['containers'] = get_containers_conhecimento(
+                    session,
+                    numeroCEmercante)
+                linha['ncms'] = get_ncms_conhecimento(session, numeroCEmercante)
+                logger.info('get_laudos')
+                if len(conhecimento) == 1:
+                    cnpj = conhecimento[0].consignatario
+                    if cnpj:
+                        empresa = get_empresa(session, cnpj)
+                        sats = get_sats_cnpj(session, cnpj)
+                        linha['empresa'] = empresa
+                        linha['sats'] = sats
+                infoces.append(linha)
+            except Exception as err:
+                logger.info(err)
+        return infoces
+
     @app.route('/consulta_container', methods=['GET', 'POST'])
     @login_required
     def consulta_container():
@@ -662,7 +688,6 @@ def ovr_app(app):
         dues = []
         eventos = []
         imagens = []
-        cnpj = None
         filtro_form = FiltroContainerForm(
             datainicio=datetime.date.today() - datetime.timedelta(days=10),
             datafim=datetime.date.today()
@@ -671,7 +696,7 @@ def ovr_app(app):
             if request.method == 'POST':
                 filtro_form = FiltroContainerForm(request.form)
                 filtro_form.validate()
-                logger.info('Consultando contêiner %s' % filtro_form.numerolote)
+                logger.info('Consultando contêiner %s' % filtro_form.numerolote.data)
                 logger.info('get_rvfs_filtro')
                 rvfs = get_rvfs_filtro(session, dict(filtro_form.data.items()))
                 logger.info('get_dues_container')
@@ -684,29 +709,7 @@ def ovr_app(app):
                                               filtro_form.datafim.data,
                                               lista_numeroDUEs)
                 logger.info('get detalhes CE Mercante')
-                for numeroCEmercante in ces:
-                    try:
-                        linha = dict()
-                        conhecimento = get_conhecimento(session, numeroCEmercante)
-                        linha['conhecimento'] = conhecimento
-                        linha['containers'] = get_containers_conhecimento(
-                            session,
-                            numeroCEmercante)
-                        linha['ncms'] = get_ncms_conhecimento(session, numeroCEmercante)
-                        logger.info('get_laudos')
-                        if len(conhecimento) == 1:
-                            cnpj = conhecimento[0].consignatario
-                            if cnpj:
-                                empresa = session.query(Empresa).filter(
-                                    Empresa.cnpj == cnpj).one_or_none()
-                                sats = session.query(SAT).filter(
-                                    SAT.importador == cnpj).one_or_none()
-                                linha['empresa'] = empresa
-                                linha['sats'] = sats
-                        infoces.append(linha)
-                    except Exception as err:
-                        logger.info(err)
-
+                infoces = get_detalhes_mercante(session, ces)
                 logger.info('get_eventos_container')
                 eventos = get_eventos_conteiner(session,
                                                 filtro_form.numerolote.data)
@@ -722,6 +725,65 @@ def ovr_app(app):
                                oform=filtro_form,
                                rvfs=rvfs,
                                ovrs=ovrs,
+                               infoces=infoces,
+                               dues=dues,
+                               eventos=eventos,
+                               imagens=imagens)
+
+    @app.route('/consulta_empresa', methods=['GET', 'POST'])
+    @login_required
+    def consulta_empresa():
+        """Tela para consulta única de Empresa
+
+        Dentro do intervalo de datas, traz lista de ojetos do sistema que contenham
+        alguma referência ao CNPJ da Empresa. Permite encontrar CNPJ através do nome.
+        """
+        session = app.config.get('dbsession')
+        mongodb = app.config['mongodb']
+        empresas_qtdeovrs = []
+        ovrs = []
+        sats = []
+        infoces = []
+        dues = []
+        eventos = []
+        imagens = []
+        filtro_form = FiltroEmpresaForm(
+            datainicio=datetime.date.today() - datetime.timedelta(days=10),
+            datafim=datetime.date.today()
+        )
+        try:
+            if request.method == 'POST':
+                filtro_form = FiltroEmpresaForm(request.form)
+                filtro_form.validate()
+                if filtro_form.nome.data and not filtro_form.cnpj.data:
+                    logger.info('Consultando empresa por nome %s' % filtro_form.nome.data)
+                    cnpj_candidatos = get_empresas_nome(session, filtro_form.nome.data)
+                    for empresa in cnpj_candidatos:
+                        ovrs = get_ovr_empresa(session, empresa.cnpj)
+                        empresas_qtdeovrs.append({'empresa': empresa, 'qtdeovrs': len(ovrs)})
+                else:
+                    logger.info('Consultando empresa %s' % filtro_form.cnpj.data)
+                    empresa = get_empresa(session, filtro_form.cnpj.data)
+                    logger.info('get_dues_empresa')
+                    dues = get_dues_empresa(mongodb,
+                                            filtro_form.cnpj.data)
+                    logger.info('get_ovr_empresa')
+                    ovrs = get_ovr_empresa(session, filtro_form.cnpj.data)
+                    empresas_qtdeovrs = [{'empresa': empresa, 'qtdeovrs': len(ovrs)}]
+                    logger.info('get detalhes CE Mercante')
+                    ces = get_ces_empresa(session, filtro_form.cnpj.data)
+                    infoces = get_detalhes_mercante(session, ces)
+                    sats = get_sats_cnpj(session, filtro_form.cnpj.data)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return render_template('pesquisa_empresa.html',
+                               oform=filtro_form,
+                               empresas_qtdeovrs=empresas_qtdeovrs,
+                               ovrs=ovrs,
+                               sats=sats,
                                infoces=infoces,
                                dues=dues,
                                eventos=eventos,
