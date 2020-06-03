@@ -3,6 +3,12 @@ site_description: Análise de risco e controle de fluxo de procedimentos em carg
 
 nav:
     - Home: index.md
+    - "Novidades":
+        - "Tela 'Consulta de Empresa', Campo Empresa e Base Laudos - 03/Junho/2020": novidades/20200603.md
+        - "Tela 'Consulta de Contêiner' - 12/Maio/2020": novidades/20200512.md
+        - "Função 'novas/não vistas' - 7/Maio/2020": novidades/20200507b.md
+        - "Melhorias em Minhas Fichas - 7/Maio/2020": novidades/20200507.md
+        - "Programação de verificação física - 1/Maio/2020": novidades/20200501.md
     - "Roteiro de uso da ficha de controle - fluxo de importação":
         - "Introdução": exemplos/inicio.md
         - "Cadastrando ficha e programando verificação - Equipe 221B": exemplos/221ba.md
@@ -17,11 +23,6 @@ nav:
         - "Auto, RFFP, check-list - Equipe SY": exemplos/SYc.md
         - "Analise geral da Divisão": exemplos/SYd.md
         - "Resumo do roteiro (parte 2 - SY)": exemplos/roteiro2completo.md
-    - "Novidades":
-        - "Tela 'Consulta de Contêiner' - 12/Maio/2020": novidades/20200512.md
-        - "Função 'novas/não vistas' - 7/Maio/2020": novidades/20200507b.md
-        - "Melhorias em Minhas Fichas - 7/Maio/2020": novidades/20200507.md
-        - "Programação de verificação física - 1/Maio/2020": novidades/20200501.md
 
 
 
