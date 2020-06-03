@@ -217,7 +217,7 @@ def get_ovr_container(session, numerolote: str,
 def get_ovr_empresa(session, cnpj: str,
                     datainicio: datetime = None,
                     datafim: datetime = None) -> List[OVR]:
-    if not cnpj or len(cnpj) <  8:
+    if not cnpj or len(cnpj) < 8:
         raise ValueError('CNPJ deve ser informado com mínimo de 8 dígitos.')
     filtro_data = and_()
     if datainicio:
