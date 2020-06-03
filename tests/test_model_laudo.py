@@ -35,7 +35,7 @@ class LaudoTestCase(unittest.TestCase):
     def test_SAT(self):
         datapedido = datetime(2020, 1, 1)
         sat = self.create_sat(1, datapedido)
-        assert sat.get_numero() == '0817800/1/2020'
+        assert sat.get_numero() == '0817800/00001/2020'
 
     def create_empresa(self, cnpj, nome):
         empresa = self.session.query(Empresa).filter(Empresa.cnpj == cnpj).one_or_none()
