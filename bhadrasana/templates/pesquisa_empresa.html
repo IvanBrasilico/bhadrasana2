@@ -1,31 +1,30 @@
 {% extends "layout.html" %} {% block content %} {{super()}}
 <div id="main" class="container-fluid">
     <div id="top" class="row col-sm-12">
+        <h3>Preencha o nome e deixe CNPJ em branco para consultar uma lista de empresas por nome</h3>
+        <h4>Preencha CNPJ e datas para busca mais exata</h4>
         <div class="form-group">
-            <form method="POST" id="filtrocontainer" action="consulta_container">
+            <form method="POST" id="filtroempresa" action="consulta_empresa">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="row">
+                    <div class="col-sm-6">
+                        <label for="nome">Nome</label>
+                    </div>
                     <div class="col-sm-2">
-                        <label for="numerolote">Número do Contêiner ou Lote</label>
+                        <label for="cnpj">Número do CNPJ</label>
                     </div>
                     <div class="col-sm-4">
-                        <label for="datainicio">Início e fim de período de pesquisa</label>
-                    </div>
-                    <div class="col-sm-6">
                     </div>
                 </div>
                 <div class="row">
                     <div class="form-group">
-                        <div class="col-sm-2">
-                            {{ oform.numerolote(class='form-control') }}
-                        </div>
-                        <div class="col-sm-2">
-                            {{ oform.datainicio(class='form-control') }}
-                        </div>
-                        <div class="col-sm-2">
-                            {{ oform.datafim(class='form-control') }}
-                        </div>
                         <div class="col-sm-6">
+                            {{ oform.nome(class='form-control') }}
+                        </div>
+                        <div class="col-sm-2">
+                            {{ oform.cnpj(class='form-control') }}
+                        </div>
+                        <div class="col-sm-4">
                         </div>
                     </div>
                 </div>
@@ -37,8 +36,8 @@
                         </button>
                     </div>
                     <div class="col-sm-2">
-                        <button class="btn btn-default btn-info form-control" onclick="window.open('rvf')">
-                            Nova RVF
+                        <button class="btn btn-default btn-info form-control" onclick="window.open('ovr')">
+                            Nova OVR
                         </button>
                     </div>
                 </div>
@@ -48,7 +47,38 @@
     <div class="row">
         &nbsp;<br>
     </div>
+    <div class="row col-sm-12">
+        <h2>Empresas (limite de 10 resultados)</h2>
+    </div>
+    <div id="list_empresas" class="row col-sm-12">
+        &nbsp;<br>
+        <div class="table">
+            <table class="inlineTable table table-bordered table-hover table-responsive"
+                   id="empresas_table">
+                <thead>
+                <tr>
+                    <th style="text-align: left">CNPJ</th>
+                    <th style="text-align: left">Nome</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for empresa_qtdeovrs in empresas_qtdeovrs %}
+                <tr>
+                    <td style="text-align: left"><a href="javascript:DoPost('{{empresa_qtdeovrs.empresa.cnpj}}')">
+                        {{empresa_qtdeovrs.empresa.cnpj}}
+                        {% if empresa_qtdeovrs.qtdeovrs > 0 %}({{empresa_qtdeovrs.qtdeovrs}}){% endif %}
+                    </a></td>
+                    <td style="text-align: left">{{ empresa_qtdeovrs.empresa.nome }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
     <div class="row">
+        &nbsp;<br>
+    </div>
+    <div class="row col-sm-12">
         <h2>Fichas</h2>
     </div>
     <div id="list_ovr" class="row col-sm-12">
@@ -64,7 +94,6 @@
                     <th>Ano</th>
                     <th>Número doc.</th>
                     <th>CE Mercante</th>
-                    <th>Fiscalizado</th>
                     <th>Data</th>
                     <th>Último Evento</th>
                 </tr>
@@ -78,7 +107,6 @@
                     <td>{{ ovr.get_ano() }}</td>
                     <td>{{ ovr.numero }}</td>
                     <td>{{ ovr.numeroCEmercante }}</td>
-                    <td>{{ ovr.cnpj_fiscalizado }}</td>
                     <td>{{ ovr.datahora }}</td>
                     <td>{{ ovr.tipoevento.nome }}</td>
                 </tr>
@@ -87,43 +115,42 @@
             </table>
         </div>
     </div>
-    <div class="row">
+    <div class="row col-sm-12">
         &nbsp;<br>
     </div>
-    <div class="row">
-        &nbsp;<br>
-        <h2> Verificações físicas</h2>
+    <div class="row col-sm-12">
+        <h2>SATs/LABs</h2>
     </div>
-    <div id="list_rvf" class="row col-sm-12">
+    <div id="list_sats" class="row col-sm-12">
         &nbsp;<br>
         <div class="table">
             <table class="inlineTable table table-bordered table-hover table-responsive"
-                   id="rvf_table">
+                   id="sats_table">
                 <thead>
                 <tr>
-                    <th></th>
-                    <th>CE Mercante</th>
-                    <th>Numero Contêiner/Lote</th>
-                    <th>Data da verificação</th>
+                    <th>Nº</th>
+                    <th>Declaração</th>
+                    <th>Data do Pedido</th>
+                    <th>Descrição</th>
                 </tr>
                 </thead>
                 <tbody>
-                {% for rvf in rvfs %}
+                {% for sat in sats %}
                 <tr>
-                    <td><a href="rvf?id={{ rvf.id }}">{{ rvf.id }}</a></td>
-                    <td>{{ rvf.numeroCEmercante }}</td>
-                    <td>{{ rvf.numerolote }}</td>
-                    <td>{{ rvf.datahora }}</td>
+                    <td>{{ sat.get_numero() }} </a></td>
+                    <td>{{ sat.declaracao }} </a></td>
+                    <td>{{ sat.dataPedido }} </a></td>
+                    <td>{{ sat.descricao }}</td>
                 </tr>
                 {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
-    <div class="row">
+    <div class="row col-sm-12">
         &nbsp;<br>
     </div>
-    <div class="row">
+    <div class="row col-sm-12">
         <h2>Conhecimentos de Carga</h2>
     </div>
     <div id="list_infoces" class="row col-sm-12">
@@ -147,11 +174,6 @@
                     Cubagem total: {{ "%.2f"|format(infoce.conhecimento.cubagem|float) }}m³
                     NCMs: {% for ncm in infoce.ncms %}{{ ncm.identificacaoNCM }} {% endfor %}
                     <br>
-                    {% if infoce.get('sats') %}
-                    Empresa possui pedidos de Laudo Técnico (SAT/LAB):
-                    {% for sat in infoce.sats %} {{ sat.get_numero() }} {% endfor %}
-                    {% endif %}
-
                     {% endif %}
                 </div>
             </div>
@@ -161,7 +183,7 @@
     <div class="row">
         &nbsp;<br>
     </div>
-    <div class="row">
+    <div class="row col-sm-12">
         <h2>DUEs</h2>
     </div>
     <div id="list_dues" class="row col-sm-12">
@@ -192,93 +214,16 @@
     <div class="row">
         &nbsp;<br>
     </div>
-    <div class="row">
-        <h2>Eventos Recintos</h2>
-    </div>
-    <div id="list_eventos" class="row col-sm-12">
-        <div class="table">
-            <table class="inlineTable table table-bordered table-hover table-responsive"
-                   id="eventos_table">
-                <thead>
-                <tr>
-                    <th></th>
-                    <th>Data do Evento</th>
-                    <th>Recinto</th>
-                    <th>Operador</th>
-                    <th>Tipo de Evento</th>
-                    <th>Informação</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for evento in eventos %}
-                <tr onmouseover="showEvento(this, '{{evento.recinto}}', '{{evento.tipo}}', '{{evento.id}}')" onmouseout="clearEvento(this)">
-                    <td>
-                        <a href="https://localhost/ajnaapi/api/resumo_evento?recinto={{evento.recinto}}&tipo={{evento.tipo}}&id={{evento.id}}" target="_blank">
-                            Ver</a>
-                    </td>
-                    <td>{{ evento.data }}</td>
-                    <td>{{ evento.recinto }}</td>
-                    <td>{{ evento.cpf }}</td>
-                    <td>{{ evento.tipo }}</td>
-                    <td>{{ evento.info }}</td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <div class="row">
-        &nbsp;<br>
-    </div>
-    <div class="row">
-        <h2>Inspeções por raio X - escaneamento</h2>
-    </div>
-    <div class="table table-responsive col-sm-10">
-        <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive">
-            <thead>
-            <tr>
-                <td>Data escaneamento</td>
-                <td>Imagem contêiner</td>
-            </tr>
-            </thead>
-            {% for imagem in imagens %}
-            <tr>
-                <td width="300" style="text-align:left">
-                    {{ imagem.metadata.dataescaneamento }}
-                </td>
-                <td>
-                    <img src="/virasana/image/{{ imagem._id }}" alt="Sem imagem" width="auto" height="auto"
-                         style="border: 1px solid #000; max-width:800px; max-height:320px;"
-                    />
-                </td>
-            </tr>
-            {% endfor %}
-        </table>
-    </div>
     <div id="bottom" class="row col-sm-12">
         AJNA - Receita Federal do Brasil 2017
     </div>
 </div>
 {% endblock %} {% block scripts %} {{super()}}
 <script>
-    function showEvento(obj, recinto, tipo, evid) {
-        xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function () {
-            if (this.readyState == 4) {
-                if (this.status == 200) {
-                    obj.title = this.responseText;
-                    // console.log(obj.text);
-                }
-            }
-        }
-        var url = "https://localhost/ajnaapi/api/resumo_evento?format=text&recinto=" + recinto + "&tipo=" + tipo + "&id=" + evid
-        // console.log(url);
-        xhttp.open("GET", url, true);
-        xhttp.send();
-    }
-    function clearEvento(obj) {
-        obj.title = "";
-    }
+   function DoPost(ocnpj){
+      document.querySelector("#cnpj").value=ocnpj;
+      $('#filtroempresa').submit();
+   }
 
 </script>
 {% endblock %}

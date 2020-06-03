@@ -197,6 +197,7 @@ def mynavbar():
              Subgroup(
                  'Pesquisas',
                  View('Pesquisa Contêiner', 'consulta_container'),
+                 View('Pesquisa Empresa', 'consulta_empresa'),
                  View('Verificações físicas', 'pesquisa_rvf'),
                  Separator(),
                  View('Relatórios', 'ver_relatorios'),

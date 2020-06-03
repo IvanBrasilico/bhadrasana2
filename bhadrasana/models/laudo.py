@@ -1,5 +1,6 @@
 import sys
 from datetime import datetime
+from typing import List
 
 from sqlalchemy import BigInteger, Column, VARCHAR, Integer, Date
 from sqlalchemy.ext.declarative import declarative_base
@@ -37,20 +38,48 @@ class SAT(Base):
 
     def get_numero(self):
         ano = datetime.strftime(self.dataPedido, '%Y')
-        numero = str(self.numeroSAT)
+        numero = self.numeroSAT
         unidade = get_sigla_unidade(self.unidade)
 
-        return '%s/%s/%s' % (unidade, numero, ano)
+        return '{}/{:05d}/{}'.format(unidade, numero, ano)
 
 
 def get_empresa(session, cnpj: str) -> Empresa:
+    """Pesquisa empresa por CNPJ.
+
+    Não encontrando, busca pelo CNPJ raiz e retorna primeira.
+    Em caso de falha, retorna None.
+    """
+    if not cnpj:
+        return None
     empresa = session.query(Empresa).filter(
         Empresa.cnpj == cnpj).one_or_none()
     if not empresa:
         empresa = session.query(Empresa).filter(
-            Empresa.cnpj.like(cnpj[:8] + '%')).one_or_none()
+            Empresa.cnpj.like(cnpj[:8] + '%')).limit(1).first()
         # logger.info(str(session.query(Empresa).filter(
         #    Empresa.cnpj.like(cnpj[:8] + '%'))))
         # logger.info(cnpj[:8])
         # logger.info(empresa.nome)
     return empresa
+
+
+def get_empresas(session, cnpj: str) -> List[Empresa]:
+    """Retorna lista de empresas com o CNPJ parcial.
+     Se passado CNPJ completo, corta em 8 dígitos (raiz)
+    """
+    if not cnpj:
+        return []
+    return session.query(Empresa).filter(
+        Empresa.cnpj.like(cnpj[:8] + '%')).all()
+
+
+def get_empresas_nome(session, nome: str, limit=10) -> List[Empresa]:
+    empresas = session.query(Empresa).filter(
+        Empresa.nome.like(nome + '%')).limit(limit).all()
+    return [empresa for empresa in empresas]
+
+
+def get_sats_cnpj(session, cnpj: str) -> List[SAT]:
+    return session.query(SAT).filter(
+        SAT.importador.like(cnpj[:8] + '%')).all()
