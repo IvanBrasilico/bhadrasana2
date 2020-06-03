@@ -33,7 +33,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_relatorios_choice, \
     executa_relatorio, get_relatorio, get_afrfb, get_itens_roteiro_checked, \
     get_flags_choice, cadastra_visualizacao, get_tipos_evento_comfase_choice, \
-    get_ovr_container, get_ovr_criadaspor, get_ovr_empresa
+    get_ovr_container, get_ovr_criadaspor, get_ovr_empresa, get_tipos_evento_todos
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import get_eventos_conteiner
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
@@ -195,7 +195,7 @@ def ovr_app(app):
     def pesquisa_ovr():
         session = app.config.get('dbsession')
         ovrs = []
-        tiposeventos = get_tipos_evento(session)
+        tiposeventos = get_tipos_evento_todos(session)
         recintos = get_recintos(session)
         flags = get_flags_choice(session)
         infracoes = get_infracoes_choice(session)
