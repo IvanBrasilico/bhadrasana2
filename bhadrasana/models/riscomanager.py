@@ -154,10 +154,10 @@ def save_planilharisco(lista_risco: list, save_path: str, filtros: str):
         with open(destino, 'w') as out_file:
             if filtros:
                 out_file.write(filtros + '\n')
-            out_file.write('"' + '";"'.join([key for key in lista_risco[0].keys()]) + '"\n')
+            out_file.write(';'.join([key for key in lista_risco[0].keys()]) + '\n')
             for row in lista_risco:
                 campos = [str(value).replace(';', ',') for value in row.values()]
-                out_file.write('"' + '";"'.join(campos) + '"\n')
+                out_file.write(';'.join(campos) + '\n')
     return csv_salvo
 
 
