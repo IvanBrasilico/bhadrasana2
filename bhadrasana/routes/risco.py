@@ -302,11 +302,4 @@ def risco_app(app):
                 with open(save_name) as in_csv:
                     lines = in_csv.readlines()
                 user_name = current_user.name
-                for line in lines:
-                    campo, valor, motivo = line.split(';')
-                    insererisco(session,
-                                user_name=user_name,
-                                campo=campo,
-                                valor=valor,
-                                motivo=motivo)
         return render_template('importa_planilha_recinto.html')
