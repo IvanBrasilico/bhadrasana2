@@ -11,6 +11,8 @@ from ajna_commons.flask.log import logger
 
 # AJNA_API_URL = 'https://ajna.labin.rf08.srf/ajnaapi/api'
 AJNA_API_URL = 'http://localhost:5004/api'
+with open('bhadrasana2_password.txt') as pwd_in:
+    bhadrasana2_password = pwd_in.read()
 
 mapa_SBT = {'dataevento': ['dtHrOcorrencia', 'dtHrRegistro'],
             'Conteiner': {'listaContainersUld': 'num'},
@@ -86,7 +88,7 @@ def processa_planilha_BTP(filename):
 
 def get_login_headers():
     rv = requests.post(AJNA_API_URL + '/login',
-                       json={'username': 'ivan', 'password': 'ivan'},
+                       json={'username': 'bhadrasana2', 'password': bhadrasana2_password},
                        verify=False)
     if rv.status_code != 200:
         raise Exception(str(rv.status_code) + rv.text)
