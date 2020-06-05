@@ -1,6 +1,7 @@
 import unicodedata
 import warnings
 from datetime import datetime
+from threading import Thread
 from typing import Tuple
 
 warnings.simplefilter('ignore')
@@ -74,7 +75,8 @@ def processa_planilha_SBT(filename):
 def processa_planilha_BTP(filename):
     df_BTP = pd.read_excel(filename)
     df_BTP.columns = [ascii_sanitizar(col) for col in df_BTP.columns]
-    df_BTP['Entrada Carreta'] = df_BTP['Entrada Carreta'].fillna(method='ffill')
+    df_BTP['Entrada Carreta'] = df_BTP['Entrada Carreta'].fillna(method='ffill'). \
+        fillna(method='bfill')
     df_BTP['CNPJ Transportadora'] = df_BTP['CNPJ Transportadora'].fillna(method='ffill')
     df_BTP['Entrada Carreta'] = df_BTP['Entrada Carreta'].astype(str)
     df_BTP['dataevento'] = df_BTP['Entrada Carreta'].apply(convert_data_toiso)
@@ -140,6 +142,13 @@ def upload_eventos(recinto: str, mapa: dict, df: pd.DataFrame, headers: dict) ->
 def processa_planilha(filename) -> Tuple[bool, str]:
     """Recebe nome de arquivo, processa, retorna False se ocorreram erros.
     """
+
+    def threaded_upload(recinto, mapa, df):
+        headers = get_login_headers()
+        count = upload_eventos(recinto, mapa, df, headers)
+        logger.info('{} processados de {:d} linhas na planilha {}'.format(
+            count, len(df), filename))
+
     if 'BTP' in filename:
         recinto = 'BTP'
         mapa = mapa_BTP
@@ -148,11 +157,14 @@ def processa_planilha(filename) -> Tuple[bool, str]:
         recinto = 'SBT'
         mapa = mapa_SBT
         funcao_processamento = processa_planilha_SBT
+    count = 0
+    df = []
     try:
         df = funcao_processamento(filename)
-        headers = get_login_headers()
-        count = upload_eventos(recinto, mapa, df, headers)
-        return True, str(count)
+        thread = Thread(target=threaded_upload, args=(recinto, mapa, df))
+        thread.daemon = True
+        thread.start()
+        return True, str(len(df))
     except Exception as err:
         logger.error(err, exc_info=True)
         return False, str(err)
