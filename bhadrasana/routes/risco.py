@@ -16,6 +16,7 @@ from bhadrasana.models.riscomanager import mercanterisco, riscosativos, \
     insererisco, exclui_risco, CAMPOS_RISCO, get_lista_csv, save_planilharisco, \
     recintosrisco, CAMPOS_FILTRO_IMAGEM
 from bhadrasana.views import get_user_save_path, tmpdir
+from bhadrasana.models.importa_planilha_recintos import processa_planilha
 
 
 def risco_app(app):
@@ -292,7 +293,6 @@ def risco_app(app):
         """Importar arquivo.
 
         """
-        session = app.config.get('dbsession')
         if request.method == 'POST':
             csvf = get_csv_valido(request)
             if csvf:
@@ -300,7 +300,5 @@ def risco_app(app):
                 save_name = os.path.join(tmpdir, filename)
                 csvf.save(save_name)
                 logger.info('CSV RECEBIDO: %s' % save_name)
-                with open(save_name) as in_csv:
-                    lines = in_csv.readlines()
-                user_name = current_user.name
+                processa_planilha(save_name)
         return render_template('importa_planilha_recinto.html')

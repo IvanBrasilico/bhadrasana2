@@ -37,6 +37,7 @@ def get_tipos_evento_todos(session) -> List[Tuple[int, str]]:
     ).all()
     return [(tipo.id, tipo.nome) for tipo in tiposeventos]
 
+
 def get_tipos_evento_comfase_choice(session) -> List[Tuple[int, str]]:
     tiposeventos = session.query(TipoEventoOVR).filter(
         TipoEventoOVR.eventoespecial.is_(None)).order_by(
