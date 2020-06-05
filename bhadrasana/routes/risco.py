@@ -305,7 +305,7 @@ def risco_app(app):
                 logger.info('Planilha recebida: %s' % save_name)
                 sucesso, msg = processa_planilha(save_name)
                 if sucesso:
-                    flash('%s linhas incluídas' % msg)
+                    flash('Planilha recebida com %s linhas. Processando...' % msg)
                 else:
                     flash('Erro: %s' % msg)
         return render_template('importa_planilha_recinto.html')
