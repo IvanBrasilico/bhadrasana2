@@ -3,7 +3,7 @@
     <div id="top" class="row">
         <div class="col-sm-12">
             <h1> Importar planilha</h1>
-            <form method="POST" action="/importa_planilha_recinto" enctype="multipart/form-data">
+            <form method="POST" action="importa_planilha_recinto" enctype="multipart/form-data">
                 <input type="hidden" name="csrf_token" value="{{csrf_token()}}"/>
                 <label class="btn btn-default btn-choose" for="planilha">
                     <input id="planilha" name="planilha" type="file" style="display:none"
