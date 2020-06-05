@@ -1,14 +1,16 @@
 import unicodedata
+import warnings
 from datetime import datetime
 from typing import Tuple
 
+warnings.simplefilter('ignore')
 import pandas as pd
 import requests
 
 from ajna_commons.flask.log import logger
 
-AJNA_API_URL = 'https://ajna.labin.rf08.srf/ajnaapi/api'
-AJNA_API_URL = 'https://localhost/ajnaapi/api'
+# AJNA_API_URL = 'https://ajna.labin.rf08.srf/ajnaapi/api'
+AJNA_API_URL = 'http://localhost:5005'
 
 mapa_SBT = {'dataevento': ['dtHrOcorrencia', 'dtHrRegistro'],
             'Conteiner': {'listaContainersUld': 'num'},
@@ -84,7 +86,7 @@ def processa_planilha_BTP(filename):
 
 def get_login_headers():
     rv = requests.post(AJNA_API_URL + '/login',
-                       json={'username': 'ivan', 'password': 'Ivan1234'},
+                       json={'username': 'ivan', 'password': 'ivan'},
                        verify=False)
     if rv.status_code != 200:
         raise Exception(str(rv.status_code) + rv.text)
@@ -108,8 +110,9 @@ def update_destino(destino, key, valor):
             update_destino(subdestino, subv, valor)
 
 
-def upload_eventos(recinto: str, mapa: dict, df, headers):
-    for index, row in list(df.iterrows()):  # [:10]:
+def upload_eventos(recinto: str, mapa: dict, df: pd.DataFrame, headers: dict) -> int:
+    count = 0
+    for index, row in list(df.iterrows()):
         destino = {'idEvento': hash(recinto + row['dataevento']),
                    'cpfOperOcor': '00000000000',
                    'cpfOperReg': '00000000000',
@@ -124,9 +127,12 @@ def upload_eventos(recinto: str, mapa: dict, df, headers):
         destino['listaContainersUld'] = [destino['listaContainersUld']]
         rv = requests.post(AJNA_API_URL + '/acessoveiculo', json=destino,
                            headers=headers, verify=False)
-        if rv.status_code != 201:
+        if rv.status_code == 201:
+            count += 1
+        else:
             logger.error(destino)
             logger.error(rv.status_code, rv.text)
+    return count
 
 
 def processa_planilha(filename) -> Tuple[bool, str]:
@@ -143,8 +149,8 @@ def processa_planilha(filename) -> Tuple[bool, str]:
     try:
         df = funcao_processamento(filename)
         headers = get_login_headers()
-        upload_eventos(recinto, mapa, df, headers)
-        return True, ''
+        count = upload_eventos(recinto, mapa, df, headers)
+        return True, str(count)
     except Exception as err:
         logger.error(err, exc_info=True)
         return False, str(err)
