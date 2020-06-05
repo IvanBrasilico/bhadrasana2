@@ -70,8 +70,10 @@ def processa_planilha_BTP(filename):
     df_BTP['CNPJ Transportadora'] = df_BTP['CNPJ Transportadora'].fillna(method='ffill')
     df_BTP['Entrada Carreta'] = df_BTP['Entrada Carreta'].astype(str)
     df_BTP['dataevento'] = df_BTP['Entrada Carreta'].apply(convert_data_toiso)
-    df_BTP['CNPJ Transportadora'] = df_BTP['CNPJ Transportadora'].apply(lambda x: '{:014.0f}'.format(x))
-    df_BTP['Cpf Motorista'] = df_BTP['Cpf Motorista'].apply(lambda x: '{:011.0f}'.format(x))
+    df_BTP['CNPJ Transportadora'] = \
+        df_BTP['CNPJ Transportadora'].apply(lambda x: '{:014.0f}'.format(x))
+    df_BTP['Cpf Motorista'] = \
+        df_BTP['Cpf Motorista'].apply(lambda x: '{:011.0f}'.format(x))
     df_BTP = df_BTP.fillna('')
     return df_BTP
 
