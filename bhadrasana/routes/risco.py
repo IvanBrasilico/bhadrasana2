@@ -269,30 +269,32 @@ def risco_app(app):
         """
         print('IMPORTA CSV')
         session = app.config.get('dbsession')
-        print(request.files)
-        print(request.method)
         if request.method == 'POST':
-            csvf = get_planilha_valida(request, 'csv', ['csv'])
-            if csvf:
-                filename = secure_filename(csvf.filename)
-                save_name = os.path.join(tmpdir, filename)
-                csvf.save(save_name)
-                logger.info('CSV RECEBIDO: %s' % save_name)
-                with open(save_name) as in_csv:
-                    lines = in_csv.readlines()
-                user_name = current_user.name
-                for line in lines:
-                    linha = line.split(';')
-                    if len(linha) == 2:
-                        campo, valor = linha
-                        motivo = ''
-                    else:
-                        campo, valor, motivo = linha
-                    insererisco(session,
-                                user_name=user_name,
-                                campo=campo,
-                                valor=valor,
-                                motivo=motivo)
+            try:
+                csvf = get_planilha_valida(request, 'csv', ['csv'])
+                if csvf:
+                    filename = secure_filename(csvf.filename)
+                    save_name = os.path.join(tmpdir, filename)
+                    csvf.save(save_name)
+                    logger.info('CSV RECEBIDO: %s' % save_name)
+                    with open(save_name) as in_csv:
+                        lines = in_csv.readlines()
+                    user_name = current_user.name
+                    for line in lines:
+                        linha = line.split(';')
+                        if len(linha) == 2:
+                            campo, valor = linha
+                            motivo = ''
+                        else:
+                            campo, valor, motivo = linha
+                        insererisco(session,
+                                    user_name=user_name,
+                                    campo=campo,
+                                    valor=valor,
+                                    motivo=motivo)
+            except Exception as err:
+                logger.log(err, exc_info=True)
+                flash(str(err))
         return redirect(url_for('edita_risco'))
 
     @app.route('/importa_planilha_recinto', methods=['POST', 'GET'])
