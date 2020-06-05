@@ -40,8 +40,8 @@ def risco_app(app):
                 elif campo_data:
                     # TODO: Em caso de não haver CE, recuperar imagem com data + próxima
                     data = linha.get(campo_data)
-                    logger.info('Entrou no campo data... %s ' % data)
-                    logger.info('Tipo do campo data... %s ' % type(data))
+                    # logger.info('Entrou no campo data... %s ' % data)
+                    # logger.info('Tipo do campo data... %s ' % type(data))
                     if isinstance(data, str):
                         data = parser.parse(linha.get(campo_data))
                     inicio = data - timedelta(days=2)
@@ -56,8 +56,8 @@ def risco_app(app):
                     raise NotImplementedError('Não foram definidos campos mínimos.'
                                               'append_images active_tab %s ' % active_tab
                                               )
-                print(params)
-                logger.info(params)
+                # print(params)
+                # logger.info(params)
                 # r = requests.post('https://ajna.labin.rf08.srf/virasana/grid_data',
                 #                  json=params, verify=False)
                 # print(r.text)
@@ -101,7 +101,8 @@ def risco_app(app):
                         riscos_ativos_campo = [risco.valor for risco in riscos_ativos
                                                if risco.campo == fieldname]
                         filtros[fieldname] = riscos_ativos_campo
-                lista_risco, str_filtros = risco_function(dbsession, filtros)
+                lista_risco, str_filtros = risco_function(
+                    dbsession, filtros, operador_ou=riscos_ativos_form.operadorOU.data)
                 # print('***********', lista_risco)
                 destino = save_planilharisco(lista_risco, get_user_save_path(),
                                              str_filtros)
@@ -151,7 +152,7 @@ def risco_app(app):
         if planilha_atual:
             csv_salvo = planilha_atual
             lista_risco = le_csv(os.path.join(get_user_save_path(), csv_salvo))
-            print(lista_risco)
+            # print(lista_risco)
             total_linhas = len(lista_risco)
             # Limita resultados em 100 linhas na tela e adiciona imagens
             lista_risco = append_images(mongodb, lista_risco[:100], active_tab)
