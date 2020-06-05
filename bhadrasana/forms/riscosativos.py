@@ -3,9 +3,14 @@ from wtforms import BooleanField
 from wtforms.fields.html5 import DateField
 
 
-class RiscosAtivosForm(FlaskForm):
+class RiscosForm(FlaskForm):
     datainicio = DateField(u'Data inicial da pesquisa')
     datafim = DateField(u'Data final da pesquisa')
+    operadorOU = BooleanField(u'Utilizar Operador OU no filtro',
+                              default=0)
+
+
+class RiscosAtivosForm(RiscosForm):
     portoDestFinal = BooleanField(u'Porto de Destino Final',
                                   default=1)
     consignatario = BooleanField(u'Consignatario',
@@ -22,9 +27,7 @@ class RiscosAtivosForm(FlaskForm):
                               default=0)
 
 
-class RecintoRiscosAtivosForm(FlaskForm):
-    datainicio = DateField(u'Data inicial da pesquisa')
-    datafim = DateField(u'Data final da pesquisa')
+class RecintoRiscosAtivosForm(RiscosForm):
     cnpjTransportador = BooleanField(u'CNPJ do Transportador',
                                      default=0)
     motorista_cpf = BooleanField(u'CPF do Motorista',

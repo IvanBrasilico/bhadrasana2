@@ -31,10 +31,15 @@
                         <div class="col-sm-2">
                             {{ oform.datafim(class='form-control') }}
                         </div>
-                        <div class="col-sm-6">
+                        <div class="col-sm-3">
                             <button class="btn btn-default btn-info form-control" onclick="submit">
                                 Aplicar risco
                             </button>
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="checkbox" name="operadorOU" {% if oform.operadorOU.data %} checked {%
+                                   endif %}/>
+                            Utilizar Operador OU ao combinar filtros
                         </div>
                     </div>
                     {% if active_tab=='carga' %}

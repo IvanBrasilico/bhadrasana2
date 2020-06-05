@@ -12,10 +12,27 @@ from werkzeug.utils import secure_filename
 from ajna_commons.flask.log import logger
 from bhadrasana.forms.editarisco import get_edita_risco_form
 from bhadrasana.forms.riscosativos import RiscosAtivosForm, RecintoRiscosAtivosForm
+from bhadrasana.models.importa_planilha_recintos import processa_planilha
 from bhadrasana.models.riscomanager import mercanterisco, riscosativos, \
     insererisco, exclui_risco, CAMPOS_RISCO, get_lista_csv, save_planilharisco, \
     recintosrisco, CAMPOS_FILTRO_IMAGEM
 from bhadrasana.views import get_user_save_path, tmpdir
+
+
+def get_planilha_valida(request, anexo_name='csv',
+                        extensoes=['csv', 'xls', 'ods', 'xlsx']):
+    planilha = request.files.get(anexo_name)
+    if planilha is None:
+        flash('Arquivo não repassado')
+    if planilha.filename == '':
+        flash('Nome de arquivo vazio')
+    else:
+        if '.' in planilha.filename:
+            extensao = planilha.filename.rsplit('.', 1)[1].lower()
+            if extensao in extensoes:
+                return planilha
+        flash('Extensão %s inválida/desconhecida' % extensao)
+    return None
 
 
 def risco_app(app):
@@ -40,8 +57,8 @@ def risco_app(app):
                 elif campo_data:
                     # TODO: Em caso de não haver CE, recuperar imagem com data + próxima
                     data = linha.get(campo_data)
-                    logger.info('Entrou no campo data... %s ' % data)
-                    logger.info('Tipo do campo data... %s ' % type(data))
+                    # logger.info('Entrou no campo data... %s ' % data)
+                    # logger.info('Tipo do campo data... %s ' % type(data))
                     if isinstance(data, str):
                         data = parser.parse(linha.get(campo_data))
                     inicio = data - timedelta(days=2)
@@ -56,8 +73,8 @@ def risco_app(app):
                     raise NotImplementedError('Não foram definidos campos mínimos.'
                                               'append_images active_tab %s ' % active_tab
                                               )
-                print(params)
-                logger.info(params)
+                # print(params)
+                # logger.info(params)
                 # r = requests.post('https://ajna.labin.rf08.srf/virasana/grid_data',
                 #                  json=params, verify=False)
                 # print(r.text)
@@ -101,7 +118,8 @@ def risco_app(app):
                         riscos_ativos_campo = [risco.valor for risco in riscos_ativos
                                                if risco.campo == fieldname]
                         filtros[fieldname] = riscos_ativos_campo
-                lista_risco, str_filtros = risco_function(dbsession, filtros)
+                lista_risco, str_filtros = risco_function(
+                    dbsession, filtros, operador_ou=riscos_ativos_form.operadorOU.data)
                 # print('***********', lista_risco)
                 destino = save_planilharisco(lista_risco, get_user_save_path(),
                                              str_filtros)
@@ -151,7 +169,7 @@ def risco_app(app):
         if planilha_atual:
             csv_salvo = planilha_atual
             lista_risco = le_csv(os.path.join(get_user_save_path(), csv_salvo))
-            print(lista_risco)
+            # print(lista_risco)
             total_linhas = len(lista_risco)
             # Limita resultados em 100 linhas na tela e adiciona imagens
             lista_risco = append_images(mongodb, lista_risco[:100], active_tab)
@@ -243,19 +261,6 @@ def risco_app(app):
             flash(str(err))
         return redirect(url_for('edita_risco'))
 
-    def get_csv_valido(request):
-        if 'csv' not in request.files:
-            flash('Arquivo não repassado')
-            return False
-        csvf = request.files['csv']
-        if csvf.filename == '':
-            flash('Nome de arquivo vazio')
-            return False
-        logger.info('FILE***' + csvf.filename)
-        if '.' in csvf.filename and csvf.filename.rsplit('.', 1)[1].lower() == 'csv':
-            return csvf
-        return False
-
     @app.route('/importacsv', methods=['POST', 'GET'])
     @login_required
     def importacsv():
@@ -267,7 +272,7 @@ def risco_app(app):
         print(request.files)
         print(request.method)
         if request.method == 'POST':
-            csvf = get_csv_valido(request)
+            csvf = get_planilha_valida(request, 'csv', ['csv'])
             if csvf:
                 filename = secure_filename(csvf.filename)
                 save_name = os.path.join(tmpdir, filename)
@@ -291,15 +296,16 @@ def risco_app(app):
         """Importar arquivo.
 
         """
-        session = app.config.get('dbsession')
         if request.method == 'POST':
-            csvf = get_csv_valido(request)
-            if csvf:
-                filename = secure_filename(csvf.filename)
+            planilha = get_planilha_valida(request, 'planilha')
+            if planilha:
+                filename = secure_filename(planilha.filename)
                 save_name = os.path.join(tmpdir, filename)
-                csvf.save(save_name)
-                logger.info('CSV RECEBIDO: %s' % save_name)
-                with open(save_name) as in_csv:
-                    lines = in_csv.readlines()
-                user_name = current_user.name
+                planilha.save(save_name)
+                logger.info('Planilha recebida: %s' % save_name)
+                sucesso, msg = processa_planilha(save_name)
+                if sucesso:
+                    flash('%s linhas incluídas' % msg)
+                else:
+                    flash('Erro: %s' % msg)
         return render_template('importa_planilha_recinto.html')
