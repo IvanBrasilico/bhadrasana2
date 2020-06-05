@@ -10,7 +10,7 @@ import requests
 from ajna_commons.flask.log import logger
 
 # AJNA_API_URL = 'https://ajna.labin.rf08.srf/ajnaapi/api'
-AJNA_API_URL = 'http://localhost:5005'
+AJNA_API_URL = 'http://localhost:5004/api'
 
 mapa_SBT = {'dataevento': ['dtHrOcorrencia', 'dtHrRegistro'],
             'Conteiner': {'listaContainersUld': 'num'},
