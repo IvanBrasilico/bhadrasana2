@@ -282,7 +282,12 @@ def risco_app(app):
                     lines = in_csv.readlines()
                 user_name = current_user.name
                 for line in lines:
-                    campo, valor, motivo = line.split(';')
+                    linha = line.split(';')
+                    if len(linha) == 2:
+                        campo, valor = linha
+                        motivo = ''
+                    else:
+                        campo, valor, motivo = linha
                     insererisco(session,
                                 user_name=user_name,
                                 campo=campo,
