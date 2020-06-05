@@ -6,7 +6,7 @@ from wtforms.fields.html5 import DateField
 class RiscosForm(FlaskForm):
     datainicio = DateField(u'Data inicial da pesquisa')
     datafim = DateField(u'Data final da pesquisa')
-    operadorOU = BooleanField(u'Utilizar Operardor OU no filtro',
+    operadorOU = BooleanField(u'Utilizar Operador OU no filtro',
                               default=0)
 
 

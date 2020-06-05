@@ -12,11 +12,27 @@ from werkzeug.utils import secure_filename
 from ajna_commons.flask.log import logger
 from bhadrasana.forms.editarisco import get_edita_risco_form
 from bhadrasana.forms.riscosativos import RiscosAtivosForm, RecintoRiscosAtivosForm
+from bhadrasana.models.importa_planilha_recintos import processa_planilha
 from bhadrasana.models.riscomanager import mercanterisco, riscosativos, \
     insererisco, exclui_risco, CAMPOS_RISCO, get_lista_csv, save_planilharisco, \
     recintosrisco, CAMPOS_FILTRO_IMAGEM
 from bhadrasana.views import get_user_save_path, tmpdir
-from bhadrasana.models.importa_planilha_recintos import processa_planilha
+
+
+def get_planilha_valida(request, anexo_name='csv',
+                        extensoes=['csv', 'xls', 'ods', 'xlsx']):
+    planilha = request.files.get(anexo_name)
+    if planilha is None:
+        flash('Arquivo não repassado')
+    if planilha.filename == '':
+        flash('Nome de arquivo vazio')
+    else:
+        if '.' in planilha.filename:
+            extensao = planilha.filename.rsplit('.', 1)[1].lower()
+            if extensao in extensoes:
+                return planilha
+        flash('Extensão %s inválida/desconhecida' % extensao)
+    return None
 
 
 def risco_app(app):
@@ -245,19 +261,6 @@ def risco_app(app):
             flash(str(err))
         return redirect(url_for('edita_risco'))
 
-    def get_csv_valido(request):
-        if 'csv' not in request.files:
-            flash('Arquivo não repassado')
-            return False
-        csvf = request.files['csv']
-        if csvf.filename == '':
-            flash('Nome de arquivo vazio')
-            return False
-        logger.info('FILE***' + csvf.filename)
-        if '.' in csvf.filename and csvf.filename.rsplit('.', 1)[1].lower() == 'csv':
-            return csvf
-        return False
-
     @app.route('/importacsv', methods=['POST', 'GET'])
     @login_required
     def importacsv():
@@ -269,7 +272,7 @@ def risco_app(app):
         print(request.files)
         print(request.method)
         if request.method == 'POST':
-            csvf = get_csv_valido(request)
+            csvf = get_planilha_valida(request, 'csv', ['csv'])
             if csvf:
                 filename = secure_filename(csvf.filename)
                 save_name = os.path.join(tmpdir, filename)
@@ -294,11 +297,13 @@ def risco_app(app):
 
         """
         if request.method == 'POST':
-            csvf = get_csv_valido(request)
-            if csvf:
-                filename = secure_filename(csvf.filename)
+            planilha = get_planilha_valida(request, 'planilha')
+            if planilha:
+                filename = secure_filename(planilha.filename)
                 save_name = os.path.join(tmpdir, filename)
-                csvf.save(save_name)
-                logger.info('CSV RECEBIDO: %s' % save_name)
-                processa_planilha(save_name)
+                planilha.save(save_name)
+                logger.info('Planilha recebida: %s' % save_name)
+                sucesso, msg = processa_planilha(save_name)
+                if not sucesso:
+                    flash(msg)
         return render_template('importa_planilha_recinto.html')

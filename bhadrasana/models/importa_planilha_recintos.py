@@ -1,10 +1,14 @@
 import unicodedata
 from datetime import datetime
+from typing import Tuple
 
 import pandas as pd
 import requests
 
-AJNA_API_URL = 'http://ajna.labin.rf08.srf/ajnaapi/api'
+from ajna_commons.flask.log import logger
+
+AJNA_API_URL = 'https://ajna.labin.rf08.srf/ajnaapi/api'
+AJNA_API_URL = 'https://localhost/ajnaapi/api'
 
 mapa_SBT = {'dataevento': ['dtHrOcorrencia', 'dtHrRegistro'],
             'Conteiner': {'listaContainersUld': 'num'},
@@ -80,8 +84,10 @@ def processa_planilha_BTP(filename):
 
 def get_login_headers():
     rv = requests.post(AJNA_API_URL + '/login',
-                       json={'username': 'ivan', 'password': 'Ivan1234'})
-    # print(rv.text)
+                       json={'username': 'ivan', 'password': 'Ivan1234'},
+                       verify=False)
+    if rv.status_code != 200:
+        raise Exception(str(rv.status_code) + rv.text)
     token = rv.json().get('access_token')
     headers = {'Authorization': 'Bearer ' + token}
     return headers
@@ -116,17 +122,29 @@ def upload_eventos(recinto: str, mapa: dict, df, headers):
         destino['cnpjTransportador'] = destino['cnpjTransportador'] \
             .replace('/', '').replace('.', '').replace('-', '')
         destino['listaContainersUld'] = [destino['listaContainersUld']]
-        rv = requests.post(AJNA_API_URL + '/acessoveiculo', json=destino, headers=headers)
+        rv = requests.post(AJNA_API_URL + '/acessoveiculo', json=destino,
+                           headers=headers, verify=False)
         if rv.status_code != 201:
-            print(destino)
-            print(rv.status_code, rv.text)
+            logger.error(destino)
+            logger.error(rv.status_code, rv.text)
 
 
-def processa_planilha(filename):
-    headers = get_login_headers()
+def processa_planilha(filename) -> Tuple[bool, str]:
+    """Recebe nome de arquivo, processa, retorna False se ocorreram erros.
+    """
     if 'BTP' in filename:
-        df = processa_planilha_BTP(filename)
-        upload_eventos('SBT', mapa_SBT, df, headers)
+        recinto = 'BTP'
+        mapa = mapa_BTP
+        funcao_processamento = processa_planilha_BTP
     else:
-        df = processa_planilha_SBT(filename)
-        upload_eventos('SBT', mapa_SBT, df, headers)
+        recinto = 'SBT'
+        mapa = mapa_SBT
+        funcao_processamento = processa_planilha_SBT
+    try:
+        df = funcao_processamento(filename)
+        headers = get_login_headers()
+        upload_eventos(recinto, mapa, df, headers)
+        return True, ''
+    except Exception as err:
+        logger.error(err, exc_info=True)
+        return False, str(err)
