@@ -20,7 +20,7 @@ from bhadrasana.models.ovrmanager import gera_eventoovr, \
     get_relatorios_choice, get_relatorio, executa_relatorio, get_setores, get_setores_cpf, get_setores_usuario, \
     inclui_flag_ovr, get_tiposmercadoria_choice, get_marcas_choice, lista_tgovr, get_tgovr, cadastra_itemtg, \
     lista_itemtg, get_itemtg, get_itemtg_numero, informa_lavratura_auto, get_marcas, usuario_index, \
-    cadastra_visualizacao, get_visualizacoes, get_ovr_filtro, cadastra_ovr
+    cadastra_visualizacao, get_visualizacoes, get_ovr_filtro, cadastra_ovr, desfaz_ultimo_eventoovr
 
 engine = create_engine('sqlite://')
 Session = sessionmaker(bind=engine)
@@ -64,6 +64,53 @@ class OVRTestCase(BaseTestCase):
         assert ovr.fase == evento2.fase
         session.refresh(ovr)
         assert len(ovr.historico) == 2
+
+
+    def test_OVR_Desfaz_1Evento(self):
+        ovr = self.create_OVR_valido()
+        session.refresh(ovr)
+        params = {
+            'motivo': 'teste',
+            'tipoevento_id': 1,
+            'ovr_id': ovr.id
+        }
+        evento = gera_eventoovr(session, params)
+        assert evento.motivo == params['motivo']
+        assert evento.tipoevento_id == 1
+        assert ovr.fase == evento.fase
+        assert ovr.tipoevento_id == evento.tipoevento_id
+        params['tipoevento_id'] = 2
+        evento2 = gera_eventoovr(session, params)
+        assert ovr.fase == evento2.fase
+        assert ovr.tipoevento_id == evento2.tipoevento_id
+        session.refresh(ovr)
+        assert len(ovr.historico) == 2
+        desfaz_ultimo_eventoovr(session, ovr.id)
+        assert ovr.fase == evento.fase
+        assert ovr.tipoevento_id == evento.tipoevento_id
+        session.refresh(ovr)
+        assert len(ovr.historico) == 1
+        desfaz_ultimo_eventoovr(session, ovr.id)
+        assert ovr.fase == 0
+        assert ovr.tipoevento_id is None
+
+
+    def test_OVR_Desfaz_2Eventos(self):
+        ovr = self.create_OVR_valido()
+        session.refresh(ovr)
+        params = {
+            'motivo': 'teste',
+            'tipoevento_id': 1,
+            'ovr_id': ovr.id
+        }
+        evento = gera_eventoovr(session, params)
+        assert evento.motivo == params['motivo']
+        assert evento.tipoevento_id == 1
+        assert ovr.fase == evento.fase
+        assert ovr.tipoevento_id == evento.tipoevento_id
+        desfaz_ultimo_eventoovr(session, ovr.id)
+        assert ovr.fase == 0
+        assert ovr.tipoevento_id is None
 
     def test_OVR_Processo(self):
         ovr = self.create_OVR_valido()
@@ -144,7 +191,12 @@ class OVRTestCase(BaseTestCase):
         evento = eventos[1]
         assert evento.fase == 1
         assert evento.motivo == 'Anterior: ' + usuario.cpf
-
+        assert ovr.fase == evento.fase
+        assert ovr.tipoevento_id == evento.tipoevento_id
+        with self.assertRaises(Exception):
+            desfaz_ultimo_eventoovr(session, ovr.id)
+        assert ovr.fase == evento.fase
+        assert ovr.tipoevento_id == evento.tipoevento_id
         # testa usuario_index
         list_user = [usuario, usuario2]
         index = usuario_index(list_user, usuario.cpf)

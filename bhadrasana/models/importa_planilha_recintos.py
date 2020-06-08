@@ -157,7 +157,6 @@ def processa_planilha(filename) -> Tuple[bool, str]:
         recinto = 'SBT'
         mapa = mapa_SBT
         funcao_processamento = processa_planilha_SBT
-    count = 0
     df = []
     try:
         df = funcao_processamento(filename)

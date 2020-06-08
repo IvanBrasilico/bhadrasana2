@@ -33,7 +33,8 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_relatorios_choice, \
     executa_relatorio, get_relatorio, get_afrfb, get_itens_roteiro_checked, \
     get_flags_choice, cadastra_visualizacao, get_tipos_evento_comfase_choice, \
-    get_ovr_container, get_ovr_criadaspor, get_ovr_empresa, get_tipos_evento_todos
+    get_ovr_container, get_ovr_criadaspor, get_ovr_empresa, get_tipos_evento_todos,\
+    desfaz_ultimo_eventoovr
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import get_eventos_conteiner
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
@@ -131,7 +132,7 @@ def ovr_app(app):
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
-            flash(type(err))
+            flash(str(type(err)))
             flash(str(err))
         return render_template('ovr.html',
                                ovr=ovr,
@@ -222,7 +223,7 @@ def ovr_app(app):
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
-            flash(type(err))
+            flash(str(type(err)))
             flash(str(err))
         return render_template('pesquisa_ovr.html',
                                oform=filtro_form,
@@ -268,7 +269,7 @@ def ovr_app(app):
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
-            flash(type(err))
+            flash(str(type(err)))
             flash(str(err))
         return render_template('minhas_ovrs.html',
                                oform=oform,
@@ -310,7 +311,7 @@ def ovr_app(app):
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
-            flash(type(err))
+            flash(str(type(err)))
             flash(str(err))
         return render_template('relatorios.html',
                                oform=filtro_form,
@@ -334,7 +335,7 @@ def ovr_app(app):
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
-            flash(type(err))
+            flash(str(type(err)))
             flash(str(err))
         return redirect(url_for('ovr', id=ovr_id))
 
@@ -390,7 +391,22 @@ def ovr_app(app):
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
-            flash(type(err))
+            flash(str(type(err)))
+            flash(str(err))
+        return redirect(url_for('ovr', id=ovr_id))
+
+    @app.route('/desfazer_ultimo_eventoovr', methods=['POST'])
+    @login_required
+    def desfazer_ultimo_eventoovr():
+        session = app.config.get('dbsession')
+        ovr_id = None
+        try:
+            ovr_id = request.form['ovr_id']
+            desfaz_ultimo_eventoovr(session, ovr_id)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
             flash(str(err))
         return redirect(url_for('ovr', id=ovr_id))
 
@@ -427,7 +443,7 @@ def ovr_app(app):
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
-            flash(type(err))
+            flash(str(type(err)))
             flash(str(err))
         return render_template('lista_tgovr.html',
                                listatgovr=listatgovr,
@@ -482,7 +498,7 @@ def ovr_app(app):
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
-            # flash(type(err))
+            # flash(str(type(err))
             flash(str(err))
         return render_template('lista_itemtg.html',
                                listaitemtg=listaitemtg,
@@ -500,7 +516,7 @@ def ovr_app(app):
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
-            # flash(type(err))
+            # flash(str(type(err))
             flash(str(err))
         return redirect(url_for('listaitemtg', tg_id=tg_id))
 
