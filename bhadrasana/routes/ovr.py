@@ -461,8 +461,9 @@ def ovr_app(app):
             tgovr = cadastra_tgovr(session,
                                    dict(tgovr_form.data.items()),
                                    current_user.name)
+            session.refresh(tgovr)
             ovr_id = tgovr.ovr_id
-            # item_id = tgovr.id
+            item_id = tgovr.id
         except Exception as err:
             flash(str(err))
             logger.error(err, exc_info=True)
