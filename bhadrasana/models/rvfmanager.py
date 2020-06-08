@@ -8,7 +8,7 @@ from sqlalchemy import and_
 from ajna_commons.flask.log import logger
 from ajna_commons.models.bsonimage import BsonImage
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, \
-    get_usuario_logado, gera_objeto
+    get_usuario_logado, gera_objeto, EBloqueado
 from bhadrasana.models.ovr import Marca, TipoEventoOVR, EventoEspecial, OVR
 from bhadrasana.models.ovrmanager import get_ovr, gera_eventoovr
 from bhadrasana.models.rvf import RVF, Infracao, ImagemRVF, Lacre
@@ -92,6 +92,8 @@ def cadastra_rvf(session,
         gera_evento_rvf(session, rvf)
     elif params:
         rvf = get_rvf(session, params.get('id'))
+        if rvf.ovr and rvf.ovr.fase > 2:
+            raise EBloqueado()
         usuario = get_usuario_logado(session, user_name)
         if rvf.user_name and rvf.user_name != usuario.cpf:
             ovr = get_ovr(session, rvf.ovr_id)

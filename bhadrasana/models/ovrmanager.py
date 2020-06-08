@@ -400,6 +400,12 @@ def gera_processoovr(session, params) -> ProcessoOVR:
 def cadastra_tgovr(session, params, user_name: str) -> TGOVR:
     usuario = get_usuario_logado(session, user_name)
     tgovr = get_tgovr(session, params.get('id'))
+    if tgovr.ovr_id is not None:
+        ovr = get_ovr(session, tgovr.ovr_id)
+    else:
+        ovr = get_ovr(session, params.get('ovr_id'))
+    if ovr and ovr.fase > 2:
+        raise EBloqueado()
     if not tgovr.user_name:
         tgovr.user_name = usuario.cpf
     if tgovr.id is None and params.get('ovr_id') is not None:
