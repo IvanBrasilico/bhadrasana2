@@ -107,7 +107,7 @@
             </div>
             <div class="row">
                 <div class="col-sm-3">
-                    {{ oform.cnpj_fiscalizado(class='form-control') }}
+                    {{ oform.cnpj_fiscalizado(class='form-control', data_inputmask='"mask": "99.999.999/9999-99"') }}
                 </div>
                 <div class="col-sm-9">
                     {{ oform.nome_fiscalizado.data }}
@@ -531,6 +531,7 @@
 </div>
 
 {% endblock %} {% block scripts %} {{super()}}
+
 <script>
     function change_anexo(ev){
         console.log(ev.files[0]);
@@ -590,18 +591,10 @@
         event.preventDefault();
       }
     });
-
-
-
-
-
-
-
-
-
-
-
-
+    $(document).ready(function(){
+        $("#cnpj_fiscalizado").inputmask("99.999.999/9999-99", {removeMaskOnSubmit: true});
+        $("#numeroCEmercante").inputmask("999999999999999", {removeMaskOnSubmit: true});
+    });
 
 
 </script> {% endblock %}
