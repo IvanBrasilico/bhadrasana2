@@ -26,11 +26,11 @@
                         {{ tgovr.descricao }}
                     </td>
                     <td style="max-width: 40px;">
-                        {{ tgovr.qtde }}
+                        {{ '%.2f' % tgovr.qtde }}
                     </td>
                     <td style="max-width: 50px;">{{ tgovr.get_unidadedemedida() }}</td>
                     <td style="max-width: 40px;">
-                        {{ tgovr.valor }}
+                        {{ '%.2f' % tgovr.valor }}
                     </td>
                 </tr>
                 {% endfor %}
