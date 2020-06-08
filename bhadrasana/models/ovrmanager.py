@@ -369,6 +369,29 @@ def gera_eventoovr(session, params: dict, commit=True) -> EventoOVR:
     return evento
 
 
+def desfaz_ultimo_eventoovr(session, ovr_id: int) -> EventoOVR:
+    evento_anterior = None
+    ovr = get_ovr(session, ovr_id)
+    ultimo_evento = ovr.historico[len(ovr.historico) - 1]
+    if ultimo_evento.tipoevento.eventoespecial is not None:
+        raise Exception('Este Evento não pode ser desfeito!!')
+    if len(ovr.historico) > 1:
+        evento_anterior = ovr.historico[len(ovr.historico) - 2]
+    try:
+        session.delete(ultimo_evento)
+        if evento_anterior:
+            ovr.fase = evento_anterior.fase
+            ovr.tipoevento_id = evento_anterior.tipoevento_id
+        else:
+            ovr.fase = 0
+            ovr.tipoevento_id = None
+        session.add(ovr)
+        session.commit()
+    except Exception as err:
+        session.rollback()
+        raise err
+
+
 def gera_processoovr(session, params) -> ProcessoOVR:
     return gera_objeto(ProcessoOVR(),
                        session, params)

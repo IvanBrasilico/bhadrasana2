@@ -212,6 +212,13 @@
         </button>
     </div>
     <div class="col-sm-3">
+        <form method="POST" id="desfazer_form" action="desfazer_ultimo_eventoovr">
+            <input type="hidden" name="csrf_token" value="{{csrf_token()}}"/>
+            <input type="hidden" name="ovr_id" value="{{ oform.id.data }}"/>
+            <button id="btn_desfazer" class="btn btn-primary btn-danger form-control" onclick="submit">
+                Desfazer última movimentação
+            </button>
+        </form>
     </div>
     <div class="table-responsive table row col-sm-12">
         <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive"
@@ -583,6 +590,7 @@
         event.preventDefault();
       }
     });
+
 
 
 

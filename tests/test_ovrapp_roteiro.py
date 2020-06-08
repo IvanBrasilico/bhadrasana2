@@ -389,6 +389,35 @@ class OVRAppTestCase(BaseTestCase):
         print(rows)
         assert len(rows) == 3
         assert 'verificação física' in ''.join(rows)
+        # Teste desfazer e refazer
+        rv = self.app.get('/ovr?id=%s' % 1)
+        text = str(rv.data)
+        desfaz_pos = text.find('action="desfazer')
+        desfaz_text = text[desfaz_pos:]
+        token_text = self.get_token(desfaz_text)
+        payload = {'csrf_token': token_text, 'ovr_id': 1}
+        rv = self.app.post('/desfazer_ultimo_eventoovr', data=payload, follow_redirects=True)
+        app.logger.info(rv.status_code)
+        app.logger.info(rv.data)
+        soup = BeautifulSoup(rv.data, features='lxml')
+        table = soup.find('table', {'id': 'table_eventos'})
+        rows = [str(row) for row in table.findAll("tr")]
+        assert len(rows) == 2
+        rv = self.app.get('/ovr?id=%s' % 1)
+        text = str(rv.data)
+        movimentaovr_pos = text.find('action="movimentaovr"')
+        movimentaovr_text = text[movimentaovr_pos:]
+        token_text = self.get_token(movimentaovr_text)
+        payload = {'csrf_token': token_text,
+                   'ovr_id': 1,
+                   'tipoevento_id': 2,
+                   'motivo': 'Teste b2',
+                   'user_name': 'watson'}
+        rv = self.app.post('/movimentaovr', data=payload, follow_redirects=True)
+        soup = BeautifulSoup(rv.data, features='lxml')
+        table = soup.find('table', {'id': 'table_eventos'})
+        rows = [str(row) for row in table.findAll("tr")]
+        assert len(rows) == 3
 
     def test_b3_informar_RVF_carregar_fotos(self):
         """3 - Informa RVF carregando fotos"""
@@ -493,7 +522,7 @@ class OVRAppTestCase(BaseTestCase):
         payload = {'csrf_token': token_text,
                    'ovr_id': 1,
                    'responsavel': 'holmes'}
-        rv = self.app   .post('/responsavelovr', data=payload, follow_redirects=True)
+        rv = self.app.post('/responsavelovr', data=payload, follow_redirects=True)
         assert b'holmes' in rv.data
 
     def test_c1_Consultar_Fichas_Modificadas(self):
