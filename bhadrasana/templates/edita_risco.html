@@ -40,17 +40,24 @@
                             <input class="form-control" type="text" name="motivo" value="{{ motivo }}" id="motivo"/>
                         </div>
                         <div class="col-sm-2">
-                            <input class="btn btn-default btn-info" type="submit" value="Incluir risco"/>
+                            <input class="btn btn-default btn-info form-control" type="submit" value="Incluir risco"/>
                         </div>
-                        <div class="col-sm-2">
+                        <div class="col-sm-1">
                             <button onclick="exporta_csv()" id="btn_exportar"
-                                    type="button" class="btn btn-default">Exportar Planilha
+                                    type="button" class="btn btn-default form-control">Exportar Planilha
                             </button>
                         </div>
-                        <div class="col-sm-2">
-                            <button id="btn_incluir" type="button" class="btn btn-primary"
+                        <div class="col-sm-1">
+                            <button id="btn_incluir" type="button" class="btn btn-primary form-control"
                                     data-toggle="modal" data-target="#importa_csv">Importar Planilha
                             </button>
+                        </div>
+                        <div class="col-sm-1">
+                            <button id="btn_limpar" type="button" class="btn btn-danger form-control"
+                                    data-toggle="modal" data-target="#limpa_riscos">Limpar riscos
+                            </button>
+                        </div>
+                        <div class="col-sm-1">
                         </div>
                     </div>
                 </div>
@@ -114,6 +121,7 @@
                 <div class="modal-body">
                     <form method="POST" action="importacsv" enctype="multipart/form-data">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <input type="hidden" name="active_tab" value="{{active_tab}}">
                         <label class="btn btn-default btn-choose" for="csv">
                             <input id="csv" name="csv" type="file" style="display:none"
                                    onchange="$('#upload-file-info').html(this.files[0].name)"> Escolha o CSV
@@ -131,6 +139,27 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="limpa_riscos" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title" id="ModalLabel2">Atenção! Toda a planilha de riscos ativa será
+                        excluída!</h1>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="limpa_riscos" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <input type="hidden" name="active_tab" value="{{active_tab}}">
+                        <input class="btn btn-danger" type="submit" value="Confirmo, excluir riscos ativos."/>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </div>
 {% endblock %} {% block scripts %} {{super()}}
@@ -139,6 +168,7 @@
     function exporta_csv() {
         window.location.assign('exporta_csv');
     }
+
 
 
 </script> {% endblock %}

@@ -15,7 +15,7 @@ from bhadrasana.forms.riscosativos import RiscosAtivosForm, RecintoRiscosAtivosF
 from bhadrasana.models.importa_planilha_recintos import processa_planilha
 from bhadrasana.models.riscomanager import mercanterisco, riscosativos, \
     insererisco, exclui_risco, CAMPOS_RISCO, get_lista_csv, save_planilharisco, \
-    recintosrisco, CAMPOS_FILTRO_IMAGEM
+    recintosrisco, CAMPOS_FILTRO_IMAGEM, exclui_riscos
 from bhadrasana.views import get_user_save_path, tmpdir
 
 
@@ -232,7 +232,22 @@ def risco_app(app):
             exclui_risco(session, id)
         except Exception as err:
             logger.error(err, exc_info=True)
-            flash('Erro ao incluir risco! '
+            flash('Erro ao excluir risco! '
+                  'Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return redirect(url_for('edita_risco', active_tab=active_tab))
+
+    @app.route('/limpa_riscos', methods=['POST'])
+    @login_required
+    def excluir_riscos():
+        session = app.config.get('dbsession')
+        active_tab = request.form.get('active_tab')
+        try:
+            exclui_riscos(session)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro ao excluir risco! '
                   'Detalhes no log da aplicação.')
             flash(str(type(err)))
             flash(str(err))
@@ -264,13 +279,9 @@ def risco_app(app):
     @app.route('/importacsv', methods=['POST', 'GET'])
     @login_required
     def importacsv():
-        """Importar arquivo.
-
+        """Importar arquivo com parâmetros ativos.
         """
-        print('IMPORTA CSV')
         session = app.config.get('dbsession')
-        print(request.files)
-        print(request.method)
         if request.method == 'POST':
             csvf = get_planilha_valida(request, 'csv', ['csv'])
             if csvf:
@@ -293,8 +304,7 @@ def risco_app(app):
     @app.route('/importa_planilha_recinto', methods=['POST', 'GET'])
     @login_required
     def importa_planilha_recinto():
-        """Importar arquivo.
-
+        """Importar arquivo de eventos de recintos.
         """
         if request.method == 'POST':
             planilha = get_planilha_valida(request, 'planilha')

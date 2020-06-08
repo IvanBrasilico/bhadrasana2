@@ -193,12 +193,20 @@ def insererisco(session, **kwargs):
         raise err
 
 
-def exclui_risco(session, oid):
+def exclui_risco(session, oid: int):
     risco = session.query(RiscoAtivo).filter(RiscoAtivo.ID == oid).one()
     try:
         session.delete(risco)
         session.commit()
-        return True
+    except Exception as err:
+        session.rollback()
+        raise err
+
+
+def exclui_riscos(session):
+    try:
+        session.query(RiscoAtivo).delete()
+        session.commit()
     except Exception as err:
         session.rollback()
         raise err
