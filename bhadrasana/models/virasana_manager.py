@@ -105,8 +105,8 @@ def get_imagens_query(mongodb, query: dict) -> list:
 
 
 def get_imagens_conhecimento(mongodb, conhecimento: str) -> list:
-    if conhecimento is None or conhecimento == '':
-        raise ValueError('get_imagens: Informe o conhecimento!')
+    if conhecimento is None or conhecimento == '' or len(conhecimento) < 15:
+        raise ValueError('get_imagens: Informe o conhecimento com 15 números!')
     query = {'metadata.carga.conhecimento.conhecimento': conhecimento,
              'metadata.contentType': 'image/jpeg'
              }
@@ -114,9 +114,9 @@ def get_imagens_conhecimento(mongodb, conhecimento: str) -> list:
 
 
 def get_imagens_due(mongodb, due: str) -> list:
-    if due is None or due == '':
-        raise ValueError('get_imagens: Informe o conhecimento!')
-    query = {'metadata.due': due,
+    if due is None or due == '' or len(due) < 14:
+        raise ValueError('get_imagens: Informe o número da DUE com 14 dígitos (AABR9999999999)!')
+    query = {'metadata.due.numero': due,
              'metadata.contentType': 'image/jpeg'
              }
     return get_imagens_query(mongodb, query)
