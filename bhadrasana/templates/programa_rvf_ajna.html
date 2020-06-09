@@ -2,11 +2,26 @@
 <div id="main" class="container-fluid">
     <div id="top" class="row">
         <div class="col-sm-8">
+            <h4>Dados do Mercante</h4>
             {% if conhecimento %}
             Conhecimento: {{ conhecimento.numeroCEmercante }}<br>
             Embarcador: {{ conhecimento.embarcador }}<br>
             Consignatário: {{ conhecimento.consignatario }}<br>
             Descrição Mercadoria:{{ conhecimento.descricao }}<br>
+            {% endif %}
+            <h4>Dados da due</h4>
+            {% if due %}
+            País Importador: {{ due.get('PaisImportador') }} Canal: {{ due.get('canal') }} Data
+            Processamento: {{ due.get('dataProcessamentoTa') }}
+            <br>
+            Exportador: {{ due.get('Declarante') }} - {{ due.get('Nome Declarante') }}
+            <br>
+            Recinto: {% if due.get('recintoAduaneiroDespacho') %} {{ due.recintoAduaneiroDespacho.nome }} {%
+            endif %}
+            <br>
+            {% if due.get('itens') %}
+            Itens: {% for item in due.get('itens') %}{{ item.get('descricaoMercadoria') }} {% endfor %}
+            {% endif %}
             {% endif %}
         </div>
         <div class="col-sm-4">
@@ -27,6 +42,33 @@
                     <td>Verificação Física</td>
                 </tr>
                 </thead>
+                {% if containers|length == 0 %}
+                <!-- Não tem CEMercante ou CEMercante não tem lista de contêineres, usar imagens -->
+                {% for numero, imagem in imagens.items() %}
+                <tr>
+                    <td width="300" style="text-align:left">
+                        <p>Conteiner nº <b>{{ numero }}</b></p>
+                    </td>
+                    <td>
+                        <img src="/virasana/image/{{ imagem }}" alt="Sem imagem" width="auto" height="auto"
+                             style="border: 1px solid #000; max-width:800px; max-height:320px;"
+                             onmouseover="showMsg(this, '{{ imagem }}')" onmouseout="clearMsg(this)"
+                        />
+                    </td>
+                    <td>
+                        {% if numero in containers_com_rvf.keys() %}
+                        <a href="rvf?id={{containers_com_rvf[container.codigoConteiner]}}" target="_blank">
+                            Programação n. {{containers_com_rvf[numero]}}</a>
+                        {% else %}
+                        <button class="btn btn-default"
+                                onclick="location.href='programa_rvf_ajna?ovr_id={{ovr.id}}&container={{numero}}';">
+                            Programar
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endif %}
                 {% for container in containers %}
                 <tr>
                     <td width="300" style="text-align:left">
@@ -36,9 +78,11 @@
                     </td>
                     <td>
                         {% if container.codigoConteiner in imagens.keys() %}
-                        <img src="/virasana/image/{{ imagens[container.codigoConteiner] }}" alt="Sem imagem" width="auto" height="auto"
+                        <img src="/virasana/image/{{ imagens[container.codigoConteiner] }}" alt="Sem imagem"
+                             width="auto" height="auto"
                              style="border: 1px solid #000; max-width:800px; max-height:320px;"
-                             onmouseover="showMsg(this, '{{ imagens[container.codigoConteiner] }}')" onmouseout="clearMsg(this)"
+                             onmouseover="showMsg(this, '{{ imagens[container.codigoConteiner] }}')"
+                             onmouseout="clearMsg(this)"
                         />
                         {% endif %}
                     </td>
@@ -83,4 +127,5 @@
     function clearMsg(img) {
         img.title = "";
     }
+
 </script> {% endblock %}
