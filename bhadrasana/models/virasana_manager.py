@@ -98,10 +98,10 @@ def get_imagens_query(mongodb, query: dict) -> list:
                   'metadata.dataescaneamento': 1}
     try:
         cursor = mongodb['fs.files'].find(query, projection)
+        return list(cursor)
     except Exception as err:
         logger.error(err, exc_info=True)
         return []
-    return cursor
 
 
 def get_imagens_conhecimento(mongodb, conhecimento: str) -> list:
@@ -132,6 +132,10 @@ def get_imagens_dict_container_id(mongodb, conhecimento: str, due: str) -> dict:
         imagens_due = get_imagens_due(mongodb, due)
     except ValueError:
         imagens_due = []
+    logger.info('imagens_conhecimento')
+    logger.info(imagens_conhecimento)
+    logger.info('imagens_due')
+    logger.info(imagens_due)
     imagens = [*imagens_conhecimento, *imagens_due]
     return {item['metadata']['numeroinformado']: str(item['_id'])
             for item in imagens}
