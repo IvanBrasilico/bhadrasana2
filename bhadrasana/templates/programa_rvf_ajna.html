@@ -11,6 +11,7 @@
             {% endif %}
             <h4>Dados da due</h4>
             {% if due %}
+            DUE: {{ due.numero }} <br>
             País Importador: {{ due.get('PaisImportador') }} Canal: {{ due.get('canal') }} Data
             Processamento: {{ due.get('dataProcessamentoTa') }}
             <br>
