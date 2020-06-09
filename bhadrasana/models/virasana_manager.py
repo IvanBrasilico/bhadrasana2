@@ -115,7 +115,8 @@ def get_imagens_conhecimento(mongodb, conhecimento: str) -> list:
 
 def get_imagens_due(mongodb, due: str) -> list:
     if due is None or due == '' or len(due) < 14:
-        raise ValueError('get_imagens: Informe o número da DUE com 14 dígitos (AABR9999999999)!')
+        raise ValueError('get_imagens: Informe o número da DUE'
+                         ' com 14 dígitos (AABR9999999999)!')
     query = {'metadata.due.numero': due,
              'metadata.contentType': 'image/jpeg'
              }
