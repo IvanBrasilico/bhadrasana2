@@ -41,7 +41,7 @@ from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
     get_infracoes_choice, get_rvfs_filtro
 from bhadrasana.models.virasana_manager import get_conhecimento, \
     get_containers_conhecimento, get_ncms_conhecimento, get_imagens_dict_container_id, \
-    get_imagens_container, get_dues_container, get_dues_empresa, get_ces_empresa
+    get_imagens_container, get_dues_container, get_dues_empresa, get_ces_empresa, get_due
 from bhadrasana.views import get_user_save_path, valid_file
 
 
@@ -101,16 +101,7 @@ def ovr_app(app):
                         except Exception as err:
                             logger.info(err)
                             pass
-                        if ovr.numerodeclaracao:
-                            cursor = mongodb.fs.files.find(
-                                {'metadata.due.numero': ovr.numerodeclaracao},
-                                {'metadata.due': 1})
-                            due = list(cursor)
-                            if due and len(due) > 0:
-                                due = due[len(due) - 1]
-                                due = due.get('metadata')
-                                if due:
-                                    due = due.get('due')[0]
+                        due = get_due(mongodb, ovr.numerodeclaracao)
                         # Extrai informacoes da OVR
                         # Registra Visualização
                         cadastra_visualizacao(session, ovr, current_user.id)
@@ -637,20 +628,23 @@ def ovr_app(app):
         containers = []
         containers_com_rvf = {}
         imagens = {}
+        due = {}
         try:
             ovr_id = request.args.get('ovr_id')
             ovr = get_ovr(session, ovr_id)
             if ovr is None or ovr.id is None:
                 raise KeyError('OVR não encontrada')
             container = request.args.get('container')
-            imagens = get_imagens_dict_container_id(mongodb, ovr.numeroCEmercante)
             if container:
                 programa_rvf_container(
                     mongodb, mongo_risco, session,
                     ovr, container, imagens.get(container)
                 )
                 return redirect(url_for('programa_rvf_ajna', ovr_id=ovr_id))
+            imagens = get_imagens_dict_container_id(mongodb, ovr.numeroCEmercante,
+                                                    ovr.numerodeclaracao)
             conhecimento = get_conhecimento(session, ovr.numeroCEmercante)
+            due = get_due(mongodb, ovr.numerodeclaracao)
             containers = get_containers_conhecimento(session, ovr.numeroCEmercante)
             lista_rvf = lista_rvfovr(session, ovr_id)
             if lista_rvf:
@@ -661,6 +655,7 @@ def ovr_app(app):
         return render_template('programa_rvf_ajna.html',
                                ovr=ovr,
                                conhecimento=conhecimento,
+                               due=due,
                                containers=containers,
                                containers_com_rvf=containers_com_rvf,
                                imagens=imagens)
