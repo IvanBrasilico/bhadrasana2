@@ -59,7 +59,7 @@
                     <div class="panel-heading rounded-pill">
                         {% if conhecimento %}
                         Embarcador: {{ conhecimento.embarcador }}
-                        <font size="+1"><b>&nbsp;&nbsp;&nbsp; --- &nbsp;
+                        <font size="+1"><b>&nbsp;&nbsp; - &nbsp;
                             <a href="programa_rvf_ajna?ovr_id={{ovr.id}}" target="_blank">
                                 Ver imagens e mais informações / programar verificação física</a></b> </font>
                         <br>
@@ -87,6 +87,10 @@
                 <div class="panel panel-info rounded-pill">
                     <div class="panel-heading rounded-pill">
                         {% if due %}
+                        <font size="+1"><b>&nbsp;&nbsp; - &nbsp;
+                            <a href="programa_rvf_ajna?ovr_id={{ovr.id}}" target="_blank">
+                                Ver imagens e mais informações / programar verificação física</a></b> </font>
+                        <br>
                         País Importador: {{ due.get('PaisImportador') }} Canal: {{ due.get('canal') }} Data
                         Processamento: {{ due.get('dataProcessamentoTa') }}
                         <br>
