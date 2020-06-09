@@ -188,6 +188,9 @@
 <script type="text/javascript">
     $(document).ready(function(){
         $("#div_imagens").sortable();
+        $("#numeroCEmercante").inputmask("999999999999999", {removeMaskOnSubmit: true});
+        $("#numerolote").inputmask("AAAA9999999", {removeMaskOnSubmit: true});
+
     });
 
 
