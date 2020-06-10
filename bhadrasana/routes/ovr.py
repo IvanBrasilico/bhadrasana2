@@ -286,7 +286,8 @@ def ovr_app(app):
             for ovr in ovrs:
                 id, visualizado, linha = exibicao.get_linha(ovr)
                 datahora = datetime.datetime.strftime(linha[0], '%d/%m/%Y %H:%M')
-                exibicao_ovr = str(id) + '\t' + datahora + '\t' + '\t'.join(linha[1:])
+                linha_str = [str(item) for item in linha[1:]]
+                exibicao_ovr = str(id) + '\t' + datahora + '\t' + '\t'.join(linha_str)
                 result.append(exibicao_ovr)
         except Exception as err:
             logger.error(err, exc_info=True)
