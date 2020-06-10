@@ -3,6 +3,7 @@ from typing import List
 import requests
 
 from ajna_commons.flask.log import logger
+from bhadrasana.models.laudo import get_empresa, get_sats_cnpj
 from virasana.integracao.mercante.mercantealchemy import Item, Conhecimento, NCMItem
 
 VIRASANA_URL = 'https://localhost/virasana/'
@@ -160,3 +161,28 @@ def get_containers_conhecimento(session, numero: str) -> List[Item]:
 def get_ncms_conhecimento(session, numero: str) -> List[NCMItem]:
     return session.query(NCMItem).filter(
         NCMItem.numeroCEMercante == numero).all()
+
+
+def get_detalhes_mercante(session, ces: list) -> dict:
+    infoces = {}
+    for numeroCEmercante in ces:
+        try:
+            linha = dict()
+            conhecimento = get_conhecimento(session, numeroCEmercante)
+            linha['conhecimento'] = conhecimento
+            linha['containers'] = get_containers_conhecimento(
+                session,
+                numeroCEmercante)
+            linha['ncms'] = get_ncms_conhecimento(session, numeroCEmercante)
+            logger.info('get_laudos')
+            if conhecimento:
+                cnpj = conhecimento.consignatario
+                if cnpj:
+                    empresa = get_empresa(session, cnpj)
+                    sats = get_sats_cnpj(session, cnpj)
+                    linha['empresa'] = empresa
+                    linha['sats'] = sats
+            infoces[numeroCEmercante] = linha
+        except Exception as err:
+            logger.info(err)
+    return infoces

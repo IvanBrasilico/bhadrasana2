@@ -2,7 +2,6 @@ import datetime
 import os
 from _collections import defaultdict
 from decimal import Decimal
-from typing import List
 
 import numpy as np
 import pandas as pd
@@ -33,7 +32,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_relatorios_choice, \
     executa_relatorio, get_relatorio, get_afrfb, get_itens_roteiro_checked, \
     get_flags_choice, cadastra_visualizacao, get_tipos_evento_comfase_choice, \
-    get_ovr_container, get_ovr_criadaspor, get_ovr_empresa, get_tipos_evento_todos,\
+    get_ovr_container, get_ovr_criadaspor, get_ovr_empresa, get_tipos_evento_todos, \
     desfaz_ultimo_eventoovr
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import get_eventos_conteiner
@@ -41,7 +40,8 @@ from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
     get_infracoes_choice, get_rvfs_filtro
 from bhadrasana.models.virasana_manager import get_conhecimento, \
     get_containers_conhecimento, get_ncms_conhecimento, get_imagens_dict_container_id, \
-    get_imagens_container, get_dues_container, get_dues_empresa, get_ces_empresa, get_due
+    get_imagens_container, get_dues_container, get_dues_empresa, get_ces_empresa, get_due,\
+    get_detalhes_mercante
 from bhadrasana.views import get_user_save_path, valid_file
 
 
@@ -659,30 +659,6 @@ def ovr_app(app):
                                containers=containers,
                                containers_com_rvf=containers_com_rvf,
                                imagens=imagens)
-
-    def get_detalhes_mercante(session, ces: list) -> List[dict]:
-        infoces = {}
-        for numeroCEmercante in ces:
-            try:
-                linha = dict()
-                conhecimento = get_conhecimento(session, numeroCEmercante)
-                linha['conhecimento'] = conhecimento
-                linha['containers'] = get_containers_conhecimento(
-                    session,
-                    numeroCEmercante)
-                linha['ncms'] = get_ncms_conhecimento(session, numeroCEmercante)
-                logger.info('get_laudos')
-                if len(conhecimento) == 1:
-                    cnpj = conhecimento[0].consignatario
-                    if cnpj:
-                        empresa = get_empresa(session, cnpj)
-                        sats = get_sats_cnpj(session, cnpj)
-                        linha['empresa'] = empresa
-                        linha['sats'] = sats
-                infoces.append(linha)
-            except Exception as err:
-                logger.info(err)
-        return infoces
 
     @app.route('/consulta_container', methods=['GET', 'POST'])
     @login_required
