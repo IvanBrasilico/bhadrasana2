@@ -40,8 +40,8 @@ from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
     get_infracoes_choice, get_rvfs_filtro
 from bhadrasana.models.virasana_manager import get_conhecimento, \
     get_containers_conhecimento, get_ncms_conhecimento, get_imagens_dict_container_id, \
-    get_imagens_container, get_dues_container, get_dues_empresa, get_ces_empresa, get_due,\
-    get_detalhes_mercante
+    get_imagens_container, get_dues_container, get_dues_empresa, get_ces_empresa, \
+    get_due, get_detalhes_mercante
 from bhadrasana.views import get_user_save_path, valid_file
 
 
@@ -672,7 +672,7 @@ def ovr_app(app):
         mongodb = app.config['mongodb']
         ovrs = []
         rvfs = []
-        infoces = []
+        infoces = {}
         dues = []
         eventos = []
         imagens = []
@@ -731,7 +731,7 @@ def ovr_app(app):
         empresas_qtdeovrs = []
         ovrs = []
         sats = []
-        infoces = []
+        infoces = {}
         dues = []
         eventos = []
         imagens = []
