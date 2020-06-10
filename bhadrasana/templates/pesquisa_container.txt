@@ -1,0 +1,51 @@
+Fichas
+{% for ovr in ovrs %}
+Ficha Nº {{ ovr.id }}
+Tipo Operação {{ ovr.get_tipooperacao() }}
+CE Mercante {{ ovr.numeroCEmercante }}
+Fiscalizado {{ ovr.cnpj_fiscalizado }}
+Data {{ ovr.datahora }}
+Último Evento {{ ovr.tipoevento.nome }}
+{% endfor %}
+
+Verificações físicas
+{% for rvf in rvfs %}
+Verificação n. {{ rvf.id }}
+CE Mercante {{ rvf.numeroCEmercante }}
+Numero Contêiner/Lote {{ rvf.numerolote }}
+Data da verificação {{ rvf.datahora }}
+{% endfor %}
+Conhecimentos de Carga
+{% for numero, infoce in infoces.items() %}
+{% if infoce.conhecimento %}
+Número CE Mercante: {{ infoce.conhecimento.numeroCEmercante }}
+Embarcador: {{ infoce.conhecimento.embarcador }}
+Consignatário: {{ infoce.conhecimento.consignatario }} -
+{% if infoce.get('empresa') %}{{ infoce.empresa.nome }} {% endif %}
+Descrição Mercadoria:{{ infoce.conhecimento.descricao }}
+Contêineres: {% for container in infoce.containers %}
+nº: {{container.codigoConteiner}} - {{"%.2f"|format(container.pesoBruto|float)}}kg
+{% endfor %}
+Cubagem total: {{ "%.2f"|format(infoce.conhecimento.cubagem|float) }}m³
+NCMs: {% for ncm in infoce.ncms %}{{ ncm.identificacaoNCM }} {% endfor %}
+{% if infoce.get('sats') %}
+Empresa possui pedidos de Laudo Técnico (SAT/LAB):
+{% for sat in infoce.sats %} {{ sat.get_numero() }} {% endfor %}
+{% endif %}
+{% endif %}
+{% endfor %}
+
+DUEs
+{% for due in dues %}
+    {% if due %}
+    Número: {{ due.numero }}
+    País Importador: {{ due.get('PaisImportador') }} Canal: {{ due.get('canal') }} Data Processamento:
+    {{ due.get('dataProcessamentoTa') }}
+    Exportador: {{ due.get('Declarante') }} - {{ due.get('Nome Declarante') }}
+    Recinto: {% if due.get('recintoAduaneiroDespacho') %} {{ due.recintoAduaneiroDespacho.nome }}
+    {% endif %}
+    {% if due.get('itens') %}
+    Itens: {% for item in due.get('itens') %}{{ item.get('descricaoMercadoria') }} {% endfor %}
+    {% endif %}
+    {% endif %}
+{% endfor %}

@@ -42,7 +42,7 @@ from bhadrasana.models.virasana_manager import get_conhecimento, \
     get_containers_conhecimento, get_ncms_conhecimento, get_imagens_dict_container_id, \
     get_imagens_container, get_dues_container, get_dues_empresa, get_ces_empresa, \
     get_due, get_detalhes_mercante
-from bhadrasana.views import get_user_save_path, valid_file
+from bhadrasana.views import get_user_save_path, valid_file, csrf
 
 
 def ovr_app(app):
@@ -267,6 +267,31 @@ def ovr_app(app):
                                titulos=titulos_exibicao,
                                listasovrs=listasovrs,
                                active_tab=active_tab)
+
+    @app.route('/minhas_fichas_text', methods=['GET'])
+    def minhas_fichas_text():
+        session = app.config.get('dbsession')
+        try:
+            # TODO: Login substituir cpf por current_user
+            cpf = request.args['cpf']
+            ovrs = get_ovr_responsavel(session, cpf)
+            if len(ovrs) == 0:
+                result = 'Sem Fichas atribuídas para o Usuário {}'.format(cpf)
+            else:
+                result = '\n'.join([str(ovr.id) + ' - ' +
+                                    ovr.numeroCEmercante for ovr in ovrs])
+            exibicao = ExibicaoOVR(session, 2, cpf)
+            result = []
+            result.append('\t'.join(exibicao.get_titulos()))
+            for ovr in ovrs:
+                id, visualizado, linha = exibicao.get_linha(ovr)
+                datahora = datetime.datetime.strftime(linha[0], '%d/%m/%Y %H:%M')
+                exibicao_ovr = str(id) + '\t' + datahora + '\t' + '\t'.join(linha[1:])
+                result.append(exibicao_ovr)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            return 'Erro! Detalhes no log da aplicação.'
+        return '\n'.join(result)
 
     @app.route('/relatorios', methods=['GET', 'POST'])
     @login_required
@@ -711,6 +736,65 @@ def ovr_app(app):
             flash(str(err))
         return render_template('pesquisa_container.html',
                                oform=filtro_form,
+                               rvfs=rvfs,
+                               ovrs=ovrs,
+                               infoces=infoces,
+                               dues=dues,
+                               eventos=eventos,
+                               imagens=imagens)
+
+    @app.route('/escaneamentos_container/<numero>', methods=['GET'])
+    def escaneamentos_container(numero) -> list:
+        mongodb = app.config['mongodb']
+        imagens = get_imagens_container(mongodb, numero)
+        return jsonify([str(imagem['_id']) for imagem in imagens])
+
+    @app.route('/consulta_container_text', methods=['POST'])
+    # @login_required
+    @csrf.exempt
+    def consulta_container_text():
+        """Tela para consulta única de número de contêiner
+
+        Dentro do intervalo de datas, traz lista de ojetos do sistema que contenham
+        alguma referência ao contêiner.
+        """
+        session = app.config.get('dbsession')
+        mongodb = app.config['mongodb']
+        ovrs = []
+        rvfs = []
+        infoces = {}
+        dues = []
+        eventos = []
+        imagens = []
+        try:
+            filtro_form = FiltroContainerForm(request.form)
+            filtro_form.validate()
+            logger.info('Consultando contêiner %s' % filtro_form.numerolote.data)
+            logger.info('get_rvfs_filtro')
+            rvfs = get_rvfs_filtro(session, dict(filtro_form.data.items()))
+            logger.info('get_dues_container')
+            dues = get_dues_container(mongodb,
+                                      filtro_form.numerolote.data)
+            lista_numeroDUEs = [due['numero'] for due in dues]
+            logger.info('get_ovr_container')
+            ces, ovrs = get_ovr_container(session, filtro_form.numerolote.data,
+                                          filtro_form.datainicio.data,
+                                          filtro_form.datafim.data,
+                                          lista_numeroDUEs)
+            logger.info('get detalhes CE Mercante')
+            infoces = get_detalhes_mercante(session, ces)
+            logger.info('get_eventos_container')
+            eventos = get_eventos_conteiner(session,
+                                            filtro_form.numerolote.data)
+            logger.info('get_imagens_container')
+            imagens = get_imagens_container(mongodb,
+                                            filtro_form.numerolote.data)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return render_template('pesquisa_container.txt',
                                rvfs=rvfs,
                                ovrs=ovrs,
                                infoces=infoces,
