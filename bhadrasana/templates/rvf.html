@@ -394,18 +394,19 @@
     function update_ordem_arquivos(){
         var qttd_arq = $("#div_imagens").children().length;
         rvf_id = {{oform.id.data}}
-        /*var lista = []
-              $('#div_imagens').children('span').each(function(){
-                  lista.append($(this).attr("name"));
-              });
+        var lista = []
 
-
-        console.log(lista);
-        */
+        $('#div_imagens').children('span').each(function(){
+            lista.push($(this).attr("name"));
+        });
+        /*for (i = 0; i < lista.length; i++){
+            console.log(lista[i]);
+        }
         console.log(qttd_arq);
         console.log(rvf_id);
+        */
         $.getJSON('rvf_inclui_ordem_arquivos', {
-          rvf_id: rvf_id, qttd_arq: qttd_arq
+          rvf_id: rvf_id, qttd_arq: qttd_arq, lista: lista
         });
     }
 
