@@ -373,16 +373,17 @@ def rvf_app(app):
         # rvf = get_rvf(session, rvf_id)
         qttd_arq = request.args.get('qttd_arq')
         nomes_anexo = request.args.getlist('lista[]')
-        #lista_arq = get_ids_anexos_ordenado(rvf)
+        # lista_arq = get_ids_anexos_ordenado(rvf)
         oform = ImagemRVFForm()
         try:
             oform = ImagemRVFForm(request.form)
             oform.validate()
             for n in range(int(qttd_arq)):
-                # imagem = get_imagemrvf(session, rvf_id, lista_arq[n])  # ordem inicial do bd
+                # imagem = get_imagemrvf(session, rvf_id, lista_arq[n])  # ordem inicial
                 imagem = get_imagemrvf(session, rvf_id, nomes_anexo[n])
                 inclui_nova_ordem_arquivo(session, imagem, n + 1)
-                # print(f'rvf_inclui_ordem_arquivos..... imagem.imagem {imagem.imagem } e imagem.ordem {imagem.ordem} ')
+                # print(f'rvf_inclui_ordem_arquivos.....
+                # imagem.imagem {imagem.imagem } e imagem.ordem {imagem.ordem} ')
 
         except Exception as err:
             logger.error(err, exc_info=True)

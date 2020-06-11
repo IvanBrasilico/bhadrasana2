@@ -121,7 +121,6 @@ def index():
         return redirect(url_for('commons.login'))
 
 
-
 def image_id(db, _id):
     """Recupera a imagem do banco e serializa para stream HTTP.
 
@@ -141,15 +140,18 @@ def image_id(db, _id):
         return Response(response=image, mimetype='image/jpeg')
     return 'Sem Imagem'
 
+
 @app.route('/image/<_id>')
 def foto(_id):
     db = app.config['mongo_risco']
     return image_id(db, _id)
 
+
 @app.route('/scan/<_id>')
 def scan(_id):
     db = app.config['mongodb']
     return image_id(db, _id)
+
 
 @app.route('/anexo_filename')
 def anexo_filename():
