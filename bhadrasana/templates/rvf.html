@@ -140,27 +140,24 @@
     </div>
     <div class="row col-sm-12">
         <div class="form-group">
-            <form action="rvf_imgupload" enctype="multipart/form-data" method="post">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                <input type="hidden" name="rvf_id" value="{{ oform.id.data }}"/>
-                <h4>Selecione anexos:</h4>
-                <div class="col-sm-3"><input type="file" class="btn btn-default" name="images" id="images" multiple>
-                </div>
-                <div class="col-sm-1">
-                </div>
-                <div class="col-sm-2">
-                    <button type="button" class="btn btn-default btn-primary form-control" onclick="upload_files()">
-                        Enviar
-                    </button>
-                </div>
-                <div class="col-sm-2">
-                    <button type="button" class="btn btn-default btn-primary form-control"
-                            onclick="update_ordem_arquivos()">
-                        Atualizar ordem
-                    </button>
-                </div>
-                <div class="col-sm-4"></div>
-            </form>
+            <h4>Selecione anexos:</h4>
+            <div class="col-sm-3"><input type="file" class="btn btn-default" name="images" id="images" multiple>
+            </div>
+            <div class="col-sm-1">
+            </div>
+            <div class="col-sm-2">
+                <button type="button" class="btn btn-default btn-primary form-control" onclick="upload_files()">
+                    Enviar
+                </button>
+            </div>
+            <div class="col-sm-2">
+                <button type="button" class="btn btn-default btn-primary form-control"
+                        onclick="update_ordem_arquivos()">
+                    Atualizar ordem
+                </button>
+                </button>
+            </div>
+            <div class="col-sm-4"></div>
         </div>
         <div class="row ">
             <div class="col-sm-12" id="div_imagens" border="1">
@@ -192,6 +189,7 @@
         $("#numerolote").inputmask("AAAA9999999", {removeMaskOnSubmit: true});
 
     });
+
 
 
 </script>
@@ -323,7 +321,7 @@
         });
         location.reload();
     }
-    function upload_files(){
+    function upload_files(ev){
     // Resize images before upload if images are too big
         // Set the image once loaded into file reader
         // Load files into file reader
@@ -409,6 +407,7 @@
           rvf_id: rvf_id, qttd_arq: qttd_arq, lista: lista
         });
     }
+
 
 
 

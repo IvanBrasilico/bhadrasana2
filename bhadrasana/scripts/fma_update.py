@@ -38,11 +38,15 @@ DTE_URL_FMA = 'https://www.janelaunicaportuaria.org.br/ws_homologacao/sepes/api/
 
 def get_token_dte(username=DTE_USERNAME, password=DTE_PASSWORD):
     data = {'username': username, 'password': password, 'grant_type': 'password'}
-    r = requests.post(DTE_URL_AUTH, data=data)
-    print(r.url)
-    print(r.text)
-    print(r.status_code)
-    token = r.json().get('access_token')
+    try:
+        r = requests.post(DTE_URL_AUTH, data=data)
+        print(r.url)
+        token = r.json().get('access_token')
+    except Exception as err:
+        logger.error(str(type(err)) + str(err))
+        logger.error(r.status_code)
+        logger.error(r.text)
+        raise err
     return token
 
 
