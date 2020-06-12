@@ -866,9 +866,12 @@ def ovr_app(app):
     @app.route('/get_ovr/<ovr_id>', methods=['GET'])
     def json_ovr(ovr_id):
         session = app.config.get('dbsession')
-        aovr = get_ovr(session, ovr_id)
+        aovr = session.query(OVR).filter(OVR.id == ovr_id).one_or_none()
+        if aovr is None:
+            return jsonify({'msg': 'OVR %s não encontrado' % ovr_id}), 404
         dump = aovr.dump()
         dump['rvfs'] = []
-        for arvf in ovr.rvfs:
+        rvfs = lista_rvfovr(session, ovr_id)
+        for arvf in rvfs:
             dump['rvfs'].append(arvf.dump())
-        return jsonify()
+        return jsonify(dump), 200

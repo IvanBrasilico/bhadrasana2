@@ -20,6 +20,7 @@ from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, \
     make_and_save_transformation, exclui_lacre_verificado, \
     inclui_lacre_verificado, get_imagemrvf, inclui_nova_ordem_arquivo
 from bhadrasana.views import csrf, valid_file
+from bhadrasana.models.rvf import RVF
 
 
 def rvf_app(app):
@@ -408,5 +409,7 @@ def rvf_app(app):
     @app.route('/get_rvf/<rvf_id>', methods=['GET'])
     def json_rvf(rvf_id):
         session = app.config.get('dbsession')
-        arvf = get_rvf(session, rvf_id)
-        return jsonify(arvf.dump())
+        arvf = session.query(RVF).filter(RVF.id == rvf_id).one_or_none()
+        if arvf is None:
+            return jsonify({'msg': 'RVF %s não encontrado' % rvf_id}), 404
+        return jsonify(arvf.dump()), 200
