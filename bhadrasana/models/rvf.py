@@ -63,6 +63,7 @@ class RVF(BaseRastreavel, BaseDumpable):
     last_modified = Column(DateTime, index=True,
                            onupdate=func.current_timestamp())
 
+
 class ImagemRVF(BaseRastreavel):
     __tablename__ = 'ovr_imagensrvf'
     id = Column(BigInteger().with_variant(Integer, 'sqlite'),

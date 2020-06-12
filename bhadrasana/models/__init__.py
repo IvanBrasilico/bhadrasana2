@@ -29,6 +29,7 @@ class BaseDumpable(Base):
                     dump.pop(key)
         return dump
 
+
 class ENaoAutorizado(Exception):
     def __init__(self, msg='Usuário não autorizado.'):
         Exception.__init__(self, msg)
