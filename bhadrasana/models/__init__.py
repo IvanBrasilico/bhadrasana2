@@ -18,6 +18,17 @@ Base = declarative_base()
 Base.query = db_session.query_property()
 
 
+class BaseDumpable(Base):
+    __abstract__ = True
+
+    def dump(self, exclude=None):
+        dump = dict([(k, v) for k, v in vars(self).items() if not k.startswith('_')])
+        if exclude:
+            for key in exclude:
+                if dump.get(key):
+                    dump.pop(key)
+        return dump
+
 class ENaoAutorizado(Exception):
     def __init__(self, msg='Usuário não autorizado.'):
         Exception.__init__(self, msg)

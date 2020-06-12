@@ -268,7 +268,10 @@ def rvf_app(app):
             if filename is None:
                 logger.error('Filename vazio')
                 return jsonify({'msg': 'Informe o parâmetro filename'}), 500
-            image = base64.decodebytes(content.split(',')[1].encode())
+            try:
+                image = base64.decodebytes(content.split(',')[1].encode())
+            except IndexError:
+                image = base64.decodebytes(content.encode())
             inclui_imagemrvf(db, session, image, filename, rvf_id)
         except Exception as err:
             logger.error(str(err), exc_info=True)
@@ -405,4 +408,4 @@ def rvf_app(app):
     def json_rvf(rvf_id):
         session = app.config.get('dbsession')
         arvf = get_rvf(session, rvf_id)
-        return jsonify(arvf)
+        return jsonify(arvf.dump())
