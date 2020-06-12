@@ -10,7 +10,7 @@ from sqlalchemy.orm import relationship, sessionmaker
 sys.path.insert(0, '.')
 sys.path.insert(0, '../ajna_docs/commons')
 sys.path.insert(0, '../virasana')
-from bhadrasana.models import Base, BaseRastreavel
+from bhadrasana.models import Base, BaseRastreavel, BaseDumpable
 
 metadata = Base.metadata
 
@@ -131,7 +131,7 @@ flags_table = Table('ovr_flags_ovr', metadata,
                     )
 
 
-class OVR(BaseRastreavel):
+class OVR(BaseRastreavel, BaseDumpable):
     __tablename__ = 'ovr_ovrs'
     id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                 primary_key=True)

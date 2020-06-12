@@ -862,3 +862,13 @@ def ovr_app(app):
                                dues=dues,
                                eventos=eventos,
                                imagens=imagens)
+
+    @app.route('/get_ovr/<ovr_id>', methods=['GET'])
+    def json_ovr(ovr_id):
+        session = app.config.get('dbsession')
+        aovr = get_ovr(session, ovr_id)
+        dump = aovr.dump()
+        dump['rvfs'] = []
+        for arvf in ovr.rvfs:
+            dump['rvfs'].append(arvf.dump())
+        return jsonify()
