@@ -378,13 +378,14 @@ def rvf_app(app):
         nomes_anexo = request.args.getlist('lista[]')
         # lista_arq = get_ids_anexos_ordenado(rvf)
         oform = ImagemRVFForm()
+        sucesso = False
         try:
             oform = ImagemRVFForm(request.form)
             oform.validate()
             for n in range(int(qttd_arq)):
                 # imagem = get_imagemrvf(session, rvf_id, lista_arq[n])  # ordem inicial
                 imagem = get_imagemrvf(session, rvf_id, nomes_anexo[n])
-                inclui_nova_ordem_arquivo(session, imagem, n + 1)
+                sucesso = inclui_nova_ordem_arquivo(session, imagem, n + 1)
                 # print(f'rvf_inclui_ordem_arquivos.....
                 # imagem.imagem {imagem.imagem } e imagem.ordem {imagem.ordem} ')
 
@@ -394,8 +395,7 @@ def rvf_app(app):
             flash(str(type(err)))
             flash(str(err))
 
-        return redirect(url_for('rvf',
-                                rvf_id=oform.rvf_id.data))
+        return jsonify({'success': sucesso})
 
     @app.route('/imagens_rvf/<rvf_id>', methods=['GET'])
     def imagens_container(rvf_id):
