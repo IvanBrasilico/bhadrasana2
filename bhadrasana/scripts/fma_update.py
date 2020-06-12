@@ -58,7 +58,7 @@ def get_lista_fma(start, end, cod_recinto, token):
     except Exception as err:
         logger.error(str(type(err)) + str(err))
         logger.error(r.status_code)
-        logger.error(lista_fma)
+        logger.error(r.text)
         return None
     return lista_fma
 
