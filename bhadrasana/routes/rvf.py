@@ -395,8 +395,14 @@ def rvf_app(app):
                                 rvf_id=oform.rvf_id.data))
 
     @app.route('/imagens_rvf/<rvf_id>', methods=['GET'])
-    def imagens_container(rvf_id) -> list:
+    def imagens_container(rvf_id):
         session = app.config.get('dbsession')
         arvf = get_rvf(session, rvf_id)
         anexos = get_ids_anexos_ordenado(arvf)
         return jsonify(anexos)
+
+    @app.route('/get_rvf/<rvf_id>', methods=['GET'])
+    def json_rvf(rvf_id):
+        session = app.config.get('dbsession')
+        arvf = get_rvf(session, rvf_id)
+        return jsonify(arvf)

@@ -23,7 +23,7 @@ import tempfile
 
 from PIL import Image
 from flask import (Flask, redirect, render_template, request,
-                   url_for, Response)
+                   url_for, Response, jsonify)
 from flask_bootstrap import Bootstrap
 # from flask_cors import CORS
 from flask_login import current_user
@@ -37,6 +37,7 @@ from ajna_commons.flask.log import logger
 from ajna_commons.flask.user import DBUser
 from ajna_commons.utils.images import mongo_image, PIL_tobytes
 from bhadrasana.conf import APP_PATH
+from bhadrasana.models import get_usuario_telegram
 
 tmpdir = tempfile.mkdtemp()
 
@@ -194,6 +195,16 @@ def tui_image_editor():
 def image_editor(_id):
     """Exibe o editor Open Source JS (licença MIT) FileRobot."""
     return render_template('filerobot.html', _id=_id)
+
+
+@app.route('/get_cpf_telegram/<telegram_user>')
+def get_cpf_telegram(telegram_user):
+    """Exibe o editor Open Source JS (licença MIT) FileRobot."""
+    session = app.config.get('dbsession')
+    user = get_usuario_telegram(session, telegram_user)
+    if user is None:
+        return jsonify({'cpf': None}), 404
+    return jsonify({'cpf': user.cpf}), 200
 
 
 @nav.navigation()
