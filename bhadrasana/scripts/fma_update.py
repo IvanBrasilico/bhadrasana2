@@ -56,7 +56,9 @@ def get_lista_fma(start, end, cod_recinto, token):
     try:
         lista_fma = r.json()['JUP_WS']['FMA_Eletronica']['Lista_FMA']
     except Exception as err:
-        logger.error(err)
+        logger.error(str(type(err)) + str(err))
+        logger.error(r.status_code)
+        logger.error(lista_fma)
         return None
     return lista_fma
 
