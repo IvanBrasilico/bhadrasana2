@@ -396,4 +396,5 @@ def inclui_nova_ordem_arquivo(session, imagem, ordem):
     # print(f'...........................ordem antes: {arquivo.ordem}')
     arquivo.ordem = ordem
     session.commit()
+    return True
     # print(f'...........................ordem depois: {arquivo.ordem}')
