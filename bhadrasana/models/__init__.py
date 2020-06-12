@@ -58,6 +58,7 @@ class Usuario(Base):
     __tablename__ = 'ovr_usuarios'
     cpf = Column(CHAR(15), primary_key=True)
     nome = Column(CHAR(50), index=True)
+    telegram = Column(CHAR(50), index=True)
     setor_id = Column(CHAR(15), ForeignKey('ovr_setores.id'))
     setor = relationship('Setor')
 
@@ -88,6 +89,11 @@ def get_usuario_logado(session, user_name: str) -> Usuario:
         raise ENaoAutorizado('Usuário %s inválido ou não informado.' % user_name +
                              'Somente Usuários habilitados podem acessar.')
     return usuario
+
+
+def get_usuario_telegram(session, telegram: str) -> Usuario:
+    return session.query(Usuario).filter(
+        Usuario.telegram == telegram).one_or_none()
 
 
 def get_usuario(session, user_name: str) -> Usuario:
