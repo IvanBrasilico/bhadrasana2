@@ -260,7 +260,7 @@ def get_imagemrvf_ordem_or_none(session, rvf_id: int, ordem: int):
 
 def get_imagemrvf_imagem_or_none(session, _id: str) -> RVF:
     return session.query(ImagemRVF).filter(
-        ImagemRVF.imagem == _id).one()
+        ImagemRVF.imagem == _id).one_or_none()
 
 
 def swap_ordem(session, imagem_rvf: ImagemRVF, ordem_nova: int):
@@ -292,7 +292,7 @@ def inclui_imagemrvf(mongodb, session, image, filename, rvf_id: int):
     _id = bson_img.tomongo(fs)
     # print(rvf_id, filename)
     rvf = get_rvf(session, rvf_id)
-    imagem = get_imagemrvf_imagem_or_none(session, _id)
+    imagem = get_imagemrvf_imagem_or_none(session, str(_id))
     if imagem is None:
         imagem = ImagemRVF()
         imagem.rvf_id = rvf_id
