@@ -394,8 +394,9 @@ def rvf_app(app):
             flash('Erro! Detalhes no log da aplicação.')
             flash(str(type(err)))
             flash(str(err))
+            return jsonify({'success': False, 'msg': str(err)}), 500
 
-        return jsonify({'success': sucesso})
+        return jsonify({'success': sucesso}), 200
 
     @app.route('/imagens_rvf/<rvf_id>', methods=['GET'])
     def imagens_container(rvf_id):
