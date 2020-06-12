@@ -9,7 +9,7 @@ from sqlalchemy.orm import relationship, sessionmaker
 sys.path.append('.')
 sys.path.insert(0, '../ajna_docs/commons')
 sys.path.insert(0, '../virasana')
-from bhadrasana.models import Base, BaseRastreavel
+from bhadrasana.models import Base, BaseRastreavel, BaseDumpable
 
 from bhadrasana.models.ovr import Marca
 
@@ -39,7 +39,7 @@ lacresverificados_table = Table('ovr_lacresverificados', metadata,
                                 )
 
 
-class RVF(BaseRastreavel):
+class RVF(BaseRastreavel, BaseDumpable):
     __tablename__ = 'ovr_verificacoesfisicas'
     id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                 primary_key=True)
@@ -62,7 +62,6 @@ class RVF(BaseRastreavel):
     datahora = Column(TIMESTAMP, index=True)
     last_modified = Column(DateTime, index=True,
                            onupdate=func.current_timestamp())
-
 
 class ImagemRVF(BaseRastreavel):
     __tablename__ = 'ovr_imagensrvf'
