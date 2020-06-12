@@ -6,8 +6,8 @@ from bhadrasana.models import Setor, Usuario
 
 class UserModel(ModelView):
     column_display_pk = True
-    column_list = ('cpf', 'nome', 'setor_id')
-    form_columns = ('cpf', 'nome', 'setor_id')
+    column_list = ('cpf', 'nome', 'telegram', 'setor_id')
+    form_columns = ('cpf', 'nome', 'telegram', 'setor_id')
 
 
 class SetorModel(ModelView):
