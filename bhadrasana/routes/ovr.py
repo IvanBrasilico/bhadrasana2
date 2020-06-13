@@ -13,7 +13,7 @@ from gridfs import GridFS
 from werkzeug.utils import redirect
 
 from ajna_commons.flask.log import logger
-from bhadrasana.forms.exibicao_ovr import ExibicaoOVR
+from bhadrasana.forms.exibicao_ovr import ExibicaoOVR, TipoExibicao
 from bhadrasana.forms.filtro_container import FiltroContainerForm
 from bhadrasana.forms.filtro_empresa import FiltroEmpresaForm
 from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
@@ -278,17 +278,15 @@ def ovr_app(app):
             if len(ovrs) == 0:
                 result = 'Sem Fichas atribuídas para o Usuário {}'.format(cpf)
             else:
-                result = '\n'.join([str(ovr.id) + ' - ' +
-                                    ovr.numeroCEmercante for ovr in ovrs])
-            exibicao = ExibicaoOVR(session, 2, cpf)
-            result = []
-            result.append('\t'.join(exibicao.get_titulos()))
-            for ovr in ovrs:
-                id, visualizado, linha = exibicao.get_linha(ovr)
-                datahora = datetime.datetime.strftime(linha[0], '%d/%m/%Y %H:%M')
-                linha_str = [str(item) for item in linha[1:]]
-                exibicao_ovr = str(id) + '\t' + datahora + '\t' + '\t'.join(linha_str)
-                result.append(exibicao_ovr)
+                exibicao = ExibicaoOVR(session, TipoExibicao.Ocorrencias, cpf)
+                result = []
+                result.append('\t'.join(exibicao.get_titulos()))
+                for ovr in ovrs:
+                    id, visualizado, linha = exibicao.get_linha(ovr)
+                    datahora = datetime.datetime.strftime(linha[0], '%d/%m/%Y %H:%M')
+                    linha_str = [str(item) for item in linha[1:]]
+                    exibicao_ovr = str(id) + '\t' + datahora + '\t' + '\t'.join(linha_str)
+                    result.append(exibicao_ovr)
         except Exception as err:
             logger.error(err, exc_info=True)
             return 'Erro! Detalhes no log da aplicação.'
