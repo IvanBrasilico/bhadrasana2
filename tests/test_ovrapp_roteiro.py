@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from ajnaapi.recintosapi import models as recintosapi_models
 import virasana.integracao.mercante.mercantealchemy as mercante
 from bhadrasana.models.rvf import create_infracoes
 from bhadrasana.routes.ovr import ovr_app
@@ -80,6 +81,7 @@ def create_tables(engine, session):
         mercante.metadata.tables['ncmitemresumo'],
         mercante.metadata.tables['conhecimentosresumo']
     ])
+    recintosapi_models.Base.metadata.create_all(engine)
 
 
 def drop_tables(engine):
@@ -190,6 +192,28 @@ class OVRAppTestCase(BaseTestCase):
         assert status_code == 200
         assert '12345' in text
         text, status_code = self.get_consulta_container('4')
+        assert status_code == 200
+        assert '1234' not in text
+
+
+    def get_consulta_container_text(self, numero):
+        payload = {'numerolote': numero}
+        rv = self.app.post('/consulta_conteiner_text', data=payload)
+        return str(rv.data), rv.status_code
+
+    def test_consulta_conteiner_text(self):
+        ovr1, ovr2 = self.create_OVRs_test_ovrs_container()
+        self.login('ivan', 'ivan')
+        text, status_code = self.get_consulta_container_text('1')
+        assert status_code == 200
+        assert '1234' in text
+        text, status_code = self.get_consulta_container_text('2')
+        assert status_code == 200
+        assert '1234' in text
+        text, status_code = self.get_consulta_container_text('3')
+        assert status_code == 200
+        assert '12345' in text
+        text, status_code = self.get_consulta_container_text('4')
         assert status_code == 200
         assert '1234' not in text
 

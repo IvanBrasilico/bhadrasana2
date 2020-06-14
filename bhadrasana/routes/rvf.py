@@ -418,14 +418,24 @@ def rvf_app(app):
     @csrf.exempt
     def edita_descricao_rvf():
         session = app.config.get('dbsession')
-        rvf_id = request.form.get('rvf_id')
-        descricao = request.form.get('descricao')
         try:
+            descricao = request.form.get('descricao')
+            if descricao is None:
+                raise ValueError('Digite a descrição')
+            try:
+                rvf_id = request.form.get('rvf_id')
+            except TypeError:
+                raise TypeError('Informe o id do RVF')
+            except ValueError:
+                raise ValueError('Informe id do RVF somente com números')
+
             arvf = session.query(RVF).filter(RVF.id == rvf_id).one_or_none()
             if arvf is None:
                 return jsonify({'msg': 'RVF %s não encontrado' % rvf_id}), 404
-            if descricao:
-                arvf.descricao = arvf.descricao + descricao
+            if arvf.descricao is None:
+                arvf.descricao = descricao
+            else:
+                arvf.descricao = arvf.descricao + ' ' + descricao
             session.add(arvf)
             session.commit()
         except Exception as err:
