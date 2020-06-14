@@ -110,7 +110,8 @@ def cadastra_ovr(session, params: dict, user_name: str) -> OVR:
             try:
                 conhecimento = get_conhecimento(session,
                                                 ovr.numeroCEmercante)
-                ovr.cnpj_fiscalizado = conhecimento.consignatario
+                if conhecimento:
+                    ovr.cnpj_fiscalizado = conhecimento.consignatario
             except Exception as err:
                 logger.error(str(err), exc_info=True)
     try:

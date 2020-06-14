@@ -2,6 +2,7 @@ import datetime
 import os
 from _collections import defaultdict
 from decimal import Decimal
+from typing import Tuple
 
 import numpy as np
 import pandas as pd
@@ -764,12 +765,6 @@ def ovr_app(app):
                                eventos=eventos,
                                imagens=imagens)
 
-    @app.route('/escaneamentos_container/<numero>', methods=['GET'])
-    def escaneamentos_container(numero) -> list:
-        mongodb = app.config['mongodb']
-        imagens = get_imagens_container(mongodb, numero)
-        return jsonify([str(imagem['_id']) for imagem in imagens])
-
     @app.route('/consulta_conteiner_text', methods=['POST'])
     # @login_required
     @csrf.exempt
@@ -888,6 +883,31 @@ def ovr_app(app):
                                infoces=infoces,
                                dues=dues)
 
+    @app.route('/minhas_fichas_json', methods=['GET'])
+    def minhas_fichas_json():
+        session = app.config.get('dbsession')
+        try:
+            # TODO: Login substituir cpf por current_user
+            cpf = request.args['cpf']
+            ovrs = get_ovr_responsavel(session, cpf)
+            if len(ovrs) == 0:
+                return jsonify(
+                    {'msg': 'Sem Fichas atribuídas para o Usuário {}'.format(cpf)}), 404
+            exibicao = ExibicaoOVR(session, TipoExibicao.Descritivo, cpf)
+            chaves = exibicao.get_titulos()
+            result = []
+            for ovr in ovrs:
+                id, visualizado, linha = exibicao.get_linha(ovr)
+                datahora = datetime.datetime.strftime(linha[0], '%d/%m/%Y %H:%M')
+                linha_dict = {chaves[0]: id, chaves[1]: datahora}
+                for key, value in zip(chaves[2:], linha[1:]):
+                    linha_dict[key] = value
+                result.append(linha_dict)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            return 'Erro! Detalhes no log da aplicação.' + str(err)
+        return jsonify(result), 200
+
     @app.route('/get_ovr/<ovr_id>', methods=['GET'])
     def json_ovr(ovr_id):
         session = app.config.get('dbsession')
@@ -900,3 +920,25 @@ def ovr_app(app):
         for arvf in rvfs:
             dump['rvfs'].append(arvf.dump())
         return jsonify(dump), 200
+
+    @app.route('/escaneamentos_conteiner/<numero>', methods=['GET'])
+    def escaneamentos_container(numero) -> Tuple[list, int]:
+        mongodb = app.config['mongodb']
+        try:
+            imagens = get_imagens_container(mongodb, numero)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            return jsonify({'msg': str(err)}), 500
+        if len(imagens) == 0:
+            return jsonify([]), 404
+        result = []
+        for imagem in imagens:
+            _id = str(imagem['_id'])
+            dataescaneamento = None
+            metadata = imagem.get('metadata')
+            if metadata:
+                data = metadata.get('dataescaneamento')
+                if data:
+                    dataescaneamento = datetime.strptime(data)
+            result.append({'_id': _id, 'dataescaneamento': dataescaneamento})
+        return jsonify(result), 200
