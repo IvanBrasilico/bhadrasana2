@@ -413,3 +413,22 @@ def rvf_app(app):
         if arvf is None:
             return jsonify({'msg': 'RVF %s não encontrado' % rvf_id}), 404
         return jsonify(arvf.dump()), 200
+
+    @app.route('/edita_descricao_rvf', methods=['POST'])
+    @csrf.exempt
+    def edita_descricao_rvf():
+        session = app.config.get('dbsession')
+        rvf_id = request.form.get('rvf_id')
+        descricao = request.form.get('descricao')
+        try:
+            arvf = session.query(RVF).filter(RVF.id == rvf_id).one_or_none()
+            if arvf is None:
+                return jsonify({'msg': 'RVF %s não encontrado' % rvf_id}), 404
+            if descricao:
+                arvf.descricao = arvf.descricao + descricao
+            session.add(arvf)
+            session.commit()
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            return 'Erro! Detalhes no log da aplicação. ' + str(err), 500
+        return jsonify(arvf.dump()), 201

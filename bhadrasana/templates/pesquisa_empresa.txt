@@ -9,13 +9,14 @@ Data {{ ovr.datahora }}
 Último Evento {{ ovr.tipoevento.nome }}
 {% endfor %}
 
-Verificações físicas
-{% for rvf in rvfs %}
-Verificação n. {{ rvf.id }}
-CE Mercante {{ rvf.numeroCEmercante }}
-Numero Contêiner/Lote {{ rvf.numerolote }}
-Data da verificação {{ rvf.datahora }}
+SATs
+{% for sat in sats %}
+SAT Nº {{ sat.get_numero() }}
+Declaração  {{ sat.declaracao }}
+Data do Pedido {{ sat.dataPedido }}
+Descrição {{ sat.descricao }}
 {% endfor %}
+
 Conhecimentos de Carga
 {% for numero, infoce in infoces.items() %}
 {% if infoce.conhecimento %}

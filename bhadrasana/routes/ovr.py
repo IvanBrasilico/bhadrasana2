@@ -278,7 +278,7 @@ def ovr_app(app):
             if len(ovrs) == 0:
                 result = 'Sem Fichas atribuídas para o Usuário {}'.format(cpf)
             else:
-                exibicao = ExibicaoOVR(session, TipoExibicao.Ocorrencias, cpf)
+                exibicao = ExibicaoOVR(session, TipoExibicao.Descritivo, cpf)
                 result = []
                 result.append('\t'.join(exibicao.get_titulos()))
                 for ovr in ovrs:
@@ -289,7 +289,7 @@ def ovr_app(app):
                     result.append(exibicao_ovr)
         except Exception as err:
             logger.error(err, exc_info=True)
-            return 'Erro! Detalhes no log da aplicação.'
+            return 'Erro! Detalhes no log da aplicação.' + str(err)
         return '\n'.join(result)
 
     @app.route('/relatorios', methods=['GET', 'POST'])
@@ -684,6 +684,28 @@ def ovr_app(app):
                                containers_com_rvf=containers_com_rvf,
                                imagens=imagens)
 
+    def consulta_container_objects(request, session, mongodb):
+        filtro_form = FiltroContainerForm(request.form)
+        filtro_form.validate()
+        logger.info('Consultando contêiner %s' % filtro_form.numerolote.data)
+        logger.info('get_rvfs_filtro')
+        rvfs = get_rvfs_filtro(session, dict(filtro_form.data.items()))
+        logger.info('get_dues_container')
+        dues = get_dues_container(mongodb,
+                                  filtro_form.numerolote.data)
+        lista_numeroDUEs = [due['numero'] for due in dues]
+        logger.info('get_ovr_container')
+        ces, ovrs = get_ovr_container(session, filtro_form.numerolote.data,
+                                      filtro_form.datainicio.data,
+                                      filtro_form.datafim.data,
+                                      lista_numeroDUEs)
+        logger.info('get detalhes CE Mercante')
+        infoces = get_detalhes_mercante(session, ces)
+        logger.info('get_eventos_container')
+        eventos = get_eventos_conteiner(session,
+                                        filtro_form.numerolote.data)
+        return rvfs, ovrs, infoces, dues, eventos
+
     @app.route('/consulta_container', methods=['GET', 'POST'])
     @login_required
     def consulta_container():
@@ -748,10 +770,10 @@ def ovr_app(app):
         imagens = get_imagens_container(mongodb, numero)
         return jsonify([str(imagem['_id']) for imagem in imagens])
 
-    @app.route('/consulta_container_text', methods=['POST'])
+    @app.route('/consulta_conteiner_text', methods=['POST'])
     # @login_required
     @csrf.exempt
-    def consulta_container_text():
+    def consulta_conteiner_text():
         """Tela para consulta única de número de contêiner
 
         Dentro do intervalo de datas, traz lista de ojetos do sistema que contenham
@@ -759,47 +781,18 @@ def ovr_app(app):
         """
         session = app.config.get('dbsession')
         mongodb = app.config['mongodb']
-        ovrs = []
-        rvfs = []
-        infoces = {}
-        dues = []
-        eventos = []
-        imagens = []
         try:
-            filtro_form = FiltroContainerForm(request.form)
-            filtro_form.validate()
-            logger.info('Consultando contêiner %s' % filtro_form.numerolote.data)
-            logger.info('get_rvfs_filtro')
-            rvfs = get_rvfs_filtro(session, dict(filtro_form.data.items()))
-            logger.info('get_dues_container')
-            dues = get_dues_container(mongodb,
-                                      filtro_form.numerolote.data)
-            lista_numeroDUEs = [due['numero'] for due in dues]
-            logger.info('get_ovr_container')
-            ces, ovrs = get_ovr_container(session, filtro_form.numerolote.data,
-                                          filtro_form.datainicio.data,
-                                          filtro_form.datafim.data,
-                                          lista_numeroDUEs)
-            logger.info('get detalhes CE Mercante')
-            infoces = get_detalhes_mercante(session, ces)
-            logger.info('get_eventos_container')
-            eventos = get_eventos_conteiner(session,
-                                            filtro_form.numerolote.data)
-            logger.info('get_imagens_container')
-            imagens = get_imagens_container(mongodb,
-                                            filtro_form.numerolote.data)
+            rvfs, ovrs, infoces, dues, eventos = \
+                consulta_container_objects(request, session, mongodb)
         except Exception as err:
             logger.error(err, exc_info=True)
-            flash('Erro! Detalhes no log da aplicação.')
-            flash(str(type(err)))
-            flash(str(err))
+            return 'Erro! Detalhes no log da aplicação.\n' + str(err)
         return render_template('pesquisa_container.txt',
                                rvfs=rvfs,
                                ovrs=ovrs,
                                infoces=infoces,
                                dues=dues,
-                               eventos=eventos,
-                               imagens=imagens)
+                               eventos=eventos)
 
     @app.route('/consulta_empresa', methods=['GET', 'POST'])
     @login_required
@@ -860,6 +853,40 @@ def ovr_app(app):
                                dues=dues,
                                eventos=eventos,
                                imagens=imagens)
+
+    @app.route('/consulta_empresa_text/<cnpj>', methods=['GET'])
+    # @login_required
+    @csrf.exempt
+    def consulta_empresa_text(cnpj):
+        """Tela para consulta única de Empresa
+
+        Dentro do intervalo de datas, traz lista de ojetos do sistema que contenham
+        alguma referência ao CNPJ da Empresa. Permite encontrar CNPJ através do nome.
+        """
+        session = app.config.get('dbsession')
+        mongodb = app.config['mongodb']
+        try:
+            logger.info('Consultando empresa %s' % cnpj)
+            empresa = get_empresa(session, cnpj)
+            logger.info('get_dues_empresa')
+            dues = get_dues_empresa(mongodb,
+                                    cnpj)
+            logger.info('get_ovr_empresa')
+            ovrs = get_ovr_empresa(session, cnpj)
+            empresas_qtdeovrs = [{'empresa': empresa, 'qtdeovrs': len(ovrs)}]
+            logger.info('get detalhes CE Mercante')
+            ces = get_ces_empresa(session, cnpj)
+            infoces = get_detalhes_mercante(session, ces)
+            sats = get_sats_cnpj(session, cnpj)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            return 'Erro! Detalhes no log da aplicação.\n' + str(err), 500
+        return render_template('pesquisa_empresa.txt',
+                               empresas_qtdeovrs=empresas_qtdeovrs,
+                               ovrs=ovrs,
+                               sats=sats,
+                               infoces=infoces,
+                               dues=dues)
 
     @app.route('/get_ovr/<ovr_id>', methods=['GET'])
     def json_ovr(ovr_id):
