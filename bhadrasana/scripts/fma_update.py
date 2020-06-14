@@ -87,7 +87,7 @@ def processa_fma(session, fma: dict):
     ovr = session.query(OVR).filter(
         OVR.numero == fma['Numero_FMA']).filter(
         OVR.recinto_id == int(fma['Cod_Recinto'])
-    ).one_or_none()
+    ).first()
     if ovr is not None:
         logger.info('FMA %s - %s já existente, pulando... ' %
                     (fma['Cod_Recinto'], fma['Numero_FMA']))
