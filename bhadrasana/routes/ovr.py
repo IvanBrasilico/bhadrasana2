@@ -939,6 +939,6 @@ def ovr_app(app):
             if metadata:
                 data = metadata.get('dataescaneamento')
                 if data:
-                    dataescaneamento = datetime.strptime(data)
+                    dataescaneamento = datetime.datetime.strftime(data, '%d/%m/%Y %H:%M')
             result.append({'_id': _id, 'dataescaneamento': dataescaneamento})
         return jsonify(result), 200
