@@ -84,10 +84,11 @@ def cadastra_rvf(session,
         ovr = get_ovr(session, ovr_id)
         if not ovr:
             return None
-        rvf = cadastra_rvf(session, user_name,
-                           {'ovr_id': ovr.id,
-                            'numeroCEmercante': ovr.numeroCEmercante}
-                           )
+        if params is None:
+            params = {}
+        params['ovr_id'] = ovr.id
+        params['numeroCEmercante'] = ovr.numeroCEmercante
+        rvf = cadastra_rvf(session, user_name, params)
         session.refresh(rvf)
         gera_evento_rvf(session, rvf)
     elif params:
