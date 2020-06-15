@@ -11,6 +11,7 @@ from bhadrasana.forms.filtro_rvf import FiltroRVFForm
 from bhadrasana.forms.rvf import RVFForm, ImagemRVFForm
 from bhadrasana.models import get_usuario_logado, get_usuario
 from bhadrasana.models.ovrmanager import get_marcas, get_marcas_choice
+from bhadrasana.models.rvf import RVF
 from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, \
     get_ids_anexos_ordenado, \
     inclui_marca_encontrada, ressuscita_anexos_perdidos, \
@@ -20,7 +21,6 @@ from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, \
     make_and_save_transformation, exclui_lacre_verificado, \
     inclui_lacre_verificado, get_imagemrvf, inclui_nova_ordem_arquivo
 from bhadrasana.views import csrf, valid_file
-from bhadrasana.models.rvf import RVF
 
 
 def rvf_app(app):
@@ -445,13 +445,14 @@ def rvf_app(app):
             logger.error(err, exc_info=True)
             return 'Erro! Detalhes no log da aplicação. ' + str(err), 500
 
-
     @app.route('/rvf/new', methods=['POST'])
     @csrf.exempt
     def nova_rvf_json():
         session = app.config.get('dbsession')
         try:
-            orvf = cadastra_rvf(session, request.json['cpf'], request.json, request.json['ovr_id'])
+            cpf = request.json['cpf']
+            ovr_id = request.json['ovr_id']
+            orvf = cadastra_rvf(session, cpf, request.json, ovr_id)
             session.refresh(orvf)
         except Exception as err:
             logger.error(err, exc_info=True)
