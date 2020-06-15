@@ -942,3 +942,17 @@ def ovr_app(app):
                     dataescaneamento = datetime.datetime.strftime(data, '%d/%m/%Y %H:%M')
             result.append({'_id': _id, 'dataescaneamento': dataescaneamento})
         return jsonify(result), 200
+
+    @app.route('/ovr/new', methods=['POST'])
+    @csrf.exempt
+    def nova_ovr_json():
+        session = app.config.get('dbsession')
+        try:
+            ovr = cadastra_ovr(session, request.json, request.json['cpf'])
+            session.refresh(ovr)
+            atribui_responsavel_ovr(session, ovr.id, request.json['cpf'])
+            session.refresh(ovr)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            return jsonify({'msg': str(err)}), 500
+        return jsonify(ovr.dump()), 201

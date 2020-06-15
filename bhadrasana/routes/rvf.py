@@ -438,7 +438,22 @@ def rvf_app(app):
                 arvf.descricao = arvf.descricao + ' ' + descricao
             session.add(arvf)
             session.commit()
+            session.refresh(arvf)
+            logger.info(arvf.descricao)
+            return jsonify(arvf.dump()), 201
         except Exception as err:
             logger.error(err, exc_info=True)
             return 'Erro! Detalhes no log da aplicação. ' + str(err), 500
-        return jsonify(arvf.dump()), 201
+
+
+    @app.route('/rvf/new', methods=['POST'])
+    @csrf.exempt
+    def nova_rvf_json():
+        session = app.config.get('dbsession')
+        try:
+            orvf = cadastra_rvf(session, request.json['cpf'], request.json, request.json['ovr_id'])
+            session.refresh(orvf)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            return jsonify({'msg': str(err)}), 500
+        return jsonify(orvf.dump()), 201
