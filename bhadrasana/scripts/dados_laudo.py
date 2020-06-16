@@ -1,8 +1,9 @@
 import os
-from sqlalchemy import create_engine, func
+
 from sqlalchemy import BigInteger, Column, VARCHAR, Integer, Date
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine, func
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
 from models.laudo import SAT
 
