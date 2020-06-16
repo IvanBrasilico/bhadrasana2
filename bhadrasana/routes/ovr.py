@@ -831,8 +831,9 @@ def ovr_app(app):
                     ovrs = get_ovr_empresa(session, filtro_form.cnpj.data)
                     empresas_qtdeovrs = [{'empresa': empresa, 'qtdeovrs': len(ovrs)}]
                     logger.info('get detalhes CE Mercante')
-                    ces = get_ces_empresa(session, filtro_form.cnpj.data)
-                    infoces = get_detalhes_mercante(session, ces)
+                    conhecimentos = get_ces_empresa(session, filtro_form.cnpj.data)
+                    listaCE = [ce.numeroCEmercante for ce in conhecimentos]
+                    infoces = get_detalhes_mercante(session, listaCE)
                     sats = get_sats_cnpj(session, filtro_form.cnpj.data)
         except Exception as err:
             logger.error(err, exc_info=True)
@@ -870,8 +871,9 @@ def ovr_app(app):
             ovrs = get_ovr_empresa(session, cnpj)
             empresas_qtdeovrs = [{'empresa': empresa, 'qtdeovrs': len(ovrs)}]
             logger.info('get detalhes CE Mercante')
-            ces = get_ces_empresa(session, cnpj)
-            infoces = get_detalhes_mercante(session, ces)
+            conhecimentos = get_ces_empresa(session, cnpj)
+            listaCE = [ce.numeroCEmercante for ce in conhecimentos]
+            infoces = get_detalhes_mercante(session, listaCE)
             sats = get_sats_cnpj(session, cnpj)
         except Exception as err:
             logger.error(err, exc_info=True)
