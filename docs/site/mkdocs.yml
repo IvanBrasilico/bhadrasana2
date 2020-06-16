@@ -4,6 +4,7 @@ site_description: Análise de risco e controle de fluxo de procedimentos em carg
 nav:
     - Home: index.md
     - "Novidades":
+        - "Interface Telegram - 16/Junho/2020": novidades/20200616.md
         - "Tela 'Consulta de Empresa', Campo Empresa e Base Laudos - 03/Junho/2020": novidades/20200603.md
         - "Tela 'Consulta de Contêiner' - 12/Maio/2020": novidades/20200512.md
         - "Função 'novas/não vistas' - 7/Maio/2020": novidades/20200507b.md
