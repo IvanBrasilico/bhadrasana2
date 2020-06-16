@@ -2,6 +2,7 @@ from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 
 from bhadrasana.models import Setor, Usuario
+from bhadrasana.models.ovr import Marca
 
 
 class UserModel(ModelView):
@@ -17,6 +18,11 @@ class SetorModel(ModelView):
     # inline_models = ['', ]
 
 
+class MarcasModel(ModelView):
+    column_display_pk = True
+    column_list = ('id', 'nome')
+    form_columns = ('id', 'nome')
+
 def admin_app(app, session):
     # set optional bootswatch theme
     app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
@@ -24,3 +30,4 @@ def admin_app(app, session):
     # Add administrative views here
     admin.add_view(UserModel(Usuario, session))
     admin.add_view(SetorModel(Setor, session))
+    admin.add_view(MarcasModel(Marca, session))
