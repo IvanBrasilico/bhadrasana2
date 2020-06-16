@@ -872,10 +872,12 @@ def ovr_app(app):
             logger.info('get_ovr_empresa')
             ovrs = get_ovr_empresa(session, cnpj)
             empresas_qtdeovrs = [{'empresa': empresa, 'qtdeovrs': len(ovrs)}]
-            logger.info('get detalhes CE Mercante')
+            logger.info('get CEs Empresa')
             conhecimentos = get_ces_empresa(session, cnpj)
             listaCE = [ce.numeroCEmercante for ce in conhecimentos]
+            logger.info('get detalhes CE Mercante')
             infoces = get_detalhes_mercante(session, listaCE)
+            logger.info('get SATs')
             sats = get_sats_cnpj(session, cnpj)
         except Exception as err:
             logger.error(err, exc_info=True)
