@@ -78,7 +78,7 @@ def get_dues_container(mongodb, numero: str) -> list:
 def get_dues_empresa(mongodb, cnpj: str) -> list:
     if cnpj is None or cnpj == '':
         raise ValueError('get_dues: Informe o CNPJ da empresa!')
-    query = {'metadata.due.itens.Exportador': cnpj.strip(),
+    query = {'metadata.due.itens.Exportador': {'$regex': '^' + cnpj.strip() + '.*'},
              'metadata.contentType': 'image/jpeg'
              }
     projection = {'metadata.due': 1}
