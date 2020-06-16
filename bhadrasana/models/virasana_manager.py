@@ -163,7 +163,7 @@ def get_ncms_conhecimento(session, numero: str) -> List[NCMItem]:
         NCMItem.numeroCEMercante == numero).all()
 
 
-def get_detalhes_mercante(session, ces: list) -> dict:
+def get_detalhes_mercante(session, ces: List[str]) -> dict:
     infoces = {}
     for numeroCEmercante in ces:
         try:
