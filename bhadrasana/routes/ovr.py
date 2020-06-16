@@ -948,9 +948,10 @@ def ovr_app(app):
     def nova_ovr_json():
         session = app.config.get('dbsession')
         try:
-            ovr = cadastra_ovr(session, request.json, request.json['cpf'])
+            cpf = request.json['cpf']
+            ovr = cadastra_ovr(session, request.json, cpf)
             session.refresh(ovr)
-            atribui_responsavel_ovr(session, ovr.id, request.json['cpf'])
+            atribui_responsavel_ovr(session, ovr.id, cpf)
             session.refresh(ovr)
         except Exception as err:
             logger.error(err, exc_info=True)
