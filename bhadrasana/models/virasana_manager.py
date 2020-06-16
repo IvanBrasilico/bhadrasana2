@@ -76,8 +76,8 @@ def get_dues_container(mongodb, numero: str) -> list:
 
 
 def get_dues_empresa(mongodb, cnpj: str) -> list:
-    if cnpj is None or cnpj == '':
-        raise ValueError('get_dues: Informe o CNPJ da empresa!')
+    if cnpj is None or len(cnpj) < 8:
+        raise ValueError('get_dues: Informe o CNPJ da empresa com no mínimo 8 posições!')
     query = {'metadata.due.itens.Exportador': {'$regex': '^' + cnpj.strip() + '.*'},
              'metadata.contentType': 'image/jpeg'
              }
@@ -149,6 +149,8 @@ def get_conhecimento(session, numero: str) -> Conhecimento:
 
 
 def get_ces_empresa(session, cnpj: str) -> List[Conhecimento]:
+    if not cnpj or len(cnpj) < 8:
+        raise ValueError('CNPJ deve ser informado com mínimo de 8 dígitos.')
     return session.query(Conhecimento).filter(
         Conhecimento.consignatario.like(cnpj[:8] + '%')).all()
 

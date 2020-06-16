@@ -81,5 +81,7 @@ def get_empresas_nome(session, nome: str, limit=10) -> List[Empresa]:
 
 
 def get_sats_cnpj(session, cnpj: str) -> List[SAT]:
+    if not cnpj or len(cnpj) < 8:
+        raise ValueError('CNPJ deve ser informado com mínimo de 8 dígitos.')
     return session.query(SAT).filter(
         SAT.importador.like(cnpj[:8] + '%')).all()
