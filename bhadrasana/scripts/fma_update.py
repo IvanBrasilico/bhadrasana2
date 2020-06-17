@@ -1,7 +1,7 @@
 import csv
 import os
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import click
 import requests
@@ -135,7 +135,7 @@ def update(sql_uri, inicio, fim):
         qry = session.query(func.max(OVR.datahora).label('last_date')
                             ).filter(OVR.tipooperacao == 0)
         res = qry.one()
-        start = res.last_date
+        start = res.last_date - timedelta(days=3)
     else:
         start = datetime.strptime(inicio, '%d/%m/%Y')
     if fim is None:
