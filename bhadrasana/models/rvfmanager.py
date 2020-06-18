@@ -80,6 +80,7 @@ def cadastra_rvf(session,
                  params: dict = None,
                  ovr_id: int = None) -> RVF:
     rvf = None
+    geraevento = False
     if ovr_id:
         ovr = get_ovr(session, ovr_id)
         if not ovr:
@@ -89,8 +90,7 @@ def cadastra_rvf(session,
         params['ovr_id'] = ovr.id
         params['numeroCEmercante'] = ovr.numeroCEmercante
         rvf = cadastra_rvf(session, user_name, params)
-        session.refresh(rvf)
-        gera_evento_rvf(session, rvf)
+        geraevento = True
     elif params:
         rvf = get_rvf(session, params.get('id'))
         if rvf.ovr and rvf.ovr.fase > 2:
@@ -102,6 +102,7 @@ def cadastra_rvf(session,
                 raise ESomenteMesmoUsuario()
         if not rvf.user_name:  # RVF criada agora ou programada por outro usuário
             rvf.user_name = usuario.cpf
+            geraevento = True
         for key, value in params.items():
             setattr(rvf, key, value)
         rvf.datahora = handle_datahora(params)
@@ -109,6 +110,9 @@ def cadastra_rvf(session,
         try:
             session.add(rvf)
             session.commit()
+            if geraevento:
+                session.refresh(rvf)
+                gera_evento_rvf(session, rvf)
         except Exception as err:
             session.rollback()
             logger.error(err, exc_info=True)
@@ -132,10 +136,11 @@ def programa_rvf_container(mongodb, mongodb_risco, session,
         raise err
     # copia imagem do Banco virasana para bhadrasana e gera objeto ImagemRVF
     try:
-        fs = GridFS(mongodb)
-        grid_out = fs.get(ObjectId(id_imagem))
-        inclui_imagemrvf(mongodb_risco, session, grid_out.read(),
-                         grid_out.filename, rvf.id)
+        if mongodb:
+            fs = GridFS(mongodb)
+            grid_out = fs.get(ObjectId(id_imagem))
+            inclui_imagemrvf(mongodb_risco, session, grid_out.read(),
+                             grid_out.filename, rvf.id)
     except (TypeError, NoFile) as err:
         logger.error(err)
     return rvf

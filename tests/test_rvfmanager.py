@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 
 from bhadrasana.models import ENaoAutorizado, Usuario, ESomenteMesmoUsuario
 from bhadrasana.models import ovr
-from bhadrasana.models.rvfmanager import get_rvfs_filtro, cadastra_rvf
+from bhadrasana.models.rvfmanager import get_rvfs_filtro, cadastra_rvf, programa_rvf_container
 from .test_base import BaseTestCase
 
 sys.path.append('.')
@@ -19,6 +19,13 @@ Session = sessionmaker(bind=engine)
 session = Session()
 metadata.create_all(engine)
 ovr.create_tiposevento(session)
+usuario = Usuario()
+usuario.cpf = 'teste'
+session.add(usuario)
+usuario2 = Usuario()
+usuario2.cpf = 'teste2'
+session.add(usuario2)
+session.commit()
 
 
 class RVFTestCase(BaseTestCase):
@@ -110,20 +117,13 @@ class RVFTestCase(BaseTestCase):
     def test_evento_RVF(self):
         aovr = ovr.OVR()
         aovr.numeroCEmercante = '123'
-        aovr.user_name = 'teste'
+        user_name = 'teste3'
         session.add(aovr)
         session.commit()
         session.refresh(aovr)
         with self.assertRaises(ENaoAutorizado):
-            rvf = cadastra_rvf(session, aovr.user_name, {}, aovr.id)
-        usuario = Usuario()
-        usuario.cpf = 'teste'
-        session.add(usuario)
-        usuario2 = Usuario()
-        usuario2.cpf = 'teste2'
-        session.add(usuario2)
-        session.commit()
-        rvf = cadastra_rvf(session, aovr.user_name, {}, aovr.id)
+            rvf = cadastra_rvf(session, user_name, {}, aovr.id)
+        rvf = cadastra_rvf(session, 'teste', {}, aovr.id)
         assert rvf.ovr_id == aovr.id
         assert rvf.numeroCEmercante == aovr.numeroCEmercante
         evento = rvf.ovr.historico[0]
@@ -133,8 +133,37 @@ class RVFTestCase(BaseTestCase):
             rvf = cadastra_rvf(session, 'teste2', {'id': rvf.id,
                                                    'numerolote': '1'})
         rvf = cadastra_rvf(session, 'teste', {'id': rvf.id,
-                                               'numerolote': '1'})
+                                              'numerolote': '1'})
         assert rvf.numerolote == '1'
+
+    def test_programa_RVF(self):
+        aovr = ovr.OVR()
+        aovr.numeroCEmercante = '123'
+        aovr.user_name = 'teste'
+        session.add(aovr)
+        session.commit()
+        session.refresh(aovr)
+        # Testar que programa_rvf não gera evento, mas depois a edição gera!!!
+        # (e que gera somente um evento)
+        rvf = programa_rvf_container(None, None,  # Não testará imagens, apenas eventos
+                                     session, aovr, 'ABCD123456', '')
+        assert rvf.ovr_id == aovr.id
+        assert rvf.numeroCEmercante == aovr.numeroCEmercante
+        assert rvf.numerolote == 'ABCD123456'
+        assert rvf.user_name is None
+        assert len(rvf.ovr.historico) == 0
+        rvf = cadastra_rvf(session, 'teste', {'id': rvf.id,
+                                              'numerolote': '1'})
+        assert rvf.numerolote == '1'
+        assert rvf.user_name == 'teste'
+        assert rvf.numeroDUE is None
+        assert len(rvf.ovr.historico) == 1
+        rvf = cadastra_rvf(session, 'teste', {'id': rvf.id,
+                                              'numerolote': '2',
+                                              'numeroDUE': '20BR'})
+        assert rvf.numerolote == '2'
+        assert rvf.numeroDUE == '20BR'
+        assert len(rvf.ovr.historico) == 1
 
 
 if __name__ == '__main__':

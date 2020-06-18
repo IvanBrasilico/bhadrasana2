@@ -23,6 +23,7 @@ class MarcasModel(ModelView):
     column_list = ('id', 'nome')
     form_columns = ('id', 'nome')
 
+
 def admin_app(app, session):
     # set optional bootswatch theme
     app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
