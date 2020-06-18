@@ -85,8 +85,11 @@ def get_lista_fma_recintos(recintos_list, datainicial, datafinal):
 
 def processa_fma(session, fma: dict):
     ovr = session.query(OVR).filter(
-        OVR.numero == fma['Numero_FMA']).filter(
+        OVR.numero == fma['Numero_FMA']
+    ).filter(
         OVR.recinto_id == int(fma['Cod_Recinto'])
+    ).filter(
+        OVR.ano == fma['Ano_FMA']
     ).first()
     if ovr is not None:
         logger.info('FMA %s - %s já existente, pulando... ' %
@@ -135,7 +138,7 @@ def update(sql_uri, inicio, fim):
         qry = session.query(func.max(OVR.datahora).label('last_date')
                             ).filter(OVR.tipooperacao == 0)
         res = qry.one()
-        start = res.last_date - timedelta(days=3)
+        start = res.last_date - timedelta(days=14)
     else:
         start = datetime.strptime(inicio, '%d/%m/%Y')
     if fim is None:
