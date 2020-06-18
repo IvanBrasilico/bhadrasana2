@@ -136,6 +136,8 @@ class OVR(BaseRastreavel, BaseDumpable):
     id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                 primary_key=True)
     numero = Column(VARCHAR(10), index=True)
+    # Ano para facilitar chave única FMA
+    ano = Column(VARCHAR(4), index=True)
     tipooperacao = Column(Integer(), index=True)
     numeroCEmercante = Column(VARCHAR(15), index=True)
     numerodeclaracao = Column(VARCHAR(20), index=True)
