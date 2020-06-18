@@ -425,7 +425,7 @@ class OVRTestCase(BaseTestCase):
         assert len(visualizacoes_ovr2_user2) == 1
 
     def create_OVR_campos(self, nome_recinto, cpf_usuario, numeroCEmercante,
-                          data_registro, numero, setor) -> OVR:
+                          data_registro, numero, setor, numerodeclaracao=None) -> OVR:
         params = {}
         recinto = self.create_recinto(nome_recinto)
         usuario = self.create_usuario(cpf_usuario, cpf_usuario, setor)
@@ -436,6 +436,7 @@ class OVRTestCase(BaseTestCase):
         params['recinto_id'] = recinto.id
         params['user_name'] = usuario.cpf
         params['numero'] = numero
+        params['numerodeclaracao'] = numerodeclaracao
         return cadastra_ovr(self.session, params, usuario.cpf)
 
     def test_0_FiltrosOVR(self):
@@ -451,7 +452,7 @@ class OVRTestCase(BaseTestCase):
         ovr1 = self.create_OVR_campos('R1', 'U1', 'C1', '2020-05-01', 'teste1', setor)
         ovr2 = self.create_OVR_campos('R2', 'U2', 'C2', '2020-05-02', 'teste2', setor2)
         ovr3 = self.create_OVR_campos('R3', 'U3', 'C3', '2020-05-03', 'teste3', setor)
-        ovr4 = self.create_OVR_campos('R4', 'U4', 'C4', '2020-05-01', 'teste4', setor)
+        ovr4 = self.create_OVR_campos('R4', 'U4', 'C4', '2020-05-01', 'teste4', setor, '20')
         ovrs = get_ovr_filtro(session, 'U1', {}, False)
         assert isinstance(ovrs, list)
         assert len(ovrs) == 4
@@ -467,6 +468,10 @@ class OVRTestCase(BaseTestCase):
         assert len(ovrs) == 1
         ovrs = get_ovr_filtro(session, 'U4', {'numero': 'teste'}, False)
         assert len(ovrs) == 4
+        ovrs = get_ovr_filtro(session, 'U4', {'numerodeclaracao': '10'}, False)
+        assert len(ovrs) == 0
+        ovrs = get_ovr_filtro(session, 'U4', {'numerodeclaracao': '20'}, False)
+        assert len(ovrs) == 1
 
 
 if __name__ == '__main__':

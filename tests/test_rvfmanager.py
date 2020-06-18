@@ -156,13 +156,13 @@ class RVFTestCase(BaseTestCase):
                                               'numerolote': '1'})
         assert rvf.numerolote == '1'
         assert rvf.user_name == 'teste'
-        assert rvf.numeroDUE is None
+        assert rvf.descricao is None
         assert len(rvf.ovr.historico) == 1
         rvf = cadastra_rvf(session, 'teste', {'id': rvf.id,
                                               'numerolote': '2',
-                                              'numeroDUE': '20BR'})
+                                              'descricao': 'TESTANDO'})
         assert rvf.numerolote == '2'
-        assert rvf.numeroDUE == '20BR'
+        assert rvf.descricao == 'TESTANDO'
         assert len(rvf.ovr.historico) == 1
 
 

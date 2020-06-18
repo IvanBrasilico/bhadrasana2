@@ -169,6 +169,9 @@ def get_ovr_filtro(session, user_name: str,
                 filtro)
         if pfiltro.get('numero'):
             filtro = and_(OVR.numero.like(pfiltro.get('numero') + '%'), filtro)
+        if pfiltro.get('numerodeclaracao'):
+            filtro = and_(OVR.numerodeclaracao.like(
+                pfiltro.get('numerodeclaracao') + '%'), filtro)
         if pfiltro.get('tipooperacao') and pfiltro.get('tipooperacao') != 'None':
             filtro = and_(OVR.tipooperacao == int(pfiltro.get('tipooperacao')), filtro)
         if pfiltro.get('fase') and pfiltro.get('fase') != 'None':
