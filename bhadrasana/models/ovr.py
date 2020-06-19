@@ -170,6 +170,17 @@ class OVR(BaseRastreavel, BaseDumpable):
             return self.datahora.year
         return ''
 
+    def get_numero(self):
+        # Formatação de número definida apenas para FMA
+        if self.tipooperacao == 0:
+            try:
+                return '{:05d}'.format(int(self.numero))
+            except (ValueError, TypeError):
+                pass
+        if self.numero is None:
+            return ''
+        return self.numero
+
     def get_fase(self):
         return Enumerado.faseOVR(self.fase)
 
