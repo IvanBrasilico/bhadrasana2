@@ -1,9 +1,9 @@
 {% extends "layout.html" %} {% block content %} {{super()}}
 <div id="main" class="container-fluid">
-    <div id="top" class="row form-group">
+    <div id="top" class="form-group">
         <form method="POST" id="filtroformovr" action="pesquisa_ovr">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-            <div class="row">
+            <div class="row col-sm-12">
                 <div class="col-sm-4">
                     <button class="btn btn-primary btn-warning form-control" onclick="window.open('ovr')">
                         Nova Ficha
@@ -13,7 +13,7 @@
             <div class="row col-sm-12">
                 <hr>
             </div>
-            <div class="row">
+            <div class="row col-sm-12">
                 <div class="col-sm-2">
                     <label for="numeroCEmercante">Número CE-Mercante</label>
                     {{ oform.numeroCEmercante(class='form-control') }}
@@ -39,7 +39,7 @@
                     {{ oform.fase(class='form-control') }}
                 </div>
             </div>
-            <div class="row">
+            <div class="row col-sm-12">
                 <div class="col-sm-4">
                     <label for="datainicio">Início e fim de período de pesquisa</label>
                 </div>
@@ -56,7 +56,7 @@
                     <label for="infracoes">Infrações</label>
                 </div>
             </div>
-            <div class="row">
+            <div class="row col-sm-12">
                 <div class="col-sm-2">
                     {{ oform.datainicio(class='form-control') }}
                 </div>
@@ -76,8 +76,8 @@
                     {{ oform.infracao_id(class='form-control') }}
                 </div>
             </div>
-            &nbsp;
-            <div class="row">
+            <div class="row col-sm-12">&nbsp;</div>
+            <div class="row col-sm-12">
                 <div class="col-sm-4">
                     <button class="btn btn-default btn-info form-control" onclick="submit">
                         Pesquisar
