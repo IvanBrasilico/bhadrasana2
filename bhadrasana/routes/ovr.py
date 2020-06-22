@@ -251,6 +251,8 @@ def ovr_app(app):
         responsaveis = get_usuarios(session)
         responsavel_form = ResponsavelOVRForm(responsaveis=responsaveis,
                                               responsavel=current_user.name)
+        historico_ovr_form = HistoricoOVRForm(
+            tiposeventos=get_tipos_evento_comfase_choice(session))
         try:
             oform.validate()
             if active_tab == 'minhas_ovrs':
@@ -276,7 +278,8 @@ def ovr_app(app):
                                titulos=titulos_exibicao,
                                listasovrs=listasovrs,
                                active_tab=active_tab,
-                               responsavel_form=responsavel_form)
+                               responsavel_form=responsavel_form,
+                               historico_form=historico_ovr_form)
 
     @app.route('/minhas_fichas_text', methods=['GET'])
     def minhas_fichas_text():
@@ -365,16 +368,25 @@ def ovr_app(app):
         return redirect(url_for('ovr', id=ovr_id))
 
     @app.route('/responsavelovr_minhasovrs', methods=['POST'])
+    @app.route('/eventoovr_minhasovrs', methods=['POST'])
     @login_required
     def atribuirresponsavel_minhasovrs():
         session = app.config.get('dbsession')
-        ovr_id = None
         try:
             cpf_responsavel = request.form.get('responsavel')
+            motivo = request.form.get('motivo')
+            tipoevento_id = request.form.get('tipoevento_id')
             active_tab = request.form.get('active_tab')
             for ovr_id in request.form.getlist('rowid'):
-                print(ovr_id)
-                atribui_responsavel_ovr(session, ovr_id=ovr_id, responsavel=cpf_responsavel)
+                if 'eventoovr' in request.url:
+                    gera_eventoovr(session,
+                                   {'ovr_id': ovr_id,
+                                    'motivo': motivo,
+                                    'tipoevento_id': tipoevento_id},
+                                   user_name=cpf_responsavel)
+                else:
+                    atribui_responsavel_ovr(session, ovr_id=ovr_id,
+                                            responsavel=cpf_responsavel)
             return redirect(url_for('minhas_ovrs', active_tab=active_tab))
         except Exception as err:
             logger.error(err, exc_info=True)
@@ -412,7 +424,7 @@ def ovr_app(app):
         historico_ovr_form = HistoricoOVRForm(request.form)
         user_name = None
         try:
-            if historico_ovr_form.user_name.data is None or\
+            if historico_ovr_form.user_name.data is None or \
                     historico_ovr_form.user_name.data == 'None':
                 user_name = current_user.name
             evento = gera_eventoovr(session, dict(historico_ovr_form.data.items()),

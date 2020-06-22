@@ -389,7 +389,6 @@ def rvf_app(app):
 
         return jsonify({'success': sucesso}), 200
 
-
     @app.route('/rvf_galeria_imagens', methods=['GET'])
     def rvf_galeria_imagens():
         session = app.config.get('dbsession')
