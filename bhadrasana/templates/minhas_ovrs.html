@@ -61,7 +61,7 @@
                 <tbody>
                 {% for ovr in listasovrs[fase] %}
                 <tr class="{% if ovr[1] %}default{% else %}warning{% endif %}">
-                    <td><a href="ovr?id={{ovr[0]}}">{{ ovr[0] }}</a></td>
+                    <td><a href="ovr?id={{ovr[0]}}" target="_blank">{{ ovr[0] }}</a></td>
                     {% for col in ovr[2] %}
                     <td>{{ col }}</td>
                     {% endfor %}
