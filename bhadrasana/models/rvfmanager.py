@@ -48,12 +48,6 @@ def get_rvf(session, rvf_id: int = None) -> RVF:
     return session.query(RVF).filter(RVF.id == rvf_id).one_or_none()
 
 
-def get_imagemrvf_or_none(session, rvf_id: int, _id: str):
-    return session.query(ImagemRVF).filter(
-        ImagemRVF.rvf_id == rvf_id).filter(
-        ImagemRVF.imagem == _id).one_or_none()
-
-
 def lista_rvfovr(session, ovr_id: int) -> List[RVF]:
     try:
         ovr_id = int(ovr_id)
@@ -250,12 +244,19 @@ def exclui_marca_encontrada(session, rvf_id, marca_id) -> List[Marca]:
 
 
 def get_imagemrvf(session, rvf_id: int, _id: str):
-    imagemrvf = session.query(ImagemRVF).filter(
-        ImagemRVF.rvf_id == rvf_id).filter(
-        ImagemRVF.imagem == _id).one_or_none()
+    imagemrvf = get_imagemrvf_or_none(session, rvf_id, _id)
     if imagemrvf is None:
         return ImagemRVF()
     return imagemrvf
+
+def get_imagemrvf_or_none(session, rvf_id: int, _id: str):
+    return session.query(ImagemRVF).filter(
+        ImagemRVF.rvf_id == rvf_id).filter(
+        ImagemRVF.imagem == _id).first()
+
+def get_imagemrvf_imagem_or_none(session, _id: str) -> RVF:
+    return session.query(ImagemRVF).filter(
+        ImagemRVF.imagem == _id).first()
 
 
 def get_imagemrvf_ordem_or_none(session, rvf_id: int, ordem: int):
@@ -264,9 +265,6 @@ def get_imagemrvf_ordem_or_none(session, rvf_id: int, ordem: int):
         ImagemRVF.ordem == ordem).one_or_none()
 
 
-def get_imagemrvf_imagem_or_none(session, _id: str) -> RVF:
-    return session.query(ImagemRVF).filter(
-        ImagemRVF.imagem == _id).one_or_none()
 
 
 def swap_ordem(session, imagem_rvf: ImagemRVF, ordem_nova: int):
@@ -340,9 +338,18 @@ def delete_imagemrvf(mongodb, session, _id: str):
 
 
 def get_ids_anexos_ordenado(rvf):
+    """Retorna lista de ids das imagens, ordenado pelo campo ordem"""
     imagens = [(imagem.imagem, imagem.ordem or 999) for imagem in rvf.imagens]
     imagens = sorted(imagens, key=lambda x: x[1])
     anexos = [imagem[0] for imagem in imagens]
+    return anexos
+
+
+def get_anexos_ordenado(rvf):
+    """Retorna lista de imagemRVF, ordenado pelo campo ordem"""
+    imagens = [(imagem, imagem.ordem or 999) for imagem in rvf.imagens]
+    imagens = sorted(imagens, key=lambda x: x[1])
+    anexos = [item[0] for item in imagens]
     return anexos
 
 

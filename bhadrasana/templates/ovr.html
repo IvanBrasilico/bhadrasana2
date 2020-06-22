@@ -208,11 +208,11 @@
 {% if oform.id.data %}
 <div class="row col-sm-12">
     <div class="col-sm-3">
-        <h4>Lista de Movimentações</h4>
+        <h4>Histórico de Eventos</h4>
     </div>
     <div class="col-sm-6">
         <button id="btn_historico" type="button" class="btn btn-primary btn-warning form-control"
-                data-toggle="modal" data-target="#historico">Movimentar
+                data-toggle="modal" data-target="#historico">Informar Evento
         </button>
     </div>
     <div class="col-sm-3">
@@ -220,7 +220,7 @@
             <input type="hidden" name="csrf_token" value="{{csrf_token()}}"/>
             <input type="hidden" name="ovr_id" value="{{ oform.id.data }}"/>
             <button id="btn_desfazer" class="btn btn-primary btn-danger form-control" onclick="submit">
-                Desfazer última movimentação
+                Desfazer último evento
             </button>
         </form>
     </div>

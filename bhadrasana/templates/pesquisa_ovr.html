@@ -1,9 +1,9 @@
 {% extends "layout.html" %} {% block content %} {{super()}}
 <div id="main" class="container-fluid">
-    <div id="top" class="row form-group">
+    <div id="top" class="form-group">
         <form method="POST" id="filtroformovr" action="pesquisa_ovr">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-            <div class="row">
+            <div class="row col-sm-12">
                 <div class="col-sm-4">
                     <button class="btn btn-primary btn-warning form-control" onclick="window.open('ovr')">
                         Nova Ficha
@@ -13,7 +13,7 @@
             <div class="row col-sm-12">
                 <hr>
             </div>
-            <div class="row">
+            <div class="row col-sm-12">
                 <div class="col-sm-2">
                     <label for="numeroCEmercante">Número CE-Mercante</label>
                     {{ oform.numeroCEmercante(class='form-control') }}
@@ -39,7 +39,7 @@
                     {{ oform.fase(class='form-control') }}
                 </div>
             </div>
-            <div class="row">
+            <div class="row col-sm-12">
                 <div class="col-sm-4">
                     <label for="datainicio">Início e fim de período de pesquisa</label>
                 </div>
@@ -56,7 +56,7 @@
                     <label for="infracoes">Infrações</label>
                 </div>
             </div>
-            <div class="row">
+            <div class="row col-sm-12">
                 <div class="col-sm-2">
                     {{ oform.datainicio(class='form-control') }}
                 </div>
@@ -76,8 +76,8 @@
                     {{ oform.infracao_id(class='form-control') }}
                 </div>
             </div>
-            &nbsp;
-            <div class="row">
+            <div class="row col-sm-12">&nbsp;</div>
+            <div class="row col-sm-12">
                 <div class="col-sm-4">
                     <button class="btn btn-default btn-info form-control" onclick="submit">
                         Pesquisar
@@ -92,31 +92,32 @@
     </div>
     <div id="list" class="row col-sm-12">
         &nbsp;<br>
+        Clique nos títulos da tabela para ordenar
         <div class="table">
             <table class="inlineTable table table-bordered table-hover table-responsive"
                    id="pesquisa_ovr_table" title="Lista de OVRs encontradas - limite de 100 resultados">
                 <thead>
                 <tr>
-                    <th>Ficha Nº</th>
-                    <th>Tipo Operação</th>
-                    <th>Recinto</th>
-                    <th>Ano</th>
-                    <th>Número doc.</th>
-                    <th>CE Mercante</th>
-                    <th>Declaração</th>
-                    <th>Fiscalizado</th>
-                    <th>Data</th>
-                    <th>Último Evento</th>
+                    <th style="cursor: pointer;">Ficha Nº</th>
+                    <th style="cursor: pointer;">Tipo Operação</th>
+                    <th style="cursor: pointer;">Recinto</th>
+                    <th style="cursor: pointer;">Ano</th>
+                    <th style="cursor: pointer;">Número doc.</th>
+                    <th style="cursor: pointer;">CE Mercante</th>
+                    <th style="cursor: pointer;">Declaração</th>
+                    <th style="cursor: pointer;">Fiscalizado</th>
+                    <th style="cursor: pointer;">Data</th>
+                    <th style="cursor: pointer;">Último Evento</th>
                 </tr>
                 </thead>
                 <tbody>
                 {% for ovr in ovrs %}
                 <tr>
-                    <td><a href="ovr?id={{ ovr.id }}">{{ ovr.id }}</a></td>
+                    <td><a href="ovr?id={{ ovr.id }}" target="_blank">{{ ovr.id }}</a></td>
                     <td>{{ ovr.get_tipooperacao() }}</td>
                     <td>{{ ovr.recinto.nome }}</td>
                     <td>{{ ovr.get_ano() }}</td>
-                    <td>{{ ovr.numero }}</td>
+                    <td>{{ ovr.get_numero() }}</td>
                     <td>{{ ovr.numeroCEmercante }}</td>
                     <td>{{ ovr.numerodeclaracao }}</td>
                     <td>{{ ovr.cnpj_fiscalizado }}</td>
@@ -134,6 +135,21 @@
 </div>
 {% endblock %} {% block scripts %} {{super()}}
 <script>
+
+    $('th').click(function(){
+    var table = $(this).parents('table').eq(0)
+    var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index()))
+    this.asc = !this.asc
+    if (!this.asc){rows = rows.reverse()}
+    for (var i = 0; i < rows.length; i++){table.append(rows[i])}
+})
+function comparer(index) {
+    return function(a, b) {
+        var valA = getCellValue(a, index), valB = getCellValue(b, index)
+        return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.toString().localeCompare(valB)
+    }
+}
+function getCellValue(row, index){ return $(row).children('td').eq(index).text() }
 
 </script>
 {% endblock %}
