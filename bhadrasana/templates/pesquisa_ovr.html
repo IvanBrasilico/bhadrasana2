@@ -113,7 +113,7 @@
                 <tbody>
                 {% for ovr in ovrs %}
                 <tr>
-                    <td><a href="ovr?id={{ ovr.id }}">{{ ovr.id }}</a></td>
+                    <td><a href="ovr?id={{ ovr.id }}" target="_blank">{{ ovr.id }}</a></td>
                     <td>{{ ovr.get_tipooperacao() }}</td>
                     <td>{{ ovr.recinto.nome }}</td>
                     <td>{{ ovr.get_ano() }}</td>
