@@ -145,22 +145,23 @@
             </div>
             <div class="col-sm-1">
             </div>
-            <div class="col-sm-2">
+            <div class="col-sm-3">
                 <button type="button" class="btn btn-default btn-primary form-control" onclick="upload_files()">
                     Enviar
                 </button>
             </div>
             <div class="col-sm-2">
-                <button type="button" class="btn btn-default btn-primary form-control"
+                <button type="button" class="btn btn-info form-control"
                         onclick="update_ordem_arquivos()">
                     Atualizar ordem
                 </button>
             </div>
-            <div class="col-sm-4">
-                <a href="/rvf_galeria_imagens/{{oform.id.data}}">Galeria de imagens</a>
+            <div class="col-sm-3">
+                <a href="/rvf_galeria_imagens?rvf_id={{oform.id.data}}" class="btn btn-warning form-control">Abrir fotos em Galeria de imagens</a>
             </div>
         </div>
-        <div class="row ">
+        <div class="row col-sm-12">&nbsp;</div>
+        <div class="row">
             <div class="col-sm-12" id="div_imagens" border="1">
                 {% for anexo in anexos %}
                 <span class="badge" name="{{anexo}}">
