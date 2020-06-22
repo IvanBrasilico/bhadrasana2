@@ -371,47 +371,60 @@ def rvf_app(app):
     @app.route('/rvf_inclui_ordem_arquivos', methods=['GET'])
     @login_required
     def rvf_inclui_ordem_arquivos():
-        # db = app.config['mongo_risco']
         session = app.config.get('dbsession')
         rvf_id = request.args.get('rvf_id')
-        # rvf = get_rvf(session, rvf_id)
         qttd_arq = request.args.get('qttd_arq')
         nomes_anexo = request.args.getlist('lista[]')
-        # lista_arq = get_ids_anexos_ordenado(rvf)
         oform = ImagemRVFForm()
         sucesso = False
         try:
             oform = ImagemRVFForm(request.form)
             oform.validate()
             for n in range(int(qttd_arq)):
-                # imagem = get_imagemrvf(session, rvf_id, lista_arq[n])  # ordem inicial
                 imagem = get_imagemrvf(session, rvf_id, nomes_anexo[n])
                 sucesso = inclui_nova_ordem_arquivo(session, imagem, n + 1)
-                # print(f'rvf_inclui_ordem_arquivos.....
-                # imagem.imagem {imagem.imagem } e imagem.ordem {imagem.ordem} ')
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            return jsonify({'success': False, 'msg': str(err)}), 500
 
+        return jsonify({'success': sucesso}), 200
+
+
+    @app.route('/rvf_galeria_imagens/<rvf_id>', methods=['GET'])
+    def rvf_galeria_imagens(rvf_id):
+        session = app.config.get('dbsession')
+        try:
+            arvf = get_rvf(session, rvf_id)
+            anexos = get_ids_anexos_ordenado(arvf)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
             flash(str(type(err)))
             flash(str(err))
-            return jsonify({'success': False, 'msg': str(err)}), 500
-
-        return jsonify({'success': sucesso}), 200
+        return render_template('rvf_galeria_imagens.html',
+                               anexos=anexos)
 
     @app.route('/imagens_rvf/<rvf_id>', methods=['GET'])
     def imagens_container(rvf_id):
         session = app.config.get('dbsession')
-        arvf = get_rvf(session, rvf_id)
-        anexos = get_ids_anexos_ordenado(arvf)
-        return jsonify(anexos)
+        try:
+            arvf = get_rvf(session, rvf_id)
+            anexos = get_ids_anexos_ordenado(arvf)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            return jsonify({'success': False, 'msg': str(err)}), 500
+        return jsonify(anexos), 200
 
     @app.route('/get_rvf/<rvf_id>', methods=['GET'])
     def json_rvf(rvf_id):
         session = app.config.get('dbsession')
-        arvf = session.query(RVF).filter(RVF.id == rvf_id).one_or_none()
-        if arvf is None:
-            return jsonify({'msg': 'RVF %s não encontrado' % rvf_id}), 404
+        try:
+            arvf = session.query(RVF).filter(RVF.id == rvf_id).one_or_none()
+            if arvf is None:
+                return jsonify({'msg': 'RVF %s não encontrado' % rvf_id}), 404
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            return jsonify({'success': False, 'msg': str(err)}), 500
         return jsonify(arvf.dump()), 200
 
     @app.route('/edita_descricao_rvf', methods=['POST'])
