@@ -19,7 +19,7 @@ from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, \
     get_infracoes, lista_rvfovr, cadastra_imagemrvf, get_imagemrvf_or_none, \
     cadastra_rvf, delete_imagemrvf, inclui_imagemrvf, get_imagemrvf_imagem_or_none, \
     make_and_save_transformation, exclui_lacre_verificado, \
-    inclui_lacre_verificado, get_imagemrvf, inclui_nova_ordem_arquivo
+    inclui_lacre_verificado, get_imagemrvf, inclui_nova_ordem_arquivo, get_anexos_ordenado
 from bhadrasana.views import csrf, valid_file
 
 
@@ -390,12 +390,16 @@ def rvf_app(app):
         return jsonify({'success': sucesso}), 200
 
 
-    @app.route('/rvf_galeria_imagens/<rvf_id>', methods=['GET'])
-    def rvf_galeria_imagens(rvf_id):
+    @app.route('/rvf_galeria_imagens', methods=['GET'])
+    def rvf_galeria_imagens():
         session = app.config.get('dbsession')
+        anexos = []
         try:
+            rvf_id = request.args.get('rvf_id')
+            if not rvf_id:
+                raise KeyError('Obrigatório passar parâmetro rvf_id')
             arvf = get_rvf(session, rvf_id)
-            anexos = get_ids_anexos_ordenado(arvf)
+            anexos = get_anexos_ordenado(arvf)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
