@@ -121,6 +121,8 @@ def ovr_app(app):
                         fiscalizado = get_empresa(session, ovr.cnpj_fiscalizado)
                         if fiscalizado:
                             ovr_form.nome_fiscalizado.data = fiscalizado.nome
+                        if ovr.tipooperacao != 0:
+                            historico_form.user_name.render_kw = {'disabled': 'disabled'}
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
@@ -362,7 +364,6 @@ def ovr_app(app):
             flash(str(err))
         return redirect(url_for('ovr', id=ovr_id))
 
-
     @app.route('/responsavelovr_minhasovrs', methods=['POST'])
     @login_required
     def atribuirresponsavel_minhasovrs():
@@ -409,8 +410,13 @@ def ovr_app(app):
         session = app.config.get('dbsession')
         ovr_id = request.form['ovr_id']
         historico_ovr_form = HistoricoOVRForm(request.form)
+        user_name = None
         try:
-            evento = gera_eventoovr(session, dict(historico_ovr_form.data.items()))
+            if historico_ovr_form.user_name.data is None or\
+                    historico_ovr_form.user_name.data == 'None':
+                user_name = current_user.name
+            evento = gera_eventoovr(session, dict(historico_ovr_form.data.items()),
+                                    user_name=user_name)
             # TODO: Mover para ação específica ou para gera_eventoovr
             session.refresh(evento)
             db = app.config['mongo_risco']

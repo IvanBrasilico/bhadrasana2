@@ -350,10 +350,12 @@ def informa_lavratura_auto(session, ovr_id: int,
     return ovr
 
 
-def gera_eventoovr(session, params: dict, commit=True) -> EventoOVR:
+def gera_eventoovr(session, params: dict, commit=True, user_name=None) -> EventoOVR:
     evento = EventoOVR()
     for key, value in params.items():
         setattr(evento, key, value)
+    if user_name:
+        evento.user_name = user_name
     tipoevento = session.query(TipoEventoOVR).filter(
         TipoEventoOVR.id == int(evento.tipoevento_id)
     ).one()
