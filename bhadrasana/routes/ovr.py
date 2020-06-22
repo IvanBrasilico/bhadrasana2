@@ -226,23 +226,29 @@ def ovr_app(app):
     @app.route('/minhas_ovrs', methods=['GET', 'POST'])
     @login_required
     def minhas_ovrs():
+        TABS = ('minhas_ovrs', 'ovrs_meus_setores', 'ovrs_criador')
         session = app.config.get('dbsession')
         listasovrs = defaultdict(list)
         titulos_exibicao = []
         today = datetime.date.today()
         inicio = datetime.date(year=today.year, month=today.month, day=1)
-        if 'minhas_ovrs' in request.url:
-            active_tab = 'minhas_ovrs'
-        elif 'ovrs_meus_setores' in request.url:
-            active_tab = 'ovrs_meus_setores'
-        else:
-            active_tab = 'ovrs_criador'
+        active_tab = request.args.get('active_tab')
+        if active_tab is None or active_tab not in TABS:
+            if 'minhas_ovrs' in request.url:
+                active_tab = 'minhas_ovrs'
+            elif 'ovrs_meus_setores' in request.url:
+                active_tab = 'ovrs_meus_setores'
+            else:
+                active_tab = 'ovrs_criador'
         if request.method == 'POST':
             oform = FiltroMinhasOVRsForm(request.form, active_tab=active_tab)
         else:
             oform = FiltroMinhasOVRsForm(datainicio=inicio,
                                          datafim=datetime.date.today(),
                                          active_tab=active_tab)
+        responsaveis = get_usuarios(session)
+        responsavel_form = ResponsavelOVRForm(responsaveis=responsaveis,
+                                              responsavel=current_user.name)
         try:
             oform.validate()
             if active_tab == 'minhas_ovrs':
@@ -267,7 +273,8 @@ def ovr_app(app):
                                oform=oform,
                                titulos=titulos_exibicao,
                                listasovrs=listasovrs,
-                               active_tab=active_tab)
+                               active_tab=active_tab,
+                               responsavel_form=responsavel_form)
 
     @app.route('/minhas_fichas_text', methods=['GET'])
     def minhas_fichas_text():
@@ -354,6 +361,26 @@ def ovr_app(app):
             flash(str(type(err)))
             flash(str(err))
         return redirect(url_for('ovr', id=ovr_id))
+
+
+    @app.route('/responsavelovr_minhasovrs', methods=['POST'])
+    @login_required
+    def atribuirresponsavel_minhasovrs():
+        session = app.config.get('dbsession')
+        ovr_id = None
+        try:
+            cpf_responsavel = request.form.get('responsavel')
+            active_tab = request.form.get('active_tab')
+            for ovr_id in request.form.getlist('rowid'):
+                print(ovr_id)
+                atribui_responsavel_ovr(session, ovr_id=ovr_id, responsavel=cpf_responsavel)
+            return redirect(url_for('minhas_ovrs', active_tab=active_tab))
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return redirect(url_for('minhas_ovrs', active_tab=active_tab))
 
     @app.route('/informalavraturaauto', methods=['POST'])
     @login_required
