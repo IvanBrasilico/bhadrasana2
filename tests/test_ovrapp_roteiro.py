@@ -12,6 +12,7 @@ from bhadrasana.models.rvf import create_infracoes
 from bhadrasana.routes.ovr import ovr_app
 from bhadrasana.routes.risco import risco_app
 from bhadrasana.routes.rvf import rvf_app
+from bhadrasana.routes.admin import admin_app
 
 sys.path.append('.')
 
@@ -121,6 +122,7 @@ configure_app(app, session, mongodb)
 risco_app(app)
 rvf_app(app)
 ovr_app(app)
+admin_app(app, session)
 
 create_setores(session)
 create_usuarios(session)

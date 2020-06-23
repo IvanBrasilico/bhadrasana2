@@ -48,7 +48,8 @@ class MarcasModel(ProtectedModelView):
 class RoteirosModel(ProtectedModelView):
     column_filters = ['tipooperacao']
     column_hide_backrefs = False
-    column_list = ('tipooperacao', 'get_tipooperacao', 'descricao', 'tipoevento', 'ordem', 'quem')
+    column_list = ('tipooperacao', 'get_tipooperacao', 'descricao',
+                   'tipoevento', 'ordem', 'quem')
 
 
 class TipoEventoModel(ProtectedModelView):
