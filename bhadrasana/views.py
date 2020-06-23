@@ -223,7 +223,8 @@ def mynavbar():
                  Separator(),
                  View('Relatórios', 'ver_relatorios'),
                  Separator(),
-                 View('Importa planilhas recintos', 'importa_planilha_recinto')
+                 View('Importa planilhas recintos', 'importa_planilha_recinto'),
+                 View('Administração', 'admin.index'),
              )]
     if current_user.is_authenticated:
         items.append(View('Sair (%s)' % current_user.id, 'commons.logout'))
