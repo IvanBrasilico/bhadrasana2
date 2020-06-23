@@ -65,6 +65,9 @@ class Setor(Base):
     pai_id = Column(CHAR(15), ForeignKey('ovr_setores.id'))
     pai = relationship('Setor')
 
+    def __str__(self):
+        return '{} - {}'.format(self.id, self.nome)
+
 
 class Usuario(Base):
     __tablename__ = 'ovr_usuarios'

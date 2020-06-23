@@ -211,6 +211,9 @@ class TipoEventoOVR(Base):
                          server_default=func.current_timestamp())
     eventoespecial = Column(Integer(), index=True)
 
+    def __str__(self):
+        return '{} - {}'.format(self.id, self.nome)
+
 
 class RoteiroOperacaoOVR(Base):
     """Classe para confecção de roteiros/checklists por tipo de operação."""
@@ -223,6 +226,10 @@ class RoteiroOperacaoOVR(Base):
     descricao = Column(VARCHAR(500), index=True)
     ordem = Column(Integer(), index=True)
     quem = Column(VARCHAR(10), index=True)
+
+    @property
+    def descricao_tipooperacao(self):
+        return Enumerado.tipoOperacao(self.tipooperacao)
 
 
 class Recinto(Base):
