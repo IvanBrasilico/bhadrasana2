@@ -136,7 +136,7 @@ def admin_app(app, session):
     admin.add_view(TipoEventoModel(TipoEventoOVR, session))
 
     admin.add_link(LogoutMenuLink(name='Janela principal',
-                                  url='/bhadrasana2', category='Ir para'))
+                                  url='/bhadrasana2/', category='Ir para'))
     if current_user and current_user.is_authenticated:
         user = get_usuario_logado(session, current_user.id)
         admin.add_link(LogoutMenuLink(name='Sair (%s)' % user.nome,
