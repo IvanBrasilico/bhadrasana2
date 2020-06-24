@@ -9,7 +9,7 @@ from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 
 from ajna_commons.flask.log import logger
-from bhadrasana.models.ovr import OVR
+from bhadrasana.models.ovr import OVR, Recinto
 
 DTE_USERNAME = os.environ.get('DTE_USERNAME')
 DTE_PASSWORD = os.environ.get('DTE_PASSWORD')
@@ -20,14 +20,6 @@ if DTE_PASSWORD is None:
         linha = dte_info.readline()
     DTE_USERNAME = linha.split(',')[0]
     DTE_PASSWORD = linha.split(',')[1]
-
-try:
-    recintos_file = os.path.join(os.path.dirname(__file__), 'recintos.csv')
-    with open(recintos_file, encoding='utf-8') as csv_in:
-        reader = csv.reader(csv_in)
-        recintos_list = [row for row in reader]
-except FileNotFoundError:
-    recintos_list = []
 
 # DTE_URL_AUTH = 'https://jupapi.org.br/api/sepes/Pesagem/token'
 # DTE_URL_FMA = 'https://jupapi.org.br/api/sepes/ConsultaFMA'
@@ -72,8 +64,8 @@ def get_lista_fma(start, end, cod_recinto, token):
 def get_lista_fma_recintos(recintos_list, datainicial, datafinal):
     token = get_token_dte()
     fmas_recintos = defaultdict(list)
-    for linha in recintos_list[1:]:
-        recinto = linha[0]
+    for recinto in recintos_list:
+        recinto = recinto.id
         lista_fma = get_lista_fma(datainicial, datafinal,
                                   recinto, token)
         if lista_fma and len(lista_fma) > 0:
@@ -98,7 +90,14 @@ def processa_fma(session, fma: dict):
     ovr = OVR()
     ovr.numero = fma['Numero_FMA']
     ovr.ano = fma['Ano_FMA']
-    ovr.datahora = datetime.strptime(fma['Data_Emissao'], '%Y-%m-%d')
+    try:
+        ovr.datahora = datetime.strptime(fma['Data_Emissao'], '%Y-%m-%d')
+    except:
+        ovr.datahora = datetime.now()
+    try:
+        ovr.dataentrada = datetime.strptime(fma['Data_Entrada_Recinto'], '%Y-%m-%d')
+    except:
+        ovr.dataentrada = ovr.datahora - timedelta(days=90)
     ovr.recinto_id = int(fma['Cod_Recinto'])
     ovr.setor_id = 4  # EQMAB
     ovr.numeroCEmercante = fma['CE_Mercante']
@@ -147,6 +146,7 @@ def update(sql_uri, inicio, fim):
         end = datetime.strptime(fim, '%d/%m/%Y')
     print(start, end)
     # recintos_list = [[37]]
+    recintos_list = session.query(Recinto).all()
     lista_recintos_fmas = get_lista_fma_recintos(recintos_list, start, end)
     processa_lista_fma(session, lista_recintos_fmas)
 
