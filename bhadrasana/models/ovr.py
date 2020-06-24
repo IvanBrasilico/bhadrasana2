@@ -10,7 +10,7 @@ from sqlalchemy.orm import relationship, sessionmaker
 sys.path.insert(0, '.')
 sys.path.insert(0, '../ajna_docs/commons')
 sys.path.insert(0, '../virasana')
-from bhadrasana.models import Base, BaseRastreavel, BaseDumpable
+from bhadrasana.models import Base, BaseRastreavel, BaseDumpable, myEnum
 
 metadata = Base.metadata
 
@@ -85,18 +85,7 @@ unidadeMedida = [
 ]
 
 
-class Enumerado:
-
-    @classmethod
-    def get_tipo(cls, listatipo: list, id: int = None):
-        if (id is not None) and isinstance(id, int):
-            try:
-                return listatipo[id]
-            except IndexError:
-                print('Item %s não encontrado em %s' % (id, listatipo))
-                return None
-        else:
-            return [(id, item) for id, item in enumerate(listatipo, 0)]
+class Enumerado(myEnum):
 
     @classmethod
     def faseOVR(cls, id=None):
@@ -213,6 +202,10 @@ class TipoEventoOVR(Base):
 
     def __str__(self):
         return '{} - {}'.format(self.id, self.nome)
+
+    @property
+    def descricao_fase(self):
+        return Enumerado.faseOVR(self.fase)
 
 
 class RoteiroOperacaoOVR(Base):

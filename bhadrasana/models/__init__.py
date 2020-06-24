@@ -1,6 +1,6 @@
 import datetime
 
-from sqlalchemy import Column, func, VARCHAR, CHAR, ForeignKey
+from sqlalchemy import Column, func, VARCHAR, CHAR, ForeignKey, Integer
 from sqlalchemy import create_engine
 from sqlalchemy.dialects.mysql import TIMESTAMP
 from sqlalchemy.ext.declarative import declarative_base
@@ -46,6 +46,47 @@ class EBloqueado(Exception):
                                  'Status/fase não permite alteração.')
 
 
+perfilAcesso = (
+    'Consulta',
+    'Operador',
+    'Supervisor',
+    'Cadastrador'
+)
+
+
+class myEnum:
+
+    @classmethod
+    def get_tipo(cls, listatipo: list, id: int = None):
+        if (id is not None) and isinstance(id, int):
+            try:
+                return listatipo[id]
+            except IndexError:
+                print('Item %s não encontrado em %s' % (id, listatipo))
+                return None
+        else:
+            return [(id, item) for id, item in enumerate(listatipo, 0)]
+
+    @classmethod
+    def get_id(cls, listatipo: list, descricao: str):
+        try:
+            return listatipo.index(descricao)
+        except ValueError:
+            print('Item %s não encontrado em %s' % (id, listatipo))
+            return None
+
+
+class Enumerado(myEnum):
+
+    @classmethod
+    def perfilAcesso(cls, id: int = None):
+        return cls.get_tipo(perfilAcesso, id)
+
+    @classmethod
+    def perfilAcesso_id(cls, descricao: str):
+        return cls.get_id(perfilAcesso, descricao)
+
+
 class BaseRastreavel(Base):
     __abstract__ = True
     user_name = Column(VARCHAR(14), index=True)
@@ -76,6 +117,25 @@ class Usuario(Base):
     telegram = Column(CHAR(50), index=True)
     setor_id = Column(CHAR(15), ForeignKey('ovr_setores.id'))
     setor = relationship('Setor')
+    perfis = relationship('PerfilUsuario', back_populates='usuario')
+
+    def __str__(self):
+        return '{} - {}'.format(self.cpf, self.nome)
+
+
+class PerfilUsuario(Base):
+    __tablename__ = 'ovr_perfis_usuarios'
+    id = Column(Integer().with_variant(Integer, 'sqlite'), primary_key=True)
+    cpf = Column(CHAR(15), ForeignKey('ovr_usuarios.cpf'))
+    usuario = relationship('Usuario')
+    perfil = Column(Integer(), index=True, default=0)
+
+    @property
+    def perfil_descricao(self):
+        return Enumerado.get_tipo(perfilAcesso, self.perfil)
+
+    def __str__(self):
+        return '{} - {}'.format(self.cpf, self.perfil_descricao)
 
 
 def handle_datahora(params):
@@ -116,6 +176,18 @@ def get_usuario(session, user_name: str) -> Usuario:
         Usuario.cpf == user_name).one_or_none()
 
 
+def get_perfisusuario(session, cpf: str) -> list:
+    return session.query(PerfilUsuario).filter(
+        PerfilUsuario.cpf == cpf).all()
+
+
+def usuario_tem_perfil(session, cpf: str, perfil: int) -> PerfilUsuario:
+    perfil = session.query(PerfilUsuario).filter(
+        PerfilUsuario.cpf == cpf).filter(
+        PerfilUsuario.perfil == perfil).one_or_none()
+    return perfil is not None
+
+
 def gera_objeto(instance: object, session, params):
     # get_usuario_logado(session, params)
     for key, value in params.items():
@@ -146,3 +218,23 @@ def delete_objeto(session, classname, id):
         logger.error(str(err), exc_info=True)
         return False
     return True
+
+
+if __name__ == '__main__':
+    import sys
+
+    sys.path.append('.')
+    sys.path.append('../ajna_docs/commons')
+    sys.path.append('../virasana')
+    from ajna_commons.flask.conf import SQL_URI
+
+    engine = create_engine(SQL_URI)
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    # Sair por segurança. Comentar linha abaixo para funcionar
+    # sys.exit(0)
+    # Base.metadata.drop_all(engine, [
+    # metadata.tables['ovr_perfisusuarios'], ])
+    Base.metadata.create_all(engine, [
+        Base.metadata.tables['ovr_perfis_usuarios']
+    ])
