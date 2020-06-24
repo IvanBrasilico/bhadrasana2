@@ -5,7 +5,8 @@ from flask_admin.menu import MenuLink
 from flask_login import current_user
 from werkzeug.utils import redirect
 
-from bhadrasana.models import Enumerado as ModelEnumerado, usuario_tem_perfil, perfilAcesso, get_usuario_logado
+from bhadrasana.models import Enumerado as ModelEnumerado, usuario_tem_perfil,\
+    perfilAcesso, get_usuario_logado
 from bhadrasana.models import Setor, Usuario, PerfilUsuario
 from bhadrasana.models.ovr import Marca, RoteiroOperacaoOVR, TipoEventoOVR, Enumerado
 
