@@ -1,6 +1,5 @@
 import sys
 import unittest
-from datetime import datetime
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -8,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 sys.path.append('.')
 
 from bhadrasana.models import Base, Usuario, Setor, PerfilUsuario, perfilAcesso, \
-    get_perfisusuario, get_usuario, get_usuario_telegram, Enumerado, usuario_tem_perfil
+    get_perfisusuario, Enumerado, usuario_tem_perfil
 
 engine = create_engine('sqlite://')
 Session = sessionmaker(bind=engine)
@@ -49,7 +48,7 @@ class ModelTestCase(unittest.TestCase):
         return setor
 
     def test_Usuario(self):
-        usuario = self.create_usuario('111', 'ivan',  'ivan_bot')
+        usuario = self.create_usuario('111', 'ivan', 'ivan_bot')
         assert usuario.telegram == 'ivan_bot'
         assert usuario.nome == 'ivan'
 
@@ -86,7 +85,6 @@ class ModelTestCase(unittest.TestCase):
         assert self.supervisor2.setor_id == self.setor2.id
         assert self.membros1[0].setor_id == self.setor11.id
 
-
     def test_Perfis(self):
         self.create_estrutura()
         perfil = PerfilUsuario()
@@ -100,11 +98,7 @@ class ModelTestCase(unittest.TestCase):
         assert Enumerado.get_tipo(perfilAcesso, perfis[0].perfil) == 'Supervisor'
         assert usuario_tem_perfil(self.session,
                                   self.supervisor1.cpf,
-                                  Enumerado.get_id(perfilAcesso, 'Supervisor'))
-        assert not usuario_tem_perfil(self.session,
+                                  Enumerado.get_id(perfilAcesso, 'Supervisor')) is True
+        assert usuario_tem_perfil(self.session,
                                   self.supervisor1.cpf,
-                                  Enumerado.get_id(perfilAcesso, 'Cadastrador'))
-
-
-
-
+                                  Enumerado.get_id(perfilAcesso, 'Cadastrador')) is False

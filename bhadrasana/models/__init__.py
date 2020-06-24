@@ -62,18 +62,17 @@ class myEnum:
             try:
                 return listatipo[id]
             except IndexError:
-                print('Item %s não encontrado em %s' % (id, listatipo))
-                return None
+                raise IndexError('Item %s não encontrado em %s' % (id, listatipo))
         else:
             return [(id, item) for id, item in enumerate(listatipo, 0)]
 
     @classmethod
     def get_id(cls, listatipo: list, descricao: str):
         try:
+            # logger.info('****' + str(listatipo.index(descricao)))
             return listatipo.index(descricao)
         except ValueError:
-            print('Item %s não encontrado em %s' % (id, listatipo))
-            return None
+            raise ValueError('Item %s não encontrado em %s' % (id, listatipo))
 
 
 class Enumerado(myEnum):
@@ -182,10 +181,11 @@ def get_perfisusuario(session, cpf: str) -> list:
 
 
 def usuario_tem_perfil(session, cpf: str, perfil: int) -> PerfilUsuario:
-    perfil = session.query(PerfilUsuario).filter(
+    operfil = session.query(PerfilUsuario).filter(
         PerfilUsuario.cpf == cpf).filter(
         PerfilUsuario.perfil == perfil).one_or_none()
-    return perfil is not None
+    # logger.info('***********' + cpf + ' ' + str(perfil))
+    return operfil is not None
 
 
 def gera_objeto(instance: object, session, params):
