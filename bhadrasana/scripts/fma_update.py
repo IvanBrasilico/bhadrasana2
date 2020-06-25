@@ -65,7 +65,7 @@ def get_lista_fma_recintos(recintos_list, datainicial, datafinal):
     token = get_token_dte()
     fmas_recintos = defaultdict(list)
     for recinto in recintos_list:
-        recinto = recinto.id
+        recinto = recinto.cod_dte
         lista_fma = get_lista_fma(datainicial, datafinal,
                                   recinto, token)
         if lista_fma and len(lista_fma) > 0:
@@ -145,7 +145,6 @@ def update(sql_uri, inicio, fim):
     else:
         end = datetime.strptime(fim, '%d/%m/%Y')
     print(start, end)
-    # recintos_list = [[37]]
     recintos_list = session.query(Recinto).all()
     lista_recintos_fmas = get_lista_fma_recintos(recintos_list, start, end)
     processa_lista_fma(session, lista_recintos_fmas)
