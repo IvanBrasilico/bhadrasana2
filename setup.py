@@ -15,6 +15,7 @@ setup(
         'defusedxml',
         'Flask',
         'flask-admin',
+        'flask-babelex',
         'Flask-BootStrap',
         'Flask-Login',
         'Flask-cors',
