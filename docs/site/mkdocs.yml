@@ -5,7 +5,7 @@ nav:
     - Home: index.md
     - Mídia: media.md
     - "Funcionalidades":
-          - "Interface de administração tabelas":
+          - "Interface de administração":
             - "Admin - tabelas": admin/admin.md
             - "Roteiros - \"Check-lists\"": admin/roteiros.md
             - "Gerenciamento de Usuários e Perfis": admin/usuarios.md

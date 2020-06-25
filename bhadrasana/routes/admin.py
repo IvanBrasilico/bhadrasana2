@@ -2,13 +2,15 @@ from flask import url_for, request
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from flask_admin.menu import MenuLink
+from flask_babelex import Babel
 from flask_login import current_user
 from werkzeug.utils import redirect
 
-from bhadrasana.models import Enumerado as ModelEnumerado, usuario_tem_perfil,\
-    perfilAcesso, get_usuario_logado
+from bhadrasana.models import Enumerado as ModelEnumerado, usuario_tem_perfil, \
+    perfilAcesso
 from bhadrasana.models import Setor, Usuario, PerfilUsuario
-from bhadrasana.models.ovr import Marca, RoteiroOperacaoOVR, TipoEventoOVR, Enumerado, Recinto
+from bhadrasana.models.ovr import Marca, RoteiroOperacaoOVR, TipoEventoOVR, \
+    Enumerado, Recinto
 
 
 class ProtectedModelView(ModelView):
@@ -23,24 +25,16 @@ class ProtectedModelView(ModelView):
 class CadastradorModelView(ProtectedModelView):
     def is_accessible(self):
         if current_user.is_authenticated:
-            result = usuario_tem_perfil(
-                self.session,
-                current_user.id,
-                ModelEnumerado.get_id(perfilAcesso, 'Cadastrador')
-            )
-            # print('*****************' + str(result))
-            return result
+            return usuario_tem_perfil(self.session, current_user.id,
+                                      ModelEnumerado.get_id(perfilAcesso, 'Cadastrador'))
         return False
 
 
 class SupervisorModelView(ProtectedModelView):
     def is_accessible(self):
         if current_user.is_authenticated:
-            return usuario_tem_perfil(
-                self.session,
-                current_user.id,
-                ModelEnumerado.get_id(perfilAcesso, 'Supervisor')
-            )
+            return usuario_tem_perfil(self.session, current_user.id,
+                                      ModelEnumerado.get_id(perfilAcesso, 'Supervisor'))
         return False
 
 
@@ -82,13 +76,13 @@ class SetorModel(SupervisorModelView):
     # inline_models = ['', ]
 
 
-class MarcasModel(SupervisorModelView):
+class RecintosModel(SupervisorModelView):
+    can_delete = False
+    column_display_pk = True
     column_searchable_list = ['nome']
 
 
-class RecintosModel(CadastradorModelView):
-    can_delete = False
-    column_display_pk = True
+class MarcasModel(SupervisorModelView):
     column_searchable_list = ['nome']
 
 
@@ -115,6 +109,8 @@ class TipoEventoModel(SupervisorModelView):
     column_list = ('nome', 'descricao', 'descricao_fase', 'eventoespecial')
     form_columns = ('nome', 'descricao', 'fase')
     form_choices = {'fase': Enumerado.faseOVR()}
+    column_searchable_list = ['nome']
+    column_filters = ['fase']
 
     def validate_form(self, form):
         form.fase.data = int(form.fase.data)
@@ -132,6 +128,12 @@ class LogoutMenuLink(MenuLink):
 def admin_app(app, session):
     # set optional bootswatch theme
     app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
+    babel = Babel(app)
+
+    @babel.localeselector
+    def get_locale():
+        return 'pt'
+
     admin = Admin(app, name='Controle de Cargas', template_mode='bootstrap3')
     # Add administrative views here
     admin.add_view(UsuarioModel(Usuario, session))

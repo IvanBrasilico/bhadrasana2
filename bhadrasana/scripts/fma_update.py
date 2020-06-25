@@ -1,4 +1,3 @@
-import csv
 import os
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -92,11 +91,13 @@ def processa_fma(session, fma: dict):
     ovr.ano = fma['Ano_FMA']
     try:
         ovr.datahora = datetime.strptime(fma['Data_Emissao'], '%Y-%m-%d')
-    except:
+    except Exception as err:
+        print(err)
         ovr.datahora = datetime.now()
     try:
         ovr.dataentrada = datetime.strptime(fma['Data_Entrada_Recinto'], '%Y-%m-%d')
-    except:
+    except Exception as err:
+        print(err)
         ovr.dataentrada = ovr.datahora - timedelta(days=90)
     ovr.recinto_id = int(fma['Cod_Recinto'])
     ovr.setor_id = 4  # EQMAB
@@ -145,7 +146,7 @@ def update(sql_uri, inicio, fim):
     else:
         end = datetime.strptime(fim, '%d/%m/%Y')
     print(start, end)
-    recintos_list = session.query(Recinto).all()
+    recintos_list = session.query(Recinto).filter(Recinto.cod_dte.isnot(None)).all()
     lista_recintos_fmas = get_lista_fma_recintos(recintos_list, start, end)
     processa_lista_fma(session, lista_recintos_fmas)
 
