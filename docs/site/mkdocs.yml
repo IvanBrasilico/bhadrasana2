@@ -9,7 +9,7 @@ nav:
             - "Admin - tabelas": admin/admin.md
             - "Roteiros - \"Check-lists\"": admin/roteiros.md
             - "Gerenciamento de Usuários e Perfis": admin/usuarios.md
-            - "Modelo de permissão": admin/permisssoes.md
+            - "Modelo de permissão": admin/permissoes.md
     - "Novidades":
         - "Interface Telegram - 16/Junho/2020": novidades/20200616.md
         - "Tela 'Consulta de Empresa', Campo Empresa e Base Laudos - 03/Junho/2020": novidades/20200603.md
