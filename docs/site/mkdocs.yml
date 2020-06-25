@@ -4,6 +4,12 @@ site_description: Análise de risco e controle de fluxo de procedimentos em carg
 nav:
     - Home: index.md
     - Mídia: media.md
+    - "Funcionalidades":
+          - "Interface de administração tabelas":
+            - "Admin - tabelas": admin/admin.md
+            - "Roteiros - \"Check-lists\"": admin/roteiros.md
+            - "Gerenciamento de Usuários e Perfis": admin/usuarios.md
+            - "Modelo de permissão": admin/permisssoes.md
     - "Novidades":
         - "Interface Telegram - 16/Junho/2020": novidades/20200616.md
         - "Tela 'Consulta de Empresa', Campo Empresa e Base Laudos - 03/Junho/2020": novidades/20200603.md

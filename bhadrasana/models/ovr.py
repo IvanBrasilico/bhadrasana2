@@ -230,6 +230,8 @@ class Recinto(Base):
     id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
     nome = Column(VARCHAR(50), index=True)
     descricao = Column(VARCHAR(100), index=True)
+    cod_dte = Column(Integer())
+    cod_siscomex = Column(Integer())
     create_date = Column(TIMESTAMP, index=True,
                          server_default=func.current_timestamp())
 
