@@ -1,11 +1,36 @@
-### Interface de administração
+## Modelo de permissóes
 
-Pelo menu "Administração", dentro da lista "Pesquisas" no menu da tela inicial, 
-é possível administrar algumas tabelas do Sistema.
+Descrição do modelo de permissões de  acesso do Sistema. 
+Implementado com o cadastro de Perfis para o  Usuário.
 
-![Menu inicical](../images/menu.png)
+#####Regras gerais
+- As Fichas e verificações físicas só podem ser editadas pela carga (responsável) atual
+- Se a Ficha está concluída ou arquivada, não pode mais ser editada
+- ?? Fazer função de bloqueio de edição para verificação física mesmo sem ficha concluída???
+ 
+###Perfis
 
+####Consulta
 
-![Tela completa de administracao](../images/admincompleto.png)
-![](../images/.png)
+Consegue realizar todas as pesquisas, consultar a API e o Telegram, visualizar tudo. (?? exceto ??)
 
+Não edita nem cria nada.
+
+####Operador
+
+Além das funções de consulta, cria Fichas, eventos, verificações físicas, TGs, Taseda, etc.
+
+Edita somente Fichas que estejam para si atribuídas. Consegue repassar atribuição.
+
+####Supervisor
+
+Funções do Operador, podendo se auto-atribuir Fichas do seu Setor, bem como desfazer arquivamento e
+conclusão. Pode também modificar Setor da Ficha (enviar para outra Equipe).
+
+Possui acesso às telas Marca, Recinto e RoteiroOperacaoOVR na interface administrativa.
+
+####Cadastrador
+
+Possui acesso às telas Usuario, Perfil, Setor e TipoEventoOVR na interface administrativa.
+
+Não possui nenhum acesso no Sistema.

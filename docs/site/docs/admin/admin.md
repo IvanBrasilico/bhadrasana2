@@ -41,7 +41,10 @@ Setor DIREP e duas equipes EQREP1 e EQREP2. Usuários cadastrados no Setor DIREP
 do Setor DIREP e dos dois Setores Filhos. Já os Usuários cadastrados nos Setores Filhos verão apenas
 Fichas de suas Equipes.
 
-É possível buscar por nome.
+Várias telas são influenciadas pela propriedade de árvore do Setor. Para exemplo, olhar a parte de
+Roteiros deste manual.
+
+É possível pesquisar por nome.
 
 ![Tela de Setores](../images/setor1.png)
 
@@ -55,7 +58,13 @@ cuidado especial com os Eventos com campo "TipoEventoEspecial", pois estes Event
 dentro do código para diferenciar os seguintes código de Evento Especial, e a aplicação faz as atualizações
 necessárias com base neste cadastro.
 
-É possível buscar por nome e filtrar for fase.
+EventoEspecial
+- Responsavel = 1
+- RVF = 2
+- TG = 3
+- Autuação = 4
+
+É possível pesquisar por nome e filtrar for fase.
 
 ![Lista de Tipos de Evento](../images/eventos1.png)
 
@@ -65,7 +74,7 @@ O campo cod_dte é necessário para integração automática das FMAs do Porto d
 Esta tabela deve ser importada automaticamente do SISCOMEX quando possível e também não precisa
 de manutenção regular. 
 
-É possível buscar por nome.
+É possível pesquisar por nome.
 
 ![Tela de Recintos](../images/recintos1.png)
 

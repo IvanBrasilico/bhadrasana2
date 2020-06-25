@@ -41,7 +41,7 @@ class SupervisorModelView(ProtectedModelView):
 class UsuarioModel(CadastradorModelView):
     can_delete = False
     column_hide_backrefs = False
-    column_searchable_list = ['nome']
+    column_searchable_list = ['nome', 'cpf']
     column_filters = ['setor']
     column_list = ('cpf', 'nome', 'telegram', 'setor', 'perfis')
     form_columns = ('cpf', 'nome', 'telegram', 'setor')
