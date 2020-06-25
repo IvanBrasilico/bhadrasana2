@@ -104,7 +104,7 @@ def processa_fma(session, fma: dict):
     ovr.numeroCEmercante = fma['CE_Mercante']
     ovr.tipooperacao = 0
     ovr.fase = 0
-    ovr.tipoevento_id = 1
+    ovr.tipoevento_id = 30
     try:
         session.add(ovr)
         logger.info('Inserindo OVR Recinto %s Numero %s ' %
