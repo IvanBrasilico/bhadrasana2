@@ -327,7 +327,7 @@ def ovr_app(app):
                 filtro_form.validate()
                 relatorio = get_relatorio(session, int(filtro_form.relatorio.data))
                 if relatorio is None:
-                    raise ValueError('Relatório %s não encontrado % ' %
+                    raise ValueError('Relatório %s não encontrado' %
                                      filtro_form.relatorio.data)
                 sql = relatorio.sql
                 linhas = executa_relatorio(session, current_user.name,
