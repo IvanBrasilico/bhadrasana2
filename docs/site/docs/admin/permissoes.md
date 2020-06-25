@@ -25,7 +25,9 @@ Edita somente Fichas que estejam para si atribuídas. Consegue repassar atribui�
 ####Supervisor
 
 Funções do Operador, podendo se auto-atribuir Fichas do seu Setor, bem como desfazer arquivamento e
-conclusão. Pode também modificar Setor da Ficha (enviar para outra Equipe).
+conclusão, pois tem permissão de informar Evento mesmo em Fichas concluídas.
+ 
+Pode modificar Setor da Ficha (enviar para outra Equipe).
 
 Possui acesso às telas Marca, Recinto e RoteiroOperacaoOVR na interface administrativa.
 
