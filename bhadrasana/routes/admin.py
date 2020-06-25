@@ -78,8 +78,9 @@ class SetorModel(SupervisorModelView):
 
 class RecintosModel(SupervisorModelView):
     can_delete = False
-    column_display_pk = True
     column_searchable_list = ['nome']
+    column_list = ('nome', 'descricao', 'cod_dte', 'cod_siscomex', 'cod_unidade')
+    form_columns = ('nome', 'descricao', 'cod_dte', 'cod_siscomex', 'cod_unidade')
 
 
 class MarcasModel(SupervisorModelView):
