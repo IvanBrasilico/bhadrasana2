@@ -8,7 +8,7 @@ from werkzeug.utils import redirect
 from bhadrasana.models import Enumerado as ModelEnumerado, usuario_tem_perfil,\
     perfilAcesso, get_usuario_logado
 from bhadrasana.models import Setor, Usuario, PerfilUsuario
-from bhadrasana.models.ovr import Marca, RoteiroOperacaoOVR, TipoEventoOVR, Enumerado
+from bhadrasana.models.ovr import Marca, RoteiroOperacaoOVR, TipoEventoOVR, Enumerado, Recinto
 
 
 class ProtectedModelView(ModelView):
@@ -82,7 +82,13 @@ class SetorModel(SupervisorModelView):
     # inline_models = ['', ]
 
 
-class MarcasModel(ProtectedModelView):
+class MarcasModel(SupervisorModelView):
+    column_searchable_list = ['nome']
+
+
+class RecintosModel(CadastradorModelView):
+    can_delete = False
+    column_display_pk = True
     column_searchable_list = ['nome']
 
 
@@ -132,12 +138,9 @@ def admin_app(app, session):
     admin.add_view(PerfilUsuarioModel(PerfilUsuario, session))
     admin.add_view(SetorModel(Setor, session))
     admin.add_view(MarcasModel(Marca, session))
-    admin.add_view(RoteirosModel(RoteiroOperacaoOVR, session))
+    admin.add_view(RecintosModel(Recinto, session))
     admin.add_view(TipoEventoModel(TipoEventoOVR, session))
+    admin.add_view(RoteirosModel(RoteiroOperacaoOVR, session))
 
     admin.add_link(LogoutMenuLink(name='Janela principal',
                                   url='/bhadrasana2/', category='Ir para'))
-    if current_user and current_user.is_authenticated:
-        user = get_usuario_logado(session, current_user.id)
-        admin.add_link(LogoutMenuLink(name='Sair (%s)' % user.nome,
-                                      url=url_for('commons.logout'), category='Ir para'))
