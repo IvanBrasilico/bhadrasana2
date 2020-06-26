@@ -374,6 +374,9 @@ def ovr_app(app):
         session = app.config.get('dbsession')
         try:
             cpf_responsavel = request.form.get('responsavel')
+            if cpf_responsavel is None or \
+                    cpf_responsavel == 'None':
+                cpf_responsavel = current_user.name
             motivo = request.form.get('motivo')
             tipoevento_id = request.form.get('tipoevento_id')
             active_tab = request.form.get('active_tab')
