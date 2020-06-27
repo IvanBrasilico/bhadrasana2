@@ -9,6 +9,10 @@ from sqlalchemy import select, and_, join, or_
 from ajna_commons.flask.log import logger
 from ajnaapi.recintosapi.models import AcessoVeiculo, ConteinerUld, PesagemVeiculo, \
     EventoBase, Semirreboque
+from bhadrasana.forms.filtro_container import FiltroContainerForm
+from bhadrasana.models.ovrmanager import get_ovr_container
+from bhadrasana.models.rvfmanager import get_rvfs_filtro
+from bhadrasana.models.virasana_manager import get_dues_container, get_detalhes_mercante
 from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, \
     RiscoAtivo
 
@@ -231,7 +235,10 @@ def get_lista_csv(csvpath):
     return lista_comentada
 
 
-def get_eventos_conteiner(session, numero: str) -> List[dict]:
+def get_eventos_conteiner(session, numero: str,
+                          datainicio: datetime,
+                          datafim: datetime,
+                          ) -> List[dict]:
     Atributo = namedtuple('Atributo', ['descricao', 'campo'])
 
     def lista_eventos(peventos: List[EventoBase],
@@ -249,13 +256,51 @@ def get_eventos_conteiner(session, numero: str) -> List[dict]:
         return result
 
     eventos = session.query(AcessoVeiculo).join(ConteinerUld).filter(
-        ConteinerUld.num == numero).all()
+        ConteinerUld.num == numero
+    ).filter(
+        AcessoVeiculo.dtHrOcorrencia >= datainicio
+    ).filter(
+        AcessoVeiculo.dtHrOcorrencia <= datafim
+    ).all()
     acessos = lista_eventos(eventos, [Atributo('Placa', 'placa'),
                                       Atributo('Motorista', 'motorista_nome')])
     eventos = session.query(PesagemVeiculo).join(Semirreboque).filter(
-        PesagemVeiculo.numConteinerUld == numero).all()
+        PesagemVeiculo.numConteinerUld == numero
+    ).filter(
+        PesagemVeiculo.dtHrOcorrencia >= datainicio
+    ).filter(
+        PesagemVeiculo.dtHrOcorrencia <= datafim
+    ).all()
     pesagens = lista_eventos(eventos, [Atributo('Placa', 'placa'),
                                        Atributo('Peso', 'pesoBrutoBalanca'),
                                        Atributo('Tara', 'taraConjunto'), ])
 
     return [*acessos, *pesagens]
+
+
+def consulta_container_objects(request, session, mongodb):
+    filtro_form = FiltroContainerForm(request.form)
+    filtro_form.validate()
+    logger.info('Consultando contêiner %s' % filtro_form.numerolote.data)
+    logger.info('get_rvfs_filtro')
+    rvfs = get_rvfs_filtro(session, dict(filtro_form.data.items()))
+    logger.info('get_dues_container')
+    dues = get_dues_container(mongodb,
+                              filtro_form.numerolote.data,
+                              filtro_form.datainicio.data,
+                              filtro_form.datafim.data
+                              )
+    lista_numeroDUEs = [due['numero'] for due in dues]
+    logger.info('get_ovr_container')
+    ces, ovrs = get_ovr_container(session, filtro_form.numerolote.data,
+                                  filtro_form.datainicio.data,
+                                  filtro_form.datafim.data,
+                                  lista_numeroDUEs)
+    logger.info('get detalhes CE Mercante')
+    infoces = get_detalhes_mercante(session, ces)
+    logger.info('get_eventos_container')
+    eventos = get_eventos_conteiner(session,
+                                    filtro_form.numerolote.data,
+                                    filtro_form.datainicio.data,
+                                    filtro_form.datafim.data)
+    return rvfs, ovrs, infoces, dues, eventos

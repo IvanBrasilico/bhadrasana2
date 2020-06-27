@@ -36,7 +36,8 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_ovr_container, get_ovr_criadaspor, get_ovr_empresa, get_tipos_evento_todos, \
     desfaz_ultimo_eventoovr
 from bhadrasana.models.ovrmanager import get_marcas_choice
-from bhadrasana.models.riscomanager import get_eventos_conteiner
+from bhadrasana.models.riscomanager import get_eventos_conteiner, \
+    consulta_container_objects
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
     get_infracoes_choice, get_rvfs_filtro
 from bhadrasana.models.virasana_manager import get_conhecimento, \
@@ -732,28 +733,6 @@ def ovr_app(app):
                                containers=containers,
                                containers_com_rvf=containers_com_rvf,
                                imagens=imagens)
-
-    def consulta_container_objects(request, session, mongodb):
-        filtro_form = FiltroContainerForm(request.form)
-        filtro_form.validate()
-        logger.info('Consultando contêiner %s' % filtro_form.numerolote.data)
-        logger.info('get_rvfs_filtro')
-        rvfs = get_rvfs_filtro(session, dict(filtro_form.data.items()))
-        logger.info('get_dues_container')
-        dues = get_dues_container(mongodb,
-                                  filtro_form.numerolote.data)
-        lista_numeroDUEs = [due['numero'] for due in dues]
-        logger.info('get_ovr_container')
-        ces, ovrs = get_ovr_container(session, filtro_form.numerolote.data,
-                                      filtro_form.datainicio.data,
-                                      filtro_form.datafim.data,
-                                      lista_numeroDUEs)
-        logger.info('get detalhes CE Mercante')
-        infoces = get_detalhes_mercante(session, ces)
-        logger.info('get_eventos_container')
-        eventos = get_eventos_conteiner(session,
-                                        filtro_form.numerolote.data)
-        return rvfs, ovrs, infoces, dues, eventos
 
     @app.route('/consulta_container', methods=['GET', 'POST'])
     @login_required

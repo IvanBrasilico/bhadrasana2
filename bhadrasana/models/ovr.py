@@ -225,7 +225,6 @@ class TipoEventoOVR(BaseDumpable):
         return Enumerado.faseOVR(self.fase)
 
 
-
 class RoteiroOperacaoOVR(Base):
     """Classe para confecção de roteiros/checklists por tipo de operação."""
     __tablename__ = 'ovr_roteiros'
@@ -309,7 +308,6 @@ class ProcessoOVR(BaseRastreavel, BaseDumpable):
         return dumped
 
 
-
 class Marca(Base):
     __tablename__ = 'ovr_marcas'
     id = Column(BigInteger().with_variant(Integer, 'sqlite'),
@@ -365,7 +363,6 @@ class TGOVR(BaseRastreavel, BaseDumpable):
         if self.tipomercadoria:
             dumped['tipomercadoria_descricao'] = self.tipomercadoria.nome
         return dumped
-
 
 
 class ItemTG(BaseRastreavel, BaseDumpable):
