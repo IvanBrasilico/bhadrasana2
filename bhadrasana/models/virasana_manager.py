@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 
 import requests
@@ -57,10 +58,14 @@ def get_due(mongodb, numerodeclaracao: str) -> dict:
     return due
 
 
-def get_dues_container(mongodb, numero: str) -> list:
+def get_dues_container(mongodb, numero: str,
+                       datainicio: datetime,
+                       datafim: datetime,
+                       ) -> List[dict]:
     if numero is None or numero == '':
         raise ValueError('get_dues: Informe o número do contêiner!')
     query = {'metadata.numeroinformado': numero.strip(),
+             'metadata.dataescaneamento': {'$gte': datainicio, '$lte': datafim},
              'metadata.contentType': 'image/jpeg'
              }
     projection = {'metadata.due': 1}
