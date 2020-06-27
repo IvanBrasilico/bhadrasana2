@@ -331,7 +331,7 @@ def informa_lavratura_auto(session, ovr_id: int,
     try:
         ovr = get_ovr(session, ovr_id)
         tipoevento = session.query(TipoEventoOVR).filter(
-            TipoEventoOVR.eventoespecial == EventoEspecial.Autuação.value).first()
+            TipoEventoOVR.eventoespecial == EventoEspecial.Autuacao.value).first()
         if tipoevento is None:
             raise Exception('Não há evento de lavratura cadastrado na Base!!')
         evento_params = {'tipoevento_id': tipoevento.id,

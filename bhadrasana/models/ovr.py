@@ -19,14 +19,14 @@ class EventoEspecial(Enum):
     Responsavel = 1
     RVF = 2
     TG = 3
-    Autuação = 4
+    Autuacao = 4
 
 
 tipoStatusOVREspecial = [
     ('Atribuição de responsável', EventoEspecial.Responsavel.value, 1),
     ('RVF incluída', EventoEspecial.RVF.value, 1),
     ('TG incluído', EventoEspecial.TG.value, 1),
-    ('Emissão de Auto de Infração', EventoEspecial.Autuação.value, 3)
+    ('Emissão de Auto de Infração', EventoEspecial.Autuacao.value, 3)
 ]
 
 tipoStatusOVR = [
@@ -157,7 +157,7 @@ class OVR(BaseRastreavel, BaseDumpable):
     def get_ano(self):
         if self.datahora is not None and isinstance(self.datahora, datetime):
             return self.datahora.year
-        return ''
+        return self.ano
 
     def get_numero(self):
         # Formatação de número definida apenas para FMA
@@ -183,6 +183,23 @@ class OVR(BaseRastreavel, BaseDumpable):
         super().__init__(*args, **kwargs)
         self.fase = 0
 
+    def dump(self, exclude=None, explode=True):
+        dumped = super().dump(exclude)
+        if explode:
+            dumped['tipooperacao_descricao'] = self.get_tipooperacao()
+            dumped['fase_descricao'] = self.get_fase()
+            dumped['ano'] = self.get_ano()
+            if self.responsavel:
+                dumped['responsavel'] = self.responsavel.nome
+            if self.setor:
+                dumped['setor'] = self.setor.nome
+            dumped['numero'] = self.get_numero()
+            dumped['flags'] = [flag.nome for flag in self.flags]
+            dumped['historico'] = [evento.dump() for evento in self.historico]
+            dumped['processos'] = [processo.dump() for processo in self.processos]
+            dumped['tgs'] = [tg.dump() for tg in self.tgs]
+        return dumped
+
 
 class Flag(Base):
     __tablename__ = 'ovr_flags'
@@ -190,7 +207,7 @@ class Flag(Base):
     nome = Column(VARCHAR(100), index=True)
 
 
-class TipoEventoOVR(Base):
+class TipoEventoOVR(BaseDumpable):
     __tablename__ = 'ovr_tiposevento'
     id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
     nome = Column(VARCHAR(50), index=True)
@@ -206,6 +223,7 @@ class TipoEventoOVR(Base):
     @property
     def descricao_fase(self):
         return Enumerado.faseOVR(self.fase)
+
 
 
 class RoteiroOperacaoOVR(Base):
@@ -245,7 +263,7 @@ class TipoProcessoOVR(Base):
                          server_default=func.current_timestamp())
 
 
-class EventoOVR(BaseRastreavel):
+class EventoOVR(BaseRastreavel, BaseDumpable):
     __tablename__ = 'ovr_eventos'
     id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                 primary_key=True)
@@ -259,8 +277,21 @@ class EventoOVR(BaseRastreavel):
     motivo = Column(VARCHAR(50), index=True)
     anexo_filename = Column(VARCHAR(100), index=True)  # ID no Mongo
 
+    @property
+    def descricao_fase(self):
+        return Enumerado.faseOVR(self.fase)
 
-class ProcessoOVR(BaseRastreavel):
+    def dump(self, exclude=None, explode=True):
+        dumped = super().dump(exclude)
+        if explode:
+            if self.tipoevento:
+                dumped['tipoevento_descricao'] = self.tipoevento.nome
+            if self.fase:
+                dumped['fase_descricao'] = self.descricao_fase
+        return dumped
+
+
+class ProcessoOVR(BaseRastreavel, BaseDumpable):
     __tablename__ = 'ovr_processos'
     id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
     ovr_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
@@ -270,8 +301,13 @@ class ProcessoOVR(BaseRastreavel):
                              ForeignKey('ovr_tiposprocesso.id'))
     tipoprocesso = relationship('TipoProcessoOVR')
     numero = Column(VARCHAR(50), index=True)
-    create_date = Column(TIMESTAMP, index=True,
-                         server_default=func.current_timestamp())
+
+    def dump(self, exclude=None, explode=True):
+        dumped = super().dump(exclude)
+        if explode:
+            dumped['tipoprocesso'] = self.tipoprocesso.descricao
+        return dumped
+
 
 
 class Marca(Base):
@@ -295,7 +331,7 @@ marcas_table = Table('ovr_tgvor_marcas', metadata,
                      )
 
 
-class TGOVR(BaseRastreavel):
+class TGOVR(BaseRastreavel, BaseDumpable):
     __tablename__ = 'ovr_tgovr'
     id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
     ovr_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
@@ -318,11 +354,21 @@ class TGOVR(BaseRastreavel):
     identificacao = Column(VARCHAR(50), index=True)
     observacoes = Column(VARCHAR(500), index=True)
 
+    @property
     def get_unidadedemedida(self):
         return Enumerado.unidadeMedida(self.unidadedemedida)
 
+    def dump(self, exclude=None, explode=True):
+        dumped = super().dump(exclude)
+        dumped['qtde'] = str(dumped['qtde'])
+        dumped['valor'] = str(dumped['valor'])
+        if self.tipomercadoria:
+            dumped['tipomercadoria_descricao'] = self.tipomercadoria.nome
+        return dumped
 
-class ItemTG(BaseRastreavel):
+
+
+class ItemTG(BaseRastreavel, BaseDumpable):
     __tablename__ = 'ovr_itenstg'
     id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
     tg_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
@@ -338,8 +384,17 @@ class ItemTG(BaseRastreavel):
                       ForeignKey('ovr_marcas.id'))
     marca = relationship(Marca)
 
+    @property
     def get_unidadedemedida(self):
         return Enumerado.unidadeMedida(self.unidadedemedida)
+
+    def dump(self, exclude=None, explode=True):
+        dumped = super().dump(exclude)
+        dumped['qtde'] = str(dumped['qtde'])
+        dumped['valor'] = str(dumped['valor'])
+        if self.marca:
+            dumped['marca_descricao'] = self.marca.nome
+        return dumped
 
 
 class Relatorio(Base):
