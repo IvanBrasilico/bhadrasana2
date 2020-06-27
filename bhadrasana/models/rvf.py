@@ -46,8 +46,6 @@ class RVF(BaseRastreavel, BaseDumpable):
     ovr_id = Column(BigInteger(), ForeignKey('ovr_ovrs.id'), index=True)
     ovr = relationship('OVR')
     numeroCEmercante = Column(VARCHAR(15), index=True)
-    # numeroDI = Column(VARCHAR(10), index=True)
-    # numeroDUE = Column(VARCHAR(10), index=True)
     numerolote = Column(VARCHAR(20), index=True)
     descricao = Column(VARCHAR(500), index=True)
     peso = Column(Numeric(10, 2), index=True)
@@ -63,8 +61,21 @@ class RVF(BaseRastreavel, BaseDumpable):
     last_modified = Column(DateTime, index=True,
                            onupdate=func.current_timestamp())
 
+    def dump(self, exclude=None, explode=True):
+        dumped = super().dump(exclude)
+        if explode:
+            dumped['imagens'] = [imagem.dump() for imagem in self.imagens]
+            dumped['infracoesencontradas'] = [infracao.nome
+                                              for infracao in self.infracoesencontradas]
+            dumped['marcasencontradas'] = [marca.nome
+                                           for marca in self.marcasencontradas]
+            dumped['lacresverificados'] = [lacre.numero
+                                           for lacre in self.lacresverificados]
 
-class ImagemRVF(BaseRastreavel):
+        return dumped
+
+
+class ImagemRVF(BaseRastreavel, BaseDumpable):
     __tablename__ = 'ovr_imagensrvf'
     id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                 primary_key=True)
@@ -80,6 +91,13 @@ class ImagemRVF(BaseRastreavel):
     rvf_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                     ForeignKey('ovr_verificacoesfisicas.id'))
     rvf = relationship(RVF)
+
+    def dump(self, exclude=None, explode=True):
+        dumped = super().dump(exclude)
+        if explode:
+            if self.marca:
+                dumped['marca_descricao'] = self.marca.nome
+        return dumped
 
 
 class Infracao(Base):
