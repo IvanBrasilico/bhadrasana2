@@ -66,10 +66,10 @@ def mercanterisco(session, pfiltros: dict, limit=1000, operador_ou=False):
     filtros_data = and_()
     datainicio = pfiltros.get('datainicio')
     if datainicio:
-        filtros_data = and_(AcessoVeiculo.dtHrOcorrencia >= datainicio, filtros_data)
+        filtros_data = and_(Conhecimento.create_date >= datainicio, filtros_data)
     datafim = pfiltros.get('datafim')
     if datafim:
-        filtros_data = and_(AcessoVeiculo.dtHrOcorrencia <= datafim, filtros_data)
+        filtros_data = and_(Conhecimento.create_date <= datafim, filtros_data)
     for key in keys:
         lista = pfiltros.get(key)
         if lista is not None:
