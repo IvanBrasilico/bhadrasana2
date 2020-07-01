@@ -585,6 +585,7 @@
     $('input#flags').bind('keydown', function(e) {
       if (e.keyCode == 13) {
         inclui_flag_ovr({{oform.id.data}}, $('input#flags').val());
+        $(this).val("");
         event.preventDefault();
       }
     });

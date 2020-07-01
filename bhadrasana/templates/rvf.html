@@ -256,19 +256,15 @@
         {% endfor %}
         ];
         $( "#infracoes" ).autocomplete({
-
-          source: infracoes,
-
-          select: function(event, ui){
-            var newTag = $(this).val();
-            $(this).val("");
-            event.preventDefault();
-          }
+          source: infracoes, minLength: 0
+        }).focus(function () {
+           $(this).autocomplete("search");
         });
     } );
     $('input#infracoes').bind('keydown', function(e) {
       if (e.keyCode == 13) {
         inclui_infracao_encontrada({{oform.id.data}}, $('input#infracoes').val());
+        $(this).val('');
       }
     });
 
@@ -301,13 +297,7 @@
         {% endfor %}
         ];
         $( "#marcas" ).autocomplete({
-          source: marcas,
-
-          select: function(event, ui){
-            var newTag = $(this).val();
-            $(this).val("");
-            event.preventDefault();
-          }
+          source: marcas, minLenght: 1
         });
     } );
     $('input#marcas').bind('keydown', function(e) {
