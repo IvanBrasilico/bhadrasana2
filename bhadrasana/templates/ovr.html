@@ -576,18 +576,11 @@
         "{{ flag.nome }}",
         {% endfor %}
         ];
-        $('#selector')
         $( "#flags" ).autocomplete({
-          source: flags,
-          select: function(event, ui){
-            var newTag = $(this).val();
-            $(this).val("");
-            event.preventDefault();
-          },
-        minLength: 0}
-        ).focus(function(){
-        $(this).autocomplete('search', $(this).val());
-    });
+          source: flags, minLength: 0
+        }).focus(function () {
+           $(this).autocomplete("search");
+        });
     } );
     $('input#flags').bind('keydown', function(e) {
       if (e.keyCode == 13) {
@@ -600,6 +593,7 @@
         $("#numeroCEmercante").inputmask("999999999999999", {removeMaskOnSubmit: true});
         $("#numerodeclaracao").inputmask("99AA9999999999", {removeMaskOnSubmit: true});
     });
+
 
 
 </script> {% endblock %}
