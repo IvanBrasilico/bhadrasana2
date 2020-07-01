@@ -723,6 +723,12 @@ def ovr_app(app):
             lista_rvf = lista_rvfovr(session, ovr_id)
             if lista_rvf:
                 containers_com_rvf = {rvf.numerolote: rvf.id for rvf in lista_rvf}
+            for container in containers:
+                if imagens.get(container.codigoConteiner) is None:
+                    logger.error(
+                        'Alerta: Container {} OVR {} não possui imagem!!!'.format(
+                            container.codigoConteiner, ovr_id)
+                    )
         except Exception as err:
             flash(str(err))
             logger.error(str(err), exc_info=True)
