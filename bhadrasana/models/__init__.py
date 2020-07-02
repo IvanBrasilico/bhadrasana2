@@ -21,7 +21,7 @@ Base.query = db_session.query_property()
 class BaseDumpable(Base):
     __abstract__ = True
 
-    def dump(self, exclude=None):
+    def dump(self, exclude=None, explode=False):
         dump = dict([(k, v) for k, v in vars(self).items() if not k.startswith('_')])
         if exclude:
             for key in exclude:
