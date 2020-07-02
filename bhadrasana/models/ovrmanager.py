@@ -438,7 +438,7 @@ def lista_tgovr(session, ovr_id) -> List[TGOVR]:
     try:
         ovr_id = int(ovr_id)
     except (ValueError, TypeError):
-        return None
+        return []
     return session.query(TGOVR).filter(TGOVR.ovr_id == ovr_id).all()
 
 
