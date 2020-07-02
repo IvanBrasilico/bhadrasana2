@@ -764,24 +764,8 @@ def ovr_app(app):
             if request.method == 'POST':
                 filtro_form = FiltroContainerForm(request.form)
                 filtro_form.validate()
-                logger.info('Consultando contêiner %s' % filtro_form.numerolote.data)
-                logger.info('get_rvfs_filtro')
-                rvfs = get_rvfs_filtro(session, dict(filtro_form.data.items()))
-                logger.info('get_dues_container')
-                dues = get_dues_container(mongodb,
-                                          filtro_form.numerolote.data)
-                lista_numeroDUEs = [due['numero'] for due in dues]
-                logger.info('get_ovr_container')
-                ces, ovrs = get_ovr_container(session, filtro_form.numerolote.data,
-                                              filtro_form.datainicio.data,
-                                              filtro_form.datafim.data,
-                                              lista_numeroDUEs)
-                logger.info('get detalhes CE Mercante')
-                infoces = get_detalhes_mercante(session, ces)
-                logger.info('get_eventos_container')
-                eventos = get_eventos_conteiner(session,
-                                                filtro_form.numerolote.data)
-                logger.info('get_imagens_container')
+                rvfs, ovrs, infoces, dues, eventos = \
+                    consulta_container_objects(request.form, session, mongodb)
                 imagens = get_imagens_container(mongodb,
                                                 filtro_form.numerolote.data)
         except Exception as err:
@@ -811,7 +795,7 @@ def ovr_app(app):
         mongodb = app.config['mongodb']
         try:
             rvfs, ovrs, infoces, dues, eventos = \
-                consulta_container_objects(request, session, mongodb)
+                consulta_container_objects(request.form, session, mongodb)
         except Exception as err:
             logger.error(err, exc_info=True)
             return 'Erro! Detalhes no log da aplicação.\n' + str(err)
