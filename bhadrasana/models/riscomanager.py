@@ -9,7 +9,6 @@ from sqlalchemy import select, and_, join, or_
 from ajna_commons.flask.log import logger
 from ajnaapi.recintosapi.models import AcessoVeiculo, ConteinerUld, PesagemVeiculo, \
     EventoBase, Semirreboque
-from bhadrasana.forms.filtro_container import FiltroContainerForm
 from bhadrasana.models.ovrmanager import get_ovr_container
 from bhadrasana.models.rvfmanager import get_rvfs_filtro
 from bhadrasana.models.virasana_manager import get_dues_container, get_detalhes_mercante
@@ -278,29 +277,33 @@ def get_eventos_conteiner(session, numero: str,
     return [*acessos, *pesagens]
 
 
-def consulta_container_objects(request, session, mongodb):
-    filtro_form = FiltroContainerForm(request.form)
-    filtro_form.validate()
-    logger.info('Consultando contêiner %s' % filtro_form.numerolote.data)
+def consulta_container_objects(values: dict, session, mongodb):
+    print(values)
+    numero = values.get('numerolote')
+    datainicio = None
+    datafim = None
+    try:
+        datainicio = datetime.strptime(values.get('datainicio'), '%Y-%m-%d')
+        datafim = datetime.strptime(values.get('datafim'), '%Y-%m-%d')
+    except ValueError:
+        raise ValueError(' Data de início inválida. Formato AAAA-MM-DD')
+    if numero is None or datainicio is None or datafim is None:
+        raise ValueError(''' 
+        Dados inválidos passados nos parâmetros. 
+        Parâmetros numerolote: XXXX, datainicio, datafim: AAAA-MM-DD''')
+    logger.info('Consultando contêiner %s' % numero)
     logger.info('get_rvfs_filtro')
-    rvfs = get_rvfs_filtro(session, dict(filtro_form.data.items()))
+    rvfs = get_rvfs_filtro(session, {'numerolote': numero,
+                                     'datainicio': datainicio,
+                                     'datafim': datafim})
     logger.info('get_dues_container')
-    dues = get_dues_container(mongodb,
-                              filtro_form.numerolote.data,
-                              filtro_form.datainicio.data,
-                              filtro_form.datafim.data
-                              )
+    dues = get_dues_container(mongodb, numero, datainicio, datafim)
     lista_numeroDUEs = [due['numero'] for due in dues]
     logger.info('get_ovr_container')
-    ces, ovrs = get_ovr_container(session, filtro_form.numerolote.data,
-                                  filtro_form.datainicio.data,
-                                  filtro_form.datafim.data,
+    ces, ovrs = get_ovr_container(session, numero, datainicio, datafim,
                                   lista_numeroDUEs)
     logger.info('get detalhes CE Mercante')
     infoces = get_detalhes_mercante(session, ces)
     logger.info('get_eventos_container')
-    eventos = get_eventos_conteiner(session,
-                                    filtro_form.numerolote.data,
-                                    filtro_form.datainicio.data,
-                                    filtro_form.datafim.data)
+    eventos = get_eventos_conteiner(session, numero, datainicio, datafim)
     return rvfs, ovrs, infoces, dues, eventos

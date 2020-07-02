@@ -24,7 +24,7 @@ def get_infracoes_choice(session):
     return [(infracao.id, infracao.nome) for infracao in infracoes]
 
 
-def get_rvfs_filtro(session, pfiltro)-> List[RVF]:
+def get_rvfs_filtro(session, pfiltro) -> List[RVF]:
     filtro = and_()
     if pfiltro.get('numeroCEmercante'):
         filtro = and_(RVF.numeroCEmercante.like(
