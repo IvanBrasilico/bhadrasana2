@@ -1,6 +1,6 @@
-import datetime
 import os
 from _collections import defaultdict
+from datetime import datetime, date, timedelta
 from decimal import Decimal
 from typing import Tuple
 
@@ -33,16 +33,15 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_relatorios_choice, \
     executa_relatorio, get_relatorio, get_afrfb, get_itens_roteiro_checked, \
     get_flags_choice, cadastra_visualizacao, get_tipos_evento_comfase_choice, \
-    get_ovr_container, get_ovr_criadaspor, get_ovr_empresa, get_tipos_evento_todos, \
+    get_ovr_criadaspor, get_ovr_empresa, get_tipos_evento_todos, \
     desfaz_ultimo_eventoovr
 from bhadrasana.models.ovrmanager import get_marcas_choice
-from bhadrasana.models.riscomanager import get_eventos_conteiner, \
-    consulta_container_objects
+from bhadrasana.models.riscomanager import consulta_container_objects
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
-    get_infracoes_choice, get_rvfs_filtro
+    get_infracoes_choice
 from bhadrasana.models.virasana_manager import get_conhecimento, \
     get_containers_conhecimento, get_ncms_conhecimento, get_imagens_dict_container_id, \
-    get_imagens_container, get_dues_container, get_dues_empresa, get_ces_empresa, \
+    get_imagens_container, get_dues_empresa, get_ces_empresa, \
     get_due, get_detalhes_mercante
 from bhadrasana.views import get_user_save_path, valid_file, csrf
 
@@ -196,8 +195,8 @@ def ovr_app(app):
         flags = get_flags_choice(session)
         infracoes = get_infracoes_choice(session)
         filtro_form = FiltroOVRForm(
-            datainicio=datetime.date.today() - datetime.timedelta(days=10),
-            datafim=datetime.date.today(),
+            datainicio=date.today() - timedelta(days=10),
+            datafim=date.today(),
             tiposeventos=tiposeventos,
             recintos=recintos,
             flags=flags,
@@ -233,8 +232,8 @@ def ovr_app(app):
         session = app.config.get('dbsession')
         listasovrs = defaultdict(list)
         titulos_exibicao = []
-        today = datetime.date.today()
-        inicio = datetime.date(year=today.year, month=today.month, day=1)
+        today = date.today()
+        inicio = date(year=today.year, month=today.month, day=1)
         active_tab = request.args.get('active_tab')
         if active_tab is None or active_tab not in TABS:
             if 'minhas_ovrs' in request.url:
@@ -247,7 +246,7 @@ def ovr_app(app):
             oform = FiltroMinhasOVRsForm(request.form, active_tab=active_tab)
         else:
             oform = FiltroMinhasOVRsForm(datainicio=inicio,
-                                         datafim=datetime.date.today(),
+                                         datafim=date.today(),
                                          active_tab=active_tab)
         responsaveis = get_usuarios(session)
         responsavel_form = ResponsavelOVRForm(responsaveis=responsaveis,
@@ -297,7 +296,7 @@ def ovr_app(app):
                 result.append('\t'.join(exibicao.get_titulos()))
                 for ovr in ovrs:
                     id, visualizado, linha = exibicao.get_linha(ovr)
-                    datahora = datetime.datetime.strftime(linha[0], '%d/%m/%Y %H:%M')
+                    datahora = datetime.strftime(linha[0], '%d/%m/%Y %H:%M')
                     linha_str = [str(item) for item in linha[1:]]
                     exibicao_ovr = str(id) + '\t' + datahora + '\t' + '\t'.join(linha_str)
                     result.append(exibicao_ovr)
@@ -314,11 +313,11 @@ def ovr_app(app):
         linhas = []
         sql = ''
         plot = ''
-        today = datetime.date.today()
-        inicio = datetime.date(year=today.year, month=today.month, day=1)
+        today = date.today()
+        inicio = date(year=today.year, month=today.month, day=1)
         filtro_form = FiltroRelatorioForm(
             datainicio=inicio,
-            datafim=datetime.date.today(),
+            datafim=date.today(),
             relatorios=lista_relatorios,
         )
         try:
@@ -757,8 +756,8 @@ def ovr_app(app):
         eventos = []
         imagens = []
         filtro_form = FiltroContainerForm(
-            datainicio=datetime.date.today() - datetime.timedelta(days=10),
-            datafim=datetime.date.today()
+            datainicio=date.today() - timedelta(days=10),
+            datafim=date.today()
         )
         try:
             if request.method == 'POST':
@@ -788,14 +787,21 @@ def ovr_app(app):
     def consulta_conteiner_text():
         """Tela para consulta única de número de contêiner
 
-        Dentro do intervalo de datas, traz lista de ojetos do sistema que contenham
+        Dentro do intervalo de seis meses, traz lista de ojetos do sistema que contenham
         alguma referência ao contêiner.
         """
         session = app.config.get('dbsession')
         mongodb = app.config['mongodb']
         try:
+            numerolote = request.form['numerolote']
+            datafim = datetime.strftime(datetime.today(), '%Y-%m-%d')
+            datainicio = datetime.strftime(
+                datetime.today() - timedelta(days=180), '%Y-%m-%d')
             rvfs, ovrs, infoces, dues, eventos = \
-                consulta_container_objects(request.form, session, mongodb)
+                consulta_container_objects({'numerolote': numerolote,
+                                            'datainicio': datainicio,
+                                            'datafim': datafim},
+                                           session, mongodb)
         except Exception as err:
             logger.error(err, exc_info=True)
             return 'Erro! Detalhes no log da aplicação.\n' + str(err)
@@ -824,8 +830,8 @@ def ovr_app(app):
         eventos = []
         imagens = []
         filtro_form = FiltroEmpresaForm(
-            datainicio=datetime.date.today() - datetime.timedelta(days=10),
-            datafim=datetime.date.today()
+            datainicio=date.today() - timedelta(days=10),
+            datafim=date.today()
         )
         try:
             if request.method == 'POST':
@@ -921,7 +927,7 @@ def ovr_app(app):
             result = []
             for ovr in ovrs:
                 id, visualizado, linha = exibicao.get_linha(ovr)
-                datahora = datetime.datetime.strftime(linha[0], '%d/%m/%Y %H:%M')
+                datahora = datetime.strftime(linha[0], '%d/%m/%Y %H:%M')
                 linha_dict = {chaves[0]: id, chaves[1]: datahora}
                 for key, value in zip(chaves[2:], linha[1:]):
                     linha_dict[key] = value
@@ -962,7 +968,7 @@ def ovr_app(app):
             if metadata:
                 data = metadata.get('dataescaneamento')
                 if data:
-                    dataescaneamento = datetime.datetime.strftime(data, '%d/%m/%Y %H:%M')
+                    dataescaneamento = datetime.strftime(data, '%d/%m/%Y %H:%M')
             result.append({'_id': _id, 'dataescaneamento': dataescaneamento})
         return jsonify(result), 200
 
