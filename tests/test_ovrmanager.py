@@ -27,7 +27,8 @@ Session = sessionmaker(bind=engine)
 session = Session()
 metadata.create_all(engine)
 mercante.metadata.create_all(engine, [
-    mercante.metadata.tables['itensresumo']
+    mercante.metadata.tables['itensresumo'],
+    mercante.metadata.tables['conhecimentosresumo']
 ])
 
 create_tiposevento(session)
@@ -333,16 +334,18 @@ class OVRTestCase(BaseTestCase):
 
     def test_get_ovrs_container(self):
         ovr1, ovr2 = self.create_OVRs_test_ovrs_container()
+        datainicio = datetime(2020, 1, 1, 0, 0)
+        datafim = datetime(2020, 7, 3, 0, 0)
         ces, ovrs = get_ovr_container(session, '1')
         assert len(ovrs) == 1
         assert ovr1 in ovrs
-        ces, ovrs = get_ovr_container(session, '2')
+        ces, ovrs = get_ovr_container(session, '2', datainicio, datafim)
         assert len(ovrs) == 1
         assert ovr1 in ovrs
-        ces, ovrs = get_ovr_container(session, '3')
+        ces, ovrs = get_ovr_container(session, '3', datainicio, datafim)
         assert len(ovrs) == 1
         assert ovr2 in ovrs
-        ces, ovrs = get_ovr_container(session, '4')
+        ces, ovrs = get_ovr_container(session, '4', datainicio, datafim)
         assert len(ovrs) == 0
 
     def test_get_flags(self):

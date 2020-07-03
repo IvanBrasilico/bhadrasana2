@@ -1,18 +1,19 @@
 import sys
 import unittest
+from datetime import datetime, timedelta
 
 import mongomock
 from bs4 import BeautifulSoup
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from ajnaapi.recintosapi import models as recintosapi_models
 import virasana.integracao.mercante.mercantealchemy as mercante
+from ajnaapi.recintosapi import models as recintosapi_models
 from bhadrasana.models.rvf import create_infracoes
+from bhadrasana.routes.admin import admin_app
 from bhadrasana.routes.ovr import ovr_app
 from bhadrasana.routes.risco import risco_app
 from bhadrasana.routes.rvf import rvf_app
-from bhadrasana.routes.admin import admin_app
 
 sys.path.append('.')
 
@@ -169,13 +170,15 @@ class OVRAppTestCase(BaseTestCase):
         assert b'CE Teste' in rv.data
         assert rv.status_code == 200
 
-    def get_consulta_container(self, numero):
+    def get_consulta_container(self, numero, datainicio, datafim):
         rv = self.app.get('/consulta_container')
         assert rv.data is not None
         # print(rv.data)
         token_text = self.get_token(str(rv.data))
         # print(token_text)
-        payload = {'csrf_token': token_text, 'numerolote': numero}
+        payload = {'csrf_token': token_text, 'numerolote': numero,
+                   'datainicio': datetime.strftime(datainicio, '%Y-%m-%d'),
+                   'datafim': datetime.strftime(datafim, '%Y-%m-%d')}
         rv = self.app.post('/consulta_container', data=payload)
         # print(rv.data)
         # print(rv.status_code)
@@ -183,20 +186,21 @@ class OVRAppTestCase(BaseTestCase):
 
     def test_consulta_conteiner(self):
         ovr1, ovr2 = self.create_OVRs_test_ovrs_container()
+        datainicio = datetime(2020, 1, 1, 0, 0)
+        datafim = datetime(2020, 7, 3, 0, 0)
         self.login('ivan', 'ivan')
-        text, status_code = self.get_consulta_container('1')
+        text, status_code = self.get_consulta_container('1', datainicio, datafim)
         assert status_code == 200
         assert '1234' in text
-        text, status_code = self.get_consulta_container('2')
+        text, status_code = self.get_consulta_container('2', datainicio, datafim)
         assert status_code == 200
         assert '1234' in text
-        text, status_code = self.get_consulta_container('3')
+        text, status_code = self.get_consulta_container('3', datainicio, datafim)
         assert status_code == 200
         assert '12345' in text
-        text, status_code = self.get_consulta_container('4')
+        text, status_code = self.get_consulta_container('4', datainicio, datafim)
         assert status_code == 200
         assert '1234' not in text
-
 
     def get_consulta_container_text(self, numero):
         payload = {'numerolote': numero}
@@ -205,6 +209,11 @@ class OVRAppTestCase(BaseTestCase):
 
     def test_consulta_conteiner_text(self):
         ovr1, ovr2 = self.create_OVRs_test_ovrs_container()
+        ovr1.datahora = datetime.today() - timedelta(days=1)
+        ovr2.datahora = ovr1.datahora
+        self.session.add(ovr1)
+        self.session.add(ovr2)
+        self.session.commit()
         self.login('ivan', 'ivan')
         text, status_code = self.get_consulta_container_text('1')
         assert status_code == 200

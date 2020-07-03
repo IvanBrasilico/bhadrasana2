@@ -288,9 +288,9 @@ def consulta_container_objects(values: dict, session, mongodb):
     except ValueError:
         raise ValueError(' Data de início inválida. Formato AAAA-MM-DD')
     if numero is None or datainicio is None or datafim is None:
-        raise ValueError(''' 
-        Dados inválidos passados nos parâmetros. 
-        Parâmetros numerolote: XXXX, datainicio, datafim: AAAA-MM-DD''')
+        raise ValueError(' Dados inválidos passados nos parâmetros.'
+                         ' Parâmetros numerolote: XXXX9999999,'
+                         ' datainicio, datafim: AAAA-MM-DD')
     logger.info('Consultando contêiner %s' % numero)
     logger.info('get_rvfs_filtro')
     rvfs = get_rvfs_filtro(session, {'numerolote': numero,
