@@ -5,6 +5,8 @@ from typing import List
 from sqlalchemy import BigInteger, Column, VARCHAR, Integer, Date
 from sqlalchemy.ext.declarative import declarative_base
 
+from bhadrasana.models import BaseDumpable
+
 sys.path.append('.')
 sys.path.insert(0, '../ajna_docs/commons')
 sys.path.insert(0, '../virasana')
@@ -12,12 +14,20 @@ sys.path.insert(0, '../virasana')
 Base = declarative_base()
 
 
-class Empresa(Base):
+class Empresa(Base, BaseDumpable):
     __tablename__ = 'laudo_empresas'
     id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                 primary_key=True)
     cnpj = Column(VARCHAR(15), index=True)
     nome = Column(VARCHAR(255), index=True)
+
+
+class NCM(Base, BaseDumpable):
+    __tablename__ = 'laudo_ncm'
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'),
+                primary_key=True)
+    title = Column(VARCHAR(20), index=True)
+    contents = Column(VARCHAR(2000), index=True)
 
 
 def get_sigla_unidade(unidade):
@@ -50,8 +60,8 @@ def get_empresa(session, cnpj: str) -> Empresa:
     Não encontrando, busca pelo CNPJ raiz e retorna primeira.
     Em caso de falha, retorna None.
     """
-    if not cnpj:
-        return None
+    if not cnpj or len(cnpj) < 8:
+        raise ValueError('CNPJ deve ser informado com mínimo de 8 dígitos.')
     empresa = session.query(Empresa).filter(
         Empresa.cnpj == cnpj).one_or_none()
     if not empresa:
@@ -68,8 +78,8 @@ def get_empresas(session, cnpj: str) -> List[Empresa]:
     """Retorna lista de empresas com o CNPJ parcial.
      Se passado CNPJ completo, corta em 8 dígitos (raiz)
     """
-    if not cnpj:
-        return []
+    if not cnpj or len(cnpj) < 8:
+        raise ValueError('CNPJ deve ser informado com mínimo de 8 dígitos.')
     return session.query(Empresa).filter(
         Empresa.cnpj.like(cnpj[:8] + '%')).all()
 
@@ -78,6 +88,15 @@ def get_empresas_nome(session, nome: str, limit=10) -> List[Empresa]:
     empresas = session.query(Empresa).filter(
         Empresa.nome.like(nome + '%')).limit(limit).all()
     return [empresa for empresa in empresas]
+
+
+def get_ncm(session, codigo: str) -> NCM:
+    """Retorna NCM com o código passado
+    """
+    if not codigo or len(codigo) < 9:
+        raise ValueError('Código deve ser informado no formato 9999.99.99')
+    return session.query(NCM).filter(
+        NCM.title == codigo).one_or_none()
 
 
 def get_sats_cnpj(session, cnpj: str) -> List[SAT]:
