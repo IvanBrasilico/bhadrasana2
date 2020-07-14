@@ -103,6 +103,13 @@ def processa_fma(session, fma: dict):
     ovr.recinto_id = int(fma['Cod_Recinto'])
     ovr.setor_id = 4  # EQMAB
     ovr.numeroCEmercante = fma['CE_Mercante']
+    try:
+        conhecimento = get_conhecimento(session,
+                                        ovr.numeroCEmercante)
+        if conhecimento:
+            ovr.cnpj_fiscalizado = conhecimento.consignatario
+    except Exception as err:
+        logger.error(str(err), exc_info=True)
     ovr.tipooperacao = 0
     ovr.fase = 0
     ovr.tipoevento_id = 30
