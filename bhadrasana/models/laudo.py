@@ -85,6 +85,8 @@ def get_empresas(session, cnpj: str) -> List[Empresa]:
 
 
 def get_empresas_nome(session, nome: str, limit=10) -> List[Empresa]:
+    if not nome or len(nome) < 3:
+        raise ValueError('Nome deve ser informado, com mínimo de 3 dígitos.')
     empresas = session.query(Empresa).filter(
         Empresa.nome.like(nome + '%')).limit(limit).all()
     return [empresa for empresa in empresas]
