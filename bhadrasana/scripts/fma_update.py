@@ -9,6 +9,7 @@ from sqlalchemy.orm import sessionmaker
 
 from ajna_commons.flask.log import logger
 from bhadrasana.models.ovr import OVR, Recinto
+from models.virasana_manager import get_conhecimento
 
 DTE_USERNAME = os.environ.get('DTE_USERNAME')
 DTE_PASSWORD = os.environ.get('DTE_PASSWORD')
@@ -149,6 +150,25 @@ def update(sql_uri, inicio, fim):
     recintos_list = session.query(Recinto).filter(Recinto.cod_dte.isnot(None)).all()
     lista_recintos_fmas = get_lista_fma_recintos(recintos_list, start, end)
     processa_lista_fma(session, lista_recintos_fmas)
+    update_cnpj_fiscalizado_historico(session)
+
+
+def update_cnpj_fiscalizado_historico(session):
+    ovrs_list = session.query(OVR).filter(
+        OVR.numeroCEmercante.isnot(None)
+    ).filter(
+        OVR.cnpj_fiscalizado.is_(None)
+    ).all()
+    for ovr in ovrs_list:
+        try:
+            conhecimento = get_conhecimento(session,
+                                            ovr.numeroCEmercante)
+            if conhecimento:
+                ovr.cnpj_fiscalizado = conhecimento.consignatario
+            session.add(ovr)
+        except Exception as err:
+            logger.error(str(err), exc_info=True)
+    session.commit()
 
 
 if __name__ == '__main__':  # pragma: no cover
