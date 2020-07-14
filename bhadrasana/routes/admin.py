@@ -72,7 +72,7 @@ class SetorModel(SupervisorModelView):
     column_searchable_list = ['nome']
     # column_filters = ['pai']
     column_list = ('id', 'nome', 'pai_id')
-    # form_columns = ('id', 'nome', 'pai_id')
+    form_columns = ('id', 'nome', 'pai_id')
     # inline_models = ['', ]
 
 
