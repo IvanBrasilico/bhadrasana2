@@ -9,7 +9,7 @@ from sqlalchemy.orm import sessionmaker
 
 from ajna_commons.flask.log import logger
 from bhadrasana.models.ovr import OVR, Recinto
-from models.virasana_manager import get_conhecimento
+from bhadrasana.models.virasana_manager import get_conhecimento
 
 DTE_USERNAME = os.environ.get('DTE_USERNAME')
 DTE_PASSWORD = os.environ.get('DTE_PASSWORD')
