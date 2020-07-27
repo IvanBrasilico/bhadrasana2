@@ -351,14 +351,18 @@ class OVRTestCase(BaseTestCase):
     def test_get_flags(self):
         ovr1 = self.create_OVR_valido()
         ovr2 = self.create_OVR_valido()
+        ovr3 = self.create_OVR_valido()
         flags = get_flags(session)
         inclui_flag_ovr(session, ovr1.id, flags[0].nome)
         inclui_flag_ovr(session, ovr2.id, flags[1].nome)
         inclui_flag_ovr(session, ovr2.id, flags[2].nome)
+        inclui_flag_ovr(session, ovr3.id, '')
         session.refresh(ovr1)
         session.refresh(ovr2)
+        session.refresh(ovr3)
         assert len(ovr1.flags) == 1
         assert len(ovr2.flags) == 2
+        assert len(ovr3.flags) == 0
         assert ovr1.flags[0] == flags[0]
         assert ovr2.flags[0] == flags[1]
         assert ovr2.flags[1] == flags[2]
