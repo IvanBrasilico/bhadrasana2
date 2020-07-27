@@ -20,7 +20,7 @@ from bhadrasana.models.ovrmanager import gera_eventoovr, \
     get_relatorios_choice, get_relatorio, executa_relatorio, get_setores, get_setores_cpf, get_setores_usuario, \
     inclui_flag_ovr, get_tiposmercadoria_choice, get_marcas_choice, lista_tgovr, get_tgovr, cadastra_itemtg, \
     lista_itemtg, get_itemtg, get_itemtg_numero, informa_lavratura_auto, get_marcas, usuario_index, \
-    cadastra_visualizacao, get_visualizacoes, get_ovr_filtro, cadastra_ovr, desfaz_ultimo_eventoovr
+    cadastra_visualizacao, get_visualizacoes, get_ovr_filtro, cadastra_ovr, desfaz_ultimo_eventoovr, get_ovr_empresa
 
 engine = create_engine('sqlite://')
 Session = sessionmaker(bind=engine)
@@ -475,6 +475,18 @@ class OVRTestCase(BaseTestCase):
         assert len(ovrs) == 0
         ovrs = get_ovr_filtro(session, 'U4', {'numerodeclaracao': '20'}, False)
         assert len(ovrs) == 1
+
+    def test_get_ovr_empresa(self):
+        ovr = self.create_OVR_valido()
+        ovr.cnpj_fiscalizado = '00.280.273/0002-18'
+        session.add(ovr)
+        session.commit()
+        session.refresh(ovr)
+        ovrs = get_ovr_empresa(session, '00.280.273')
+        assert len(ovrs) == 1
+        assert isinstance(ovrs, list)
+        with self.assertRaises(ValueError):
+            get_ovr_empresa(session, '00.280')
 
 
 if __name__ == '__main__':
