@@ -302,6 +302,9 @@ class OVRTestCase(BaseTestCase):
         setores = get_setores_cpf(session, '1')
         assert len(setores) == 1
         assert isinstance(setores[0], Setor)
+        usuario_vazio = get_setores_cpf(session, '123456')
+        assert len(usuario_vazio) == 0
+        assert isinstance(usuario_vazio, list)
         setores = get_setores_usuario(session, usuario_setor)
         assert len(setores) == 3
         assert isinstance(setores[0], Setor)
