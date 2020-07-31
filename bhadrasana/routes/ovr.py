@@ -34,7 +34,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     executa_relatorio, get_relatorio, get_afrfb, get_itens_roteiro_checked, \
     get_flags_choice, cadastra_visualizacao, get_tipos_evento_comfase_choice, \
     get_ovr_criadaspor, get_ovr_empresa, get_tipos_evento_todos, \
-    desfaz_ultimo_eventoovr
+    desfaz_ultimo_eventoovr, get_delta_date
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
@@ -123,6 +123,9 @@ def ovr_app(app):
                             ovr_form.nome_fiscalizado.data = fiscalizado.nome
                         if ovr.tipooperacao != 0:
                             historico_form.user_name.render_kw = {'disabled': 'disabled'}
+                        if get_delta_date(ovr_form.adata.data, ovr_form.dataentrada.data) >= 90:
+                            flash('Alerta: Diferença entre Data da Entrada da Carga para'
+                                  ' Data de Emissão maior que 90 dias!')
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
