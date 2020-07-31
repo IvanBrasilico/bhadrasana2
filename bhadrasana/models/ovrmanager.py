@@ -655,3 +655,8 @@ def cadastra_visualizacao(session, ovr: OVR, user_name: str) -> VisualizacaoOVR:
 def get_visualizacoes(session, ovr, user_name) -> List[VisualizacaoOVR]:
     return session.query(VisualizacaoOVR).filter(VisualizacaoOVR.ovr_id == ovr.id). \
         filter(VisualizacaoOVR.user_name == user_name).all()
+
+def get_delta_date(start, end):
+     start_date = datetime(year=start.year, month=start.month, day=start.day)
+     end_date = datetime(year=end.year, month=end.month, day=end.day)
+     return (end_date - start_date).days
