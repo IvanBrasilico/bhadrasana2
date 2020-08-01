@@ -123,9 +123,10 @@ def ovr_app(app):
                             ovr_form.nome_fiscalizado.data = fiscalizado.nome
                         if ovr.tipooperacao != 0:
                             historico_form.user_name.render_kw = {'disabled': 'disabled'}
-                        if get_delta_date(ovr_form.adata.data, ovr_form.dataentrada.data) >= 90:
-                            flash('Alerta: Diferença entre Data da Entrada da Carga para'
-                                  ' Data de Emissão maior que 90 dias!')
+                        if ovr_form.dataentrada.data and ovr.setor_id == '4':
+                            if get_delta_date(ovr_form.adata.data, ovr_form.dataentrada.data) >= 90:
+                                flash('Alerta: Diferença entre Data de Emissão e '
+                                      'Data da Entrada da Carga maior que 90 dias!')
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
