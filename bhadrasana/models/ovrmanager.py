@@ -484,7 +484,7 @@ def get_itemtg_numero(session, tg: TGOVR, numero: int) -> ItemTG:
 
 
 def get_itemtg_descricao_qtde(session, tg: TGOVR, descricao: str, qtde: str) -> ItemTG:
-    """Retorna ItemTG do TG e descricao e qtde passados. Se não existir, retorna ItemTG vazio."""
+    """Retorna ItemTG do TG e descricao e qtde passados OU ItemTG vazio."""
     itemtg = session.query(ItemTG).filter(ItemTG.tg_id == tg.id).filter(
         ItemTG.descricao == descricao).filter(ItemTG.qtde == qtde).one_or_none()
     if itemtg is None:
@@ -646,8 +646,8 @@ def importa_planilha_tg(session, tg: TGOVR, afile):
             if numero:
                 itemtg = get_itemtg_numero(session, tg, numero)
             else:
-                #  TODO: Não criar novo item se descrição, NCM e qtde baterem, recuperar
-                itemtg = get_itemtg_descricao_qtde(session, tg, row['descricao'], row['qtde'])
+                itemtg = get_itemtg_descricao_qtde(session, tg,
+                                                   row['descricao'], row['qtde'])
                 itemtg.numero = index
             itemtg.tg_id = tg.id
             itemtg.descricao = row['descricao']
