@@ -27,14 +27,14 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_ovr_filtro, gera_eventoovr, gera_processoovr, get_tipos_processo, lista_itemtg, \
     get_itemtg, get_recintos, \
     cadastra_itemtg, get_usuarios, atribui_responsavel_ovr, lista_tgovr, get_tgovr, \
-    cadastra_tgovr, get_ovr_responsavel, importa_planilha, exporta_planilhaovr, \
+    cadastra_tgovr, get_ovr_responsavel, importa_planilha_tg, exporta_planilhaovr, \
     get_tiposmercadoria_choice, \
     inclui_flag_ovr, exclui_flag_ovr, get_flags, informa_lavratura_auto, \
     get_relatorios_choice, \
     executa_relatorio, get_relatorio, get_afrfb, get_itens_roteiro_checked, \
     get_flags_choice, cadastra_visualizacao, get_tipos_evento_comfase_choice, \
     get_ovr_criadaspor, get_ovr_empresa, get_tipos_evento_todos, \
-    desfaz_ultimo_eventoovr, get_delta_date
+    desfaz_ultimo_eventoovr, get_delta_date, exporta_planilha_tg
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
@@ -608,13 +608,35 @@ def ovr_app(app):
 
     @app.route('/importaplanilhatg', methods=['POST'])
     @login_required
-    def importa_planilha_tg():
+    def importa_planilhatg():
         try:
             session = app.config.get('dbsession')
             tg_id = request.form['tg_id']
             tg = get_tgovr(session, tg_id)
             planilha = request.files['planilha']
-            importa_planilha(session, tg, planilha)
+            importa_planilha_tg(session, tg, planilha)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return redirect(url_for('listaitemtg', tg_id=tg_id))
+
+    @app.route('/exportaplanilhatg', methods=['GET'])
+    @login_required
+    def exporta_planilhatg():
+        """Exporta tabelão de OVRs do Setor com pivot table."""
+        tg_id = None
+        try:
+            session = app.config.get('dbsession')
+            tg_id = request.args.get('tg_id')
+            if not tg_id:
+                raise KeyError('Deve ser informado o id do TG (tg_id)')
+            tg = get_tgovr(session, tg_id)
+            out_filename = 'tg{}.xls'.format(tg.numerotg)
+            exporta_planilha_tg(tg,
+                                os.path.join(get_user_save_path(), out_filename))
+            return redirect('static/%s/%s' % (current_user.name, out_filename))
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')

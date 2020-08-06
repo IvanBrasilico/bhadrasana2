@@ -32,7 +32,8 @@ setup(
         'redis', # Ver como retirar necessidade
         'requests', # Ver como retirar necessidade
         'sqlalchemy',
-        'xlrd'
+        'xlrd',
+        'xlwt',
     ],
     dependency_links=[
         'git+https://github.com/IvanBrasilico/ajna_commons.git#egg=ajna_commons-0.0.1'

@@ -2,6 +2,7 @@ from datetime import timedelta, datetime
 from typing import List, Tuple
 
 import pandas as pd
+import numpy as np
 from sqlalchemy import and_, text, or_
 from sqlalchemy.orm import Session
 
@@ -482,6 +483,15 @@ def get_itemtg_numero(session, tg: TGOVR, numero: int) -> ItemTG:
     return itemtg
 
 
+def get_itemtg_descricao_qtde(session, tg: TGOVR, descricao: str, qtde: str) -> ItemTG:
+    """Retorna ItemTG do TG e descricao e qtde passados. Se não existir, retorna ItemTG vazio."""
+    itemtg = session.query(ItemTG).filter(ItemTG.tg_id == tg.id).filter(
+        ItemTG.descricao == descricao).filter(ItemTG.qtde == qtde).one_or_none()
+    if itemtg is None:
+        itemtg = ItemTG()
+    return itemtg
+
+
 # TODO: mover Setores e Usuários daqui e do models/ovr para módulos específicos
 def get_usuarios(session) -> List[Tuple[str, str]]:
     usuarios = session.query(Usuario).all()
@@ -590,7 +600,30 @@ def get_tiposmercadoria_choice(session):
     return [(tipo.id, tipo.nome) for tipo in tipos]
 
 
-def importa_planilha(session, tg: TGOVR, afile):
+def muda_chaves(original: dict) -> dict:
+    de_para = {
+        'ncm': ['Código NCM'],
+        'descricao': ['Descrição'],
+        'marca': ['Marca'],  # Não utilizado ainda
+        'modelo': ['Modelo'],  # Não utilizado ainda
+        'unidadedemedida': ['Unid. Medida'],
+        'procedencia': ['País Procedência'],  # Não utilizado ainda
+        'origem': ['País Origem'],  # Não utilizado ainda
+        'moeda': ['Moeda'],  # Não utilizado ainda
+        'qtde': ['Quantidade'],
+        'valor': ['Valor Unitário'],
+    }
+    new_dict = {}
+    print(original)
+    for key, alternative_keys in de_para.items():
+        for alternative_key in alternative_keys:
+            if original.get(alternative_key):
+                new_dict[key] = original.get(alternative_key)
+    print(new_dict)
+    return new_dict
+
+
+def importa_planilha_tg(session, tg: TGOVR, afile):
     if '.csv' in afile.filename:
         df = pd.read_csv(afile, sep=';',
                          header=1, encoding='windows-1252')
@@ -600,18 +633,30 @@ def importa_planilha(session, tg: TGOVR, afile):
         df = pd.read_excel(afile, engine='ods')
     else:
         raise Exception('Extensão de arquivo desconhecida! Conheço .csv, .ods e .xls')
-    print(df.head())
+    # print(df.head())
+    df = df.replace({np.nan: None})
     try:
-        for index, row in df.iterrows():
-            itemtg = get_itemtg_numero(session, tg, row['numero'])
+        for index, original_row in df.iterrows():
+            row = muda_chaves(original_row)
+            if row.get('descricao') is None:
+                logger.info('Abortando linha {} da planilha {}'
+                            'devido descrição vazia'.format(index, afile.filename))
+                continue
+            numero = row.get('numero')
+            if numero:
+                itemtg = get_itemtg_numero(session, tg, numero)
+            else:
+                #  TODO: Não criar novo item se descrição, NCM e qtde baterem, recuperar
+                itemtg = get_itemtg_descricao_qtde(session, tg, row['descricao'], row['qtde'])
+                itemtg.numero = index
             itemtg.tg_id = tg.id
             itemtg.descricao = row['descricao']
             itemtg.qtde = row['qtde']
             itemtg.unidadedemedida = Enumerado.index_unidadeMedida(row['unidadedemedida'])
-            ncm = row.get['ncm']
+            ncm = row.get('ncm')
             if ncm:
                 itemtg.ncm = ncm
-            valor = row.get['valor']
+            valor = row.get('valor')
             if valor:
                 itemtg.valor = valor
             session.add(itemtg)
@@ -620,6 +665,14 @@ def importa_planilha(session, tg: TGOVR, afile):
         raise KeyError('Campo não encontrado. Campos obrigatórios na planilha são '
                        'numero, descricao, qtde e unidademedida. Opcionais ncm e valor.'
                        'Erro: %s' % str(err))
+
+
+def exporta_planilha_tg(tg: TGOVR, filename):
+    itens = []
+    for item in tg.itenstg:
+        itens.append(item.__dict__)
+    df = pd.DataFrame(itens)
+    df.to_excel(filename)
 
 
 def exporta_planilhaovr(session: Session, user_name: str, filename: str):
@@ -656,7 +709,8 @@ def get_visualizacoes(session, ovr, user_name) -> List[VisualizacaoOVR]:
     return session.query(VisualizacaoOVR).filter(VisualizacaoOVR.ovr_id == ovr.id). \
         filter(VisualizacaoOVR.user_name == user_name).all()
 
+
 def get_delta_date(start, end):
-     start_date = datetime(year=start.year, month=start.month, day=start.day)
-     end_date = datetime(year=end.year, month=end.month, day=end.day)
-     return (end_date - start_date).days
+    start_date = datetime(year=start.year, month=start.month, day=start.day)
+    end_date = datetime(year=end.year, month=end.month, day=end.day)
+    return (end_date - start_date).days
