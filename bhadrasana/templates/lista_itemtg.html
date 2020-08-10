@@ -122,7 +122,7 @@
                 <h1 class="modal-title" id="ModalLabel">Importar Planilha</h1>
             </div>
             <div class="modal-body">
-                <form method="POST" action="/importaplanilhatg" enctype="multipart/form-data">
+                <form method="POST" action="importaplanilhatg" enctype="multipart/form-data">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <input type="hidden" name="tg_id" value="{{ oform.tg_id.data }}"/>
                     <label class="btn btn-default btn-choose" for="planilha">
