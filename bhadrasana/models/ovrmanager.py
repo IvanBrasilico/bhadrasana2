@@ -600,19 +600,20 @@ def get_tiposmercadoria_choice(session):
     return [(tipo.id, tipo.nome) for tipo in tipos]
 
 
+de_para = {
+    'ncm': ['Código NCM'],
+    'descricao': ['Descrição'],
+    'marca': ['Marca'],  # Não utilizado ainda
+    'modelo': ['Modelo'],  # Não utilizado ainda
+    'unidadedemedida': ['Unid. Medida'],
+    'procedencia': ['País Procedência'],  # Não utilizado ainda
+    'origem': ['País Origem'],  # Não utilizado ainda
+    'moeda': ['Moeda'],  # Não utilizado ainda
+    'qtde': ['Quantidade'],
+    'valor': ['Valor Unitário'],
+}
+
 def muda_chaves(original: dict) -> dict:
-    de_para = {
-        'ncm': ['Código NCM'],
-        'descricao': ['Descrição'],
-        'marca': ['Marca'],  # Não utilizado ainda
-        'modelo': ['Modelo'],  # Não utilizado ainda
-        'unidadedemedida': ['Unid. Medida'],
-        'procedencia': ['País Procedência'],  # Não utilizado ainda
-        'origem': ['País Origem'],  # Não utilizado ainda
-        'moeda': ['Moeda'],  # Não utilizado ainda
-        'qtde': ['Quantidade'],
-        'valor': ['Valor Unitário'],
-    }
     new_dict = {}
     print(original)
     for key, alternative_keys in de_para.items():
@@ -621,6 +622,7 @@ def muda_chaves(original: dict) -> dict:
                 new_dict[key] = original.get(alternative_key)
     print(new_dict)
     return new_dict
+
 
 
 def importa_planilha_tg(session, tg: TGOVR, afile):
@@ -670,7 +672,13 @@ def importa_planilha_tg(session, tg: TGOVR, afile):
 def exporta_planilha_tg(tg: TGOVR, filename):
     itens = []
     for item in tg.itenstg:
-        itens.append(item.__dict__)
+        dumped_item = item.dump()
+        dumped_item_titulospadrao = {}
+        for key, value in dumped_item.items():
+            titulospadrao = de_para.get(key)
+            if titulospadrao:
+                dumped_item_titulospadrao[titulospadrao[0]] = value
+        itens.append(dumped_item_titulospadrao)
     df = pd.DataFrame(itens)
     df.to_excel(filename)
 
