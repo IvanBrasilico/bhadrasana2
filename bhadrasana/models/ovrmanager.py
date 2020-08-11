@@ -4,7 +4,7 @@ from typing import List, Tuple
 
 import pandas as pd
 import numpy as np
-from sqlalchemy import and_, text, or_
+from sqlalchemy import and_, text, or_, func
 from sqlalchemy.orm import Session
 
 from ajna_commons.flask.log import logger
@@ -443,6 +443,17 @@ def lista_tgovr(session, ovr_id) -> List[TGOVR]:
     except (ValueError, TypeError):
         return []
     return session.query(TGOVR).filter(TGOVR.ovr_id == ovr_id).all()
+
+def atualiza_valores(session, tg_id):
+    """ Atualiza os valores Qtde e Valor do TG com o somatório das Quantidades e dos Valores
+     de todos os Itens desse TG"""
+    total_qtde = session.query(func.sum(ItemTG.qtde).filter(ItemTG.tg_id == tg_id)).scalar()
+    total_valor = session.query(func.sum(ItemTG.valor).filter(ItemTG.tg_id == tg_id)).scalar()
+    tg = session.query(TGOVR).filter(TGOVR.id == tg_id).one_or_none()
+    tg.qtde = total_qtde
+    tg.valor = total_valor
+    session.add(tg)
+    session.commit()
 
 
 def get_tgovr(session, tg_id: int = None) -> TGOVR:
