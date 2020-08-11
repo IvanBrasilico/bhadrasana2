@@ -373,6 +373,8 @@ class ItemTG(BaseRastreavel, BaseDumpable):
     tg = relationship('TGOVR', back_populates='itenstg')
     numero = Column(Integer, index=True, nullable=False)
     descricao = Column(VARCHAR(500), index=True, nullable=False)
+    contramarca = Column(VARCHAR(200), index=True)
+    modelo = Column(VARCHAR(200), index=True)
     qtde = Column(Numeric(10, 2))
     unidadedemedida = Column(Integer(), index=True)
     valor = Column(Numeric(10, 2), index=True)

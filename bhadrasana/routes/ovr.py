@@ -34,7 +34,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     executa_relatorio, get_relatorio, get_afrfb, get_itens_roteiro_checked, \
     get_flags_choice, cadastra_visualizacao, get_tipos_evento_comfase_choice, \
     get_ovr_criadaspor, get_ovr_empresa, get_tipos_evento_todos, \
-    desfaz_ultimo_eventoovr, get_delta_date, exporta_planilha_tg
+    desfaz_ultimo_eventoovr, get_delta_date, exporta_planilha_tg, TipoPlanilha
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
@@ -633,10 +633,17 @@ def ovr_app(app):
             tg_id = request.args.get('tg_id')
             if not tg_id:
                 raise KeyError('Deve ser informado o id do TG (tg_id)')
+            formato = request.args.get('formato')
+            if not formato:
+                formato = 'Safira'
             tg = get_tgovr(session, tg_id)
-            out_filename = 'tg{}.xls'.format(tg.numerotg)
+            out_filename = 'tg_{}_{}.xls'.format(
+                tg.numerotg,
+                datetime.strftime(datetime.now(), '%Y-%M-%HT%m:%s'))
+            print(formato)
             exporta_planilha_tg(tg,
-                                os.path.join(get_user_save_path(), out_filename))
+                                os.path.join(get_user_save_path(), out_filename),
+                                TipoPlanilha[formato])
             return redirect('static/%s/%s' % (current_user.name, out_filename))
         except Exception as err:
             logger.error(err, exc_info=True)

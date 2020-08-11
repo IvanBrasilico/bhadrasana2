@@ -484,10 +484,17 @@ def get_itemtg_numero(session, tg: TGOVR, numero: int) -> ItemTG:
     return itemtg
 
 
-def get_itemtg_descricao_qtde(session, tg: TGOVR, descricao: str, qtde: str) -> ItemTG:
+def get_itemtg_descricao_qtde_modelo(session, tg: TGOVR, descricao: str, qtde: str, modelo: str) -> ItemTG:
     """Retorna ItemTG do TG e descricao e qtde passados OU ItemTG vazio."""
-    itemtg = session.query(ItemTG).filter(ItemTG.tg_id == tg.id).filter(
-        ItemTG.descricao == descricao).filter(ItemTG.qtde == qtde).one_or_none()
+    itemtg = session.query(ItemTG).filter(
+        ItemTG.tg_id == tg.id
+    ).filter(
+        ItemTG.descricao == descricao
+    ).filter(
+        ItemTG.qtde == qtde
+    ).filter(
+        ItemTG.modelo == modelo
+    ).one_or_none()
     if itemtg is None:
         itemtg = ItemTG()
     return itemtg
@@ -604,7 +611,7 @@ def get_tiposmercadoria_choice(session):
 de_para = {
     'ncm': ['Código NCM', 'NCM'],
     'descricao': ['Descrição', 'OBSERVAÇÃO'],
-    'marca': ['Marca', 'MARCA'],  # Não utilizado ainda
+    'contramarca': ['Marca', 'MARCA'],  # Não utilizado ainda
     'modelo': ['Modelo', 'MODELO'],  # Não utilizado ainda
     'unidadedemedida': ['Unid. Medida', 'UNIDADE'],
     'procedencia': ['País Procedência', '*****'],  # Não utilizado ainda
@@ -649,13 +656,15 @@ def importa_planilha_tg(session, tg: TGOVR, afile):
             if numero:
                 itemtg = get_itemtg_numero(session, tg, numero)
             else:
-                itemtg = get_itemtg_descricao_qtde(session, tg,
-                                                   row['descricao'], row['qtde'])
+                itemtg = get_itemtg_descricao_qtde_modelo(session, tg,
+                                                   row['descricao'], row['qtde'], row.get('modelo'))
                 itemtg.numero = index
             itemtg.tg_id = tg.id
             itemtg.descricao = row['descricao']
             itemtg.qtde = row['qtde']
             itemtg.unidadedemedida = Enumerado.index_unidadeMedida(row['unidadedemedida'])
+            itemtg.modelo = row.get('modelo')
+            itemtg.contramarca = row.get('marca')
             ncm = row.get('ncm')
             if ncm:
                 itemtg.ncm = ncm
@@ -676,16 +685,18 @@ class TipoPlanilha(Enum):
 
 
 def exporta_planilha_tg(tg: TGOVR, filename: str,
-                        mode: TipoPlanilha = TipoPlanilha.Safira):
+                        formato: TipoPlanilha = TipoPlanilha.Safira):
     itens = []
+    print(formato)
     for item in tg.itenstg:
         dumped_item = item.dump()
         dumped_item_titulospadrao = {}
         for key, value in dumped_item.items():
             titulospadrao = de_para.get(key)
             if titulospadrao:
-                dumped_item_titulospadrao[titulospadrao[mode.value]] = value
+                dumped_item_titulospadrao[titulospadrao[formato.value]] = value
         itens.append(dumped_item_titulospadrao)
+        print(itens)
     df = pd.DataFrame(itens)
     df.to_excel(filename)
 

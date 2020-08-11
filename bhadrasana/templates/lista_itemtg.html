@@ -53,16 +53,22 @@
                 Novo item
             </button>
         </div>
-        <div class="col-sm-3">
+        <div class="col-sm-2">
             <button id="btn_importar" type="button" class="btn btn-info form-control"
                     data-toggle="modal" data-target="#importa_planilha">
                 Importar Planilha
             </button>
         </div>
-        <div class="col-sm-3">
-            <button onclick="exporta_planilhatg()" id="btn_exportar"
+        <div class="col-sm-2">
+            <button onclick="exporta_planilhatg('Safira')" id="btn_exportar"
                     type="button" class="btn btn-default form-control">
-                Exportar Planilha
+                Exportar (Safira)
+            </button>
+        </div>
+        <div class="col-sm-2">
+            <button onclick="exporta_planilhatg('Secta')" id="btn_exportar2"
+                    type="button" class="btn btn-default form-control">
+                Exportar (Secta)
             </button>
         </div>
     </div>
@@ -158,8 +164,8 @@
         });
       }
     }
-    function exporta_planilhatg() {
-        window.location.assign('exportaplanilhatg?tg_id={{oform.tg_id.data}}');
+    function exporta_planilhatg(formato) {
+        window.location.assign('exportaplanilhatg?tg_id={{oform.tg_id.data}}&formato=' + formato);
     }
 </script>
 {% endblock %}
