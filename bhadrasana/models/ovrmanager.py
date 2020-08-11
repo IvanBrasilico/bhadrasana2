@@ -1,4 +1,5 @@
 from datetime import timedelta, datetime
+from enum import Enum
 from typing import List, Tuple
 
 import pandas as pd
@@ -601,17 +602,18 @@ def get_tiposmercadoria_choice(session):
 
 
 de_para = {
-    'ncm': ['Código NCM'],
-    'descricao': ['Descrição'],
-    'marca': ['Marca'],  # Não utilizado ainda
-    'modelo': ['Modelo'],  # Não utilizado ainda
-    'unidadedemedida': ['Unid. Medida'],
-    'procedencia': ['País Procedência'],  # Não utilizado ainda
-    'origem': ['País Origem'],  # Não utilizado ainda
-    'moeda': ['Moeda'],  # Não utilizado ainda
-    'qtde': ['Quantidade'],
-    'valor': ['Valor Unitário'],
+    'ncm': ['Código NCM', 'NCM'],
+    'descricao': ['Descrição', 'OBSERVAÇÃO'],
+    'marca': ['Marca', 'MARCA'],  # Não utilizado ainda
+    'modelo': ['Modelo', 'MODELO'],  # Não utilizado ainda
+    'unidadedemedida': ['Unid. Medida', 'UNIDADE'],
+    'procedencia': ['País Procedência', '*****'],  # Não utilizado ainda
+    'origem': ['País Origem', '***'],  # Não utilizado ainda
+    'moeda': ['Moeda', '****'],  # Não utilizado ainda
+    'qtde': ['Quantidade', 'QUANTIDADE'],
+    'valor': ['Valor Unitário', 'VALOR'],
 }
+
 
 def muda_chaves(original: dict) -> dict:
     new_dict = {}
@@ -624,7 +626,6 @@ def muda_chaves(original: dict) -> dict:
     return new_dict
 
 
-
 def importa_planilha_tg(session, tg: TGOVR, afile):
     if '.csv' in afile.filename:
         df = pd.read_csv(afile, sep=';',
@@ -632,7 +633,7 @@ def importa_planilha_tg(session, tg: TGOVR, afile):
     elif '.xls' in afile.filename:
         df = pd.read_excel(afile)
     elif '.ods' in afile.filename:
-        df = pd.read_excel(afile, engine='ods')
+        df = pd.read_excel(afile, engine='odf')
     else:
         raise Exception('Extensão de arquivo desconhecida! Conheço .csv, .ods e .xls')
     # print(df.head())
@@ -669,7 +670,13 @@ def importa_planilha_tg(session, tg: TGOVR, afile):
                        'Erro: %s' % str(err))
 
 
-def exporta_planilha_tg(tg: TGOVR, filename):
+class TipoPlanilha(Enum):
+    Safira = 0
+    Secta = 1
+
+
+def exporta_planilha_tg(tg: TGOVR, filename: str,
+                        mode: TipoPlanilha = TipoPlanilha.Safira):
     itens = []
     for item in tg.itenstg:
         dumped_item = item.dump()
@@ -677,7 +684,7 @@ def exporta_planilha_tg(tg: TGOVR, filename):
         for key, value in dumped_item.items():
             titulospadrao = de_para.get(key)
             if titulospadrao:
-                dumped_item_titulospadrao[titulospadrao[0]] = value
+                dumped_item_titulospadrao[titulospadrao[mode.value]] = value
         itens.append(dumped_item_titulospadrao)
     df = pd.DataFrame(itens)
     df.to_excel(filename)
