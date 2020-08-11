@@ -447,6 +447,10 @@ def lista_tgovr(session, ovr_id) -> List[TGOVR]:
 def atualiza_valores(session, tg_id):
     """ Atualiza os valores Qtde e Valor do TG com o somatório das Quantidades e dos Valores
      de todos os Itens desse TG"""
+    try:
+        tg_id = int(tg_id)
+    except (ValueError, TypeError) as err:
+        raise err
     total_qtde = session.query(func.sum(ItemTG.qtde).filter(ItemTG.tg_id == tg_id)).scalar()
     total_valor = session.query(func.sum(ItemTG.valor).filter(ItemTG.tg_id == tg_id)).scalar()
     tg = session.query(TGOVR).filter(TGOVR.id == tg_id).one_or_none()
