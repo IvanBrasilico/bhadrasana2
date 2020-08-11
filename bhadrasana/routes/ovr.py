@@ -34,7 +34,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     executa_relatorio, get_relatorio, get_afrfb, get_itens_roteiro_checked, \
     get_flags_choice, cadastra_visualizacao, get_tipos_evento_comfase_choice, \
     get_ovr_criadaspor, get_ovr_empresa, get_tipos_evento_todos, \
-    desfaz_ultimo_eventoovr, get_delta_date, exporta_planilha_tg, TipoPlanilha
+    desfaz_ultimo_eventoovr, get_delta_date, exporta_planilha_tg, TipoPlanilha, atualiza_valores
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
@@ -123,7 +123,7 @@ def ovr_app(app):
                             ovr_form.nome_fiscalizado.data = fiscalizado.nome
                         if ovr.tipooperacao != 0:
                             historico_form.user_name.render_kw = {'disabled': 'disabled'}
-                        if ovr_form.dataentrada.data and ovr.setor_id == '4':
+                        if ovr_form.dataentrada.data and ovr.setor_id == '2':
                             if get_delta_date(ovr_form.adata.data,
                                               ovr_form.dataentrada.data) >= 90:
                                 flash('Alerta: Diferença entre Data de Emissão e '
@@ -563,6 +563,7 @@ def ovr_app(app):
                 oform = ItemTGForm(tg_id=tg_id, marcas=marcas)
                 max_numero_itemtg = 0
                 if listaitemtg and len(listaitemtg) > 0:
+                    atualiza_valores(session, tg_id)
                     max_numero_itemtg = max([item.numero for item in listaitemtg])
                 oform.numero.data = max_numero_itemtg + 1
         except Exception as err:
