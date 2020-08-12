@@ -451,10 +451,11 @@ def atualiza_valortotal_tg(session, tg_id: int):
     tg = session.query(TGOVR).filter(TGOVR.id == tg_id).one_or_none()
     total_qtde = session.query(func.sum(ItemTG.qtde)). \
         filter(ItemTG.tg_id == tg.id).scalar()
-    total_valor = session.query(func.sum(ItemTG.valor)). \
+    total_valor = session.query(func.sum(ItemTG.valor * ItemTG.qtde) ). \
         filter(ItemTG.tg_id == tg.id).scalar()
     tg.qtde = total_qtde
     tg.valor = total_valor
+    print(total_qtde, total_valor)
     session.add(tg)
     session.commit()
 

@@ -340,7 +340,7 @@ class TGOVR(BaseRastreavel, BaseDumpable):
     descricao = Column(VARCHAR(500), index=True, nullable=False)
     unidadedemedida = Column(Integer(), index=True)
     qtde = Column(Numeric(10, 2))
-    valor = Column(Numeric(10, 2))
+    valor = Column(Numeric(12, 2))
     marcas = relationship('Marca',
                           secondary=marcas_table)
     tipomercadoria_id = Column(BigInteger().with_variant(Integer, 'sqlite'),

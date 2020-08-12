@@ -598,10 +598,7 @@ def ovr_app(app):
             id = request.args.get('id')
             campo = request.args.get('campo')
             valor = request.args.get('valor')
-            itemtg = session.query(ItemTG).filter(ItemTG.id == int(id)).one_or_none()
-            setattr(itemtg, campo, valor)
-            session.add(itemtg)
-            session.commit()
+            cadastra_itemtg(session, {'id': id, campo: valor})
         except Exception as err:
             logger.error(err, exc_info=True)
             return {'error': str(err), 'msg': 'Erro!'}, 500
