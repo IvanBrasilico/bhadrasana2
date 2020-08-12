@@ -563,7 +563,6 @@ def ovr_app(app):
                 oform = ItemTGForm(tg_id=tg_id, marcas=marcas)
                 max_numero_itemtg = 0
                 if listaitemtg and len(listaitemtg) > 0:
-                    atualiza_valores(session, tg_id)
                     max_numero_itemtg = max([item.numero for item in listaitemtg])
                 oform.numero.data = max_numero_itemtg + 1
         except Exception as err:
