@@ -444,16 +444,12 @@ def lista_tgovr(session, ovr_id) -> List[TGOVR]:
         return []
     return session.query(TGOVR).filter(TGOVR.ovr_id == ovr_id).all()
 
-def atualiza_valores(session, tg_id):
+def atualiza_valores(session, tg_id: int):
     """ Atualiza os valores Qtde e Valor do TG com o somatório das Quantidades e dos Valores
      de todos os Itens desse TG"""
-    try:
-        tg_id = int(tg_id)
-    except (ValueError, TypeError) as err:
-        raise err
-    total_qtde = session.query(func.sum(ItemTG.qtde).filter(ItemTG.tg_id == tg_id)).scalar()
-    total_valor = session.query(func.sum(ItemTG.valor).filter(ItemTG.tg_id == tg_id)).scalar()
     tg = session.query(TGOVR).filter(TGOVR.id == tg_id).one_or_none()
+    total_qtde = session.query(func.sum(ItemTG.qtde)).filter(ItemTG.tg_id == tg.id).scalar()
+    total_valor = session.query(func.sum(ItemTG.valor)).filter(ItemTG.tg_id == tg.id).scalar()
     tg.qtde = total_qtde
     tg.valor = total_valor
     session.add(tg)
@@ -470,8 +466,10 @@ def get_tgovr(session, tg_id: int = None) -> TGOVR:
 
 def cadastra_itemtg(session, params: dict) -> ItemTG:
     item_tg = get_itemtg(session, params.get('id'))
-    return gera_objeto(item_tg,
+    item_tg = gera_objeto(item_tg,
                        session, params)
+    atualiza_valores(session, item_tg.tg_id)
+    return item_tg
 
 
 def lista_itemtg(session, tg_id: str) -> List[ItemTG]:
