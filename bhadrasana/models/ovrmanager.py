@@ -629,8 +629,8 @@ def get_tiposmercadoria_choice(session):
 de_para = {
     'ncm': ['Código NCM', 'NCM'],
     'descricao': ['Descrição', 'OBSERVAÇÃO'],
-    'contramarca': ['Marca', 'MARCA'],  # Não utilizado ainda
-    'modelo': ['Modelo', 'MODELO'],  # Não utilizado ainda
+    'contramarca': ['Marca', 'MARCA'],
+    'modelo': ['Modelo', 'MODELO'],
     'unidadedemedida': ['Unid. Medida', 'UNIDADE'],
     'procedencia': ['País Procedência', '*****'],  # Não utilizado ainda
     'origem': ['País Origem', '***'],  # Não utilizado ainda
@@ -713,13 +713,15 @@ def exporta_planilha_tg(tg: TGOVR, filename: str,
     print(formato)
     for item in tg.itenstg:
         dumped_item = item.dump()
+        print(dumped_item)
         dumped_item_titulospadrao = {}
         for key, value in dumped_item.items():
             titulospadrao = de_para.get(key)
             if titulospadrao:
                 dumped_item_titulospadrao[titulospadrao[formato.value]] = value
         itens.append(dumped_item_titulospadrao)
-        print(itens)
+        print(dumped_item_titulospadrao)
+    #print(itens)
     df = pd.DataFrame(itens)
     df.to_excel(filename)
 
