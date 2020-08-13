@@ -692,6 +692,7 @@ def importa_planilha_tg(session, tg: TGOVR, afile):
                 itemtg.valor = valor
             session.add(itemtg)
         session.commit()
+        atualiza_valortotal_tg(session, tg.id)
     except KeyError as err:
         if index == 0:
             raise KeyError(
