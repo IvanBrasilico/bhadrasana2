@@ -389,8 +389,14 @@ class ItemTG(BaseRastreavel, BaseDumpable):
 
     def dump(self, exclude=None, explode=True):
         dumped = super().dump(exclude)
-        dumped['qtde'] = str(dumped['qtde'])
-        dumped['valor'] = str(dumped['valor'])
+        if dumped['qtde']:
+            dumped['qtde'] = '{:0f}'.format(dumped['qtde'])
+        else:
+            dumped['qtde'] = ''
+        if dumped['valor']:
+            dumped['valor'] = '{:0.2f}'.format(dumped['valor'])
+        else:
+            dumped['valor'] = ''
         if self.marca:
             dumped['marca_descricao'] = self.marca.nome
         dumped['unidadedemedida'] = self.get_unidadedemedida
