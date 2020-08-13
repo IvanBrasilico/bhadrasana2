@@ -2,8 +2,8 @@ from datetime import timedelta, datetime
 from enum import Enum
 from typing import List, Tuple
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 from sqlalchemy import and_, text, or_, func
 from sqlalchemy.orm import Session
 
@@ -451,7 +451,7 @@ def atualiza_valortotal_tg(session, tg_id: int):
     tg = session.query(TGOVR).filter(TGOVR.id == tg_id).one_or_none()
     total_qtde = session.query(func.sum(ItemTG.qtde)). \
         filter(ItemTG.tg_id == tg.id).scalar()
-    total_valor = session.query(func.sum(ItemTG.valor * ItemTG.qtde) ). \
+    total_valor = session.query(func.sum(ItemTG.valor * ItemTG.qtde)). \
         filter(ItemTG.tg_id == tg.id).scalar()
     tg.qtde = total_qtde
     tg.valor = total_valor
@@ -693,9 +693,13 @@ def importa_planilha_tg(session, tg: TGOVR, afile):
             session.add(itemtg)
         session.commit()
     except KeyError as err:
-        raise KeyError('Campo não encontrado. Campos obrigatórios na planilha são '
-                       'numero, descricao, qtde e unidademedida. Opcionais ncm e valor.'
-                       'Erro: %s' % str(err))
+        if index == 0:
+            raise KeyError(
+                'Campo não encontrado. Campos obrigatórios na planilha são '
+                'numero, descricao, qtde e unidademedida. Opcionais ncm e valor.'
+                'Erro: %s' % str(err))
+        else:
+            raise KeyError('Erro na coluna {} linha {}'.format(str(err), index))
 
 
 class TipoPlanilha(Enum):
