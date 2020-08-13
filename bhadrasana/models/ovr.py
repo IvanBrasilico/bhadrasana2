@@ -393,6 +393,7 @@ class ItemTG(BaseRastreavel, BaseDumpable):
         dumped['valor'] = str(dumped['valor'])
         if self.marca:
             dumped['marca_descricao'] = self.marca.nome
+        dumped['unidadedemedida'] = self.get_unidadedemedida
         return dumped
 
 
