@@ -13,6 +13,9 @@
                     <th style="max-width: 50px;">Unidade</th>
                     <th style="max-width: 50px;">Valor</th>
                     <th style="max-width: 50px;">NCM</th>
+                    <th style="max-width: 50px;"><button id="btn_excluir_todos_itens" type="button"
+                    class="btn btn-danger form-control"
+                    onclick="exclui_todos_itens()">excluir todos</button></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -38,6 +41,8 @@
                                                         value="{{ itemtg.ncm }}"
                                                         onkeydown="do_update(event, {{itemtg.id}}, 'ncm', this.value)">
                     </td>
+                    <td><button id="btn_excluir" type="button" class="btn btn-danger form-control"
+                    onclick="exclui_itemtg({{ itemtg.id }})">excluir</button></td>
                 </tr>
                 {% endfor %}
                 </tbody>
@@ -148,7 +153,6 @@
         </div>
     </div>
 </div>
-
 {% endblock %} {% block scripts %} {{super()}}
 <script>
     function do_update(event, id, campo, value){
@@ -167,5 +171,23 @@
     function exporta_planilhatg(formato) {
         window.location.assign('exportaplanilhatg?tg_id={{oform.tg_id.data}}&formato=' + formato);
     }
+
+    function exclui_itemtg(itemtg_id){
+        tg_id = {{oform.tg_id.data}}
+        itemtg_id = itemtg_id
+        console.log("excluir o item:", itemtg_id, "do tg:", tg_id)
+        $.getJSON('exclui_itemtg', {
+          tg_id: tg_id, itemtg_id: itemtg_id
+        });
+        console.log("deve atualizar a página..")
+    }
+
+    function exclui_todos_itens(){
+        tg_id = {{oform.tg_id.data}}
+        $.getJSON('exclui_itemtg', {
+          tg_id: tg_id
+        });
+    }
+
 </script>
 {% endblock %}

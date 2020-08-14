@@ -517,6 +517,31 @@ def get_itemtg_descricao_qtde_modelo(session, tg: TGOVR,
         itemtg = ItemTG()
     return itemtg
 
+def exclui_item_tg(session, tg_id: str, itemtg_id = None):
+    """Exclui um ItemTG específico ou todos ItemTG do TG"""
+    if itemtg_id:
+        try:
+            itemtg_id = int(itemtg_id)
+        except (ValueError, TypeError) as err:
+            logger.error('Não foi possível converter para int' % err)
+        # print(f">>>>>>>>>>>>>>>>> Será excluido o item {itemtg_id}")
+        session.query(ItemTG).filter(
+            ItemTG.id == itemtg_id
+        ).delete()
+    else:
+        try:
+            tg_id = int(tg_id)
+        except (ValueError, TypeError) as err:
+            logger.error('Não foi possível converter para int' % err)
+        # print(f">>>>>>>>>>>>>>>>> Serão excluídos todos itens do tg: {tg_id}")
+        session.query(ItemTG).filter(
+            ItemTG.tg_id == tg_id
+        ).delete()
+
+    session.commit()
+    atualiza_valortotal_tg(session, tg_id)
+    return []
+
 
 # TODO: mover Setores e Usuários daqui e do models/ovr para módulos específicos
 def get_usuarios(session) -> List[Tuple[str, str]]:
