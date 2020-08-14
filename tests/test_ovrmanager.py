@@ -21,7 +21,7 @@ from bhadrasana.models.ovrmanager import gera_eventoovr, \
     inclui_flag_ovr, get_tiposmercadoria_choice, get_marcas_choice, lista_tgovr, get_tgovr, cadastra_itemtg, \
     lista_itemtg, get_itemtg, get_itemtg_numero, informa_lavratura_auto, get_marcas, usuario_index, \
     cadastra_visualizacao, get_visualizacoes, get_ovr_filtro, cadastra_ovr, desfaz_ultimo_eventoovr, get_ovr_empresa, \
-    get_ovrs_setor, atualiza_valortotal_tg, exclui_item_tg
+    get_ovrs_setor, exclui_item_tg
 
 engine = create_engine('sqlite://')
 Session = sessionmaker(bind=engine)
@@ -174,7 +174,6 @@ class OVRTestCase(BaseTestCase):
         _itemtg = get_itemtg_numero(session, tg, 0)
         assert _itemtg is not None
         assert isinstance(_itemtg, ItemTG)
-        atualiza_valortotal_tg(session, tg.id)
         assert tg.qtde == 10
         assert tg.valor == 50
         itemtg2 = cadastra_itemtg(session, {'tg_id': tg.id,
@@ -183,6 +182,7 @@ class OVRTestCase(BaseTestCase):
                                            'qtde': 50,
                                            'valor': 2})
         assert tg.qtde == 60
+        assert tg.valor == 150
         exclui_item_tg(session, tg.id, itemtg2.id)
         assert tg.qtde == 10
         exclui_item_tg(session, tg.id)
