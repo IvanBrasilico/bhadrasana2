@@ -34,7 +34,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     executa_relatorio, get_relatorio, get_afrfb, get_itens_roteiro_checked, \
     get_flags_choice, cadastra_visualizacao, get_tipos_evento_comfase_choice, \
     get_ovr_criadaspor, get_ovr_empresa, get_tipos_evento_todos, \
-    desfaz_ultimo_eventoovr, get_delta_date, exporta_planilha_tg, TipoPlanilha
+    desfaz_ultimo_eventoovr, get_delta_date, exporta_planilha_tg, TipoPlanilha, exclui_item_tg
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
@@ -604,6 +604,39 @@ def ovr_app(app):
             return {'error': str(err), 'msg': 'Erro!'}, 500
         return {'msg': 'Modificado com sucesso'}, 200
 
+    @app.route('/exclui_itemtg', methods=['GET'])
+    @login_required
+    def exclui_itemtg():
+        session = app.config.get('dbsession')
+        try:
+            tg_id = request.args.get('tg_id')
+            itemtg_id = request.args.get('itemtg_id')
+            if tg_id is None:
+                raise KeyError('Ocorreu um erro: parâmetro tg_id'
+                               'é necessário nesta tela.')
+            print(f">>>>>> Exclui item: {itemtg_id} do tg: {tg_id}")
+            exclui_item_tg(session, tg_id, itemtg_id)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            return {'error': str(err), 'msg': 'Erro!'}, 500
+        return redirect(url_for('listaitemtg', tg_id=tg_id))
+
+    @app.route('/exclui_todos_itens', methods=['GET'])
+    @login_required
+    def exclui_todos_itens():
+        session = app.config.get('dbsession')
+        try:
+            tg_id = request.args.get('tg_id')
+            if tg_id is None:
+                raise KeyError('Ocorreu um erro: parâmetro tg_id'
+                               'é necessário nesta tela.')
+            print(f">>>>>> Exclui todos itens do tg {tg_id}")
+            exclui_item_tg(session, tg_id)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            return {'error': str(err), 'msg': 'Erro!'}, 500
+        return redirect(url_for('listaitemtg', tg_id=tg_id))
+
     @app.route('/importaplanilhatg', methods=['POST'])
     @login_required
     def importa_planilhatg():
@@ -636,7 +669,8 @@ def ovr_app(app):
             tg = get_tgovr(session, tg_id)
             out_filename = 'tg_{}_{}.xls'.format(
                 tg.numerotg,
-                datetime.strftime(datetime.now(), '%Y-%M-%HT%m:%s'))
+                'teste')
+                # datetime.strftime(datetime.now(), '%Y-%M-%HT%m:%s'))
             print(formato)
             exporta_planilha_tg(tg,
                                 os.path.join(get_user_save_path(), out_filename),
