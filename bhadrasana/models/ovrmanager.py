@@ -517,7 +517,8 @@ def get_itemtg_descricao_qtde_modelo(session, tg: TGOVR,
         itemtg = ItemTG()
     return itemtg
 
-def exclui_item_tg(session, tg_id: str, itemtg_id = None):
+
+def exclui_item_tg(session, tg_id: str, itemtg_id=None):
     """Exclui um ItemTG específico ou todos ItemTG do TG"""
     if itemtg_id:
         try:
@@ -747,7 +748,7 @@ def exporta_planilha_tg(tg: TGOVR, filename: str,
                 dumped_item_titulospadrao[titulospadrao[formato.value]] = value
         itens.append(dumped_item_titulospadrao)
         print(dumped_item_titulospadrao)
-    #print(itens)
+    # print(itens)
     df = pd.DataFrame(itens)
     df.to_excel(filename)
 
