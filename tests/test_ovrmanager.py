@@ -21,7 +21,7 @@ from bhadrasana.models.ovrmanager import gera_eventoovr, \
     inclui_flag_ovr, get_tiposmercadoria_choice, get_marcas_choice, lista_tgovr, get_tgovr, cadastra_itemtg, \
     lista_itemtg, get_itemtg, get_itemtg_numero, informa_lavratura_auto, get_marcas, usuario_index, \
     cadastra_visualizacao, get_visualizacoes, get_ovr_filtro, cadastra_ovr, desfaz_ultimo_eventoovr, get_ovr_empresa, \
-    get_ovrs_setor
+    get_ovrs_setor, atualiza_valortotal_tg, exclui_item_tg
 
 engine = create_engine('sqlite://')
 Session = sessionmaker(bind=engine)
@@ -137,7 +137,7 @@ class OVRTestCase(BaseTestCase):
             'descricao': 'teste',
             'qtde': 10,
             'ovr_id': ovr.id,
-            'numerolote': 'CCNU1234567'
+            'numerolote': 'CCNU1234567',
         }
         usuario = self.create_usuario('123', 'user1')
         tgovr = cadastra_tgovr(session, params, '123')
@@ -151,10 +151,16 @@ class OVRTestCase(BaseTestCase):
         assert tgs[0] == ovr.tgs[0]
         tg = get_tgovr(session, tgs[0].id)
         assert tg.descricao == tgs[0].descricao
-        itemtg = cadastra_itemtg(session, {'tg_id': tg.id, 'descricao': 'testeitem', 'numero': 13})
+        itemtg = cadastra_itemtg(session, {'tg_id': tg.id,
+                                           'descricao': 'testeitem',
+                                           'numero': 13,
+                                           'qtde': 10,
+                                           'valor': 5})
         assert itemtg.descricao == 'testeitem'
         assert itemtg.tg_id == tg.id
         assert itemtg.numero == 13
+        assert itemtg.qtde == 10
+        assert itemtg.valor == 5
         itens = lista_itemtg(session, tg.id)
         assert itens[0] == itemtg
         _itemtg = get_itemtg(session, itemtg.id)
@@ -168,6 +174,19 @@ class OVRTestCase(BaseTestCase):
         _itemtg = get_itemtg_numero(session, tg, 0)
         assert _itemtg is not None
         assert isinstance(_itemtg, ItemTG)
+        atualiza_valortotal_tg(session, tg.id)
+        assert tg.qtde == 10
+        assert tg.valor == 50
+        itemtg2 = cadastra_itemtg(session, {'tg_id': tg.id,
+                                           'descricao': 'testeitem',
+                                           'numero': 13,
+                                           'qtde': 50,
+                                           'valor': 2})
+        assert tg.qtde == 60
+        exclui_item_tg(session, tg.id, itemtg2.id)
+        assert tg.qtde == 10
+        exclui_item_tg(session, tg.id)
+        assert tg.qtde is None
 
     def test_Responsavel(self):
         # Atribui responsável válido
