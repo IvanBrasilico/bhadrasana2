@@ -32,19 +32,19 @@
                     </td>
                     <td style="max-width: 40px;">
                         <input class="form-control" type="number" step="any"
-                               value="{{ itemtg.qtde }}"
-                               onkeydown="do_update(event, {{itemtg.id}}, 'qtde', this.value)">
+                               value="{{ '%.2f' % itemtg.qtde }}"
+                               onkeydown="do_update(event, {{'%.2f' % itemtg.id}}, 'qtde', this.value)">
                     </td>
                     <td style="max-width: 50px;">{{ itemtg.get_unidadedemedida }}</td>
                     <td style="max-width: 60px;"><input class="form-control" type="number" step="any"
-                                                        value="{{ itemtg.valor }}"
-                                                        onkeydown="do_update(event, {{itemtg.id}}, 'valor', this.value)">
+                                                        value="{{ '%.2f' % itemtg.valor }}"
+                                                        onkeydown="do_update(event, {{ '%.2f' % itemtg.id}}, 'valor', this.value)">
                     </td>
                     <td style="max-width: 60px;"><input class="form-control" type="text"
                                                         value="{{ itemtg.ncm }}"
                                                         onkeydown="do_update(event, {{itemtg.id}}, 'ncm', this.value)">
                     </td>
-                    <td>
+                    <td style="max-width: 70px;">
                         <button id="btn_excluir" type="button" class="btn btn-danger form-control"
                                 onclick="exclui_itemtg({{ itemtg.id }})">excluir
                         </button>
@@ -180,12 +180,22 @@
 
     function exclui_itemtg(itemtg_id){
         tg_id = {{oform.tg_id.data}}
-        window.location.assign('exclui_itemtg?tg_id=' + tg_id + '&itemtg_id=' + itemtg_id);
+        if (window.confirm("Tem certeza que deseja excluir este item?")){
+            window.location.assign('exclui_itemtg?tg_id=' + tg_id + '&itemtg_id=' + itemtg_id);
+        }
+        else{
+            window.location.assign('lista_itemtg?tg_id=' + tg_id);
+        }
     }
 
     function exclui_todos_itens(){
         tg_id = {{oform.tg_id.data}}
-        window.location.assign('exclui_todos_itens?tg_id=' + tg_id);
+        if (window.confirm("Tem certeza que deseja excluir TODOS os itens do TG?")){
+            window.location.assign('exclui_todos_itens?tg_id=' + tg_id);
+        }
+        else{
+            window.location.assign('lista_itemtg?tg_id=' + tg_id);
+        }
     }
 
 

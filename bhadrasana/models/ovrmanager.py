@@ -199,7 +199,7 @@ def get_ovr_filtro(session, user_name: str,
             q = q.join(table)
         # ovrs = q.filter(filtro).limit(100).all()
     logger.info('get_ovr_filtro - query' + str(q))
-    ovrs = q.filter(filtro).limit(100).all()
+    ovrs = q.filter(filtro).limit(200).all()
     return [ovr for ovr in ovrs]
 
 
