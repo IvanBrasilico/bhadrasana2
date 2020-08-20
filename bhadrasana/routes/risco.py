@@ -105,6 +105,7 @@ def risco_app(app):
                                'recintos': recintosrisco}
         FormClass = forms[active_tab]
         risco_function = dict_risco_function[active_tab]
+        planilha_atual = ''
         if request.method == 'POST':
             try:
                 riscos_ativos_form = FormClass(request.form)
@@ -121,10 +122,14 @@ def risco_app(app):
                 lista_risco, str_filtros = risco_function(
                     dbsession, filtros, operador_ou=riscos_ativos_form.operadorOU.data)
                 # print('***********', lista_risco)
-                destino = save_planilharisco(lista_risco, get_user_save_path(),
+                planilha_atual = save_planilharisco(lista_risco, get_user_save_path(),
                                              str_filtros)
-                return redirect(url_for('risco', planilha_atual=destino), code=307)
-                # active_tab=active_tab))000
+                return redirect(url_for('risco',
+                                        planilha_atual=planilha_atual,
+                                        active_tab=active_tab,
+                                        **dict(riscos_ativos_form.data.items())
+                                        )
+                                , code=307)
             except Exception as err:
                 logger.error(err, exc_info=True)
                 flash('Erro ao aplicar risco! '
@@ -134,15 +139,14 @@ def risco_app(app):
         # Em caso de exceção ou em um get aqui...
         riscos_ativos_form = FormClass(
             datainicio=date.today() - timedelta(days=5),
-            datafim=date.today()
-        )
+            datafim=date.today())
         return render_template('aplica_risco.html',
                                oform=riscos_ativos_form,
                                lista_risco=[],
                                total_linhas=0,
                                csv_salvo='',
                                lista_csv=[],
-                               planilha_atual='',
+                               planilha_atual=planilha_atual,
                                active_tab=active_tab)
 
     @app.route('/risco', methods=['POST', 'GET'])
