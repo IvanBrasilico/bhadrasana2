@@ -670,8 +670,7 @@ def ovr_app(app):
             tg = get_tgovr(session, tg_id)
             out_filename = 'tg_{}_{}.xls'.format(
                 tg.numerotg,
-                'teste')
-            # datetime.strftime(datetime.now(), '%Y-%M-%HT%m:%s'))
+                datetime.strftime(datetime.now(), '%Y-%M-%HT%m:%s'))
             print(formato)
             exporta_planilha_tg(tg,
                                 os.path.join(get_user_save_path(), out_filename),
