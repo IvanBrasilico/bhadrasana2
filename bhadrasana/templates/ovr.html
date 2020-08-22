@@ -590,23 +590,13 @@
         event.preventDefault();
       }
     });
-    var options = {
-        onKeyPress: function (cpf, ev, el, op) {
-            var masks = ["000.000.000-000", "00.000.000/0000-00"];
-            $("#cnpj_fiscalizado").inputmask((cpf.length > 14) ? masks[1] : masks[0], op);
-        }
-    }
 
     $(document).ready(function(){
-
-        console.log("teste de máscara cnpj, len =" + "{{ oform.cnpj_fiscalizado.data }}".length)
-        console.log(("{{ oform.cnpj_fiscalizado.data }}".length > 11) ? "máscara CNPJ":"máscara CPF");
-
-        (("{{ oform.cnpj_fiscalizado.data }}".length > 11) ?
-            $("#cnpj_fiscalizado").inputmask("99.999.999/9999-99", {removeMaskOnSubmit: true}, options) :
-            $("#cnpj_fiscalizado").inputmask("999.999.999-99", {removeMaskOnSubmit: true}, options ))
-
-<!--    $("#cnpj_fiscalizado").inputmask("99.999.999/9999-99", {removeMaskOnSubmit: true});-->
+        $("#cnpj_fiscalizado").inputmask({
+            mask: ["999.999.999-99","99.999.999/9999-99"],
+            keepStatic: true,
+            removeMaskOnSubmit: true
+        });
         $("#numeroCEmercante").inputmask("999999999999999", {removeMaskOnSubmit: true});
         $("#numerodeclaracao").inputmask("99AA9999999999", {removeMaskOnSubmit: true});
     });
