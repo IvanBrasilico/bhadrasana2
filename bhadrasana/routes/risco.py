@@ -123,13 +123,12 @@ def risco_app(app):
                     dbsession, filtros, operador_ou=riscos_ativos_form.operadorOU.data)
                 # print('***********', lista_risco)
                 planilha_atual = save_planilharisco(lista_risco, get_user_save_path(),
-                                             str_filtros)
+                                                    str_filtros)
                 return redirect(url_for('risco',
                                         planilha_atual=planilha_atual,
                                         active_tab=active_tab,
                                         **dict(riscos_ativos_form.data.items())
-                                        )
-                                , code=307)
+                                        ), code=307)
             except Exception as err:
                 logger.error(err, exc_info=True)
                 flash('Erro ao aplicar risco! '
