@@ -111,7 +111,8 @@
             </div>
             <div class="row">
                 <div class="col-sm-3">
-                    {{ oform.cnpj_fiscalizado(class='form-control', data_inputmask='"mask": "99.999.999/9999-99"') }}
+<!--                    {{ oform.cnpj_fiscalizado(class='form-control', data_inputmask='"mask": "99.999.999/9999-99"') }}-->
+                    {{ oform.cnpj_fiscalizado(class='form-control') }}
                 </div>
                 <div class="col-sm-9">
                     {{ oform.nome_fiscalizado.data }}
@@ -589,8 +590,13 @@
         event.preventDefault();
       }
     });
+
     $(document).ready(function(){
-        $("#cnpj_fiscalizado").inputmask("99.999.999/9999-99", {removeMaskOnSubmit: true});
+        $("#cnpj_fiscalizado").inputmask({
+            mask: ["999.999.999-99","99.999.999/9999-99"],
+            keepStatic: true,
+            removeMaskOnSubmit: true
+        });
         $("#numeroCEmercante").inputmask("999999999999999", {removeMaskOnSubmit: true});
         $("#numerodeclaracao").inputmask("99AA9999999999", {removeMaskOnSubmit: true});
     });
