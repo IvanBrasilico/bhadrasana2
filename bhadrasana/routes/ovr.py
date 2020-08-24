@@ -646,7 +646,9 @@ def ovr_app(app):
             tg_id = request.form['tg_id']
             tg = get_tgovr(session, tg_id)
             planilha = request.files['planilha']
-            importa_planilha_tg(session, tg, planilha)
+            alertas = importa_planilha_tg(session, tg, planilha)
+            if alertas:
+                flash(alertas)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
