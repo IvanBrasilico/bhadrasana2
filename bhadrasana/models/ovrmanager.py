@@ -666,6 +666,22 @@ de_para = {
 }
 
 
+def procura_chave_lower(akey: str, original: dict):
+    result = None
+    lower_key = akey.lower()
+    original_lower_keys = []
+    original_keys = []
+    for k in original.keys():
+        original_lower_keys.append(k.lower())
+        original_keys.append(k)
+    try:
+        ind = original_lower_keys.index(lower_key)
+        return original.get(original_keys[ind])
+    except ValueError:
+        pass
+    return result
+
+
 def muda_chaves(original: dict) -> dict:
     new_dict = {}
     print(original)
@@ -673,11 +689,15 @@ def muda_chaves(original: dict) -> dict:
         for alternative_key in alternative_keys:
             if original.get(alternative_key):
                 new_dict[key] = original.get(alternative_key)
+            else:
+                valor = procura_chave_lower(alternative_keys, original)
+                if valor:
+                    new_dict[key] = valor
     print(new_dict)
     return new_dict
 
 
-def importa_planilha_tg(session, tg: TGOVR, afile):
+def importa_planilha_tg(session, tg: TGOVR, afile)-> str:
     if '.csv' in afile.filename:
         df = pd.read_csv(afile, sep=';',
                          header=1, encoding='windows-1252')
@@ -689,6 +709,7 @@ def importa_planilha_tg(session, tg: TGOVR, afile):
         raise Exception('Extensão de arquivo desconhecida! Conheço .csv, .ods e .xls')
     # print(df.head())
     df = df.replace({np.nan: None})
+    alertas = dict()
     try:
         for index, original_row in df.iterrows():
             row = muda_chaves(original_row)
@@ -713,12 +734,21 @@ def importa_planilha_tg(session, tg: TGOVR, afile):
             ncm = row.get('ncm')
             if ncm:
                 itemtg.ncm = ncm
+            else:
+                if alertas.get('ncm') is None:
+                    alertas['ncm'] = 'Campo ncm ({}) não encontrado.'.format(de_para.get('ncm'))
             valor = row.get('valor')
             if valor:
                 itemtg.valor = valor
+            else:
+                if alertas.get('valor') is None:
+                    alertas['valor'] = 'Campo valor ({}) não encontrado.'.format(de_para.get('valor'))
             session.add(itemtg)
         session.commit()
         atualiza_valortotal_tg(session, tg.id)
+        if len(alertas) > 0:
+            return ' '.join([v for k, v in alertas.items()])
+        return ''
     except KeyError as err:
         if index == 0:
             raise KeyError(
