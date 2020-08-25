@@ -1,4 +1,5 @@
 from datetime import timedelta, datetime
+from decimal import Decimal
 from enum import Enum
 from typing import List, Tuple
 
@@ -96,8 +97,8 @@ def executa_relatorio(session, user_name: str, relatorio: Relatorio,
         formated_cols = []
         for col in row:
             logger.info(str(col) + str(type(col)))
-            if isinstance(col, float):
-                fcol = '{:,.2f}'.format(col)
+            if isinstance(col, Decimal):
+                fcol = '{:,.2f}'.format(float(col))
                 fcol = fcol.replace(',', '-').replace('.', ',').replace('-', '.')
                 formated_cols.append(fcol)
             else:
