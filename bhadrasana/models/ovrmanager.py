@@ -690,7 +690,7 @@ def muda_chaves(original: dict) -> dict:
             if original.get(alternative_key):
                 new_dict[key] = original.get(alternative_key)
             else:
-                valor = procura_chave_lower(alternative_keys, original)
+                valor = procura_chave_lower(alternative_key, original)
                 if valor:
                     new_dict[key] = valor
     print(new_dict)
@@ -741,6 +741,7 @@ def importa_planilha_tg(session, tg: TGOVR, afile)-> str:
             if valor:
                 itemtg.valor = valor
             else:
+                itemtg.valor = 0
                 if alertas.get('valor') is None:
                     alertas['valor'] = 'Campo valor ({}) não encontrado.'.format(de_para.get('valor'))
             session.add(itemtg)
