@@ -717,7 +717,7 @@ def ovr_app(app):
         for row in rows:
             formated_cols = []
             for col in row:
-                logger.info(str(col) + str(type(col)))
+                # logger.info(str(col) + str(type(col)))
                 if isinstance(col, Decimal):
                     fcol = '{:,.2f}'.format(float(col))
                     fcol = fcol.replace(',', '-').replace('.', ',').replace('-', '.')
