@@ -340,7 +340,7 @@ def ovr_app(app):
                                            relatorio,
                                            filtro_form.datainicio.data,
                                            filtro_form.datafim.data,
-                                           filtrar_setor=False)
+                                           filtrar_setor=True)
                 plot = bar_plotly(linhas, relatorio.nome)
         except Exception as err:
             logger.error(err, exc_info=True)
