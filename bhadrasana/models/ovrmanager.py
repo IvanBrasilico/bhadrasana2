@@ -90,8 +90,20 @@ def executa_relatorio(session, user_name: str, relatorio: Relatorio,
         ).fillna(0).reset_index()
         names = df_eventos_especiais.columns
         rows = df_eventos_especiais.values.tolist()
+
+    formated_rows = []
+    for row in rows:
+        formated_cols = []
+        for col in row:
+            if isinstance(col, float):
+                fcol = '{:,.2f}'.format(col)
+                fcol = fcol.replace(',', '-').replace('.', ',').replace('-', '.')
+                formated_cols.append(fcol)
+            else:
+                formated_cols.append(col)
+        formated_rows.append(formated_cols)
     result.append(names)
-    result.extend(rows)
+    result.extend(formated_rows)
     return result
 
 
