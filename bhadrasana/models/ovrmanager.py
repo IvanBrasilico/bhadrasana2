@@ -95,6 +95,7 @@ def executa_relatorio(session, user_name: str, relatorio: Relatorio,
     for row in rows:
         formated_cols = []
         for col in row:
+            print(col, type(col))
             if isinstance(col, float):
                 fcol = '{:,.2f}'.format(col)
                 fcol = fcol.replace(',', '-').replace('.', ',').replace('-', '.')
