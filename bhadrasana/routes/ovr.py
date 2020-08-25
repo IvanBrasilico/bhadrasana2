@@ -8,12 +8,12 @@ import numpy as np
 import pandas as pd
 import plotly
 import plotly.graph_objs as go
+from ajna_commons.flask.log import logger
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
 from gridfs import GridFS
 from werkzeug.utils import redirect
 
-from ajna_commons.flask.log import logger
 from bhadrasana.forms.exibicao_ovr import ExibicaoOVR, TipoExibicao
 from bhadrasana.forms.filtro_container import FiltroContainerForm
 from bhadrasana.forms.filtro_empresa import FiltroEmpresaForm
@@ -317,6 +317,7 @@ def ovr_app(app):
         session = app.config.get('dbsession')
         lista_relatorios = get_relatorios_choice(session)
         linhas = []
+        linhas_formatadas = []
         sql = ''
         plot = ''
         today = date.today()
@@ -342,6 +343,7 @@ def ovr_app(app):
                                            filtro_form.datafim.data,
                                            filtrar_setor=True)
                 plot = bar_plotly(linhas, relatorio.nome)
+                linhas_formatadas = formata_linhas_relatorio(linhas)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
@@ -349,7 +351,7 @@ def ovr_app(app):
             flash(str(err))
         return render_template('relatorios.html',
                                oform=filtro_form,
-                               linhas=linhas,
+                               linhas=linhas_formatadas,
                                sql=sql,
                                plot=plot)
 
@@ -710,6 +712,21 @@ def ovr_app(app):
         delete_objeto(session, classname, id)
         return jsonify({'msg': 'Excluído'}), 200
 
+    def formata_linhas_relatorio(rows: list) -> list:
+        formated_rows = []
+        for row in rows:
+            formated_cols = []
+            for col in row:
+                logger.info(str(col) + str(type(col)))
+                if isinstance(col, Decimal):
+                    fcol = '{:,.2f}'.format(float(col))
+                    fcol = fcol.replace(',', '-').replace('.', ',').replace('-', '.')
+                    formated_cols.append(fcol)
+                else:
+                    formated_cols.append(col)
+            formated_rows.append(formated_cols)
+        return formated_rows
+
     def bar_plotly(linhas: list, nome: str) -> str:
         """Renderiza gráfico no plotly e serializa via HTTP/HTML."""
         meses = {1: 'Janeiro', 2: 'Fevereiro', 3: 'Março', 4: 'Abril',
@@ -750,7 +767,7 @@ def ovr_app(app):
                 image_width=400)
             return plot
         except Exception as err:
-            logger.log(str(err), exc_info=True)
+            logger.error(str(err), exc_info=True)
             return ''
 
     @app.route('/programa_rvf_ajna')
