@@ -70,7 +70,7 @@ def executa_relatorio(session, user_name: str, relatorio: Relatorio,
     if filtrar_setor:
         setores = get_setores_cpf(session, user_name)
         params['setor_id'] = [setor.id for setor in setores]
-    print(params)
+    logger.info('Rodando relatório {} com parâmetros {}'.format(relatorio.nome, params))
     # (datetime.strftime(data_inicial, '%Y-%m-%d'),
     # datetime.strftime(data_final, '%Y-%m-%d'))
     sql_query = text(relatorio.sql)
