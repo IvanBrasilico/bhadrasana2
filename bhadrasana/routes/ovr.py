@@ -8,12 +8,12 @@ import numpy as np
 import pandas as pd
 import plotly
 import plotly.graph_objs as go
-from ajna_commons.flask.log import logger
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
 from gridfs import GridFS
 from werkzeug.utils import redirect
 
+from ajna_commons.flask.log import logger
 from bhadrasana.forms.exibicao_ovr import ExibicaoOVR, TipoExibicao
 from bhadrasana.forms.filtro_container import FiltroContainerForm
 from bhadrasana.forms.filtro_empresa import FiltroEmpresaForm
@@ -293,8 +293,6 @@ def ovr_app(app):
                                active_tab=active_tab,
                                responsavel_form=responsavel_form,
                                historico_form=historico_ovr_form)
-
-
 
     @app.route('/minhas_fichas_text', methods=['GET'])
     def minhas_fichas_text():
