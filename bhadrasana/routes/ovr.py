@@ -602,7 +602,7 @@ def ovr_app(app):
             id = request.args.get('id')
             campo = request.args.get('campo')
             valor = request.args.get('valor')
-            if cadastra_itemtg(session, {'id': id, campo: valor}) == None:
+            if cadastra_itemtg(session, {'id': id, campo: valor}) is None:
                 flash('Os campos de preenchimentos obrigatório estão em branco!')
         except Exception as err:
             logger.error(err, exc_info=True)
