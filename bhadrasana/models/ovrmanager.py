@@ -473,9 +473,19 @@ def get_tgovr(session, tg_id: int = None) -> TGOVR:
         return tgovr
     return session.query(TGOVR).filter(TGOVR.id == tg_id).one_or_none()
 
+def valida_novo_itemtg(params: dict) -> List:
+    required_keys = ['descricao', 'valor', 'qtde']
+    invalid_keys = []
+    for required_key in required_keys:
+        if not params[required_key]:
+            logger.error(f'A chave "{required_key}" do ItemTG é obrigatória mas está vazia.')
+            invalid_keys.append(required_key)
+    return invalid_keys
 
 def cadastra_itemtg(session, params: dict) -> ItemTG:
     item_tg = get_itemtg(session, params.get('id'))
+    if len(valida_novo_itemtg(params)) != 0:
+        return None
     item_tg = gera_objeto(item_tg,
                           session, params)
     atualiza_valortotal_tg(session, item_tg.tg_id)

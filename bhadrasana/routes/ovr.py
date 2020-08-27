@@ -585,7 +585,8 @@ def ovr_app(app):
             itemtg_form = ItemTGForm(request.form)
             itemtg_form.validate()
             tg_id = request.form.get('tg_id')
-            cadastra_itemtg(session, dict(itemtg_form.data.items()))
+            if not cadastra_itemtg(session, dict(itemtg_form.data.items())):
+                flash('Os campos de preenchimentos obrigatório estão em branco!')
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
@@ -601,7 +602,8 @@ def ovr_app(app):
             id = request.args.get('id')
             campo = request.args.get('campo')
             valor = request.args.get('valor')
-            cadastra_itemtg(session, {'id': id, campo: valor})
+            if cadastra_itemtg(session, {'id': id, campo: valor}) == None:
+                flash('Os campos de preenchimentos obrigatório estão em branco!')
         except Exception as err:
             logger.error(err, exc_info=True)
             return {'error': str(err), 'msg': 'Erro!'}, 500
