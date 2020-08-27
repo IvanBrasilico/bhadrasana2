@@ -1,6 +1,7 @@
 import os
 import sys
-from sqlalchemy import create_engine, func
+
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 sys.path.append('.')
@@ -9,7 +10,6 @@ sys.path.insert(0, '../ajna_docs/commons')
 from ajna_commons.flask.log import logger
 from bhadrasana.models.ovr import TGOVR
 from bhadrasana.models.ovrmanager import atualiza_valortotal_tg
-
 
 if __name__ == '__main__':
     # SQL_URI_STAGING = os.environ.get('SQL_URI_STAGING')  # conexao com staging
@@ -26,8 +26,7 @@ if __name__ == '__main__':
         if not tg.qtde:
             try:
                 atualiza_valortotal_tg(session, tg.id)
-                logger.info(f"Atualizando TG nº{tg.id} qtide = {tg.qtde} e valor total= {tg.valor}")
+                logger.info(f'Atualizando TG nº{tg.id} qtde = {tg.qtde}'
+                            f' e valor total= {tg.valor}')
             except Exception as err:
                 logger.error(str(err), exc_info=True)
-
-

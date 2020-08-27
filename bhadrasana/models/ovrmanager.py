@@ -1,5 +1,4 @@
 from datetime import timedelta, datetime
-from decimal import Decimal
 from enum import Enum
 from typing import List, Tuple
 
@@ -473,14 +472,17 @@ def get_tgovr(session, tg_id: int = None) -> TGOVR:
         return tgovr
     return session.query(TGOVR).filter(TGOVR.id == tg_id).one_or_none()
 
+
 def valida_novo_itemtg(params: dict) -> List:
     required_keys = ['descricao', 'valor', 'qtde']
     invalid_keys = []
     for required_key in required_keys:
         if not params[required_key]:
-            logger.error(f'A chave "{required_key}" do ItemTG é obrigatória mas está vazia.')
+            logger.error(f'A chave "{required_key}" '
+                         'do ItemTG é obrigatória mas está vazia.')
             invalid_keys.append(required_key)
     return invalid_keys
+
 
 def cadastra_itemtg(session, params: dict) -> ItemTG:
     item_tg = get_itemtg(session, params.get('id'))
@@ -713,7 +715,7 @@ def muda_chaves(original: dict) -> dict:
     return new_dict
 
 
-def importa_planilha_tg(session, tg: TGOVR, afile)-> str:
+def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
     if '.csv' in afile.filename:
         df = pd.read_csv(afile, sep=';',
                          header=1, encoding='windows-1252')
@@ -752,14 +754,16 @@ def importa_planilha_tg(session, tg: TGOVR, afile)-> str:
                 itemtg.ncm = ncm
             else:
                 if alertas.get('ncm') is None:
-                    alertas['ncm'] = 'Campo ncm ({}) não encontrado.'.format(de_para.get('ncm'))
+                    alertas['ncm'] = 'Campo ncm ({}) não encontrado.'. \
+                        format(de_para.get('ncm'))
             valor = row.get('valor')
             if valor:
                 itemtg.valor = valor
             else:
                 itemtg.valor = 0
                 if alertas.get('valor') is None:
-                    alertas['valor'] = 'Campo valor ({}) não encontrado.'.format(de_para.get('valor'))
+                    alertas['valor'] = 'Campo valor ({}) não encontrado.'. \
+                        format(de_para.get('valor'))
             session.add(itemtg)
         session.commit()
         atualiza_valortotal_tg(session, tg.id)
