@@ -122,42 +122,42 @@
             </div>
         </div>
     </div>
-<div class="modal fade" id="historico" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
-     aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title" id="ModalLabel">Registra evento da OVR</h1>
-            </div>
-            <div class="modal-body">
-                <form method="POST" action="eventoovr_minhasovrs" enctype="multipart/form-data">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                    <input type="hidden" name="active_tab" value="{{active_tab}}"/>
-                    <div class="row">
-                        <div class="col-sm-3">
-                            <label for="tipoevento">Novo Status</label>
+    <div class="modal fade" id="historico" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title" id="ModalLabel">Registra evento da OVR</h1>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="eventoovr_minhasovrs" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <input type="hidden" name="active_tab" value="{{active_tab}}"/>
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <label for="tipoevento">Novo Status</label>
+                            </div>
+                            <div class="col-sm-9">
+                                {{ historico_form.tipoevento_id(class='form-control') }}
+                            </div>
                         </div>
-                        <div class="col-sm-9">
-                            {{ historico_form.tipoevento_id(class='form-control') }}
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <label for="motivo">Motivo</label>
+                            </div>
+                            <div class="col-sm-9">
+                                {{ historico_form.motivo(class='form-control') }}
+                            </div>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-sm-3">
-                            <label for="motivo">Motivo</label>
-                        </div>
-                        <div class="col-sm-9">
-                            {{ historico_form.motivo(class='form-control') }}
-                        </div>
-                    </div>
-                    <input class="btn btn-primary" onclick="submit_many(this)" value="Informar"/>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <input class="btn btn-primary" onclick="submit_many(this)" value="Informar"/>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 </div>
 {% endblock %} {% block scripts %} {{super()}}
 <script>

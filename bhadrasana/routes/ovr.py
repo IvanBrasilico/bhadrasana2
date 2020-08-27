@@ -208,6 +208,11 @@ def ovr_app(app):
             flags=flags,
             infracoes=infracoes
         )
+        responsaveis = get_usuarios(session)
+        responsavel_form = ResponsavelOVRForm(responsaveis=responsaveis,
+                                              responsavel=current_user.name)
+        historico_ovr_form = HistoricoOVRForm(
+            tiposeventos=get_tipos_evento_comfase_choice(session))
         try:
             if request.method == 'POST':
                 logger.info('Consulta de Ficha: ' + str(dict(request.form.items())))
@@ -227,7 +232,9 @@ def ovr_app(app):
             flash(str(err))
         return render_template('pesquisa_ovr.html',
                                oform=filtro_form,
-                               ovrs=ovrs)
+                               ovrs=ovrs,
+                               responsavel_form=responsavel_form,
+                               historico_form=historico_ovr_form)
 
     @app.route('/ovrs_meus_setores', methods=['GET', 'POST'])
     @app.route('/ovrs_criador', methods=['GET', 'POST'])
@@ -286,6 +293,8 @@ def ovr_app(app):
                                active_tab=active_tab,
                                responsavel_form=responsavel_form,
                                historico_form=historico_ovr_form)
+
+
 
     @app.route('/minhas_fichas_text', methods=['GET'])
     def minhas_fichas_text():
@@ -380,7 +389,9 @@ def ovr_app(app):
     @login_required
     def atribuirresponsavel_minhasovrs():
         session = app.config.get('dbsession')
+        active_tab = None
         try:
+            logger.info(request.form)
             cpf_responsavel = request.form.get('responsavel')
             if cpf_responsavel is None or \
                     cpf_responsavel == 'None':
@@ -398,9 +409,13 @@ def ovr_app(app):
                 else:
                     atribui_responsavel_ovr(session, ovr_id=ovr_id,
                                             responsavel=cpf_responsavel)
+            if active_tab and active_tab == 'pesquisa_ovr':
+                return jsonify({'msg': 'Sucesso!'}), 201
             return redirect(url_for('minhas_ovrs', active_tab=active_tab))
         except Exception as err:
             logger.error(err, exc_info=True)
+            if active_tab and active_tab == 'pesquisa_ovr':
+                return jsonify({'msg': 'Erro: {}'.format(str(err))}), 500
             flash('Erro! Detalhes no log da aplicação.')
             flash(str(type(err)))
             flash(str(err))
