@@ -113,6 +113,45 @@ def valid_file(file, extensions=['jpg', 'jpeg', 'png']):
     return True, None
 
 
+@app.template_filter()
+def sem_casa_decimal(value):
+    if (value == None):
+        return "Valor Nulo"
+    else:
+        if isinstance(value, str):
+            try:
+                value = float(value)
+            except Exception as err:
+                logger.error(err)
+        return "{0:,.0f}".format(float(value)).replace(",", "X").replace(".", ",").replace("X", ".")
+
+
+@app.template_filter()
+def uma_casa_decimal(value):
+    if (value == None):
+        return "Valor Nulo"
+    else:
+        if isinstance(value, str):
+            try:
+                value = float(value)
+            except Exception as err:
+                logger.error(err)
+        return "{0:,.1f}".format(float(value)).replace(",", "X").replace(".", ",").replace("X", ".")
+
+
+@app.template_filter()
+def moeda(value):
+    if (value == None):
+        return "Valor Nulo"
+    else:
+        if isinstance(value, str):
+            try:
+                value = float(value)
+            except Exception as err:
+                logger.error(err)
+        return "R$ {:,.2f}".format(float(value)).replace(",", "X").replace(".", ",").replace("X", ".")
+
+
 @app.route('/')
 def index():
     """View retorna index.html ou login se não autenticado."""
