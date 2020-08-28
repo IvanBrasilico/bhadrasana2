@@ -92,7 +92,8 @@
             <div class="row col-sm-12">
                 <div class="form-group">
                     <div class="col-sm-12">
-                        Descrição
+<!--                        Descrição<span style="color:red">(*)</span>-->
+                        Descrição *
                         {{ oform.descricao(class='form-control')}}
                     </div>
                     <div class="col-sm-12">
@@ -100,11 +101,11 @@
                         {{ oform.unidadedemedida(class='form-control')}}
                     </div>
                     <div class="col-sm-12">
-                        Qtde
+                        Qtde *
                         {{ oform.qtde(class='form-control')}}
                     </div>
                     <div class="col-sm-12">
-                        Valor unitário
+                        Valor unitário *
                         {{ oform.valor(class='form-control') }}
                     </div>
                     <div class="col-sm-12">
@@ -120,6 +121,7 @@
             <div class="row col-sm-12">
                 &nbsp;<br>
                 <div class="col-sm-5">
+                    <h5>Os campos marcados com * são obrigatórios</h5>
                     <button class="btn btn-default btn-primary form-control" onclick="submit">
                         Salvar
                     </button>
