@@ -1,4 +1,9 @@
 import os
+import sys
+sys.path.append('.')
+sys.path.insert(0, '../ajna_docs/commons')
+sys.path.insert(0, '../virasana')
+
 from collections import defaultdict
 from datetime import datetime, timedelta
 
@@ -146,7 +151,11 @@ def update(sql_uri, inicio, fim):
         qry = session.query(func.max(OVR.datahora).label('last_date')
                             ).filter(OVR.tipooperacao == 0)
         res = qry.one()
-        start = res.last_date - timedelta(days=14)
+        last_date = res.last_date
+        if last_date > datetime.today():
+            logger.warning(f'Data de inicio no banco está no futuro : {last_date} !!!')
+            last_date = datetime.today()
+        start = last_date - timedelta(days=14)
     else:
         start = datetime.strptime(inicio, '%d/%m/%Y')
     if fim is None:
@@ -154,7 +163,10 @@ def update(sql_uri, inicio, fim):
     else:
         end = datetime.strptime(fim, '%d/%m/%Y')
     print(start, end)
-    recintos_list = session.query(Recinto).filter(Recinto.cod_dte.isnot(None)).all()
+    # recintos_list = session.query(Recinto).filter(Recinto.cod_dte.isnot(None)).all()
+    recinto = Recinto()
+    recinto.cod_dte = 22
+    recintos_list = [recinto]
     lista_recintos_fmas = get_lista_fma_recintos(recintos_list, start, end)
     processa_lista_fma(session, lista_recintos_fmas)
     update_cnpj_fiscalizado_historico(session)
