@@ -163,10 +163,10 @@ def update(sql_uri, inicio, fim):
     else:
         end = datetime.strptime(fim, '%d/%m/%Y')
     print(start, end)
-    # recintos_list = session.query(Recinto).filter(Recinto.cod_dte.isnot(None)).all()
-    recinto = Recinto()
-    recinto.cod_dte = 22
-    recintos_list = [recinto]
+    # recinto = Recinto()
+    # recinto.cod_dte = 22
+    # recintos_list = [recinto]
+    recintos_list = session.query(Recinto).filter(Recinto.cod_dte.isnot(None)).all()
     lista_recintos_fmas = get_lista_fma_recintos(recintos_list, start, end)
     processa_lista_fma(session, lista_recintos_fmas)
     update_cnpj_fiscalizado_historico(session)
