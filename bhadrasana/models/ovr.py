@@ -419,6 +419,15 @@ class VisualizacaoOVR(BaseRastreavel):
     ovr = relationship('OVR')
 
 
+class ResultadoOVR(BaseRastreavel):
+    """Classe para registrar resultado (multa/auto) de uma OVR."""
+    __tablename__ = 'ovr_resultados_ovr'
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
+    ovr_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
+                    ForeignKey('ovr_ovrs.id'))
+    ovr = relationship('OVR')
+
+
 def create_marcas(session):
     """Cria testes para classe Marcas"""
     for nome in ('Adidas',

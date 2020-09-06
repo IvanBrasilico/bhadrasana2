@@ -57,6 +57,8 @@ class RVF(BaseRastreavel, BaseDumpable):
                                         secondary=infracoesencontradas_table)
     lacresverificados = relationship('Lacre',
                                      secondary=lacresverificados_table)
+    appreensoes = relationship('ApreensaoRVF',
+                               back_populates='rvf')
     datahora = Column(TIMESTAMP, index=True)
     last_modified = Column(DateTime, index=True,
                            onupdate=func.current_timestamp())
@@ -81,7 +83,6 @@ class ImagemRVF(BaseRastreavel, BaseDumpable):
     __tablename__ = 'ovr_imagensrvf'
     id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                 primary_key=True)
-    rvf_id = Column(BigInteger(), index=True)
     imagem = Column(VARCHAR(100))  # _id da imagem no GrifFS
     descricao = Column(VARCHAR(200), index=True)
     tg_id = Column(BigInteger(), index=True)
@@ -114,6 +115,27 @@ class Lacre(Base):
     id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                 primary_key=True)
     numero = Column(VARCHAR(50), index=True)
+
+
+class TipoApreensao(Base):
+    __tablename__ = 'ovr_tiposapreensao'
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'),
+                primary_key=True)
+    descricao = Column(VARCHAR(50), index=True)
+
+
+class ApreensaoRVF(BaseRastreavel):
+    """Classe para registrar apreensão de drogas em verificação física."""
+    __tablename__ = 'ovr_apreensoes_rvf'
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
+    rvf_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
+                    ForeignKey('ovr_verificacoesfisicas.id'))
+    rvf = relationship('RVF')
+    descricao = Column(VARCHAR(200), index=True)
+    tipo_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
+                     ForeignKey('ovr_tiposapreensao.id'))
+    tipo = relationship(TipoApreensao)
+    peso = Column(Numeric(7, 2))
 
 
 def create_infracoes(session):
@@ -155,6 +177,8 @@ if __name__ == '__main__':
                           ])
         metadata.create_all(engine,
                             [
+                                metadata.tables['ovr_apreensoes_rvf'],
+                                metadata.tables['ovr_tiposapreensao'],
                                 # metadata.tables['ovr_marcasencontradas'],
                                 # metadata.tables['ovr_lacres'],
                                 # metadata.tables['ovr_lacresverificados'],
