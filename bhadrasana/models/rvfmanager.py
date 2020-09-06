@@ -11,7 +11,8 @@ from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, \
     get_usuario_logado, gera_objeto, EBloqueado
 from bhadrasana.models.ovr import Marca, TipoEventoOVR, EventoEspecial, OVR
 from bhadrasana.models.ovrmanager import get_ovr, gera_eventoovr
-from bhadrasana.models.rvf import RVF, Infracao, ImagemRVF, Lacre, TipoApreensao, ApreensaoRVF
+from bhadrasana.models.rvf import RVF, Infracao, ImagemRVF, Lacre, \
+    TipoApreensao, ApreensaoRVF
 
 
 def get_infracoes(session):

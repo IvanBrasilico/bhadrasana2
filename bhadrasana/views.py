@@ -113,43 +113,48 @@ def valid_file(file, extensions=['jpg', 'jpeg', 'png']):
     return True, None
 
 
+def convert_value(value):
+    """Tenta converter valor de qualquer tipo para float.
+
+        Tenta converter valor de qualquer tipo para float, se falhar retorna
+        uma str com tipo de falha. Em sucesso, retorna float.
+    """
+    if not value:
+        return 'Valor Nulo'
+    try:
+        return float(value)
+    except Exception as err:
+        return 'Erro na conversão: %s' % str(err)
+
+
 @app.template_filter()
 def sem_casa_decimal(value):
-    if (value == None):
-        return "Valor Nulo"
-    else:
-        if isinstance(value, str):
-            try:
-                value = float(value)
-            except Exception as err:
-                logger.error(err)
-        return "{0:,.0f}".format(float(value)).replace(",", "X").replace(".", ",").replace("X", ".")
+    value = convert_value(value)
+    if isinstance(value, str):
+        logger.error('sem_casa_decimal: %s' % value)
+        return value
+    return '{0:,.0f}'.format(value).replace(',', 'X'). \
+        replace('.', ',').replace('X', '.')
 
 
 @app.template_filter()
 def uma_casa_decimal(value):
-    if (value == None):
-        return "Valor Nulo"
-    else:
-        if isinstance(value, str):
-            try:
-                value = float(value)
-            except Exception as err:
-                logger.error(err)
-        return "{0:,.1f}".format(float(value)).replace(",", "X").replace(".", ",").replace("X", ".")
+    value = convert_value(value)
+    if isinstance(value, str):
+        logger.error('uma_casa_decimal: %s' % value)
+        return value
+    return '{0:,.1f}'.format(value).replace(',', 'X'). \
+        replace('.', ',').replace('X', '.')
 
 
 @app.template_filter()
 def moeda(value):
-    if (value == None):
-        return "Valor Nulo"
-    else:
-        if isinstance(value, str):
-            try:
-                value = float(value)
-            except Exception as err:
-                logger.error(err)
-        return "R$ {:,.2f}".format(float(value)).replace(",", "X").replace(".", ",").replace("X", ".")
+    value = convert_value(value)
+    if isinstance(value, str):
+        logger.error('moeda: %s' % value)
+        return value
+    return 'R$ {:,.2f}'.format(float(value)).replace(',', 'X'). \
+        replace('.', ',').replace('X', '.')
 
 
 @app.route('/')
