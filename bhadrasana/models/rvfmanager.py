@@ -11,7 +11,7 @@ from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, \
     get_usuario_logado, gera_objeto, EBloqueado
 from bhadrasana.models.ovr import Marca, TipoEventoOVR, EventoEspecial, OVR
 from bhadrasana.models.ovrmanager import get_ovr, gera_eventoovr
-from bhadrasana.models.rvf import RVF, Infracao, ImagemRVF, Lacre, TipoApreensao
+from bhadrasana.models.rvf import RVF, Infracao, ImagemRVF, Lacre, TipoApreensao, ApreensaoRVF
 
 
 def get_infracoes(session):
@@ -414,5 +414,10 @@ def inclui_nova_ordem_arquivo(session, imagem, ordem):
 
 
 def get_tiposapreensao_choice(session) -> List[Tuple[int, str]]:
-    tiposapreensao = session.query(TipoApreensaoRVF).all()
+    tiposapreensao = session.query(TipoApreensao).all()
     return [(tipo.id, tipo.descricao) for tipo in tiposapreensao]
+
+
+def gera_apreensao_rvf(session, params) -> ApreensaoRVF:
+    return gera_objeto(ApreensaoRVF(),
+                       session, params)

@@ -198,7 +198,7 @@
                 <h1 class="modal-title" id="ModalLabel0">Registra responsável pela ficha</h1>
             </div>
             <div class="modal-body">
-                <form method="POST" action="apreensao_rvf" enctype="multipart/form-data">
+                <form method="POST" action="apreensaorvf" enctype="multipart/form-data">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <input type="hidden" name="rvf_id" value="{{ oform.id.data }}"/>
                     <div class="row">

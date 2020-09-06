@@ -499,10 +499,16 @@ def ovr_app(app):
     @login_required
     def processoovr():
         session = app.config.get('dbsession')
-        ovr_id = request.form['ovr_id']
-        processo_ovr_form = ProcessoOVRForm(request.form)
-        processo_ovr_form.validate()
-        gera_processoovr(session, dict(processo_ovr_form.data.items()))
+        try:
+            ovr_id = request.form['ovr_id']
+            processo_ovr_form = ProcessoOVRForm(request.form)
+            processo_ovr_form.validate()
+            gera_processoovr(session, dict(processo_ovr_form.data.items()))
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
         return redirect(url_for('ovr', id=ovr_id))
 
     @app.route('/lista_tgovr', methods=['GET'])
