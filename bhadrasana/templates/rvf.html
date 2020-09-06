@@ -70,7 +70,15 @@
                     Imprimir
                 </a>
             </div>
-            <div class="col-sm-6">
+            <div class="col-sm-3">
+                {% if oform.id.data %}
+                <button id="btn_resultado" type="button" class="btn btn-warning form-control"
+                        data-toggle="modal" data-target="#resultado">
+                    Informar apreensão
+                </button>
+                {% endif %}
+            </div>
+            <div class="col-sm-3">
             </div>
         </div>
         </form>
@@ -157,7 +165,8 @@
                 </button>
             </div>
             <div class="col-sm-3">
-                <a href="rvf_galeria_imagens?rvf_id={{oform.id.data}}" class="btn btn-warning form-control" target="_blank">
+                <a href="rvf_galeria_imagens?rvf_id={{oform.id.data}}" class="btn btn-warning form-control"
+                   target="_blank">
                     Abrir fotos em Galeria de imagens</a>
             </div>
         </div>
@@ -192,6 +201,7 @@
         $("#numerolote").inputmask("AAAA9999999", {removeMaskOnSubmit: true});
 
     });
+
 
 
 
@@ -401,6 +411,7 @@
           rvf_id: rvf_id, qttd_arq: qttd_arq, lista: lista
         });
     }
+
 
 
 

@@ -96,27 +96,29 @@
             </div>
         </form>
     </div>
-    <div id="actions" class="row col-sm-12">
-        <h4>Com linhas selecionadas, fazer ação:</h4>
-        <div class="col-sm-3">
-            <button id="btn_responsavel" type="button" class="btn btn-warning form-control"
-                    data-toggle="modal" data-target="#responsavel">
-                Atribuir responsável
-            </button>
-        </div>
-        <div class="col-sm-3">
-            <button id="btn_historico" type="button" class="btn btn-primary btn-warning form-control"
-                    data-toggle="modal" data-target="#historico">Informar Evento
-            </button>
-        </div>
-        <div class="col-sm-6">
-        </div>
-    </div>
     <div class="row col-sm-12">&nbsp;</div>
 
     <div class="row col-sm-12">
         <hr>
         <h3>Fichas encontradas: {{ ovrs | length }} resultados - limite de 200 resultados</h3>
+        <div id="actions" class="row col-sm-12">
+            <div class="col-sm-3">
+                <h4>Com linhas selecionadas, fazer ação:</h4>
+            </div>
+            <div class="col-sm-3">
+                <button id="btn_responsavel" type="button" class="btn btn-warning form-control"
+                        data-toggle="modal" data-target="#responsavel">
+                    Atribuir responsável
+                </button>
+            </div>
+            <div class="col-sm-3">
+                <button id="btn_historico" type="button" class="btn btn-primary btn-warning form-control"
+                        data-toggle="modal" data-target="#historico">Informar Evento
+                </button>
+            </div>
+            <div class="col-sm-3">
+            </div>
+        </div>
     </div>
     <div id="list" class="row col-sm-12">
         &nbsp;<br>
@@ -279,6 +281,8 @@ function abre_ovr_numero(){
             }
         });
     }
+
+
 
 
 </script>
