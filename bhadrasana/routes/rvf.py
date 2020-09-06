@@ -8,7 +8,7 @@ from werkzeug.utils import redirect
 from ajna_commons.flask.log import logger
 from ajna_commons.utils.images import ImageBytesTansformations
 from bhadrasana.forms.filtro_rvf import FiltroRVFForm
-from bhadrasana.forms.rvf import RVFForm, ImagemRVFForm
+from bhadrasana.forms.rvf import RVFForm, ImagemRVFForm, ApreensaoRVFForm
 from bhadrasana.models import get_usuario_logado, get_usuario
 from bhadrasana.models.ovrmanager import get_marcas, get_marcas_choice
 from bhadrasana.models.rvf import RVF
@@ -19,7 +19,7 @@ from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, \
     get_infracoes, lista_rvfovr, cadastra_imagemrvf, get_imagemrvf_or_none, \
     cadastra_rvf, delete_imagemrvf, inclui_imagemrvf, get_imagemrvf_imagem_or_none, \
     make_and_save_transformation, exclui_lacre_verificado, \
-    inclui_lacre_verificado, get_imagemrvf, inclui_nova_ordem_arquivo, get_anexos_ordenado
+    inclui_lacre_verificado, get_imagemrvf, inclui_nova_ordem_arquivo, get_anexos_ordenado, get_tiposapreensao_choice
 from bhadrasana.views import csrf, valid_file
 
 
@@ -68,6 +68,8 @@ def rvf_app(app):
         lacres_verificados = []
         arvf = None
         rvf_form = RVFForm()
+        tiposapreensao = get_tiposapreensao_choice(session)
+        apreensaoform = ApreensaoRVFForm(tiposapreensao=tiposapreensao)
         try:
             if request.method == 'POST':
                 rvf_form = RVFForm(request.form)

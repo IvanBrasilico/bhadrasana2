@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Callable, List
+from typing import Callable, List, Tuple
 
 from bson import ObjectId
 from gridfs import GridFS, NoFile
@@ -11,7 +11,7 @@ from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, \
     get_usuario_logado, gera_objeto, EBloqueado
 from bhadrasana.models.ovr import Marca, TipoEventoOVR, EventoEspecial, OVR
 from bhadrasana.models.ovrmanager import get_ovr, gera_eventoovr
-from bhadrasana.models.rvf import RVF, Infracao, ImagemRVF, Lacre
+from bhadrasana.models.rvf import RVF, Infracao, ImagemRVF, Lacre, TipoApreensao
 
 
 def get_infracoes(session):
@@ -411,3 +411,8 @@ def inclui_nova_ordem_arquivo(session, imagem, ordem):
     session.commit()
     return True
     # print(f'...........................ordem depois: {arquivo.ordem}')
+
+
+def get_tiposapreensao_choice(session) -> List[Tuple[int, str]]:
+    tiposapreensao = session.query(TipoApreensaoRVF).all()
+    return [(tipo.id, tipo.descricao) for tipo in tiposapreensao]

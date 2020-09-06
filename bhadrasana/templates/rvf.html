@@ -72,8 +72,8 @@
             </div>
             <div class="col-sm-3">
                 {% if oform.id.data %}
-                <button id="btn_resultado" type="button" class="btn btn-warning form-control"
-                        data-toggle="modal" data-target="#resultado">
+                <button id="btn_apreensao" type="button" class="btn btn-warning form-control"
+                        data-toggle="modal" data-target="#apreensao">
                     Informar apreensão
                 </button>
                 {% endif %}
@@ -187,11 +187,54 @@
         </div>
     </div>
 </div>
-</div>
 <div id="bottom" class="row">
     AJNA - Receita Federal do Brasil 2017
 </div>
+<div class="modal fade" id="apreensao" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title" id="ModalLabel0">Registra responsável pela ficha</h1>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="apreensao_rvf" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <input type="hidden" name="rvf_id" value="{{ oform.id.data }}"/>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label for="tipoapreensao">Tipo de apreensão</label>
+                        </div>
+                        <div class="col-sm-9">
+                            {{ apreensao_form.tipoapreensao(class='form-control') }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label for="descricao">Descrição</label>
+                        </div>
+                        <div class="col-sm-9">
+                            {{ apreensao_form.descricao(class='form-control') }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label for="motivo">Peso em Kg</label>
+                        </div>
+                        <div class="col-sm-9">
+                            {{ apreensao_form.peso(class='form-control') }}
+                        </div>
+                    </div>
+                    <input class="btn btn-primary" type="submit" value="Informar"/>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
 </div>
+
 {% endblock %} {% block scripts %} {{super()}}
 
 <script type="text/javascript">
