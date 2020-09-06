@@ -37,3 +37,18 @@ class ImagemRVFForm(RastreavelForm):
         self.marca_id.choices = [(None, 'Nenhuma')]
         if kwargs.get('marcas'):
             self.marca_id.choices.extend(kwargs.get('marcas'))
+
+
+class ApreensaoRVFForm(RastreavelForm):
+    id = IntegerField('ID')
+    rvf_id = IntegerField('RVF')
+    tipoapreensao = SelectField('Tipo de Apreensão', default=0)
+    descricao = StringField(u'Descricao da apreensao',
+                         default='')
+    peso = DecimalField('Peso efetivo da carga verificada em kg', places=2)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.tipoapreensao.choices = []
+        if kwargs.get('tiposapreensao'):
+            self.tipoapreensao.choices.extend(kwargs.get('tiposapreensao'))
