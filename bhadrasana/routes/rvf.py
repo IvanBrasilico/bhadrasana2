@@ -476,3 +476,20 @@ def rvf_app(app):
             logger.error(err, exc_info=True)
             return jsonify({'msg': str(err)}), 500
         return jsonify(orvf.dump()), 201
+
+
+    @app.route('/apreensaorvf', methods=['POST'])
+    @login_required
+    def apreensaorvf():
+        session = app.config.get('dbsession')
+        try:
+            rvf_id = request.form['ovr_id']
+            apreensao_rvf_form = ApreensaoRVFForm(request.form)
+            apreensao_rvf_form.validate()
+            gera_apreensaorvf(session, dict(apreensao_rvf_form.data.items()))
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return redirect(url_for('rvf', id=rvf_id))
