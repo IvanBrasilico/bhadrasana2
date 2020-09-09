@@ -167,14 +167,7 @@ if __name__ == '__main__':
         Session = sessionmaker(bind=engine)
         session = Session()
 
-        metadata.drop_all(engine,
-                          [
-                              # metadata.tables['ovr_marcasencontradas'],
-                              # metadata.tables['ovr_infracoesencontradas'],
-                              # metadata.tables['ovr_infracoes'],
-                              # metadata.tables['ovr_verificacoesfisicas'],
-                              # metadata.tables['ovr_imagensrvf'],
-                          ])
+        # metadata.drop_all(engine, [ ])
         metadata.create_all(engine,
                             [
                                 metadata.tables['ovr_apreensoes_rvf'],
