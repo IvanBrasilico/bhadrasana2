@@ -137,6 +137,11 @@ class ApreensaoRVF(BaseRastreavel):
     tipo = relationship(TipoApreensao)
     peso = Column(Numeric(7, 2))
 
+    def get_peso(self):
+        if self.peso is None:
+            return '0.00'
+        return '{:0.2f}'.format(float(self.peso))
+
 
 def create_infracoes(session):
     """Cria testes para classe Infracao"""
