@@ -20,7 +20,8 @@ from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, \
     cadastra_rvf, delete_imagemrvf, inclui_imagemrvf, get_imagemrvf_imagem_or_none, \
     make_and_save_transformation, exclui_lacre_verificado, \
     inclui_lacre_verificado, get_imagemrvf, inclui_nova_ordem_arquivo, \
-    get_anexos_ordenado, get_tiposapreensao_choice, gera_apreensao_rvf
+    get_anexos_ordenado, get_tiposapreensao_choice, gera_apreensao_rvf, \
+    exclui_apreensao_rvf
 from bhadrasana.views import csrf, valid_file
 
 
@@ -498,6 +499,21 @@ def rvf_app(app):
             flash(str(type(err)))
             flash(str(err))
         return redirect(url_for('rvf', id=rvf_id))
+
+    @app.route('/exclui_apreensao', methods=['GET'])
+    @login_required
+    def exclui_apreensao_():
+        try:
+            session = app.config.get('dbsession')
+            apreensao_id = request.args.get('apreensao_id')
+            apreensoes = exclui_apreensao_rvf(session, apreensao_id)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            return jsonify({'msg': str(err)}), 500
+        return jsonify([{'peso': apreensao.get_peso(),
+                         'descricao': apreensao.descricao,
+                         'tipo': apreensao.tipo.descricao}
+                        for apreensao in apreensoes]), 201
 
     @app.route('/apreensaorvf_json', methods=['POST'])
     @login_required

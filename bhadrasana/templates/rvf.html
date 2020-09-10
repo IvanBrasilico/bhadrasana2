@@ -95,7 +95,7 @@
             {% for apreensao in apreensoes %}
             <button type="button" class="btn btn-primary">
                 {{ apreensao.peso }}Kg - {{ apreensao.descricao }} - {{ apreensao.tipo.descricao }} <span class="badge"
-                                         onclick="exclui_aprensao({{ apreensao.id }})">X</span>
+                                         onclick="exclui_apreensao({{ apreensao.id }})">X</span>
             </button>
             {% endfor %}
         </div>
@@ -268,12 +268,13 @@
 
 </script>
 <script>
-    function mostra_apreensao(apreensoes){
+    function mostra_apreensoes(apreensoes){
+        console.log(apreensoes);
         $('#div_apreensoes').empty();
         $.each(apreensoes, function(i, apreensao) {
-            $('<button type="button" class="btn btn-primary">').text(apreensao. + ' ').append(
-            $('<span class="badge" onclick="exclui_apreensao({{oform.id.data}}, ' + apreensao.id + ')">').text('X')
-            ).appendTo('#div_apreensaos_verificados');
+            $('<button type="button" class="btn btn-primary">').text(apreensao.peso + 'Kg - ' + apreensao.descricao + ' - ' + apreensao.tipo).append(
+            $('<span class="badge" onclick="exclui_apreensao(' + apreensao.id + ')">').text('X')
+            ).appendTo('#div_apreensoes');
         });
     }
     function exclui_apreensao(apreensao_id){

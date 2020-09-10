@@ -422,3 +422,18 @@ def get_tiposapreensao_choice(session) -> List[Tuple[int, str]]:
 def gera_apreensao_rvf(session, params) -> ApreensaoRVF:
     return gera_objeto(ApreensaoRVF(),
                        session, params)
+
+
+def exclui_apreensao_rvf(session, apreensao_id) -> List[ApreensaoRVF]:
+    apreensao = session.query(ApreensaoRVF). \
+        filter(ApreensaoRVF.id == apreensao_id).one_or_none()
+    if apreensao:
+        rvf = apreensao.rvf
+        rvf.appreensoes.remove(apreensao)
+        try:
+            session.commit()
+        except Exception as err:
+            session.rollback()
+            raise err
+        return rvf.appreensoes
+    return []
