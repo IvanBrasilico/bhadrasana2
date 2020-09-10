@@ -19,7 +19,8 @@ from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, \
     get_infracoes, lista_rvfovr, cadastra_imagemrvf, get_imagemrvf_or_none, \
     cadastra_rvf, delete_imagemrvf, inclui_imagemrvf, get_imagemrvf_imagem_or_none, \
     make_and_save_transformation, exclui_lacre_verificado, \
-    inclui_lacre_verificado, get_imagemrvf, inclui_nova_ordem_arquivo, get_anexos_ordenado, get_tiposapreensao_choice
+    inclui_lacre_verificado, get_imagemrvf, inclui_nova_ordem_arquivo, \
+    get_anexos_ordenado, get_tiposapreensao_choice, gera_apreensao_rvf
 from bhadrasana.views import csrf, valid_file
 
 
@@ -60,6 +61,9 @@ def rvf_app(app):
     def rvf():
         session = app.config.get('dbsession')
         get_usuario_logado(session, current_user.id)
+        tiposapreensao = get_tiposapreensao_choice(session)
+        apreensao_form = ApreensaoRVFForm(tiposapreensao=tiposapreensao)
+        apreensoes_rvf = []
         infracoes = []
         infracoes_encontradas = []
         marcas = []
@@ -68,8 +72,6 @@ def rvf_app(app):
         lacres_verificados = []
         arvf = None
         rvf_form = RVFForm()
-        tiposapreensao = get_tiposapreensao_choice(session)
-        apreensaoform = ApreensaoRVFForm(tiposapreensao=tiposapreensao)
         try:
             if request.method == 'POST':
                 rvf_form = RVFForm(request.form)
@@ -101,6 +103,7 @@ def rvf_app(app):
                     rvf_form.adata.data = arvf.datahora.date()
                     rvf_form.ahora.data = arvf.datahora.time()
                 rvf_form.id.data = arvf.id
+                apreensoes_rvf = arvf.appreensoes
                 infracoes_encontradas = arvf.infracoesencontradas
                 marcas_encontradas = arvf.marcasencontradas
                 lacres_verificados = arvf.lacresverificados
@@ -120,6 +123,8 @@ def rvf_app(app):
                                infracoes=infracoes,
                                marcas=marcas,
                                oform=rvf_form,
+                               apreensao_form=apreensao_form,
+                               apreensoes=apreensoes_rvf,
                                infracoes_encontradas=infracoes_encontradas,
                                marcas_encontradas=marcas_encontradas,
                                lacres_verificados=lacres_verificados,
@@ -477,19 +482,33 @@ def rvf_app(app):
             return jsonify({'msg': str(err)}), 500
         return jsonify(orvf.dump()), 201
 
-
     @app.route('/apreensaorvf', methods=['POST'])
     @login_required
     def apreensaorvf():
         session = app.config.get('dbsession')
+        rvf_id = 0
         try:
-            rvf_id = request.form['ovr_id']
+            rvf_id = request.form['rvf_id']
             apreensao_rvf_form = ApreensaoRVFForm(request.form)
             apreensao_rvf_form.validate()
-            gera_apreensaorvf(session, dict(apreensao_rvf_form.data.items()))
+            gera_apreensao_rvf(session, dict(apreensao_rvf_form.data.items()))
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
             flash(str(type(err)))
             flash(str(err))
         return redirect(url_for('rvf', id=rvf_id))
+
+    @app.route('/apreensaorvf_json', methods=['POST'])
+    @login_required
+    def apreensaorvf_json():
+        session = app.config.get('dbsession')
+        try:
+            apreensao_rvf_form = ApreensaoRVFForm(request.json)
+            apreensao_rvf_form.validate()
+            apreensao_rvf = gera_apreensao_rvf(session,
+                                               dict(apreensao_rvf_form.data.items()))
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            return jsonify({'msg': str(err)}), 500
+        return jsonify(apreensao_rvf.dump()), 201
