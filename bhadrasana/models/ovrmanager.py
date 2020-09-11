@@ -716,12 +716,16 @@ def muda_chaves(original: dict) -> dict:
 
 
 def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
-    if '.csv' in afile.filename:
+    if isinstance(afile, str):
+        lfilename = afile
+    else:
+        lfilename = afile.filename
+    if '.csv' in lfilename:
         df = pd.read_csv(afile, sep=';',
                          header=1, encoding='windows-1252')
-    elif '.xls' in afile.filename:
+    elif '.xls' in lfilename:
         df = pd.read_excel(afile)
-    elif '.ods' in afile.filename:
+    elif '.ods' in lfilename:
         df = pd.read_excel(afile, engine='odf')
     else:
         raise Exception('Extensão de arquivo desconhecida! Conheço .csv, .ods e .xls')
