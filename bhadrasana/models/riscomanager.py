@@ -4,6 +4,7 @@ from collections import OrderedDict, namedtuple
 from datetime import date, datetime
 from typing import List
 
+import pandas as pd
 from sqlalchemy import select, and_, join, or_
 
 from ajna_commons.flask.log import logger
@@ -213,6 +214,20 @@ def exclui_riscos(session):
     except Exception as err:
         session.rollback()
         raise err
+
+
+def le_csv(filename):
+    df = pd.read_csv(filename, sep=';',
+                     header=5)
+    with open(filename, 'r') as in_file:
+        for i in range(5):
+            linha = in_file.readline()
+    riscos_ativos = json.loads(linha)
+    for key, value in riscos_ativos.items():
+        if key not in ['datainicio', 'datafim']:
+            riscos_ativos[key] = '1'
+    print(riscos_ativos)
+    return [row[1].to_dict() for row in df.iterrows()], riscos_ativos
 
 
 def get_lista_csv(csvpath):

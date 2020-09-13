@@ -7,6 +7,7 @@ from dateutil import parser
 from flask import (flash, redirect, render_template, request,
                    url_for)
 from flask_login import current_user, login_required
+from werkzeug.datastructures import MultiDict
 from werkzeug.utils import secure_filename
 
 from ajna_commons.flask.log import logger
@@ -15,7 +16,7 @@ from bhadrasana.forms.riscosativos import RiscosAtivosForm, RecintoRiscosAtivosF
 from bhadrasana.models.importa_planilha_recintos import processa_planilha
 from bhadrasana.models.riscomanager import mercanterisco, riscosativos, \
     insererisco, exclui_risco, CAMPOS_RISCO, get_lista_csv, save_planilharisco, \
-    recintosrisco, CAMPOS_FILTRO_IMAGEM, exclui_riscos
+    recintosrisco, CAMPOS_FILTRO_IMAGEM, exclui_riscos, le_csv
 from bhadrasana.views import get_user_save_path, tmpdir
 
 
@@ -88,10 +89,6 @@ def risco_app(app):
             lista_risco_nova.append(linha)
         return lista_risco_nova
 
-    def le_csv(filename):
-        df = pd.read_csv(filename, sep=';',
-                         header=5)
-        return [row[1].to_dict() for row in df.iterrows()]
 
     @app.route('/aplica_risco', methods=['POST', 'GET'])
     def aplica_risco():
@@ -126,9 +123,7 @@ def risco_app(app):
                                                     str_filtros)
                 return redirect(url_for('risco',
                                         planilha_atual=planilha_atual,
-                                        active_tab=active_tab,
-                                        **dict(riscos_ativos_form.data.items())
-                                        ), code=307)
+                                        active_tab=active_tab))
             except Exception as err:
                 logger.error(err, exc_info=True)
                 flash('Erro ao aplicar risco! '
@@ -161,17 +156,17 @@ def risco_app(app):
         forms = {'carga': RiscosAtivosForm,
                  'recintos': RecintoRiscosAtivosForm}
         FormClass = forms[active_tab]
+        riscos_ativos_form = FormClass()
         if request.method == 'GET':
             riscos_ativos_form = FormClass(request.values,
                                            datainicio=date.today() - timedelta(days=5),
                                            datafim=date.today()
                                            )
-        else:
-            riscos_ativos_form = FormClass(request.form)
         lista_csv = get_lista_csv(get_user_save_path())
         if planilha_atual:
             csv_salvo = planilha_atual
-            lista_risco = le_csv(os.path.join(get_user_save_path(), csv_salvo))
+            lista_risco, riscos_ativos = le_csv(os.path.join(get_user_save_path(), csv_salvo))
+            riscos_ativos_form = FormClass(MultiDict(riscos_ativos))
             # print(lista_risco)
             total_linhas = len(lista_risco)
             # Limita resultados em 100 linhas na tela e adiciona imagens
