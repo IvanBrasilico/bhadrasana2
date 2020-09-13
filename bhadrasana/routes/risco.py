@@ -119,6 +119,8 @@ def risco_app(app):
                 lista_risco, str_filtros = risco_function(
                     dbsession, filtros, operador_ou=riscos_ativos_form.operadorOU.data)
                 # print('***********', lista_risco)
+                if not lista_risco or len(lista_risco) == 0:
+                    raise ValueError('Não foram encontrados resultados para o filtro!!')
                 planilha_atual = save_planilharisco(lista_risco, get_user_save_path(),
                                                     str_filtros)
                 return redirect(url_for('risco',
