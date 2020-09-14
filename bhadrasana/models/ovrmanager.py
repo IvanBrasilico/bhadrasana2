@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from datetime import timedelta, datetime
 from enum import Enum
 from typing import List, Tuple
@@ -670,18 +671,18 @@ def get_tiposmercadoria_choice(session):
     return [(tipo.id, tipo.nome) for tipo in tipos]
 
 
-de_para = {
-    'ncm': ['Código NCM', 'NCM'],
-    'descricao': ['Descrição', 'OBSERVAÇÃO'],
-    'contramarca': ['Marca', 'MARCA'],
-    'modelo': ['Modelo', 'MODELO'],
-    'unidadedemedida': ['Unid. Medida', 'UNIDADE'],
-    'procedencia': ['País Procedência', '*****'],  # Não utilizado ainda
-    'origem': ['País Origem', '***'],  # Não utilizado ainda
-    'moeda': ['Moeda', '****'],  # Não utilizado ainda
-    'qtde': ['Quantidade', 'QUANTIDADE'],
-    'valor': ['Valor Unitário', 'VALOR'],
-}
+de_para = OrderedDict([
+    ('descricao', ['Descrição', 'OBSERVAÇÃO']),
+    ('contramarca', ['Marca', 'MARCA']),
+    ('modelo', ['Modelo', 'MODELO']),
+    ('ncm', ['Código NCM', 'NCM']),
+    ('unidadedemedida', ['Unid. Medida', 'UNIDADE']),
+    ('procedencia', ['País Procedência', '*****']),  # Não utilizado ainda
+    ('origem', ['País Origem', '***']),  # Não utilizado ainda
+    ('moeda', ['Moeda', '****']),  # Não utilizado ainda
+    ('qtde', ['Quantidade', 'QUANTIDADE']),
+    ('valor', ['Valor Unitário', 'VALOR']),
+])
 
 
 def procura_chave_lower(akey: str, original: dict):
