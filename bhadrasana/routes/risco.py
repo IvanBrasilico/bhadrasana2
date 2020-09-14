@@ -2,7 +2,6 @@ import os
 from datetime import date, timedelta
 from datetime import datetime
 
-import pandas as pd
 from dateutil import parser
 from flask import (flash, redirect, render_template, request,
                    url_for)
@@ -88,7 +87,6 @@ def risco_app(app):
             linha['_id'] = _id
             lista_risco_nova.append(linha)
         return lista_risco_nova
-
 
     @app.route('/aplica_risco', methods=['POST', 'GET'])
     def aplica_risco():
