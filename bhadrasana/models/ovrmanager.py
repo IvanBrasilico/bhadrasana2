@@ -672,7 +672,7 @@ def get_tiposmercadoria_choice(session):
 
 
 de_para = OrderedDict([
-    ('descricao', ['Descrição', 'OBSERVAÇÃO']),
+    ('descricao', ['Descrição', 'TIPO']),
     ('contramarca', ['Marca', 'MARCA']),
     ('modelo', ['Modelo', 'MODELO']),
     ('ncm', ['Código NCM', 'NCM']),
