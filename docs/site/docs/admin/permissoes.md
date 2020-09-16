@@ -1,4 +1,4 @@
-## Modelo de permissóes
+## Modelo de permissões
 
 Descrição do modelo de permissões de  acesso do Sistema. 
 Implementado com o cadastro de Perfis para o  Usuário.
