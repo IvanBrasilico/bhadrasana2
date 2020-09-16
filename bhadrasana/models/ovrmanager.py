@@ -671,11 +671,14 @@ def get_tiposmercadoria_choice(session):
     return [(tipo.id, tipo.nome) for tipo in tipos]
 
 
+order_secta = ('TIPO', 'NCM', 'MARCA', 'MODELO', 'OBSERVAÇÃO',
+               'UNIDADE', 'QUANTIDADE', 'VALOR')
+
 de_para = OrderedDict([
     ('descricao', ['Descrição', 'TIPO']),
+    ('ncm', ['Código NCM', 'NCM']),
     ('contramarca', ['Marca', 'MARCA']),
     ('modelo', ['Modelo', 'MODELO']),
-    ('ncm', ['Código NCM', 'NCM']),
     ('unidadedemedida', ['Unid. Medida', 'UNIDADE']),
     ('procedencia', ['País Procedência', '*****']),  # Não utilizado ainda
     ('origem', ['País Origem', '***']),  # Não utilizado ainda
@@ -809,6 +812,8 @@ def exporta_planilha_tg(tg: TGOVR, filename: str,
             dumped_item_titulospadrao['VALOR'] = dumped_item_titulospadrao['VALOR'] + 'R'
     # print(itens)
     df = pd.DataFrame(itens)
+    if formato == TipoPlanilha.Secta:
+        df = df.reindex(order_secta, axis=1)
     df.to_excel(filename)
 
 
