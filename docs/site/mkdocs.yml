@@ -31,8 +31,12 @@ nav:
         - "Auto, RFFP, check-list - Equipe SY": exemplos/SYc.md
         - "Analise geral da Divisão": exemplos/SYd.md
         - "Resumo do roteiro (parte 2 - SY)": exemplos/roteiro2completo.md
-
-
+    - "Roteiro de uso da ficha de controle - mercadoria abandonada":
+        - "Verificação física, registro do TG e lavratura do Auto": exemplos/MAa.md
+        - "Solicitando e recebendo a manifestação de órgão anuente": exemplos/MAb.md
+        - "Direcionando a ficha após resposta do órgão anuente": exemplos/MAc.md
+        - "Recebimento de pedido de retomada de despacho": exemplos/MAd.md
+        - "Roteiro GMAB AJNA": exemplos/MAe.md
 
 
 theme:
