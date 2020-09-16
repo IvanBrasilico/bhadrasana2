@@ -672,7 +672,7 @@ def get_tiposmercadoria_choice(session):
 
 
 de_para = OrderedDict([
-    ('descricao', ['Descrição', 'OBSERVAÇÃO']),
+    ('descricao', ['Descrição', 'TIPO']),
     ('contramarca', ['Marca', 'MARCA']),
     ('modelo', ['Modelo', 'MODELO']),
     ('ncm', ['Código NCM', 'NCM']),
@@ -793,17 +793,20 @@ class TipoPlanilha(Enum):
 def exporta_planilha_tg(tg: TGOVR, filename: str,
                         formato: TipoPlanilha = TipoPlanilha.Safira):
     itens = []
+    item = ItemTG()
     print(formato)
     for item in tg.itenstg:
         dumped_item = item.dump()
         print(dumped_item)
-        dumped_item_titulospadrao = {}
+        dumped_item_titulospadrao = OrderedDict()
         for key, value in dumped_item.items():
             titulospadrao = de_para.get(key)
             if titulospadrao:
                 dumped_item_titulospadrao[titulospadrao[formato.value]] = value
         itens.append(dumped_item_titulospadrao)
         print(dumped_item_titulospadrao)
+        if formato == TipoPlanilha.Secta:
+            dumped_item_titulospadrao['VALOR'] = dumped_item_titulospadrao['VALOR'] + 'R'
     # print(itens)
     df = pd.DataFrame(itens)
     df.to_excel(filename)
