@@ -323,6 +323,7 @@ def ovr_app(app):
     def ver_relatorios():
         session = app.config.get('dbsession')
         lista_relatorios = get_relatorios_choice(session)
+        setores = get_setores(session)
         linhas = []
         linhas_formatadas = []
         sql = ''
@@ -333,6 +334,7 @@ def ovr_app(app):
             datainicio=inicio,
             datafim=date.today(),
             relatorios=lista_relatorios,
+            setores=get_setores
         )
         try:
             if request.method == 'POST':
