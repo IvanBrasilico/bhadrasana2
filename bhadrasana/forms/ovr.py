@@ -91,6 +91,7 @@ class FiltroRelatorioForm(FlaskForm):
     relatorio = SelectField('Relatórios disponiveis', default=-1)
     datainicio = DateField(u'Data inicial da pesquisa')
     datafim = DateField(u'Data final da pesquisa')
+    setor_id = SelectField('Setores')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -98,6 +99,9 @@ class FiltroRelatorioForm(FlaskForm):
         if kwargs.get('relatorios'):
             self.relatorio.choices = [(None, 'Selecione'),
                                       *kwargs.get('relatorios')]
+        self.setor_id.choices = []
+        if kwargs.get('setores'):
+            self.setor_id.choices = [*kwargs.get('setores')]
 
 
 class HistoricoOVRForm(FlaskForm):
