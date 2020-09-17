@@ -280,7 +280,7 @@ class OVRTestCase(BaseTestCase):
         assert relatorio.sql == relatorio1.sql
         datainicio = datetime.now() - timedelta(days=1)
         datafim = datetime.now() + timedelta(days=1)
-        result = executa_relatorio(session, '1', relatorio1, datainicio, datafim)
+        result = executa_relatorio(session, relatorio1, datainicio, datafim, '1')
         assert result is not None
         assert isinstance(result, list)
         assert len(result) > 0
