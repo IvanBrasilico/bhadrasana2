@@ -11,6 +11,7 @@ nav:
             - "Gerenciamento de Usuários e Perfis": admin/usuarios.md
             - "Modelo de permissão": admin/permissoes.md
     - "Novidades":
+        - "Função 'Informar Apreensão sem Termo de Guarda' - 17/09/2020": novidades/20200917.md
         - "Interface Telegram - 16/Junho/2020": novidades/20200616.md
         - "Tela 'Consulta de Empresa', Campo Empresa e Base Laudos - 03/Junho/2020": novidades/20200603.md
         - "Tela 'Consulta de Contêiner' - 12/Maio/2020": novidades/20200512.md
