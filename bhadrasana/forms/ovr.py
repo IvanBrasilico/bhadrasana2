@@ -101,7 +101,7 @@ class FiltroRelatorioForm(FlaskForm):
                                       *kwargs.get('relatorios')]
         self.setor_id.choices = []
         if kwargs.get('setores'):
-            self.setor_id.choices = [*kwargs.get('setores')]
+            self.setor_id.choices = kwargs.get('setores')
 
 
 class HistoricoOVRForm(FlaskForm):
