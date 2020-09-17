@@ -60,15 +60,18 @@ def get_relatorios_choice(session) -> List[Tuple[int, str]]:
     return [(relatorio.id, relatorio.nome) for relatorio in relatorios]
 
 
-def get_relatorio(session, relatorio_id: int) -> List[Relatorio]:
+def get_relatorio(session, relatorio_id: int) -> Relatorio:
     return session.query(Relatorio).filter(Relatorio.id == relatorio_id).one_or_none()
 
 
-def executa_relatorio(session, user_name: str, relatorio: Relatorio,
+def executa_relatorio(session, relatorio: Relatorio,
                       data_inicial: datetime, data_final: datetime,
-                      filtrar_setor=False):
+                      user_name: str = None, setor_id: str = None):
     params = {'datainicio': data_inicial, 'datafim': data_final + timedelta(days=1)}
-    if filtrar_setor:
+    if setor_id:
+        setores = get_setores_filhos_recursivo_id(session, setor_id)
+        params['setor_id'] = [setor_id, *[setor.id for setor in setores]]
+    elif user_name:
         setores = get_setores_cpf(session, user_name)
         params['setor_id'] = [setor.id for setor in setores]
     logger.info('Rodando relatório {} com parâmetros {}'.format(relatorio.nome, params))
@@ -590,21 +593,29 @@ def usuario_index(usuarios: list, pcpf: str) -> int:
     return index
 
 
+def get_setores_filhos_id(session, setor_id: str) -> List[Setor]:
+    return session.query(Setor).filter(Setor.pai_id == setor_id).all()
+
+
 def get_setores_filhos(session, setor: Setor) -> List[Setor]:
-    return session.query(Setor).filter(Setor.pai_id == setor.id).all()
+    return get_setores_filhos_id(session, setor.id)
 
 
-def get_setores_filhos_recursivo(session, setor: Setor) -> List[Setor]:
+def get_setores_filhos_recursivo_id(session, setor_id: str) -> List[Setor]:
     setores_total = []
-    setores_filhos = get_setores_filhos(session, setor)
+    setores_filhos = get_setores_filhos_id(session, setor_id)
     # print([setor.nome for setor in setores_filhos])
     if setores_filhos:
         setores_total.extend(setores_filhos)
     for setor in setores_filhos:
-        setores_filhos = get_setores_filhos_recursivo(session, setor)
+        setores_filhos = get_setores_filhos_recursivo_id(session, setor.id)
         setores_total.extend(setores_filhos)
 
     return setores_total
+
+
+def get_setores_filhos_recursivo(session, setor: Setor) -> List[Setor]:
+    return get_setores_filhos_recursivo_id(session, setor.id)
 
 
 def get_setores(session) -> List[Tuple[str, str]]:
@@ -625,7 +636,7 @@ def get_setores_usuario(session, usuario: Usuario) -> List[Setor]:
 
 def get_setores_cpf(session, cpf_usuario: str) -> List[Setor]:
     usuario = session.query(Usuario).filter(Usuario.cpf == cpf_usuario).one_or_none()
-    print(usuario, type(usuario))
+    # print(usuario, type(usuario))
     if usuario is None:
         return []
     return get_setores_usuario(session, usuario)

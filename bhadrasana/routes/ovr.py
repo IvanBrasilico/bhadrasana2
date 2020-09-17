@@ -35,7 +35,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_flags_choice, cadastra_visualizacao, get_tipos_evento_comfase_choice, \
     get_ovr_criadaspor, get_ovr_empresa, get_tipos_evento_todos, \
     desfaz_ultimo_eventoovr, get_delta_date, exporta_planilha_tg, TipoPlanilha, \
-    exclui_item_tg
+    exclui_item_tg, get_setores
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
@@ -323,34 +323,37 @@ def ovr_app(app):
     def ver_relatorios():
         session = app.config.get('dbsession')
         lista_relatorios = get_relatorios_choice(session)
-        setores = get_setores(session)
+        lista_setores = get_setores(session)
         linhas = []
         linhas_formatadas = []
         sql = ''
         plot = ''
         today = date.today()
         inicio = date(year=today.year, month=today.month, day=1)
+        usuario = get_usuario(session, current_user.name)
         filtro_form = FiltroRelatorioForm(
             datainicio=inicio,
             datafim=date.today(),
             relatorios=lista_relatorios,
-            setores=get_setores
+            setores=lista_setores
         )
+        filtro_form.setor_id.data = usuario.setor_id
         try:
             if request.method == 'POST':
                 filtro_form = FiltroRelatorioForm(request.form,
-                                                  relatorios=lista_relatorios)
+                                                  relatorios=lista_relatorios,
+                                                  setores=lista_setores)
                 filtro_form.validate()
                 relatorio = get_relatorio(session, int(filtro_form.relatorio.data))
                 if relatorio is None:
                     raise ValueError('Relatório %s não encontrado' %
                                      filtro_form.relatorio.data)
                 sql = relatorio.sql
-                linhas = executa_relatorio(session, current_user.name,
+                linhas = executa_relatorio(session,
                                            relatorio,
                                            filtro_form.datainicio.data,
                                            filtro_form.datafim.data,
-                                           filtrar_setor=True)
+                                           setor_id=filtro_form.setor_id.data)
                 plot = bar_plotly(linhas, relatorio.nome)
                 linhas_formatadas = formata_linhas_relatorio(linhas)
         except Exception as err:

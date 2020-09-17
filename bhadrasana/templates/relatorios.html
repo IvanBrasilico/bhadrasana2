@@ -8,8 +8,11 @@
                     <div class="col-sm-5">
                         <label for="relatorio">Nome do relatório</label>
                     </div>
-                    <div class="col-sm-7">
+                    <div class="col-sm-4">
                         <label for="datainicio">Início e fim de período de pesquisa</label>
+                    </div>
+                    <div class="col-sm-3">
+                        <label for="setor_id">Setor a filtrar</label>
                     </div>
                 </div>
                 <div class="row">
@@ -24,6 +27,7 @@
                             {{ oform.datafim(class='form-control') }}
                         </div>
                         <div class="col-sm-3">
+                            {{ oform.setor_id(class='form-control') }}
                         </div>
                     </div>
                 </div>
