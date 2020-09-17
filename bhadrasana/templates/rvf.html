@@ -55,6 +55,12 @@
                                 {{ oform.ahora(class='form-control') }}
                             </div>
                         </div>
+                        <div class="row col-sm-12">
+                            <div class="col-sm-3">
+                                <label for="peso">Peso manifestado em Kg</label>
+                                {{ oform.peso_manifestado(class='form-control', readonly=true) }}
+                            </div>
+                        </div>
                     </div>
                 </div>
         </div>
@@ -460,7 +466,7 @@
                         processData: false,
                         type: 'POST',
                         success: function(data){
-                           // location.reload();
+                           //location.reload();
                         }
                     });
                 }

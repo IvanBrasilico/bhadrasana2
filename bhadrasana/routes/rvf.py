@@ -21,7 +21,7 @@ from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, \
     make_and_save_transformation, exclui_lacre_verificado, \
     inclui_lacre_verificado, get_imagemrvf, inclui_nova_ordem_arquivo, \
     get_anexos_ordenado, get_tiposapreensao_choice, gera_apreensao_rvf, \
-    exclui_apreensao_rvf
+    exclui_apreensao_rvf, get_peso
 from bhadrasana.views import csrf, valid_file
 
 
@@ -104,6 +104,9 @@ def rvf_app(app):
                     rvf_form.adata.data = arvf.datahora.date()
                     rvf_form.ahora.data = arvf.datahora.time()
                 rvf_form.id.data = arvf.id
+                rvf_form.peso_manifestado.data = get_peso(session,
+                                                          rvf_form.numeroCEmercante.data,
+                                                          rvf_form.numerolote.data)
                 apreensoes_rvf = arvf.appreensoes
                 infracoes_encontradas = arvf.infracoesencontradas
                 marcas_encontradas = arvf.marcasencontradas

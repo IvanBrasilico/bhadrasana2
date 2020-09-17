@@ -5,6 +5,7 @@ from bson import ObjectId
 from gridfs import GridFS, NoFile
 from sqlalchemy import and_
 
+from virasana.integracao.mercante.mercantealchemy import Item
 from ajna_commons.flask.log import logger
 from ajna_commons.models.bsonimage import BsonImage
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, \
@@ -13,6 +14,19 @@ from bhadrasana.models.ovr import Marca, TipoEventoOVR, EventoEspecial, OVR
 from bhadrasana.models.ovrmanager import get_ovr, gera_eventoovr
 from bhadrasana.models.rvf import RVF, Infracao, ImagemRVF, Lacre, \
     TipoApreensao, ApreensaoRVF
+
+
+def get_peso(session, numeroCE, conteiner):
+    item = session.query(Item).\
+        filter(Item.numeroCEmercante == numeroCE).\
+        filter(Item.codigoConteiner == conteiner).one_or_none()
+    if item:
+        try:
+            peso = float(item.pesoBruto)
+        except Exception as err:
+            logger.error(err)
+        return peso
+    return 0
 
 
 def get_infracoes(session):
