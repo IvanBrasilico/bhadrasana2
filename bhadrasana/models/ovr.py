@@ -356,6 +356,10 @@ class TGOVR(BaseRastreavel, BaseDumpable):
     def get_unidadedemedida(self):
         return Enumerado.unidadeMedida(self.unidadedemedida)
 
+    @property
+    def numerotg_alnum(self):
+        return ''.join(s for s in self.numerotg if s.isalnum())
+
     def dump(self, exclude=None, explode=True):
         dumped = super().dump(exclude)
         dumped['qtde'] = str(dumped['qtde'])
