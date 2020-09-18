@@ -49,9 +49,30 @@ class OVRTestCase(BaseTestCase):
         tg.numerolote = 'CCNU1234567'
         session.add(tg)
         session.commit()
+        # test xls file
         file_name = os.path.join(os.path.dirname(__file__), 'teste.xls')
         alert = importa_planilha_tg(session, tg, file_name)
         assert alert == ''
+        # test csv file
+        file_name = os.path.join(os.path.dirname(__file__), 'teste.csv')
+        alert = importa_planilha_tg(session, tg, file_name)
+        assert alert == ''
+        # test ods file
+        file_name = os.path.join(os.path.dirname(__file__), 'teste.ods')
+        alert = importa_planilha_tg(session, tg, file_name)
+        assert alert == ''
+        # test Exception file reading
+        file_name_wrong = os.path.join(os.path.dirname(__file__), '123.abc')
+        with self.assertRaises(Exception):
+            alert = importa_planilha_tg(session, tg, file_name_wrong)
+        # test broken file
+        file_name = os.path.join(os.path.dirname(__file__), 'teste_sem_coluna_ncm.ods')
+        alert = importa_planilha_tg(session, tg, file_name)
+        assert alert.find("ncm") > 0
+        # test broken file
+        file_name = os.path.join(os.path.dirname(__file__), 'teste_sem_coluna_valor.ods')
+        alert = importa_planilha_tg(session, tg, file_name)
+        assert alert.find("valor") > 0
         # assert False
 
 
