@@ -703,7 +703,7 @@ def ovr_app(app):
                 formato = 'Safira'
             tg = get_tgovr(session, tg_id)
             out_filename = 'tg_{}_{}.xls'.format(
-                tg.numerotg,
+                ''.join(s for s in tg.numerotg if s.isalnum()),
                 datetime.strftime(datetime.now(), '%Y-%M-%HT%m:%s'))
             print(formato)
             exporta_planilha_tg(tg,
