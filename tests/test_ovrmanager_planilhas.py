@@ -54,7 +54,7 @@ class OVRTestCase(BaseTestCase):
         alert = importa_planilha_tg(session, tg, file_name)
         assert alert == ''
         # test csv file
-        file_name = os.path.join(os.path.dirname(__file__), 'teste.csv')
+        file_name = os.path.join(os.path.dirname(__file__), 'teste_csv')
         alert = importa_planilha_tg(session, tg, file_name)
         assert alert == ''
         # test ods file
