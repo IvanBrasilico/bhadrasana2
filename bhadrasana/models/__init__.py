@@ -113,6 +113,7 @@ class Usuario(Base):
     __tablename__ = 'ovr_usuarios'
     cpf = Column(CHAR(15), primary_key=True)
     nome = Column(CHAR(50), index=True)
+    password = Column(CHAR(200))
     telegram = Column(CHAR(50), index=True)
     setor_id = Column(CHAR(15), ForeignKey('ovr_setores.id'))
     setor = relationship('Setor')

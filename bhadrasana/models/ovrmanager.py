@@ -705,7 +705,10 @@ def procura_chave_lower(akey: str, original: dict):
     original_lower_keys = []
     original_keys = []
     for k in original.keys():
-        original_lower_keys.append(k.lower())
+        if isinstance(k, str):
+            original_lower_keys.append(k.lower())
+        else:
+            original_lower_keys.append(k)
         original_keys.append(k)
     try:
         ind = original_lower_keys.index(lower_key)
@@ -735,7 +738,7 @@ def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
         lfilename = afile
     else:
         lfilename = afile.filename
-    if '.csv' in lfilename:
+    if 'csv' in lfilename:
         df = pd.read_csv(afile, sep=';',
                          header=1, encoding='windows-1252')
     elif '.xls' in lfilename:
@@ -752,7 +755,7 @@ def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
             row = muda_chaves(original_row)
             if row.get('descricao') is None:
                 logger.info('Abortando linha {} da planilha {}'
-                            'devido descrição vazia'.format(index, afile.filename))
+                            'devido descrição vazia'.format(index, lfilename))
                 continue
             numero = row.get('numero')
             if numero:
