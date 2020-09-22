@@ -67,7 +67,6 @@ class OVRTestCase(BaseTestCase):
         session.refresh(ovr)
         assert len(ovr.historico) == 2
 
-
     def test_OVR_Desfaz_1Evento(self):
         ovr = self.create_OVR_valido()
         session.refresh(ovr)
@@ -95,7 +94,6 @@ class OVRTestCase(BaseTestCase):
         desfaz_ultimo_eventoovr(session, ovr.id)
         assert ovr.fase == 0
         assert ovr.tipoevento_id is None
-
 
     def test_OVR_Desfaz_2Eventos(self):
         ovr = self.create_OVR_valido()
@@ -177,10 +175,10 @@ class OVRTestCase(BaseTestCase):
         assert tg.qtde == 10
         assert tg.valor == 50
         itemtg2 = cadastra_itemtg(session, {'tg_id': tg.id,
-                                           'descricao': 'testeitem',
-                                           'numero': 13,
-                                           'qtde': 50,
-                                           'valor': 2})
+                                            'descricao': 'testeitem',
+                                            'numero': 13,
+                                            'qtde': 50,
+                                            'valor': 2})
         assert tg.qtde == 60
         assert tg.valor == 150
         exclui_item_tg(session, tg.id, itemtg2.id)
@@ -483,24 +481,24 @@ class OVRTestCase(BaseTestCase):
         ovr2 = self.create_OVR_campos('R2', 'U2', 'C2', '2020-05-02', 'teste2', setor2)
         ovr3 = self.create_OVR_campos('R3', 'U3', 'C3', '2020-05-03', 'teste3', setor)
         ovr4 = self.create_OVR_campos('R4', 'U4', 'C4', '2020-05-01', 'teste4', setor, '20')
-        ovrs = get_ovr_filtro(session, 'U1', {}, False)
+        ovrs = get_ovr_filtro(session, {}, 'U1')
         assert isinstance(ovrs, list)
         assert len(ovrs) == 4
-        ovrs = get_ovr_filtro(session, 'U1', {'numero': 'teste1'}, False)
+        ovrs = get_ovr_filtro(session, {'numero': 'teste1'}, 'U1')
         assert len(ovrs) == 1
-        ovrs = get_ovr_filtro(session, 'U2', {'numeroCEmercante': 'C2'}, True)
+        ovrs = get_ovr_filtro(session, {'numeroCEmercante': 'C2'}, 'U2')
         assert len(ovrs) == 1
-        ovrs = get_ovr_filtro(session, 'U1', {'numeroCEmercante': 'C2'}, True)
+        ovrs = get_ovr_filtro(session, {'numeroCEmercante': 'C2'}, 'U1')
         assert len(ovrs) == 0
-        ovrs = get_ovr_filtro(session, 'U1', {'numeroCEmercante': 'Non ecsiste'}, False)
+        ovrs = get_ovr_filtro(session, {'numeroCEmercante': 'Non ecsiste'}, 'U1')
         assert len(ovrs) == 0
-        ovrs = get_ovr_filtro(session, 'U4', {'numero': 'teste4'}, False)
+        ovrs = get_ovr_filtro(session, {'numero': 'teste4'}, 'U4')
         assert len(ovrs) == 1
-        ovrs = get_ovr_filtro(session, 'U4', {'numero': 'teste'}, False)
+        ovrs = get_ovr_filtro(session, {'numero': 'teste'}, 'U4')
         assert len(ovrs) == 4
-        ovrs = get_ovr_filtro(session, 'U4', {'numerodeclaracao': '10'}, False)
+        ovrs = get_ovr_filtro(session, {'numerodeclaracao': '10'}, 'U4')
         assert len(ovrs) == 0
-        ovrs = get_ovr_filtro(session, 'U4', {'numerodeclaracao': '20'}, False)
+        ovrs = get_ovr_filtro(session, {'numerodeclaracao': '20'}, 'U4')
         assert len(ovrs) == 1
 
     def test_get_ovr_empresa(self):
@@ -536,6 +534,7 @@ class OVRTestCase(BaseTestCase):
         ovrs = get_ovrs_setor(session, setor)
         assert len(ovrs) == 1
         assert isinstance(ovrs, list)
+
 
 if __name__ == '__main__':
     unittest.main()

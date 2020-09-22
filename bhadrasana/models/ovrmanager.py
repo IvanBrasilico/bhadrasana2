@@ -155,12 +155,12 @@ def get_ovr_criadaspor(session, user_name: str) -> List[OVR]:
     return session.query(OVR).filter(OVR.user_name == user_name).all()
 
 
-def get_ovr_filtro(session, user_name: str,
+def get_ovr_filtro(session,
                    pfiltro: dict = None,
-                   filtrar_setor=True) -> List[OVR]:
+                   user_name: str = None) -> List[OVR]:
     filtro = and_()
     tables = []
-    if filtrar_setor:
+    if user_name:
         ids_setores = [setor.id for setor in get_setores_cpf(session, user_name)]
         filtro = and_(OVR.setor_id.in_(ids_setores))
     if pfiltro and isinstance(pfiltro, dict):

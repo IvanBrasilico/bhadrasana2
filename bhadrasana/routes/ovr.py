@@ -200,14 +200,18 @@ def ovr_app(app):
         recintos = get_recintos(session)
         flags = get_flags_choice(session)
         infracoes = get_infracoes_choice(session)
+        lista_setores = get_setores(session)
         filtro_form = FiltroOVRForm(
             datainicio=date.today() - timedelta(days=10),
             datafim=date.today(),
             tiposeventos=tiposeventos,
             recintos=recintos,
             flags=flags,
-            infracoes=infracoes
+            infracoes=infracoes,
+            setores=lista_setores
         )
+        usuario = get_usuario(session, current_user.name)
+        filtro_form.setor_id.data = usuario.setor_id
         responsaveis = get_usuarios(session)
         responsavel_form = ResponsavelOVRForm(responsaveis=responsaveis,
                                               responsavel=current_user.name)
@@ -218,12 +222,12 @@ def ovr_app(app):
                 logger.info('Consulta de Ficha: ' + str(dict(request.form.items())))
                 filtro_form = FiltroOVRForm(request.form, tiposeventos=tiposeventos,
                                             recintos=recintos, flags=flags,
-                                            infracoes=infracoes)
+                                            infracoes=infracoes, setores=lista_setores)
                 filtro_form.validate()
                 logger.info('filtro_form data: ' + str(dict(filtro_form.data.items())))
-                ovrs = get_ovr_filtro(session, current_user.name,
+                ovrs = get_ovr_filtro(session,
                                       dict(filtro_form.data.items()),
-                                      filtrar_setor=False)
+                                      user_name=current_user.name)
                 # print('******', ovrs)
         except Exception as err:
             logger.error(err, exc_info=True)
@@ -271,8 +275,9 @@ def ovr_app(app):
             if active_tab == 'minhas_ovrs':
                 ovrs = get_ovr_responsavel(session, current_user.name)
             elif active_tab == 'ovrs_meus_setores':
-                ovrs = get_ovr_filtro(session, current_user.name,
-                                      dict(oform.data.items()))
+                ovrs = get_ovr_filtro(session,
+                                      dict(oform.data.items()),
+                                      user_name=current_user.name)
             else:
                 ovrs = get_ovr_criadaspor(session, current_user.name)
             exibicao = ExibicaoOVR(session, int(oform.tipoexibicao.data), current_user.id)
