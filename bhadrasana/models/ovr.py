@@ -421,12 +421,17 @@ class OKRResult(Base):
     sql = Column(Text())
 
 
-okrs_table = Table('ovr_okrs', metadata,
-                   Column('objective_id', BigInteger(),
-                          ForeignKey('ovr_objectives.id')),
-                   Column('result_id', BigInteger(),
-                          ForeignKey('ovr_results.id')),
-                   )
+class OKRResultMeta(Base):
+    __tablename__ = 'ovr_okrs'
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
+    objective_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
+                          ForeignKey('ovr_objectives.id'), nullable=False)
+    objective = relationship('OKRObjective', back_populates='key_results')
+    result_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
+                       ForeignKey('ovr_results.id'), nullable=False)
+    result = relationship('OKRResult')
+    meta = Column(Integer)
+    resultado:int = 0
 
 
 class OKRObjective(Base):
@@ -436,8 +441,18 @@ class OKRObjective(Base):
     setor_id = Column(CHAR(15))
     inicio = Column(DateTime())
     fim = Column(DateTime())
-    key_results = relationship('OKRResult', secondary=okrs_table)
+    key_results = relationship(OKRResultMeta)
 
+    def data_format(self, data):
+        return datetime.strftime(data, '%d/%m/%Y')
+
+    @property
+    def get_inicio(self):
+        return self.data_format(self.inicio)
+
+    @property
+    def get_fim(self):
+        return self.data_format(self.fim)
 
 
 class VisualizacaoOVR(BaseRastreavel):
