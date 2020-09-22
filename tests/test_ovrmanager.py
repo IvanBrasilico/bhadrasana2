@@ -481,24 +481,24 @@ class OVRTestCase(BaseTestCase):
         ovr2 = self.create_OVR_campos('R2', 'U2', 'C2', '2020-05-02', 'teste2', setor2)
         ovr3 = self.create_OVR_campos('R3', 'U3', 'C3', '2020-05-03', 'teste3', setor)
         ovr4 = self.create_OVR_campos('R4', 'U4', 'C4', '2020-05-01', 'teste4', setor, '20')
-        ovrs = get_ovr_filtro(session, {}, 'U1')
+        ovrs = get_ovr_filtro(session, {})
         assert isinstance(ovrs, list)
         assert len(ovrs) == 4
-        ovrs = get_ovr_filtro(session, {'numero': 'teste1'}, 'U1')
+        ovrs = get_ovr_filtro(session, {'numero': 'teste1'})
         assert len(ovrs) == 1
         ovrs = get_ovr_filtro(session, {'numeroCEmercante': 'C2'}, 'U2')
         assert len(ovrs) == 1
         ovrs = get_ovr_filtro(session, {'numeroCEmercante': 'C2'}, 'U1')
         assert len(ovrs) == 0
-        ovrs = get_ovr_filtro(session, {'numeroCEmercante': 'Non ecsiste'}, 'U1')
+        ovrs = get_ovr_filtro(session, {'numeroCEmercante': 'Non ecsiste'})
         assert len(ovrs) == 0
-        ovrs = get_ovr_filtro(session, {'numero': 'teste4'}, 'U4')
+        ovrs = get_ovr_filtro(session, {'numero': 'teste4'})
         assert len(ovrs) == 1
-        ovrs = get_ovr_filtro(session, {'numero': 'teste'}, 'U4')
+        ovrs = get_ovr_filtro(session, {'numero': 'teste'})
         assert len(ovrs) == 4
-        ovrs = get_ovr_filtro(session, {'numerodeclaracao': '10'}, 'U4')
+        ovrs = get_ovr_filtro(session, {'numerodeclaracao': '10'})
         assert len(ovrs) == 0
-        ovrs = get_ovr_filtro(session, {'numerodeclaracao': '20'}, 'U4')
+        ovrs = get_ovr_filtro(session, {'numerodeclaracao': '20'})
         assert len(ovrs) == 1
 
     def test_get_ovr_empresa(self):
