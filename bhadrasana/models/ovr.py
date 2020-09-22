@@ -439,6 +439,7 @@ class OKRObjective(Base):
     key_results = relationship('OKRResult', secondary=okrs_table)
 
 
+
 class VisualizacaoOVR(BaseRastreavel):
     """Classe para registrar ultima visualizacao de um usuario."""
     __tablename__ = 'ovr_visualizacoes'

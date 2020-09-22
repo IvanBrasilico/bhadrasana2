@@ -35,7 +35,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_flags_choice, cadastra_visualizacao, get_tipos_evento_comfase_choice, \
     get_ovr_criadaspor, get_ovr_empresa, get_tipos_evento_todos, \
     desfaz_ultimo_eventoovr, get_delta_date, exporta_planilha_tg, TipoPlanilha, \
-    exclui_item_tg, get_setores
+    exclui_item_tg, get_setores, get_objectives_setor
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
@@ -1104,3 +1104,25 @@ def ovr_app(app):
             logger.error(err, exc_info=True)
             return jsonify({'msg': str(err)}), 500
         return jsonify(ovr.dump()), 201
+
+
+    @app.route('/ver_okrs', methods=['GET'])
+    @login_required
+    def ver_okrs():
+        session = app.config.get('dbsession')
+        objectives = []
+        today = date.today()
+        try:
+            usuario = get_usuario(session, current_user.name)
+            objectives = get_objectives_setor(session, usuario.setor_id)
+            # linha = executa_okr_result(session, inicio, fim, result)
+            # plot = bar_plotly(linhas, relatorio.nome)
+            # linhas_formatadas = formata_linhas_relatorio(linhas)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return render_template('ver_okrs.html',
+                               objectives=objectives,)
+                               # plot=plot)
