@@ -87,6 +87,13 @@
                 </div>
             </div>
             <div class="row col-sm-12">
+                <div class="col-sm-4">
+                    <label for="setor_id">Filtrar Setor (inclui filhos)</label>
+                </div>
+                <div class="col-sm-10">
+                </div>
+            </div>
+            <div class="row col-sm-12">
                 <div class="col-sm-2">
                     {{ oform.setor_id(class='form-control') }}
                 </div>
@@ -129,15 +136,15 @@
     </div>
     <div id="list" class="row col-sm-12">
         &nbsp;<br>
-        Clique nos títulos da tabela para ordenar
+        <h4><u>Clique nos títulos da tabela para ordenar</u></h4>
         <div class="table">
             <table class="inlineTable table table-bordered table-hover table-responsive"
-                   id="pesquisa_ovr_table" title="Lista de OVRs encontradas - limite de 100 resultados">
+                   id="pesquisa_ovr_table" title="Lista de OVRs encontradas - limite de 200 resultados">
                 <thead>
                 <tr>
-                    <th></th>
-                    <th style="cursor: pointer;">Ficha Nº</th>
-                    <th style="cursor: pointer;">Tipo Operação</th>
+                    <th><input type="checkbox" id="selectAll" class="action-checkbox"></th>
+                    <th style="cursor: pointer;">Ficha Nº <i class="fa fa-fw fa-sort"></i></th>
+                    <th style="cursor: pointer;">Tipo Operação <i class="fas fa-sort"></i></th>
                     <th style="cursor: pointer;">Recinto</th>
                     <th style="cursor: pointer;">Ano</th>
                     <th style="cursor: pointer;">Número doc.</th>
@@ -289,7 +296,9 @@ function abre_ovr_numero(){
         });
     }
 
-
+$('#selectAll').click(function (e) {
+    $(this).closest('table').find('td input:checkbox').prop('checked', this.checked);
+});
 
 
 </script>

@@ -226,8 +226,7 @@ def ovr_app(app):
                 filtro_form.validate()
                 logger.info('filtro_form data: ' + str(dict(filtro_form.data.items())))
                 ovrs = get_ovr_filtro(session,
-                                      dict(filtro_form.data.items()),
-                                      user_name=current_user.name)
+                                      dict(filtro_form.data.items()))
                 # print('******', ovrs)
         except Exception as err:
             logger.error(err, exc_info=True)

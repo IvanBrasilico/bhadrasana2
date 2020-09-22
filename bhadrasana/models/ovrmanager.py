@@ -200,6 +200,11 @@ def get_ovr_filtro(session,
         if pfiltro.get('infracao_id') and pfiltro.get('infracao_id') != 'None':
             filtro = and_(Infracao.id == int(pfiltro.get('infracao_id')), filtro)
             tables.extend([RVF, infracoesencontradas_table, Infracao])
+        setor_id = pfiltro.get('setor_id')
+        if setor_id and setor_id != 'None':
+            setores = get_setores_filhos_recursivo_id(session, setor_id)
+            ids_setores = [setor_id, *[setor.id for setor in setores]]
+            filtro = and_(OVR.setor_id.in_(ids_setores))
     logger.info('get_ovr_filtro - pfiltro' + str(pfiltro))
     logger.info('get_ovr_filtro - filtro' + str(filtro))
     q = session.query(OVR)
