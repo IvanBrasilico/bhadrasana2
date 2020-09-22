@@ -266,6 +266,7 @@ def mynavbar():
                  View('Verificações físicas', 'pesquisa_rvf'),
                  Separator(),
                  View('Relatórios', 'ver_relatorios'),
+                 View('Painel de OKRs', 'ver_okrs'),
                  Separator(),
                  View('Importa planilhas recintos', 'importa_planilha_recinto'),
                  View('Administração', 'admin.index'),

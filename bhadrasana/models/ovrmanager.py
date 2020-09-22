@@ -14,7 +14,7 @@ from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto
     get_usuario_logado
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
     TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria, \
-    EventoEspecial, Flag, Relatorio, RoteiroOperacaoOVR, flags_table, VisualizacaoOVR
+    EventoEspecial, Flag, Relatorio, RoteiroOperacaoOVR, flags_table, VisualizacaoOVR, OKRObjective
 from bhadrasana.models.rvf import Infracao, infracoesencontradas_table, RVF
 from bhadrasana.models.virasana_manager import get_conhecimento
 from virasana.integracao.mercante.mercantealchemy import Item
@@ -875,3 +875,9 @@ def get_delta_date(start, end):
     start_date = datetime(year=start.year, month=start.month, day=start.day)
     end_date = datetime(year=end.year, month=end.month, day=end.day)
     return (end_date - start_date).days
+
+
+def get_objectives_setor(session, setor_id: int):
+    setores = get_setores_filhos_recursivo_id(session, setor_id)
+    ids_setores = [setor_id, *[setor.id for setor in setores]]
+    return session.query(OKRObjective).filter(OKRObjective.setor_id.in_(ids_setores))
