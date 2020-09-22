@@ -14,7 +14,7 @@ from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto
     get_usuario_logado
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
     TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria, \
-    EventoEspecial, Flag, Relatorio, RoteiroOperacaoOVR, flags_table, VisualizacaoOVR, OKRObjective
+    EventoEspecial, Flag, Relatorio, RoteiroOperacaoOVR, flags_table, VisualizacaoOVR, OKRObjective, OKRResultMeta
 from bhadrasana.models.rvf import Infracao, infracoesencontradas_table, RVF
 from bhadrasana.models.virasana_manager import get_conhecimento
 from virasana.integracao.mercante.mercantealchemy import Item
@@ -881,3 +881,23 @@ def get_objectives_setor(session, setor_id: int):
     setores = get_setores_filhos_recursivo_id(session, setor_id)
     ids_setores = [setor_id, *[setor.id for setor in setores]]
     return session.query(OKRObjective).filter(OKRObjective.setor_id.in_(ids_setores))
+
+
+def executa_okr_results(session, objective: OKRObjective) -> List[OKRResultMeta]:
+    params = {'datainicio': objective.inicio, 'datafim': objective.fim + timedelta(days=1)}
+    setores = get_setores_filhos_recursivo_id(session, objective.setor_id)
+    params['setor_id'] = [objective.setor_id, *[setor.id for setor in setores]]
+    logger.info(params)
+    resultados = objective.key_results
+    for key_result in objective.key_results:
+        sql_query = text(key_result.result.sql)
+        try:
+            result_proxy = session.execute(sql_query, params)
+            medicao = result_proxy.scalar()
+            print(medicao, type(medicao))
+            key_result.resultado = medicao
+        except Exception as err:
+            logger.error('Erro em executa_relatorio: %s' % err)
+        logger.info(params)
+        logger.info(sql_query)
+    return resultados

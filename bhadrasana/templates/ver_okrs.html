@@ -1,60 +1,62 @@
 {% extends "layout.html" %} {% block content %} {{super()}}
 <div id="main" class="container-fluid">
     <div id="top" class="row col-sm-12">
-        <div class="table">
-            <table class="inlineTable table table-bordered table-hover table-responsive"
-                   id="objectives">
-                <thead>
-                <tr>
-                    <th>Descrição</th>
-                    <th>Início</th>
-                    <th>Fim</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for objetivo in objectives %}
-                <tr>
-                    <td>{{ objetivo.descricao }}</td>
-                    <td>{{ objetivo.inicio }}</td>
-                    <td>{{ objetivo.fim }}</td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+        <div class="col-sm-4">
+            <img src="static/okrs.jpg" width="90%"/>
+        </div>
+        <div class="col-sm-6">
+            <h1>Objetivos do Setor</h1>
+            <div class="table">
+                <table class="inlineTable table table-bordered table-hover table-responsive"
+                       id="objectives">
+                    <thead>
+                    <tr>
+                        <th></th>
+                        <th>Descrição</th>
+                        <th>Início</th>
+                        <th>Fim</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for objetivo in objectives %}
+                    <tr>
+                        <td><a href="ver_okrs?objetivo={{loop.index - 1}}">Ver resultados</a></td>
+                        <td>{{ objetivo.nome }}</td>
+                        <td>{{ objetivo.get_inicio }}</td>
+                        <td>{{ objetivo.get_fim }}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
+
     <div id="list" class="row col-sm-12">
+        <h1>Acompanhamento dos resultados chave</h1>
         &nbsp;<br>
         <div class="table">
             <table class="inlineTable table table-bordered table-hover table-responsive"
-                   id="filtro_personalizado_table">
+                   id="results_table">
                 <thead>
                 <tr>
-                    {% for coluna in linhas[0] %}
-                    <th>{{ coluna }}</th>
-                    {% endfor %}
                 </tr>
                 </thead>
                 <tbody>
-                {% for linha in linhas[1:] %}
+                {% for result in results %}
                 <tr>
-                    {% for coluna in linha %}
-                        {% if linhas[0][loop.index - 1] == 'Ficha' %}
-                            <td><a href="ovr?id={{coluna}}" target="_blank">{{ coluna }}</a></td>
-                        {% elif linhas[0][loop.index - 1] == 'Verificacao' %}
-                            <td><a href="rvf?id={{coluna}}" target="_blank">{{ coluna }}</a></td>
-                        {% else %}
-                            <td>{{ coluna }}</td>
-                        {% endif %}
-                    {% endfor %}
                 </tr>
                 {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
-    <div id="plot">
-        {{ plot | safe }}
+    <div id="plot" class="row">
+        {% for plot in plots %}
+        <div class="col-sm-4">
+            {{ plot | safe }}
+        </div>
+        {% endfor %}
     </div>
     <div id="bottom" class="row col-sm-12">
         AJNA - Receita Federal do Brasil 2017
@@ -62,8 +64,5 @@
 </div>
 {% endblock %} {% block scripts %} {{super()}}
 <script>
-    function exporta_planilhaovr() {
-        window.location.assign('exportaplanilhaovr');
-    }
 </script>
 {% endblock %}
