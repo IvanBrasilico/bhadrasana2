@@ -65,6 +65,8 @@ class FiltroOVRForm(FlaskForm):
     datafim = DateField(u'Data final da pesquisa')
     cnpj_fiscalizado = StringField(u'CNPJ do Fiscalizado',
                                    default='')
+    setor_id = SelectField('Setores')
+
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -85,6 +87,9 @@ class FiltroOVRForm(FlaskForm):
         self.infracao_id.choices = [(None, 'Selecione')]
         if kwargs.get('infracoes'):
             self.infracao_id.choices.extend(kwargs.get('infracoes'))
+        self.setor_id.choices = []
+        if kwargs.get('setores'):
+            self.setor_id.choices = kwargs.get('setores')
 
 
 class FiltroRelatorioForm(FlaskForm):
