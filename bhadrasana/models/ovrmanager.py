@@ -204,7 +204,7 @@ def get_ovr_filtro(session,
         if setor_id and setor_id != 'None':
             setores = get_setores_filhos_recursivo_id(session, setor_id)
             ids_setores = [setor_id, *[setor.id for setor in setores]]
-            filtro = and_(OVR.setor_id.in_(ids_setores))
+            filtro = and_(OVR.setor_id.in_(ids_setores), filtro)
     logger.info('get_ovr_filtro - pfiltro' + str(pfiltro))
     logger.info('get_ovr_filtro - filtro' + str(filtro))
     q = session.query(OVR)
