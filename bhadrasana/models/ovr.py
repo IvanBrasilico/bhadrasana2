@@ -414,6 +414,31 @@ class Relatorio(Base):
     sql = Column(Text())
 
 
+class OKRResult(Base):
+    __tablename__ = 'ovr_results'
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
+    nome = Column(VARCHAR(200), index=True, nullable=False)
+    sql = Column(Text())
+
+
+okrs_table = Table('ovr_okrs', metadata,
+                   Column('objective_id', BigInteger(),
+                          ForeignKey('ovr_objectives.id')),
+                   Column('result_id', BigInteger(),
+                          ForeignKey('ovr_results.id')),
+                   )
+
+
+class OKRObjective(Base):
+    __tablename__ = 'ovr_objectives'
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
+    nome = Column(VARCHAR(200), index=True, nullable=False)
+    setor_id = Column(CHAR(15))
+    inicio = Column(DateTime())
+    fim = Column(DateTime())
+    key_results = relationship('OKRResult', secondary=okrs_table)
+
+
 class VisualizacaoOVR(BaseRastreavel):
     """Classe para registrar ultima visualizacao de um usuario."""
     __tablename__ = 'ovr_visualizacoes'
@@ -533,7 +558,9 @@ if __name__ == '__main__':  # pragma: no-cover
         # metadata.drop_all(engine)
         metadata.create_all(engine,
                             [
-                                # metadata.tables['ovr_visualizacoes']
+                                metadata.tables['ovr_results'],
+                                metadata.tables['ovr_objectives'],
+                                metadata.tables['ovr_okrs']
                                 # metadata.tables['ovr_roteiros'],
                                 # metadata.tables['ovr_flags'],
                                 # metadata.tables['ovr_flags_ovr'],
