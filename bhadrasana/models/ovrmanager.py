@@ -835,6 +835,7 @@ def exporta_planilha_tg(tg: TGOVR, filename: str,
     print(formato)
     for item in tg.itenstg:
         dumped_item = item.dump()
+        dumped_item['numero'] += 1
         print(dumped_item)
         dumped_item_titulospadrao = OrderedDict()
         for key, value in dumped_item.items():
