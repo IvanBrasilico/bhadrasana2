@@ -36,7 +36,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_ovr_criadaspor, get_ovr_empresa, get_tipos_evento_todos, \
     desfaz_ultimo_eventoovr, get_delta_date, exporta_planilha_tg, TipoPlanilha, \
     exclui_item_tg, get_setores, get_objectives_setor, executa_okr_results, gera_okrobjective, exclui_okrobjective, \
-    get_key_results_choice, gera_okrmeta, exclui_okrmeta
+    get_key_results_choice, gera_okrmeta, exclui_okrmeta, get_usuarios_setores, get_setores_usuario, get_setores_cpf
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
@@ -268,6 +268,10 @@ def ovr_app(app):
         responsaveis = get_usuarios(session)
         responsavel_form = ResponsavelOVRForm(responsaveis=responsaveis,
                                               responsavel=current_user.name)
+        setores = get_setores_cpf(session, current_user.name)
+        responsaveis_setor = get_usuarios_setores(session, setores)
+        responsavel_form_setor = ResponsavelOVRForm(responsaveis=responsaveis,
+                                              responsavel=current_user.name)
         historico_ovr_form = HistoricoOVRForm(
             tiposeventos=get_tipos_evento_comfase_choice(session))
         try:
@@ -296,6 +300,7 @@ def ovr_app(app):
                                titulos=titulos_exibicao,
                                listasovrs=listasovrs,
                                active_tab=active_tab,
+                               responsavel_form_setor=responsavel_form_setor,
                                responsavel_form=responsavel_form,
                                historico_form=historico_ovr_form)
 

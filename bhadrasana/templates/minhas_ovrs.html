@@ -16,9 +16,15 @@
     <div id="actions" class="row col-sm-12">
         <h4>Com linhas selecionadas, fazer ação:</h4>
         <div class="col-sm-3">
+        <button id="btn_responsavel_setor" type="button" class="btn btn-warning form-control"
+                data-toggle="modal" data-target="#responsavel_setor">
+            Atribuir responsável
+        </button>
+        </div>
+        <div class="col-sm-3">
         <button id="btn_responsavel" type="button" class="btn btn-warning form-control"
                 data-toggle="modal" data-target="#responsavel">
-            Atribuir responsável
+            Atribuir responsável (todos)
         </button>
         </div>
         <div class="col-sm-3">
@@ -26,7 +32,7 @@
                 data-toggle="modal" data-target="#historico">Informar Evento
         </button>
         </div>
-        <div class="col-sm-6">
+        <div class="col-sm-3">
         </div>
     </div>
     <div class="row col-sm-12">&nbsp;</div>
@@ -94,6 +100,34 @@
     <div id="bottom" class="row col-sm-12">
         AJNA - Receita Federal do Brasil 2017
     </div>
+    <div class="modal fade" id="responsavel_setor" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title" id="ModalLabel_setor">Registra responsável pela ficha</h1>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="responsavelovr_minhasovrs" enctype="multipart/form-data" id="responsavelovr_form_setor">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <input type="hidden" name="active_tab" value="{{active_tab}}"/>
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <label for="responsavel">Nome Responsável</label>
+                            </div>
+                            <div class="col-sm-9">
+                                {{ responsavel_form_setor.responsavel(class='form-control') }}
+                            </div>
+                        </div>
+                        <input class="btn btn-primary" onclick="submit_many(this)" value="Atribuir"/>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="modal fade" id="responsavel" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
          aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -107,7 +141,7 @@
                         <input type="hidden" name="active_tab" value="{{active_tab}}"/>
                         <div class="row">
                             <div class="col-sm-3">
-                                <label for="tipoprocesso">Nome Responsável</label>
+                                <label for="responsavel">Nome Responsável</label>
                             </div>
                             <div class="col-sm-9">
                                 {{ responsavel_form.responsavel(class='form-control') }}
