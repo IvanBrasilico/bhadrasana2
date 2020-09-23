@@ -22,7 +22,7 @@ from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
     FiltroMinhasOVRsForm, OKRObjectiveForm, OKRMetaForm
 from bhadrasana.models import delete_objeto, get_usuario
 from bhadrasana.models.laudo import get_empresa, get_empresas_nome, get_sats_cnpj
-from bhadrasana.models.ovr import OVR
+from bhadrasana.models.ovr import OVR, OKRObjective
 from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_ovr_filtro, gera_eventoovr, gera_processoovr, get_tipos_processo, lista_itemtg, \
     get_itemtg, get_recintos, \
@@ -36,7 +36,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_ovr_criadaspor, get_ovr_empresa, get_tipos_evento_todos, \
     desfaz_ultimo_eventoovr, get_delta_date, exporta_planilha_tg, TipoPlanilha, \
     exclui_item_tg, get_setores, get_objectives_setor, executa_okr_results, gera_okrobjective, exclui_okrobjective, \
-    get_key_results_choice, gera_okrmeta, exclui_okrmeta, get_usuarios_setores, get_setores_usuario, get_setores_cpf
+    get_key_results_choice, gera_okrmeta, exclui_okrmeta, get_usuarios_setores, get_setores_cpf
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
@@ -271,7 +271,7 @@ def ovr_app(app):
         setores = get_setores_cpf(session, current_user.name)
         responsaveis_setor = get_usuarios_setores(session, setores)
         responsavel_form_setor = ResponsavelOVRForm(responsaveis=responsaveis_setor,
-                                              responsavel=current_user.name)
+                                                    responsavel=current_user.name)
         historico_ovr_form = HistoricoOVRForm(
             tiposeventos=get_tipos_evento_comfase_choice(session))
         try:
@@ -1151,6 +1151,7 @@ def ovr_app(app):
     def ver_okrs():
         session = app.config.get('dbsession')
         id_objetivo = request.args.get('objetivo')
+        setor_id = request.args.get('setor_id')
         objective = None
         objectives = []
         results = []
@@ -1158,19 +1159,24 @@ def ovr_app(app):
         today = date.today()
         lista_key_results = get_key_results_choice(session)
         okrmeta_form = OKRMetaForm(key_results=lista_key_results)
+        lista_setores = get_setores(session)
+        okrobjective_form = OKRObjectiveForm(setores=lista_setores)
         try:
-            usuario = get_usuario(session, current_user.name)
-            objectives = get_objectives_setor(session, usuario.setor_id)
             if id_objetivo is not None:
-                for objective in objectives:
-                    if objective.id == int(id_objetivo):
-                        break
+                objective = session.query(OKRObjective). \
+                    filter(OKRObjective.id == int(id_objetivo)).one()
+                setor_id = objective.setor_id
                 results = executa_okr_results(session, objective)
                 plots = []
                 for result in results:
                     delta = ((today - objective.inicio.date()) / (objective.fim - objective.inicio)) * result.ameta
                     plot = gauge_plotly(result.result.nome, result.ameta, result.resultado, delta)
                     plots.append(plot)
+            if setor_id is None:
+                usuario = get_usuario(session, current_user.name)
+                setor_id = usuario.setor_id
+            okrobjective_form.setor_id.data = setor_id
+            objectives = get_objectives_setor(session, setor_id)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
@@ -1181,27 +1187,30 @@ def ovr_app(app):
                                objectives=objectives,
                                results=results,
                                plots=plots,
-                               okrmeta_form=okrmeta_form)
+                               okrmeta_form=okrmeta_form,
+                               okrobjective_form=okrobjective_form)
 
     @app.route('/okrobjective', methods=['POST'])
     @login_required
     def okrobjective():
         session = app.config.get('dbsession')
         objective_id = None
+        setor_id = None
         lista_setores = get_setores(session)
         try:
             okrobjective_form = OKRObjectiveForm(request.form, setores=lista_setores)
-            usuario = get_usuario(session, current_user.name)
-            okrobjective_form.setor_id.data = usuario.setor_id
+            # usuario = get_usuario(session, current_user.name)
+            # okrobjective_form.setor_id.data = usuario.setor_id
             okrobjective_form.validate()
             objective = gera_okrobjective(session, dict(okrobjective_form.data.items()))
             objective_id = objective.id
+            setor_id = objective.setor_id
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
             flash(str(type(err)))
             flash(str(err))
-        return redirect(url_for('ver_okrs', objetivo=objective_id))
+        return redirect(url_for('ver_okrs', objetivo=objective_id, setor_id=setor_id))
 
     @app.route('/exclui_okrobjective', methods=['GET'])
     @login_required

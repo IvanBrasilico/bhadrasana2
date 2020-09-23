@@ -5,17 +5,25 @@
             <img src="static/okrs.jpg" width="90%"/>
         </div>
         <div class="col-sm-8">
-            <div class="col-sm-10">
-                <h1>Objetivos do Setor</h1>
+            <div class="row">
+                <div class="col-sm-5">
+                    <h1>Objetivos do Setor</h1>
+                </div>
+                <div class="col-sm-3">
+                    &nbsp;<br>
+                    {{okrobjective_form.setor_id(class='form-control')}}
+                </div>
+                <div class="col-sm-2">
+                </div>
+                <div class="col-sm-2">
+                    &nbsp;<br>
+                    <button id="btn_objetivo_novo" type="button"
+                            class="btn btn-primary btn-warning form-control"
+                            data-toggle="modal" data-target="#objetivo_novo">Adicionar
+                    </button>
+                </div>
             </div>
-            <div class="col-sm-2">
-                &nbsp;<br>
-                <button id="btn_objetivo_novo" type="button"
-                        class="btn btn-primary btn-warning form-control"
-                        data-toggle="modal" data-target="#objetivo_novo">Adicionar
-                </button>
-            </div>
-            <div class="col-sm-12">
+            <div class="row col-sm-12">
                 <div class="table">
                     <table class="inlineTable table table-bordered table-hover table-responsive"
                            id="objectives">
@@ -25,7 +33,7 @@
                             <th>Descrição</th>
                             <th>Início</th>
                             <th>Fim</th>
-                            <th>Ações</th>
+                            <th colspan="2">Ações</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -102,6 +110,7 @@
                 <form method="POST" action="okrobjective" enctype="multipart/form-data">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <input type="hidden" name="id" value="{{objetivo.id}}"/>
+                    <input type="hidden" name="setor_id" value="{{okrobjective_form.setor_id.data}}"/>
                     <div class="row">
                         <div class="col-sm-3">
                             <label for="nome">Descrição do objetivo</label>
@@ -140,6 +149,7 @@
             <div class="modal-body">
                 <form method="POST" action="okrobjective" enctype="multipart/form-data">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <input type="hidden" name="setor_id" value="{{okrobjective_form.setor_id.data}}"/>
                     <div class="row">
                         <div class="col-sm-3">
                             <label for="nome">Descrição do objetivo</label>
@@ -221,7 +231,9 @@
         });
     }
 
-
+    $( "#setor_id" ).change(function() {
+        window.location.href = 'ver_okrs?setor_id=' + this.value;
+    });
 
 
 
