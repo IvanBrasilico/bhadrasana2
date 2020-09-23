@@ -578,6 +578,11 @@ def get_usuarios(session) -> List[Tuple[str, str]]:
     usuarios_list = [(usuario.cpf, usuario.nome) for usuario in usuarios]
     return sorted(usuarios_list, key=lambda x: x[1])
 
+def get_usuarios_setores(session, setores) -> List[Tuple[str, str]]:
+    usuarios = session.query(Usuario).filter(Usuario.setor_id.in_(setores)).all()
+    usuarios_list = [(usuario.cpf, usuario.nome) for usuario in usuarios]
+    return sorted(usuarios_list, key=lambda x: x[1])
+
 
 def get_afrfb(session) -> Usuario:
     # TODO: Filtrar Usuários do Setor/ Unidade / AFRFB ???
