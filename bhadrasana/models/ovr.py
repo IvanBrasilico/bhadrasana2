@@ -430,8 +430,8 @@ class OKRResultMeta(Base):
     result_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                        ForeignKey('ovr_results.id'), nullable=False)
     result = relationship('OKRResult')
-    meta = Column(Integer)
-    resultado:int = 0
+    ameta = Column(Integer)
+    resultado: int = 0
 
 
 class OKRObjective(Base):
@@ -448,11 +448,27 @@ class OKRObjective(Base):
 
     @property
     def get_inicio(self):
+        if self.inicio is None:
+            return ''
         return self.data_format(self.inicio)
 
     @property
     def get_fim(self):
+        if self.fim is None:
+            return ''
         return self.data_format(self.fim)
+
+    @property
+    def inicio_date(self):
+        if self.inicio is None:
+            return ''
+        return datetime.strftime(self.inicio, '%Y-%m-%d')
+
+    @property
+    def fim_date(self):
+        if self.fim is None:
+            return ''
+        return datetime.strftime(self.fim, '%Y-%m-%d')
 
 
 class VisualizacaoOVR(BaseRastreavel):

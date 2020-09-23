@@ -216,3 +216,28 @@ class FiltroMinhasOVRsForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.tipoexibicao.choices = [(tipo.value, tipo.name) for tipo in TipoExibicao]
+
+
+class OKRObjectiveForm(FlaskForm):
+    id = IntegerField()
+    inicio = DateField(u'Data inicial da pesquisa')
+    fim = DateField(u'Data final da pesquisa')
+    nome = StringField()
+    setor_id = SelectField('Setores')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if kwargs.get('setores'):
+            self.setor_id.choices = kwargs.get('setores')
+
+
+class OKRMetaForm(FlaskForm):
+    id = IntegerField()
+    objective_id = IntegerField()
+    result_id = SelectField('OKRResult')
+    ameta = IntegerField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if kwargs.get('key_results'):
+            self.result_id.choices = kwargs.get('key_results')

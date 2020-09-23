@@ -19,10 +19,10 @@ from bhadrasana.forms.filtro_container import FiltroContainerForm
 from bhadrasana.forms.filtro_empresa import FiltroEmpresaForm
 from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
     ProcessoOVRForm, ItemTGForm, ResponsavelOVRForm, TGOVRForm, FiltroRelatorioForm, \
-    FiltroMinhasOVRsForm
+    FiltroMinhasOVRsForm, OKRObjectiveForm, OKRMetaForm
 from bhadrasana.models import delete_objeto, get_usuario
 from bhadrasana.models.laudo import get_empresa, get_empresas_nome, get_sats_cnpj
-from bhadrasana.models.ovr import OVR, OKRResultMeta
+from bhadrasana.models.ovr import OVR
 from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_ovr_filtro, gera_eventoovr, gera_processoovr, get_tipos_processo, lista_itemtg, \
     get_itemtg, get_recintos, \
@@ -35,7 +35,8 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_flags_choice, cadastra_visualizacao, get_tipos_evento_comfase_choice, \
     get_ovr_criadaspor, get_ovr_empresa, get_tipos_evento_todos, \
     desfaz_ultimo_eventoovr, get_delta_date, exporta_planilha_tg, TipoPlanilha, \
-    exclui_item_tg, get_setores, get_objectives_setor, executa_okr_results
+    exclui_item_tg, get_setores, get_objectives_setor, executa_okr_results, gera_okrobjective, exclui_okrobjective, \
+    get_key_results_choice, gera_okrmeta, exclui_okrmeta
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
@@ -1113,8 +1114,6 @@ def ovr_app(app):
         meta: nível máximo do gauge
         delta: percentual de tempo do periodo decorrido, para referencia
         """
-
-        lcolor = 'green'
         if not delta:
             delta = meta
         data = [go.Indicator(
@@ -1124,7 +1123,7 @@ def ovr_app(app):
             # color=lcolor,
             gauge={'axis': {'range': [0, meta]},
                    'threshold': {
-                       'line': {'color': "red", 'width': 4},
+                       'line': {'color': 'red', 'width': 4},
                        'thickness': 0.75,
                        'value': delta}
                    },
@@ -1146,22 +1145,26 @@ def ovr_app(app):
     @login_required
     def ver_okrs():
         session = app.config.get('dbsession')
-        index_objective = request.args.get('objetivo')
+        id_objetivo = request.args.get('objetivo')
+        objective = None
         objectives = []
         results = []
         plots = []
         today = date.today()
+        lista_key_results = get_key_results_choice(session)
+        okrmeta_form = OKRMetaForm(key_results=lista_key_results)
         try:
             usuario = get_usuario(session, current_user.name)
             objectives = get_objectives_setor(session, usuario.setor_id)
-            if index_objective is not None:
-                objective = list(objectives)[int(index_objective)]
-                print(objective)
+            if id_objetivo is not None:
+                for objective in objectives:
+                    if objective.id == int(id_objetivo):
+                        break
                 results = executa_okr_results(session, objective)
                 plots = []
                 for result in results:
-                    delta = ((today - objective.inicio.date()) / (objective.fim - objective.inicio)) * result.meta
-                    plot = gauge_plotly(result.result.nome, result.meta, result.resultado, delta)
+                    delta = ((today - objective.inicio.date()) / (objective.fim - objective.inicio)) * result.ameta
+                    plot = gauge_plotly(result.result.nome, result.ameta, result.resultado, delta)
                     plots.append(plot)
         except Exception as err:
             logger.error(err, exc_info=True)
@@ -1169,6 +1172,70 @@ def ovr_app(app):
             flash(str(type(err)))
             flash(str(err))
         return render_template('ver_okrs.html',
+                               objective=objective,
                                objectives=objectives,
                                results=results,
-                               plots=plots)
+                               plots=plots,
+                               okrmeta_form=okrmeta_form)
+
+    @app.route('/okrobjective', methods=['POST'])
+    @login_required
+    def okrobjective():
+        session = app.config.get('dbsession')
+        objective_id = None
+        lista_setores = get_setores(session)
+        try:
+            okrobjective_form = OKRObjectiveForm(request.form, setores=lista_setores)
+            usuario = get_usuario(session, current_user.name)
+            okrobjective_form.setor_id.data = usuario.setor_id
+            okrobjective_form.validate()
+            objective = gera_okrobjective(session, dict(okrobjective_form.data.items()))
+            objective_id = objective.id
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return redirect(url_for('ver_okrs', objetivo=objective_id))
+
+    @app.route('/exclui_okrobjective', methods=['GET'])
+    @login_required
+    def exclui_objective():
+        session = app.config.get('dbsession')
+        objective_id = request.args.get('objective_id')
+        try:
+            exclui_okrobjective(session, int(objective_id))
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            jsonify({'msg': str(err)}), 500
+        return jsonify({'msg': 'Excluído'}), 201
+
+    @app.route('/okrmeta', methods=['POST'])
+    @login_required
+    def okrmeta():
+        session = app.config.get('dbsession')
+        objective_id = None
+        lista_key_results = get_key_results_choice(session)
+        try:
+            okrmeta_form = OKRMetaForm(request.form, key_results=lista_key_results)
+            okrmeta_form.validate()
+            okrmeta = gera_okrmeta(session, dict(okrmeta_form.data.items()))
+            objective_id = okrmeta.objective_id
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return redirect(url_for('ver_okrs', objetivo=objective_id))
+
+    @app.route('/exclui_okrmeta', methods=['GET'])
+    @login_required
+    def exclui_meta():
+        session = app.config.get('dbsession')
+        meta_id = request.args.get('meta_id')
+        try:
+            exclui_okrmeta(session, int(meta_id))
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            jsonify({'msg': str(err)}), 500
+        return jsonify({'msg': 'Excluído'}), 201
