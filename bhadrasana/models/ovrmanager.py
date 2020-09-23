@@ -14,7 +14,8 @@ from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto
     get_usuario_logado
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
     TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria, \
-    EventoEspecial, Flag, Relatorio, RoteiroOperacaoOVR, flags_table, VisualizacaoOVR, OKRObjective, OKRResultMeta
+    EventoEspecial, Flag, Relatorio, RoteiroOperacaoOVR, flags_table, VisualizacaoOVR, \
+    OKRObjective, OKRResultMeta, OKRResult
 from bhadrasana.models.rvf import Infracao, infracoesencontradas_table, RVF
 from bhadrasana.models.virasana_manager import get_conhecimento
 from virasana.integracao.mercante.mercantealchemy import Item
@@ -901,3 +902,58 @@ def executa_okr_results(session, objective: OKRObjective) -> List[OKRResultMeta]
         logger.info(params)
         logger.info(sql_query)
     return resultados
+
+
+def gera_okrobjective(session, params) -> OKRObjective:
+    okrobjective = None
+    okrid = params.get('id')
+    if okrid:
+        okrobjective = session.query(OKRObjective). \
+            filter(OKRObjective.id == okrid).one_or_none()
+    if okrobjective is None:
+        okrobjective = OKRObjective()
+    return gera_objeto(okrobjective,
+                       session, params)
+
+
+def exclui_okrobjective(session, okrid):
+    okrobjective = session.query(OKRObjective). \
+        filter(OKRObjective.id == okrid).one()
+    session.delete(okrobjective)
+    try:
+        session.commit()
+    except Exception as err:
+        logger.error(err, exc_info=True)
+        session.rollback()
+
+
+def get_key_results(session) -> List[OKRResult]:
+    return session.query(OKRResult).all()
+
+
+def get_key_results_choice(session) -> List[Tuple[int, str]]:
+    key_results = get_key_results(session)
+    return [(kr.id, kr.nome) for kr in key_results]
+
+
+def gera_okrmeta(session, params) -> OKRResultMeta:
+    okrresultmeta = None
+    metaid = params.get('id')
+    if metaid:
+        okrresultmeta = session.query(OKRResultMeta). \
+            filter(OKRResultMeta.id == metaid).one_or_none()
+    if okrresultmeta is None:
+        okrresultmeta = OKRResultMeta()
+    return gera_objeto(okrresultmeta,
+                       session, params)
+
+
+def exclui_okrmeta(session, metaid):
+    okrmeta = session.query(OKRResultMeta). \
+        filter(OKRResultMeta.id == metaid).one()
+    session.delete(okrmeta)
+    try:
+        session.commit()
+    except Exception as err:
+        logger.error(err, exc_info=True)
+        session.rollback()

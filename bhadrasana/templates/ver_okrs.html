@@ -4,57 +4,87 @@
         <div class="col-sm-4">
             <img src="static/okrs.jpg" width="90%"/>
         </div>
-        <div class="col-sm-6">
-            <h1>Objetivos do Setor</h1>
-            <div class="table">
-                <table class="inlineTable table table-bordered table-hover table-responsive"
-                       id="objectives">
-                    <thead>
-                    <tr>
-                        <th></th>
-                        <th>Descrição</th>
-                        <th>Início</th>
-                        <th>Fim</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for objetivo in objectives %}
-                    <tr>
-                        <td><a href="ver_okrs?objetivo={{loop.index - 1}}">Ver resultados</a></td>
-                        <td>{{ objetivo.nome }}</td>
-                        <td>{{ objetivo.get_inicio }}</td>
-                        <td>{{ objetivo.get_fim }}</td>
-                    </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
+        <div class="col-sm-8">
+            <div class="col-sm-10">
+                <h1>Objetivos do Setor</h1>
+            </div>
+            <div class="col-sm-2">
+                &nbsp;<br>
+                <button id="btn_objetivo_novo" type="button"
+                        class="btn btn-primary btn-warning form-control"
+                        data-toggle="modal" data-target="#objetivo_novo">Adicionar
+                </button>
+            </div>
+            <div class="col-sm-12">
+                <div class="table">
+                    <table class="inlineTable table table-bordered table-hover table-responsive"
+                           id="objectives">
+                        <thead>
+                        <tr>
+                            <th></th>
+                            <th>Descrição</th>
+                            <th>Início</th>
+                            <th>Fim</th>
+                            <th>Ações</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for objetivo in objectives %}
+                        <tr {% if objective and objective.id== objetivo.id %}class="active primary" {% endif %}>
+                            <td><a href="ver_okrs?objetivo={{objetivo.id}}">Ver resultados</a></td>
+                            <td>{{ objetivo.nome }}</td>
+                            <td>{{ objetivo.get_inicio }}</td>
+                            <td>{{ objetivo.get_fim }}</td>
+                            <td>
+                                <button id="btn_objetivo{{objetivo.id}}" type="button"
+                                        class="btn btn-primary btn-warning form-control"
+                                        data-toggle="modal" data-target="#objetivo{{objetivo.id}}">Editar
+                                </button>
+                            </td>
+                            <td>
+                                <button id="btn_exclui_objetivo{{objetivo.id}}" type="button"
+                                        class="btn btn-primary btn-danger form-control"
+                                        onclick="exclui_objetivo({{objetivo.id}})">Excluir
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
-
-    <div id="list" class="row col-sm-12">
-        <h1>Acompanhamento dos resultados chave</h1>
-        &nbsp;<br>
-        <div class="table">
-            <table class="inlineTable table table-bordered table-hover table-responsive"
-                   id="results_table">
-                <thead>
-                <tr>
-                </tr>
-                </thead>
-                <tbody>
-                {% for result in results %}
-                <tr>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+    <div id="titulo_metas" class="row col-sm-12">
+        {% if objective %}
+        <div class="row">
+            <div class="col-sm-9">
+                <h3>Resultados chave para o objetivo "{{ objective.nome }}"</h3>
+            </div>
+            <div class="col-sm-3">
+                <button id="btn_nova_meta" type="button"
+                        class="btn btn-primary btn-warning form-control"
+                        data-toggle="modal" data-target="#meta_nova">Incluir meta
+                </button>
+            </div>
         </div>
+        {% endif %}
+        &nbsp;<br>
     </div>
-    <div id="plot" class="row">
+    <div id="plots" class="row col-sm-12">
         {% for plot in plots %}
         <div class="col-sm-4">
-            {{ plot | safe }}
+            <div class="col-sm-8">
+            </div>
+            <div class="col-sm-4">
+                <button id="btn_exclui_meta{{results[loop.index - 1].id}}" type="button"
+                        class="btn btn-primary btn-danger form-control"
+                        onclick="exclui_meta({{results[loop.index - 1].id}})">Excluir
+                </button>
+            </div>
+            <div class="col-sm-12">
+                {{ plot | safe }}
+            </div>
         </div>
         {% endfor %}
     </div>
@@ -62,7 +92,138 @@
         AJNA - Receita Federal do Brasil 2017
     </div>
 </div>
+{% for objetivo in objectives %}
+<div class="modal fade modal-lg" id="objetivo{{objetivo.id}}" tabindex="-1" role="dialog"
+     aria-labelledby="ModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <form method="POST" action="okrobjective" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <input type="hidden" name="id" value="{{objetivo.id}}"/>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label for="nome">Descrição do objetivo</label>
+                        </div>
+                        <div class="col-sm-9">
+                            <input type="text" name="nome" class="form-control" value="{{objetivo.nome}}"/>
+                        </div>
+                        <div class="col-sm-3">
+                            <label for="nome">Data de início da medição</label>
+                        </div>
+                        <div class="col-sm-9">
+                            <input class="form-control" name="inicio" type="date" value="{{objetivo.inicio_date}}">
+                        </div>
+                        <div class="col-sm-3">
+                            <label for="nome">Data de fim da medição</label>
+                        </div>
+                        <div class="col-sm-9">
+                            <input class="form-control" name="fim" type="date" value="{{objetivo.fim_date}}">
+                        </div>
+                    </div>
+                    <input class="btn btn-primary" type="submit" value="Editar"/>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+<div class="modal fade modal-lg" id="objetivo_novo" tabindex="-1" role="dialog"
+     aria-labelledby="ModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <form method="POST" action="okrobjective" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label for="nome">Descrição do objetivo</label>
+                        </div>
+                        <div class="col-sm-9">
+                            <input type="text" name="nome" class="form-control" value=""/>
+                        </div>
+                        <div class="col-sm-3">
+                            <label for="nome">Data de início da medição</label>
+                        </div>
+                        <div class="col-sm-9">
+                            <input class="form-control" name="inicio" type="date" value="">
+                        </div>
+                        <div class="col-sm-3">
+                            <label for="nome">Data de fim da medição</label>
+                        </div>
+                        <div class="col-sm-9">
+                            <input class="form-control" name="fim" type="date" value="">
+                        </div>
+                    </div>
+                    <input class="btn btn-primary" type="submit" value="Incluir"/>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% if objective %}
+<div class="modal fade modal-lg" id="meta_nova" tabindex="-1" role="dialog"
+     aria-labelledby="ModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <form method="POST" action="okrmeta" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <input type="hidden" name="objective_id" value="{{ objective.id }}"/>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label for="nome">Selecione o resultado chave</label>
+                        </div>
+                        <div class="col-sm-9">
+                            {{okrmeta_form.result_id(class='form-control')}}
+                        </div>
+                        <div class="col-sm-3">
+                            <label for="nome">Informe a meta</label>
+                        </div>
+                        <div class="col-sm-9">
+                            {{okrmeta_form.ameta(class='form-control')}}
+                        </div>
+                    </div>
+                    <input class="btn btn-primary" type="submit" value="Incluir"/>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %} {% block scripts %} {{super()}}
 <script>
+    function exclui_objetivo(objective_id){
+        $.getJSON('exclui_okrobjective', {
+          objective_id: objective_id
+        }, function(flags_ovr) {
+          document.location.reload(true);
+        });
+    }
+
+    function exclui_meta(meta_id){
+        $.getJSON('exclui_okrmeta', {
+          meta_id: meta_id
+        }, function(flags_ovr) {
+          document.location.reload(true);
+        });
+    }
+
+
+
+
+
 </script>
 {% endblock %}
