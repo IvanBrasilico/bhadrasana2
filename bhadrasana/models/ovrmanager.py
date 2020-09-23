@@ -578,8 +578,18 @@ def get_usuarios(session) -> List[Tuple[str, str]]:
     usuarios_list = [(usuario.cpf, usuario.nome) for usuario in usuarios]
     return sorted(usuarios_list, key=lambda x: x[1])
 
-def get_usuarios_setores(session, setores) -> List[Tuple[str, str]]:
-    usuarios = session.query(Usuario).filter(Usuario.setor_id.in_(setores)).all()
+
+def get_usuarios_setores(session, setores: list) -> List[Tuple[str, str]]:
+    if not setores or not isinstance(setores, list) or len(setores) == 0:
+        raise ValueError('get_usuarios_setores precisa de uma lista!!')
+    if isinstance(setores[0], Setor):
+        ids_setores = [setor.id for setor in setores]
+    elif isinstance(setores[0], str):
+        ids_setores = setores
+    else:
+        raise NotImplementedError('get_usuarios_setores recebeu uma lista de setores'
+                                  'que não consegue entender!!')
+    usuarios = session.query(Usuario).filter(Usuario.setor_id.in_(ids_setores)).all()
     usuarios_list = [(usuario.cpf, usuario.nome) for usuario in usuarios]
     return sorted(usuarios_list, key=lambda x: x[1])
 
