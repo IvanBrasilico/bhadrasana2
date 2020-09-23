@@ -17,6 +17,8 @@ conexões internas.
 Adicionalmente, permite o merge entre bases, navegação de bases, e
 a aplicação de filtros/parâmetros de risco.
 """
+import os
+
 from pymongo import MongoClient
 
 from ajna_commons.flask.conf import DATABASE, MONGODB_URI
@@ -30,7 +32,9 @@ from bhadrasana.views import configure_app
 
 conn = MongoClient(host=MONGODB_URI)
 mongodb = conn[DATABASE]
-mongodb_risco = conn['risco']
+MONGODB_RISCO = os.environ.get('MONGODB_RISCO')
+conn_risco = MongoClient(host=MONGODB_RISCO)
+mongodb_risco = conn_risco['risco']
 app = configure_app(mongodb, db_session, mongodb_risco)
 risco_app(app)
 rvf_app(app)
