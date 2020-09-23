@@ -270,7 +270,7 @@ def ovr_app(app):
                                               responsavel=current_user.name)
         setores = get_setores_cpf(session, current_user.name)
         responsaveis_setor = get_usuarios_setores(session, setores)
-        responsavel_form_setor = ResponsavelOVRForm(responsaveis=responsaveis,
+        responsavel_form_setor = ResponsavelOVRForm(responsaveis=responsaveis_setor,
                                               responsavel=current_user.name)
         historico_ovr_form = HistoricoOVRForm(
             tiposeventos=get_tipos_evento_comfase_choice(session))
