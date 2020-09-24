@@ -835,7 +835,6 @@ def exporta_planilha_tg(tg: TGOVR, filename: str,
     print(formato)
     for item in tg.itenstg:
         dumped_item = item.dump()
-        dumped_item['numero'] += 1
         print(dumped_item)
         dumped_item_titulospadrao = OrderedDict()
         for key, value in dumped_item.items():
@@ -848,6 +847,7 @@ def exporta_planilha_tg(tg: TGOVR, filename: str,
             dumped_item_titulospadrao['VALOR'] = dumped_item_titulospadrao['VALOR'] + 'R'
     # print(itens)
     df = pd.DataFrame(itens)
+    df.index = pd.RangeIndex(start=1, stop=len(df) + 1, step=1)
     if formato == TipoPlanilha.Secta:
         df = df.reindex(order_secta, axis=1)
     df.to_excel(filename)
