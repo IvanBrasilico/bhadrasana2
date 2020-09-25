@@ -213,7 +213,7 @@
                 {% for evento in eventos %}
                 <tr onmouseover="showEvento(this, '{{evento.recinto}}', '{{evento.tipo}}', '{{evento.id}}')" onmouseout="clearEvento(this)">
                     <td>
-                        <a href="https://localhost/ajnaapi/api/resumo_evento?recinto={{evento.recinto}}&tipo={{evento.tipo}}&id={{evento.id}}" target="_blank">
+                        <a href="/ajnaapi/api/resumo_evento?recinto={{evento.recinto}}&tipo={{evento.tipo}}&id={{evento.id}}" target="_blank">
                             Ver</a>
                     </td>
                     <td>{{ evento.data }}</td>
@@ -271,7 +271,7 @@
                 }
             }
         }
-        var url = "https://localhost/ajnaapi/api/resumo_evento?format=text&recinto=" + recinto + "&tipo=" + tipo + "&id=" + evid
+        var url = "/ajnaapi/api/resumo_evento?format=text&recinto=" + recinto + "&tipo=" + tipo + "&id=" + evid
         // console.log(url);
         xhttp.open("GET", url, true);
         xhttp.send();
