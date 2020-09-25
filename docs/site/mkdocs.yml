@@ -11,6 +11,7 @@ nav:
             - "Gerenciamento de Usuários e Perfis": admin/usuarios.md
             - "Modelo de permissão": admin/permissoes.md
     - "Novidades":
+        - "Painel de OKRs - 25/09/2020": novidades/20200925.md
         - "Função 'Informar Apreensão sem Termo de Guarda' - 17/09/2020": novidades/20200917.md
         - "Interface Telegram - 16/Junho/2020": novidades/20200616.md
         - "Tela 'Consulta de Empresa', Campo Empresa e Base Laudos - 03/Junho/2020": novidades/20200603.md
@@ -38,6 +39,24 @@ nav:
         - "Direcionando a ficha após resposta do órgão anuente": exemplos/MAc.md
         - "Recebimento de pedido de retomada de despacho": exemplos/MAd.md
         - "Roteiro GMAB AJNA": exemplos/MAe.md
+    - "Roteiro de uso dos Relatórios Gerenciais":
+        - "Relatórios Gerenciais - Introdução": exemplos/RLa.md
+        - "1 - Contagem de Eventos Especiais (Produtividade)": exemplos/RLb.md
+        - "2 - Pendências – Intimações": exemplos/RLc.md
+        - "3 - Pendências – Laudos Diversos (marca e assistente)": exemplos/RLd.md
+        - "4 - Pendências – Manifestação de anuentes": exemplos/RLe.md
+        - "5 - Pendências – Saneamentos pendentes / realizados": exemplos/RLf.md
+        - "6 - Relação de apreensão sem TG por Ano, mês e Setor": exemplos/RLg.md
+        - "7 - Relação de Fichas e Tgs por Ano, Mês e Setor": exemplos/RLh.md
+        - "8 - Relação de Verificações sem Ficha por Ano e Mês": exemplos/RLi.md
+        - "9 - Resumo das Verificações Físicas por Ficha por Setor": exemplos/RLj.md
+        - "10 - Resumo dos Tgs por Ficha por Setor": exemplos/RLk.md
+        - "11 - Visão de apreensões sem TG": exemplos/RLl.md
+        - "12 - Visão Geral Gerencial das Fichas por Setor": exemplos/RLm.md
+    - "Painel de OKRs":
+        - "Como configurar": exemplos/OKRa.md
+        - "Exemplos": exemplos/OKRb.md
+
 
 
 theme:
