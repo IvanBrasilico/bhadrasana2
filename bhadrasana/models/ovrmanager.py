@@ -5,10 +5,11 @@ from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
+from ajna_commons.flask.log import logger
 from sqlalchemy import and_, text, or_, func
 from sqlalchemy.orm import Session
+from virasana.integracao.mercante.mercantealchemy import Item
 
-from ajna_commons.flask.log import logger
 from bhadrasana.models import Usuario, Setor, EBloqueado
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto, \
     get_usuario_logado
@@ -18,7 +19,6 @@ from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
     OKRObjective, OKRResultMeta, OKRResult
 from bhadrasana.models.rvf import Infracao, infracoesencontradas_table, RVF
 from bhadrasana.models.virasana_manager import get_conhecimento
-from virasana.integracao.mercante.mercantealchemy import Item
 
 
 def get_recintos(session) -> List[Tuple[int, str]]:
@@ -252,7 +252,8 @@ def get_ovr_empresa(session, cnpj: str,
                     datainicio: datetime = None,
                     datafim: datetime = None) -> List[OVR]:
     if not cnpj or len(cnpj) < 8:
-        raise ValueError('CNPJ deve ser informado com mínimo de 8 dígitos.')
+        raise ValueError('CNPJ deve ser informado com mínimo de 8 dígitos. '
+                         'Informou: %s' % cnpj)
     filtro_data = and_()
     if datainicio:
         filtro_data = and_(OVR.datahora >= datainicio, filtro_data)
