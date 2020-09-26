@@ -1,4 +1,6 @@
 import sys
+sys.path.append('.')
+sys.path.insert(0, '../ajna_api')
 import unittest
 from datetime import datetime, timedelta
 
@@ -60,6 +62,7 @@ def create_usuarios(session):
                 ('adler', 'irene', 2),
                 ('lestrade', 'inspetor', 3),
                 ('macdonald', 'inspetor', 3),
+                ('ivan', 'ivan', 3)
                 ]
     for linha in usuarios:
         usuario = Usuario()
@@ -290,10 +293,18 @@ class OVRAppTestCase(BaseTestCase):
         self.login('holmes', 'holmes')
         rv = self.app.get('/ovr')
         token_text = self.get_token(str(rv.data))
+        # payload = {'csrf_token': token_text,
+        #            'numeroCEmercante': '152005079623267',
+        #            'recinto_id': self.recinto_id,
+        #            'adata': '1859-05-22',
+        #            'ahora': '22:21'}
+        # alterei a data de criação da Ficha para não quebrar a pesquisa de fichas no meu setor
+        # pois a busca padrão são fichas dentro do mesmo mês
+        adata = datetime.strftime(datetime.today(),"%Y-%m-%d")
         payload = {'csrf_token': token_text,
                    'numeroCEmercante': '152005079623267',
                    'recinto_id': self.recinto_id,
-                   'adata': '1859-05-22',
+                   'adata': adata,
                    'ahora': '22:21'}
         rv = self.app.post('/ovr', data=payload, follow_redirects=True)
         assert b'152005079623267' in rv.data
@@ -375,19 +386,19 @@ class OVRAppTestCase(BaseTestCase):
             1. Consulta suas fichas
         """
         self.login('watson', 'watson')
-        rv = self.app.get('/minhas_ovrs')
+        rv = self.app.get('/minhas_ovrs')  # Fichas a mim atribuídas
         print(str(rv.data))
         assert rv.status_code == 200
         assert b'152005079623267' in rv.data
         # Agora vamos assegurar que Watson não vê a Ficha em ovrs_criador
-        rv = self.app.get('/ovrs_criador')
+        rv = self.app.get('/ovrs_criador')  # Fichas criadas por mim
         assert rv.status_code == 200
         assert b'152005079623267' not in rv.data
-
-        def test_b1b_consulta_fichas(self):
-            """Watson entra no Sistema
-                1. Consulta suas fichas
-            """
+        # A ficha deve aparecer nas fichas do Setor
+        rv = self.app.get('/ovrs_meus_setores')  # Fichas dos meus Setores
+        print("....", str(rv.data))
+        assert rv.status_code == 200
+        assert b'152005079623267' in rv.data
 
         # Agora vamos assegurar que Holmes, como já distribuiu a OVR para Watson,
         # não a vê mais em minhas_ovrs (mas vê em ovrs_criador E em ovrs_meus_setores)
@@ -402,7 +413,8 @@ class OVRAppTestCase(BaseTestCase):
         assert rv.status_code == 200
         print(rv.data)
         # FIXME: Teste falhando, mas OK na interface???
-        # assert b'152005079623267' in rv.data
+        assert b'152005079623267' in rv.data
+
 
     def test_b2_agendamento_verificacao_fisica(self):
         """2 - Evento de agendamento de verificação física"""
@@ -474,6 +486,7 @@ class OVRAppTestCase(BaseTestCase):
         payload = {'csrf_token': token_text,
                    'id': rvf_id,
                    'numeroCEmercante': '152005079623267',
+                   'numerolote': 'abcd1234567',
                    'descricao': 'Teste b3',
                    'peso': 13.17,
                    'volume': 12.45,
@@ -486,6 +499,7 @@ class OVRAppTestCase(BaseTestCase):
         texto = str(rv.data)
         for key, value in payload.items():
             if key != 'csrf_token':
+                # print(f">>>>>>>>>>>>>>> value: {str(value)} texto: {texto}")
                 assert str(value) in texto
         # Lacres
         rv = self.app.get('inclui_lacre_verificado?rvf_id=%s&lacre_numero=B3A' % rvf_id)
