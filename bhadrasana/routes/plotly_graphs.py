@@ -123,6 +123,6 @@ def burndown_plotly(resultado: OKRResultMeta) -> str:
     },
         show_link=False,
         output_type='div',
-        #image_width=300
+        image_width=300
     )
     return plot
