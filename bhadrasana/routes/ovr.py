@@ -4,10 +4,6 @@ from datetime import datetime, date, timedelta
 from decimal import Decimal
 from typing import Tuple
 
-import numpy as np
-import pandas as pd
-import plotly
-import plotly.graph_objs as go
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
 from gridfs import GridFS
@@ -35,8 +31,9 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_flags_choice, cadastra_visualizacao, get_tipos_evento_comfase_choice, \
     get_ovr_criadaspor, get_ovr_empresa, get_tipos_evento_todos, \
     desfaz_ultimo_eventoovr, get_delta_date, exporta_planilha_tg, TipoPlanilha, \
-    exclui_item_tg, get_setores, get_objectives_setor, executa_okr_results, gera_okrobjective, exclui_okrobjective, \
-    get_key_results_choice, gera_okrmeta, exclui_okrmeta, get_usuarios_setores, get_setores_cpf
+    exclui_item_tg, get_setores, get_objectives_setor, executa_okr_results, gera_okrobjective, \
+    exclui_okrobjective, get_key_results_choice, gera_okrmeta, exclui_okrmeta, \
+    get_usuarios_setores, get_setores_cpf
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
@@ -45,6 +42,7 @@ from bhadrasana.models.virasana_manager import get_conhecimento, \
     get_containers_conhecimento, get_ncms_conhecimento, get_imagens_dict_container_id, \
     get_imagens_container, get_dues_empresa, get_ces_empresa, \
     get_due, get_detalhes_mercante
+from bhadrasana.routes.plotly_graphs import bar_plotly, gauge_plotly, burndown_plotly
 from bhadrasana.views import get_user_save_path, valid_file, csrf
 
 
@@ -767,49 +765,6 @@ def ovr_app(app):
             formated_rows.append(formated_cols)
         return formated_rows
 
-    def bar_plotly(linhas: list, nome: str) -> str:
-        """Renderiza gráfico no plotly e serializa via HTTP/HTML."""
-        meses = {1: 'Janeiro', 2: 'Fevereiro', 3: 'Março', 4: 'Abril',
-                 5: 'Maio', 6: 'Junho', 7: 'Julho', 8: 'Agosto',
-                 9: 'Setembro', 10: 'Outubro', 11: 'Novembro', 12: 'Dezembro'}
-        try:
-            # Converter decimal para float
-            linhas_float = []
-            for linha in linhas[1:]:
-                linha_float = []
-                for item in linha:
-                    if isinstance(item, Decimal):
-                        linha_float.append(float(item))
-                    else:
-                        linha_float.append(item)
-                linhas_float.append(linha_float)
-            df = pd.DataFrame(linhas_float, columns=linhas[0])
-            df['strmes'] = df['Mês'].apply(lambda x: meses[int(x)])
-            df['Ano e Mês'] = df['strmes'].astype(str) + ' de ' + df['Ano'].astype(str)
-            df = df.drop(columns=['Ano', 'Mês', 'strmes'])
-            df = df.groupby(['Ano e Mês']).sum()
-            df = df.reset_index()
-            # print(linhas)
-            print(df.head())
-            # print(df.dtypes)
-            x = df['Ano e Mês'].tolist()
-            df = df.drop(columns=['Ano e Mês'])
-            numeric_columns = df.select_dtypes(include=np.number).columns.tolist()
-            data = [go.Bar(x=x, y=df[column].tolist(), name=column)
-                    for column in numeric_columns]
-            plot = plotly.offline.plot({
-                'data': data,
-                'layout': go.Layout(title=nome + ' soma mensal',
-                                    xaxis=go.layout.XAxis(type='category'))
-            },
-                show_link=False,
-                output_type='div',
-                image_width=400)
-            return plot
-        except Exception as err:
-            logger.error(str(err), exc_info=True)
-            return ''
-
     @app.route('/programa_rvf_ajna')
     @login_required
     def programa_rvf_ajna():
@@ -1111,47 +1066,13 @@ def ovr_app(app):
             return jsonify({'msg': str(err)}), 500
         return jsonify(ovr.dump()), 201
 
-    def gauge_plotly(resultado: str, meta: int, medicao: int, delta: int = None) -> str:
-        """Desenha um gauge indicator com plotly.
-
-        resultado: nome do gráfico
-        medicao: nivel do gauge
-        meta: nível máximo do gauge
-        delta: percentual de tempo do periodo decorrido, para referencia
-        """
-        if not delta:
-            delta = meta
-        data = [go.Indicator(
-            mode='gauge+number',
-            domain={'x': [0, 1], 'y': [0, 1]},
-            value=medicao,
-            # color=lcolor,
-            gauge={'axis': {'range': [0, meta]},
-                   'threshold': {
-                       'line': {'color': 'red', 'width': 4},
-                       'thickness': 0.75,
-                       'value': delta}
-                   },
-            title={'text': 'Velocidade'},
-            # delta={'reference': delta, 'increasing': {'color': "RebeccaPurple"}},
-
-        )
-        ]
-        plot = plotly.offline.plot({
-            'data': data,
-            'layout': go.Layout(title=resultado)
-        },
-            show_link=False,
-            output_type='div',
-            image_width=300)
-        return plot
-
     @app.route('/ver_okrs', methods=['GET'])
     @login_required
     def ver_okrs():
         session = app.config.get('dbsession')
         id_objetivo = request.args.get('objetivo')
         setor_id = request.args.get('setor_id')
+        plot_type = request.args.get('plot_type', 0)
         objective = None
         objectives = []
         results = []
@@ -1169,8 +1090,14 @@ def ovr_app(app):
                 results = executa_okr_results(session, objective)
                 plots = []
                 for result in results:
-                    delta = ((today - objective.inicio.date()) / (objective.fim - objective.inicio)) * result.ameta
-                    plot = gauge_plotly(result.result.nome, result.ameta, result.resultado, delta)
+                    if plot_type == '1':
+                        plot = burndown_plotly(result)
+                    else:
+                        delta = ((today - objective.inicio.date()) /
+                                 (objective.fim - objective.inicio)) * result.ameta
+                        plot = gauge_plotly(result.result.nome, result.ameta,
+                                            sum([row['result'] for row in result.resultados]),
+                                            delta)
                     plots.append(plot)
             if setor_id is None:
                 usuario = get_usuario(session, current_user.name)

@@ -5,11 +5,10 @@ from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
-from ajna_commons.flask.log import logger
 from sqlalchemy import and_, text, or_, func
 from sqlalchemy.orm import Session
-from virasana.integracao.mercante.mercantealchemy import Item
 
+from ajna_commons.flask.log import logger
 from bhadrasana.models import Usuario, Setor, EBloqueado
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto, \
     get_usuario_logado
@@ -19,6 +18,7 @@ from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
     OKRObjective, OKRResultMeta, OKRResult
 from bhadrasana.models.rvf import Infracao, infracoesencontradas_table, RVF
 from bhadrasana.models.virasana_manager import get_conhecimento
+from virasana.integracao.mercante.mercantealchemy import Item
 
 
 def get_recintos(session) -> List[Tuple[int, str]]:
@@ -911,9 +911,8 @@ def executa_okr_results(session, objective: OKRObjective) -> List[OKRResultMeta]
         sql_query = text(key_result.result.sql)
         try:
             result_proxy = session.execute(sql_query, params)
-            medicao = result_proxy.scalar()
-            print(medicao, type(medicao))
-            key_result.resultado = medicao
+            medicoes = [row for row in result_proxy]
+            key_result.resultados = medicoes
         except Exception as err:
             logger.error('Erro em executa_relatorio: %s' % err)
         logger.info(params)

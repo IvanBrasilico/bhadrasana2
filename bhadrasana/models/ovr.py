@@ -431,7 +431,7 @@ class OKRResultMeta(Base):
                        ForeignKey('ovr_results.id'), nullable=False)
     result = relationship('OKRResult')
     ameta = Column(Integer)
-    resultado: int = 0
+    resultados: list = []
 
 
 class OKRObjective(Base):
