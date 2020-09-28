@@ -93,34 +93,25 @@ def burndown_plotly(resultado: OKRResultMeta) -> str:
     data_inicial = resultado.objective.inicio.date()
     data_final = resultado.objective.fim.date()
     periodo = data_final - data_inicial
-    burndown = [0.]
-    dias_medidos = []
-    medicoes = []
-    for row in resultado.resultados:
-        dias_medidos.append(row['data'])
-        medicoes.append(float(row['result']))
-    print(dias_medidos, medicoes)
-    for r in range(periodo.days):
-        dia = data_inicial + timedelta(days=r)
-        try:
-            ind = dias_medidos.index(dia)
-            burndown.append(medicoes[ind])
-        except ValueError:
-            burndown.append(0.)
-    print(resultado.resultados)
-    print(burndown)
-    df = pd.DataFrame(burndown, columns=['result'])
+    df_medicoes = pd.DataFrame([row for row in resultado.resultados],
+                               columns=['data', 'result'])
+    df_medicoes['result'] = df_medicoes.result.astype(float)
+    df_burndown = pd.DataFrame([(data_inicial + timedelta(days=r), 0.)
+                                for r in range(-1, periodo.days)],
+                               columns=['data', 'result'])
+    df_burndown = pd.merge(df_burndown, df_medicoes, on='data', how='left').fillna(0.)
+    df_burndown['result'] = df_burndown['result_x'] + df_burndown['result_y']
     meta = resultado.ameta
-    df['cumulativo'] = df.result.cumsum().apply(lambda x: meta - x)
+    df_burndown['cumulativo'] = df_burndown.result.cumsum().apply(lambda x: meta - x)
     incremento = float(meta) / float(periodo.days)
-    df['esperado'] = [(meta - r * incremento) for r in range(periodo.days + 1)]
-    print(df.head())
+    df_burndown['esperado'] = [(meta - r * incremento) for r in range(len(df_burndown))]
+    # print(df_burndown.head())
     fig = go.Figure(data=[
-        go.Bar(x=df.index, y=df.result, name='Medição diária'),
-        go.Scatter(x=df.index, y=df.cumulativo,
+        go.Bar(x=df_burndown.index, y=df_burndown.result, name='Medição diária'),
+        go.Scatter(x=df_burndown.index, y=df_burndown.cumulativo,
                    name='Evolução efetiva',
                    line=dict(color='green')),
-        go.Scatter(x=df.index, y=df.esperado,
+        go.Scatter(x=df_burndown.index, y=df_burndown.esperado,
                    name='Evolução alvo',
                    line=dict(color='firebrick', width=4, dash='dot'))
     ])
@@ -132,5 +123,6 @@ def burndown_plotly(resultado: OKRResultMeta) -> str:
     },
         show_link=False,
         output_type='div',
-        image_width=300)
+        #image_width=300
+    )
     return plot
