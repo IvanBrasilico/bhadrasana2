@@ -107,12 +107,12 @@ def burndown_plotly(resultado: OKRResultMeta) -> str:
     df_burndown['esperado'] = [(meta - r * incremento) for r in range(len(df_burndown))]
     # print(df_burndown.head())
     fig = go.Figure(data=[
-        go.Bar(x=df_burndown.index, y=df_burndown.result, name='Medição diária'),
+        go.Bar(x=df_burndown.index, y=df_burndown.result, name='Diário'),
         go.Scatter(x=df_burndown.index, y=df_burndown.cumulativo,
-                   name='Evolução efetiva',
+                   name='Evolução',
                    line=dict(color='green')),
         go.Scatter(x=df_burndown.index, y=df_burndown.esperado,
-                   name='Evolução alvo',
+                   name='Alvo',
                    line=dict(color='firebrick', width=4, dash='dot'))
     ])
     fig.update_layout(title='"Burndown" - %s' % resultado.result.nome,
