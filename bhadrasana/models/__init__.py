@@ -1,14 +1,16 @@
 import datetime
 from collections import OrderedDict
 
-from ajna_commons.flask.conf import SQL_URI
-from ajna_commons.flask.log import logger
-from sqlalchemy import Column, func, VARCHAR, CHAR, ForeignKey, Integer
+from sqlalchemy import Column, func, VARCHAR, CHAR, ForeignKey, Integer, event
 from sqlalchemy import create_engine
 from sqlalchemy.dialects.mysql import TIMESTAMP
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import scoped_session, sessionmaker
+from werkzeug.security import generate_password_hash
+
+from ajna_commons.flask.conf import SQL_URI
+from ajna_commons.flask.log import logger
 
 engine = create_engine(SQL_URI, pool_recycle=600)
 db_session = scoped_session(sessionmaker(autocommit=False,
@@ -121,6 +123,16 @@ class Usuario(Base):
 
     def __str__(self):
         return '{} - {}'.format(self.cpf, self.nome)
+
+    def user_dict(self):
+        return {'password': self.password, 'nome': self.nome}
+
+
+@event.listens_for(Usuario.password, 'set', retval=True)
+def hash_user_password(target, value, oldvalue, initiator):
+    if value != oldvalue:
+        return generate_password_hash(value)
+    return value
 
 
 class PerfilUsuario(Base):

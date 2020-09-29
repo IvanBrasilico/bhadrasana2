@@ -37,7 +37,7 @@ from ajna_commons.flask.log import logger
 from ajna_commons.flask.user import DBUser
 from ajna_commons.utils.images import mongo_image, PIL_tobytes
 from bhadrasana.conf import APP_PATH
-from bhadrasana.models import get_usuario_telegram
+from bhadrasana.models import get_usuario_telegram, Usuario
 
 tmpdir = tempfile.mkdtemp()
 
@@ -67,7 +67,15 @@ def configure_app(mongodb, sqlsession, mongo_risco):
     app.config['SECRET_KEY'] = SECRET
     app.config['SESSION_TYPE'] = 'filesystem'
     login_ajna.configure(app)
+    print('Setando dbsession fora...')
+
+    # Para usar MySQL como base de Usuários
+    # DBUser.dbsession = sqlsession
+    # DBUser.alchemy_class = Usuario
+
+    # Para usar MongoDB como base de Usuários
     DBUser.dbsession = mongodb
+
     app.config['dbsession'] = sqlsession
     app.config['mongodb'] = mongodb
     app.config['mongo_risco'] = mongo_risco
