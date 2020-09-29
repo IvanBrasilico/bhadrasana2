@@ -44,7 +44,7 @@ class UsuarioModel(CadastradorModelView):
     column_searchable_list = ['nome', 'cpf']
     column_filters = ['setor']
     column_list = ('cpf', 'nome', 'telegram', 'setor', 'perfis')
-    form_columns = ('cpf', 'nome', 'telegram', 'setor')
+    form_columns = ('cpf', 'nome', 'telegram', 'setor', 'password')
 
 
 class PerfilUsuarioModel(CadastradorModelView):
