@@ -16,7 +16,7 @@ from bhadrasana.models.rvf import RVF, Infracao, ImagemRVF, Lacre, \
 from virasana.integracao.mercante.mercantealchemy import Item
 
 
-def get_peso(session, numeroCE, conteiner):
+def get_peso(session, numeroCE, conteiner)-> float:
     try:
         item = session.query(Item). \
             filter(Item.numeroCEmercante == numeroCE). \
@@ -24,12 +24,12 @@ def get_peso(session, numeroCE, conteiner):
         if item:
             try:
                 peso = float(item.pesoBruto)
+                return peso
             except Exception as err:
                 logger.error(err)
-            return peso
     except Exception as err:
         logger.error(err, exc_info=True)
-    return 0
+    return 0.
 
 
 def get_infracoes(session):
