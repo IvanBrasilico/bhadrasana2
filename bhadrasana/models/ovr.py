@@ -51,7 +51,8 @@ tipoOperacao = [
     'Denúncia na importação',
     'Denúncia na exportação',
     'Demanda externa',
-    'Registro de operação de outros órgãos/países'
+    'Registro de operação de outros órgãos/países',
+    'Vigilância'
 ]
 
 faseOVR = [
