@@ -1,5 +1,7 @@
-import csv
+import pandas as pd
 import sys
+
+from docx import Document
 
 sys.path.append('.')
 sys.path.insert(0, '../ajna_docs/commons')
@@ -84,11 +86,19 @@ def run(inicio, fim, usuario, senha):
         end = datetime.strptime(fim, '%d/%m/%Y')
     print(start, end)
     ovrs = get_ovrs(start, end, usuario, senha)
-    with open('maladireta.csv', 'w', newline='') as csv_out:
-        writer = csv.writer(csv_out)
-        writer.writerow(ovrs[0].keys())
-        for ovr in ovrs[:2]:
-            writer.writerow(ovr.values())
+    df = pd.DataFrame.from_dict(ovrs)
+    print(df.head())
+    # df.to_excel('maladireta.xlsx')
+
+    for ovr in ovrs:
+        document = Document('taseda.docx')
+        for paragraph in document.paragraphs:
+            if paragraph.text == '{unidade}':
+                paragraph.text = 'ALFSTS'
+            if paragraph.text == '{apreensao}':
+                paragraph.text = 'Perdeu Playboy!'
+        document.save('taseda_FCC{}.docx'.format(ovr['id']))
+
 
 
 if __name__ == '__main__':  # pragma: no cover
