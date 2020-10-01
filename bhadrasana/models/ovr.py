@@ -131,7 +131,7 @@ class OVR(BaseRastreavel, BaseDumpable):
     tipooperacao = Column(Integer(), index=True)
     numeroCEmercante = Column(VARCHAR(15), index=True)
     numerodeclaracao = Column(VARCHAR(20), index=True)
-    observacoes = Column(VARCHAR(500), index=True)
+    observacoes = Column(VARCHAR(1000), index=True)
     datahora = Column(TIMESTAMP, index=True)
     dataentrada = Column(DateTime, index=True)
     fase = Column(Integer(), index=True, default=0)

@@ -19,7 +19,7 @@ class OVRForm(FlaskForm):
     numeroCEmercante = StringField(u'CE Mercante',
                                    default='')
     observacoes = TextAreaField(u'Observações',
-                                render_kw={'rows': 3, 'cols': 100, 'maxlength': 500},
+                                render_kw={'rows': 3, 'cols': 100, 'maxlength': 1000},
                                 default='')
     numerodeclaracao = StringField(u'DUE ou DUIMP ou DTA',
                                    default='')
