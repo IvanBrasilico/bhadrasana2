@@ -29,6 +29,7 @@ setup(
         'odfpy',
         'pymongo',
         'pymysql',
+        'python-docx',
         'redis', # Ver como retirar necessidade
         'requests', # Ver como retirar necessidade
         'sqlalchemy',
