@@ -446,11 +446,11 @@ def exclui_apreensao_rvf(session, apreensao_id) -> List[ApreensaoRVF]:
         filter(ApreensaoRVF.id == apreensao_id).one_or_none()
     if apreensao:
         rvf = apreensao.rvf
-        rvf.appreensoes.remove(apreensao)
+        rvf.apreensoes.remove(apreensao)
         try:
             session.commit()
         except Exception as err:
             session.rollback()
             raise err
-        return rvf.appreensoes
+        return rvf.apreensoes
     return []

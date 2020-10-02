@@ -107,7 +107,7 @@ def rvf_app(app):
                 rvf_form.peso_manifestado.data = get_peso(session,
                                                           rvf_form.numeroCEmercante.data,
                                                           rvf_form.numerolote.data)
-                apreensoes_rvf = arvf.appreensoes
+                apreensoes_rvf = arvf.apreensoes
                 infracoes_encontradas = arvf.infracoesencontradas
                 marcas_encontradas = arvf.marcasencontradas
                 lacres_verificados = arvf.lacresverificados
