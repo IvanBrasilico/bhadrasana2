@@ -1,6 +1,6 @@
 import sys
 
-from bhadrasana.docx.docx_functions import gera_taseda
+from bhadrasana.docx.docx_functions import gera_OVR
 
 sys.path.append('.')
 sys.path.insert(0, '../ajna_docs/commons')
@@ -136,7 +136,7 @@ def run(inicio, fim, usuario, senha):
     conteudo_sem_imagens.pop('imagens')
     print(conteudo_sem_imagens)
     print(conteudo.keys())
-    document = gera_taseda(rvf)
+    document = gera_OVR(rvf)
     document.save('testes_docx/OVR_RVF{}.docx'.format(conteudo['id']))
 
 

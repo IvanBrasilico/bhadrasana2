@@ -1,5 +1,6 @@
 import base64
-from datetime import date, timedelta
+import os
+from datetime import date, timedelta, datetime
 
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
@@ -7,6 +8,7 @@ from werkzeug.utils import redirect
 
 from ajna_commons.flask.log import logger
 from ajna_commons.utils.images import ImageBytesTansformations
+from bhadrasana.docx.docx_functions import gera_OVR, gera_taseda
 from bhadrasana.forms.filtro_rvf import FiltroRVFForm
 from bhadrasana.forms.rvf import RVFForm, ImagemRVFForm, ApreensaoRVFForm
 from bhadrasana.models import get_usuario_logado, get_usuario
@@ -22,7 +24,7 @@ from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, \
     inclui_lacre_verificado, get_imagemrvf, inclui_nova_ordem_arquivo, \
     get_anexos_ordenado, get_tiposapreensao_choice, gera_apreensao_rvf, \
     exclui_apreensao_rvf, get_peso
-from bhadrasana.views import csrf, valid_file
+from bhadrasana.views import csrf, valid_file, get_user_save_path
 
 
 def rvf_app(app):
@@ -156,6 +158,31 @@ def rvf_app(app):
                                rvf=rvf,
                                marcas_encontradas=marcas_encontradas,
                                anexos=anexos)
+
+    @app.route('/rvf_docx', methods=['GET'])
+    @login_required
+    def rvf_OVR():
+        session = app.config.get('dbsession')
+        rvf_id = request.args.get('rvf_id')
+        tipo = request.args.get('tipo', 'OVR')
+        try:
+            rvf = get_rvf(session, rvf_id)
+            if rvf is None:
+                flash('rvf %s não encontrado.' % rvf_id)
+                return redirect(url_for('pesquisa_rvf'))
+            OVR_out_filename = 'OVR_FCC{}-{}.docx'.format(
+                rvf_id,
+                datetime.strftime(datetime.now(), '%Y-%m%dT%H%M%S'))
+            if tipo == 'OVR':
+                document = gera_OVR(rvf)
+            else:
+                document = gera_taseda(rvf)
+            document.save(os.path.join(get_user_save_path(), OVR_out_filename))
+            return redirect('static/%s/%s' % (current_user.name, OVR_out_filename))
+        except Exception as err:
+            logger.warning(err, exc_info=True)
+            flash(str(err))
+        return redirect(url_for('rvf', id=rvf_id))
 
     @app.route('/inclui_lacre_verificado', methods=['GET'])
     @login_required
