@@ -170,13 +170,14 @@ def rvf_app(app):
             if rvf is None:
                 flash('rvf %s não encontrado.' % rvf_id)
                 return redirect(url_for('pesquisa_rvf'))
-            OVR_out_filename = 'OVR_FCC{}-{}.docx'.format(
-                rvf_id,
+            OVR_out_filename = '{}_FCC{}-{}.docx'.format(
+                tipo, rvf_id,
                 datetime.strftime(datetime.now(), '%Y-%m%dT%H%M%S'))
+            rvf_dump = rvf.dump()
             if tipo == 'OVR':
-                document = gera_OVR(rvf)
+                document = gera_OVR(rvf_dump)
             else:
-                document = gera_taseda(rvf)
+                document = gera_taseda(rvf_dump)
             document.save(os.path.join(get_user_save_path(), OVR_out_filename))
             return redirect('static/%s/%s' % (current_user.name, OVR_out_filename))
         except Exception as err:

@@ -1,3 +1,5 @@
+import os
+
 from docx import Document
 from docx.text.paragraph import Paragraph
 
@@ -25,16 +27,18 @@ def docx_replacein(document: Document, conteudo: dict):
                     paragraph_text_replace(paragraph, conteudo)
 
 
-def gera_OVR(rvf):
+def gera_OVR(rvf: dict):
     conteudo = {'unidade': 'ALFSTS', **rvf}
-    document = Document('OVR.docx')
+    basepath = os.path.dirname(__file__)
+    document = Document(os.path.join(basepath, 'OVR.docx'))
     docx_replacein(document, conteudo)
     return document
     # document.save('testes_docx/OVR_RVF{}.docx'.format(rvf.id))
 
-def gera_taseda(rvf):
+def gera_taseda(rvf: dict):
     conteudo = {'unidade': 'ALFSTS', **rvf}
-    document = Document('taseda.docx')
+    basepath = os.path.dirname(__file__)
+    document = Document(os.path.join(basepath, 'taseda.docx'))
     docx_replacein(document, conteudo)
     return document
     # document.save('testes_docx/taseda_RVF{}.docx'.format(rvf.id))

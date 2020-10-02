@@ -72,11 +72,6 @@
                 </button>
             </div>
             <div class="col-sm-3">
-                <a href="rvf_impressao/{{ oform.id.data }}" class="btn btn-info form-control">
-                    Imprimir
-                </a>
-            </div>
-            <div class="col-sm-3">
                 {% if oform.id.data %}
                 <button id="btn_apreensao" type="button" class="btn btn-warning form-control"
                         data-toggle="modal" data-target="#apreensao">
@@ -84,7 +79,20 @@
                 </button>
                 {% endif %}
             </div>
-            <div class="col-sm-3">
+            <div class="col-sm-2">
+                <a href="rvf_impressao/{{ oform.id.data }}" class="btn btn-info form-control">
+                    Imprimir
+                </a>
+            </div>
+            <div class="col-sm-2">
+                <a href="rvf_docx?rvf_id={{oform.id.data}}&tipo=taseda" class="btn btn-info form-control">
+                    Taseda
+                </a>
+            </div>
+            <div class="col-sm-2">
+                <a href="rvf_docx?rvf_id={{oform.id.data}}" class="btn btn-info form-control">
+                    OVR
+                </a>
             </div>
         </div>
         </form>

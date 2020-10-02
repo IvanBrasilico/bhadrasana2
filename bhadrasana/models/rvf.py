@@ -145,9 +145,10 @@ class ApreensaoRVF(BaseRastreavel, BaseDumpable):
         return '{:0.2f}'.format(float(self.peso))
 
     def dump(self, exclude=None, explode=True):
-        dumped = super().dump(exclude)
+        dumped = {}  # super().dump(exclude)
         dumped['peso'] = self.get_peso()
-        dumped['tipo_descricao'] = self.tipo.descricao
+        dumped['descricao'] = self.descricao
+        dumped['tipo'] = self.tipo.descricao
         return dumped
 
 
