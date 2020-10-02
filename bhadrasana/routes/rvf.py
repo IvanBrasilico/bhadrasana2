@@ -2,12 +2,12 @@ import base64
 import os
 from datetime import date, timedelta, datetime
 
+from ajna_commons.flask.log import logger
+from ajna_commons.utils.images import ImageBytesTansformations
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
 from werkzeug.utils import redirect
 
-from ajna_commons.flask.log import logger
-from ajna_commons.utils.images import ImageBytesTansformations
 from bhadrasana.docx.docx_functions import gera_OVR, gera_taseda
 from bhadrasana.forms.filtro_rvf import FiltroRVFForm
 from bhadrasana.forms.rvf import RVFForm, ImagemRVFForm, ApreensaoRVFForm
@@ -521,7 +521,8 @@ def rvf_app(app):
         rvf_id = 0
         try:
             rvf_id = request.form['rvf_id']
-            apreensao_rvf_form = ApreensaoRVFForm(request.form)
+            tiposapreensao = get_tiposapreensao_choice(session)
+            apreensao_rvf_form = ApreensaoRVFForm(request.form, tiposapreensao=tiposapreensao)
             apreensao_rvf_form.validate()
             gera_apreensao_rvf(session, dict(apreensao_rvf_form.data.items()))
         except Exception as err:
