@@ -1,7 +1,6 @@
-import pandas as pd
 import sys
 
-from docx import Document
+from bhadrasana.docx.docx_functions import gera_taseda
 
 sys.path.append('.')
 sys.path.insert(0, '../ajna_docs/commons')
@@ -14,10 +13,11 @@ import requests
 
 from ajna_commons.flask.log import logger
 
-URL_AUTH = \
-    'http://localhost:5004/ajnaapi/api/login'
-URL_OVR = \
-    'http://localhost:5004/ajnaapi/api/fichas'
+BASE_URL = 'http://localhost:5004/'
+URL_AUTH = BASE_URL + 'ajnaapi/api/login'
+URL_OVR = BASE_URL + 'ajnaapi/api/ficha/'
+URL_OVRS = BASE_URL + 'ajnaapi/api/fichas'
+URL_RVF = BASE_URL + 'ajnaapi/api/rvf/'
 
 
 def get_token_ajnaapi(username, password):
@@ -39,10 +39,10 @@ def get_token_ajnaapi(username, password):
 
 def get_lista_ovr(start, end, user_name, token):
     payload = {'datahora': datetime.strftime(start, '%Y-%m-%d'),
-               'data_fim': datetime.strftime(end, '%Y-%m-%d'),}
+               'data_fim': datetime.strftime(end, '%Y-%m-%d'), }
     payload = {'user_name': user_name}
     headers = {'Authorization': 'Bearer ' + token}
-    r = requests.post(URL_OVR, headers=headers, json=payload)
+    r = requests.post(URL_OVRS, headers=headers, json=payload)
     logger.info('get_lista_ovr ' + r.url)
     try:
         if r.status_code == 200:
@@ -57,6 +57,34 @@ def get_lista_ovr(start, end, user_name, token):
     return lista_ovrs
 
 
+def get_rvf_id(rvf_id, token):
+    headers = {'Authorization': 'Bearer ' + token}
+    r = requests.get(URL_RVF + str(rvf_id), headers=headers)
+    logger.info('get_rvf_id ' + r.url)
+    try:
+        if r.status_code == 200:
+            return r.json()
+        raise Exception('Erro: %s' % r.status_code)
+    except Exception as err:
+        logger.error(str(type(err)) + str(err))
+        logger.error(r.status_code)
+        logger.error(r.text[:200])
+
+
+def get_ficha_id(ovr_id, token):
+    headers = {'Authorization': 'Bearer ' + token}
+    r = requests.get(URL_OVR + str(ovr_id), headers=headers)
+    logger.info('get_ovr_id ' + r.url)
+    try:
+        if r.status_code == 200:
+            return r.json()
+        raise Exception('Erro: %s' % r.status_code)
+    except Exception as err:
+        logger.error(str(type(err)) + str(err))
+        logger.error(r.status_code)
+        logger.error(r.text[:200])
+
+
 def get_ovrs(datainicial, datafinal, username, password):
     lista_ovr = []
     token = get_token_ajnaapi(username, password)
@@ -64,6 +92,18 @@ def get_ovrs(datainicial, datafinal, username, password):
         lista_ovr = get_lista_ovr(datainicial, datafinal,
                                   username, token)
     return lista_ovr
+
+
+def get_ficha(ovr_id, username, password):
+    token = get_token_ajnaapi(username, password)
+    if token:
+        return get_ficha_id(ovr_id, token)
+
+
+def get_rvf(rvf_id, username, password):
+    token = get_token_ajnaapi(username, password)
+    if token:
+        return get_rvf_id(rvf_id, token)
 
 
 @click.command()
@@ -85,20 +125,19 @@ def run(inicio, fim, usuario, senha):
     else:
         end = datetime.strptime(fim, '%d/%m/%Y')
     print(start, end)
-    ovrs = get_ovrs(start, end, usuario, senha)
-    df = pd.DataFrame.from_dict(ovrs)
-    print(df.head())
+    # ovrs = get_ovrs(start, end, usuario, senha)
+    # df = pd.DataFrame.from_dict(ovrs)
+    # print(df.head())
     # df.to_excel('maladireta.xlsx')
 
-    for ovr in ovrs:
-        document = Document('taseda.docx')
-        for paragraph in document.paragraphs:
-            if paragraph.text == '{unidade}':
-                paragraph.text = 'ALFSTS'
-            if paragraph.text == '{apreensao}':
-                paragraph.text = 'Perdeu Playboy!'
-        document.save('taseda_FCC{}.docx'.format(ovr['id']))
-
+    rvf = get_rvf(41, 'ivan', 'ivan')
+    conteudo = {'unidade': 'ALFSTS', **rvf}
+    conteudo_sem_imagens = conteudo.copy()
+    conteudo_sem_imagens.pop('imagens')
+    print(conteudo_sem_imagens)
+    print(conteudo.keys())
+    document = gera_taseda(rvf)
+    document.save('testes_docx/OVR_RVF{}.docx'.format(conteudo['id']))
 
 
 if __name__ == '__main__':  # pragma: no cover

@@ -57,8 +57,8 @@ class RVF(BaseRastreavel, BaseDumpable):
                                         secondary=infracoesencontradas_table)
     lacresverificados = relationship('Lacre',
                                      secondary=lacresverificados_table)
-    appreensoes = relationship('ApreensaoRVF',
-                               back_populates='rvf')
+    apreensoes = relationship('ApreensaoRVF',
+                              back_populates='rvf')
     datahora = Column(TIMESTAMP, index=True)
     last_modified = Column(DateTime, index=True,
                            onupdate=func.current_timestamp())
@@ -75,6 +75,8 @@ class RVF(BaseRastreavel, BaseDumpable):
                                            for marca in self.marcasencontradas]
             dumped['lacresverificados'] = [lacre.numero
                                            for lacre in self.lacresverificados]
+            dumped['apreensoes'] = [apreensao.dump()
+                                    for apreensao in self.apreensoes]
 
         return dumped
 
@@ -124,7 +126,7 @@ class TipoApreensao(Base):
     descricao = Column(VARCHAR(50), index=True)
 
 
-class ApreensaoRVF(BaseRastreavel):
+class ApreensaoRVF(BaseRastreavel, BaseDumpable):
     """Classe para registrar apreensão de drogas em verificação física."""
     __tablename__ = 'ovr_apreensoes_rvf'
     id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
@@ -141,6 +143,12 @@ class ApreensaoRVF(BaseRastreavel):
         if self.peso is None:
             return '0.00'
         return '{:0.2f}'.format(float(self.peso))
+
+    def dump(self, exclude=None, explode=True):
+        dumped = super().dump(exclude)
+        dumped['peso'] = self.get_peso()
+        dumped['tipo_descricao'] = self.tipo.descricao
+        return dumped
 
 
 def create_infracoes(session):
