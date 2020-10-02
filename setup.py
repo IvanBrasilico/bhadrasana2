@@ -51,6 +51,7 @@ setup(
             'coverage',
             'flake8',
             'flake8-docstrings',
+            'flake8-polyfill',
             'flake8-quotes',
             'flake8-todo',
             'flask-webtest',
