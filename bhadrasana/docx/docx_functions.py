@@ -35,6 +35,7 @@ def gera_OVR(rvf: dict):
     return document
     # document.save('testes_docx/OVR_RVF{}.docx'.format(rvf.id))
 
+
 def gera_taseda(rvf: dict):
     conteudo = {'unidade': 'ALFSTS', **rvf}
     basepath = os.path.dirname(__file__)

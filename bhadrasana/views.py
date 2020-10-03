@@ -69,12 +69,12 @@ def configure_app(mongodb, sqlsession, mongo_risco):
     login_ajna.configure(app)
     print('Setando dbsession fora...')
 
-    # Para usar MySQL como base de Usuários
-    # DBUser.dbsession = sqlsession
-    # DBUser.alchemy_class = Usuario
-
-    # Para usar MongoDB como base de Usuários
-    DBUser.dbsession = mongodb
+    DBUser.alchemy_class = Usuario
+    # Para usar MySQL como base de Usuários ativar a variável de ambiente SQL_USER
+    if os.environ.get('SQL_USER'):
+        DBUser.dbsession = sqlsession
+    else:
+        DBUser.dbsession = mongodb
 
     app.config['dbsession'] = sqlsession
     app.config['mongodb'] = mongodb

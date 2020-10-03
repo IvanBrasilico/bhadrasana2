@@ -264,7 +264,7 @@ def risco_app(app):
                                   '.csv'
             riscos_ativos = riscosativos(session, current_user.name)
             with open(os.path.join(get_user_save_path(),
-                                   riscos_out_filename), 'w') as riscos_out:
+                                   riscos_out_filename), 'w', newline='') as riscos_out:
                 for risco in riscos_ativos:
                     linha_out = ';'.join((risco.campo, risco.valor, risco.motivo))
                     riscos_out.write(linha_out + '\n')
@@ -293,6 +293,8 @@ def risco_app(app):
                     user_name = current_user.name
                     for line in lines:
                         linha = line.split(';')
+                        if len(linha) < 2: # Pula linhas vazias
+                            continue
                         if len(linha) == 2:
                             campo, valor = linha
                             motivo = ''
