@@ -1,6 +1,6 @@
 import sys
 
-from bhadrasana.docx.docx_functions import gera_OVR
+from bhadrasana.docx.docx_functions import gera_OVR, gera_taseda
 
 sys.path.append('.')
 sys.path.insert(0, '../ajna_docs/commons')
@@ -23,6 +23,7 @@ URL_RVF = BASE_URL + 'ajnaapi/api/rvf/'
 def get_token_ajnaapi(username, password):
     data = {'username': username, 'password': password}
     token = None
+    r = None
     try:
         r = requests.post(URL_AUTH, json=data)
         print(r.url, data)
@@ -32,8 +33,9 @@ def get_token_ajnaapi(username, password):
             raise Exception('Erro: %s' % r.status_code)
     except Exception as err:
         logger.error(str(type(err)) + str(err))
-        logger.error(r.status_code)
-        logger.error(r.text)
+        if r:
+            logger.error(r.status_code)
+            logger.error(r.text)
     return token
 
 
@@ -131,6 +133,9 @@ def run(inicio, fim, usuario, senha):
     # df.to_excel('maladireta.xlsx')
 
     rvf = get_rvf(41, 'ivan', 'ivan')
+    if not rvf:
+        print('Falha ao conectar à API')
+        sys.exit(0)
     conteudo = {'unidade': 'ALFSTS', **rvf}
     conteudo_sem_imagens = conteudo.copy()
     conteudo_sem_imagens.pop('imagens')
@@ -138,6 +143,8 @@ def run(inicio, fim, usuario, senha):
     print(conteudo.keys())
     document = gera_OVR(rvf)
     document.save('testes_docx/OVR_RVF{}.docx'.format(conteudo['id']))
+    document = gera_taseda(rvf)
+    document.save('testes_docx/Taseda_RVF{}.docx'.format(conteudo['id']))
 
 
 if __name__ == '__main__':  # pragma: no cover
