@@ -5,7 +5,7 @@ from sqlalchemy import create_engine, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-from models.laudo import SAT
+from bhadrasana.models.laudo import SAT
 
 Base = declarative_base()
 
@@ -52,7 +52,6 @@ if __name__ == '__main__':
     print(f'foram encontrados {len_resultados} registros a serem adicionados')
 
     if len_resultados > 0:
-        num_result = 0
         for n, row in enumerate(resultados):
             sat = SAT()
             sat.declaracao = row.declaracao
@@ -62,8 +61,7 @@ if __name__ == '__main__':
             sat.dataPedido = row.dataPedido
             sat.unidade = row.unidade
             session_bhad.add(sat)
-            num_result = n + 1
-        print(f'foram adicionados {num_result} novos registros na tabela SATS')
+        print(f'foram adicionados {n} novos registros na tabela SATS')
         session_bhad.commit()
     else:
         print('não há novos registros')
