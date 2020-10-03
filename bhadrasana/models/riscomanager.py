@@ -171,7 +171,7 @@ def save_planilharisco(lista_risco: list, save_path: str, filtros: str):
                     + datetime.strftime(datetime.now(), '%Y-%m%dT%H%M%S') + \
                     '.csv'
         destino = os.path.join(save_path, csv_salvo)
-        with open(destino, 'w') as out_file:
+        with open(destino, 'w', newline='') as out_file:
             if filtros:
                 out_file.write(filtros + '\n')
             out_file.write(';'.join([key for key in lista_risco[0].keys()]) + '\n')
