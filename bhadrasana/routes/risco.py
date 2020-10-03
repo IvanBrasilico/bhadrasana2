@@ -292,14 +292,18 @@ def risco_app(app):
                         lines = in_csv.readlines()
                     user_name = current_user.name
                     for line in lines:
-                        linha = line.split(';')
-                        if len(linha) < 2: # Pula linhas vazias
+                        try:
+                            linha = line.split(';')
+                            if len(linha) < 2: # Pula linhas vazias
+                                continue
+                            if len(linha) == 2:
+                                campo, valor = linha
+                                motivo = ''
+                            else:
+                                campo, valor, motivo = linha
+                        except Exception as err:
+                            logger.error(err, exc_info=True)
                             continue
-                        if len(linha) == 2:
-                            campo, valor = linha
-                            motivo = ''
-                        else:
-                            campo, valor, motivo = linha
                         insererisco(session,
                                     user_name=user_name,
                                     campo=campo,
