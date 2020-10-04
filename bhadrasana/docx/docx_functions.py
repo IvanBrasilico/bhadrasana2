@@ -38,7 +38,7 @@ def edit_table_tag(text: str, paragraph: Paragraph, conteudo: dict, document: Do
             hdr_cells[ind_col].text = key.capitalize()
         for row in valor:
             row_cells = table.add_row().cells
-            print(row)
+            # print(row)
             for ind_col, key in enumerate(tags[1:]):
                 content = row.get(key)
                 row_cells[ind_col].text = content
