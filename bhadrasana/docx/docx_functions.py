@@ -35,7 +35,7 @@ def edit_table_tag(text: str, paragraph: Paragraph, conteudo: dict, document: Do
         move_table_after(table, paragraph)
         hdr_cells = table.rows[0].cells
         for ind_col, key in enumerate(tags[1:]):
-            hdr_cells[ind_col].text = key
+            hdr_cells[ind_col].text = key.capitalize()
         for row in valor:
             row_cells = table.add_row().cells
             print(row)
