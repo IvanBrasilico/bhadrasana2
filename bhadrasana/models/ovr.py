@@ -392,8 +392,21 @@ class ItemTG(BaseRastreavel, BaseDumpable):
     def get_unidadedemedida(self):
         return Enumerado.unidadeMedida(self.unidadedemedida)
 
+    @property
+    def hscode(self):
+        return self.ncm[:6]
+
+    @property
+    def qtde_str(self):
+        return '{:0f}'.format(self.qtde)
+
+    @property
+    def valor_str(self):
+        return '{:0f}'.format(self.qtde)
+
     def dump(self, exclude=None, explode=True):
         dumped = super().dump(exclude)
+        # TODO: Utilizar properties (qtde e valor)
         if dumped['qtde']:
             dumped['qtde'] = '{:0f}'.format(dumped['qtde'])
         else:
