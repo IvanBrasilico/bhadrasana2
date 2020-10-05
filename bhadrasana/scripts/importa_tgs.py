@@ -34,6 +34,7 @@ def processa_PDF_CE(arquivo, encode='utf8'):
     cnpj = text[cnpj_pos:cnpj_pos + 18]
     return ce, cnpj
 
+
 def processa_dirs():
     listadir = os.listdir(RAIZ)
     # print(listadir)
@@ -97,5 +98,6 @@ def processa_dirs():
                             print(f'Criou ItensTG no OVR id {tgovr.ovr_id}')
                             validos += 1
     print(validos, invalidos)
+
 
 processa_dirs()
