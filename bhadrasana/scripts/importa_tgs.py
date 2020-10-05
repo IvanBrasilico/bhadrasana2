@@ -1,13 +1,11 @@
-import time
+import os
 from datetime import datetime
 
-import chardet
 import fitz
-import os
 
-from bhadrasana.models.ovrmanager import importa_planilha_tg
 from bhadrasana.models import db_session
 from bhadrasana.models.ovr import OVR, TGOVR
+from bhadrasana.models.ovrmanager import importa_planilha_tg
 
 RAIZ = '/home/ivan/Downloads'
 
@@ -62,7 +60,8 @@ def processa_dirs():
                     # Cria Ficha e TG
                     tgovr = db_session.query(TGOVR).filter(TGOVR.numerolote == ce).one_or_none()
                     if not tgovr:
-                        ovr = db_session.query(OVR).filter(OVR.numeroCEmercante == ce).one_or_none()
+                        ovr = db_session.query(OVR).filter(OVR.numeroCEmercante == ce).\
+                            one_or_none()
                         if not ovr:
                             ovr = OVR()
                             ovr.numeroCEmercante = ce
