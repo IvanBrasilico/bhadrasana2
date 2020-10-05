@@ -294,7 +294,7 @@ def risco_app(app):
                     for line in lines:
                         try:
                             linha = line.split(';')
-                            if len(linha) < 2: # Pula linhas vazias
+                            if len(linha) < 2:  # Pula linhas vazias
                                 continue
                             if len(linha) == 2:
                                 campo, valor = linha

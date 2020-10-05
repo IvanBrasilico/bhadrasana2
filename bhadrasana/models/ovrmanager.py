@@ -797,13 +797,15 @@ def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
             itemtg.descricao = row['descricao'].strip()
             itemtg.qtde = row['qtde']
             try:
-                itemtg.unidadedemedida = Enumerado.index_unidadeMedida(row['unidadedemedida'].strip())
+                itemtg.unidadedemedida = Enumerado. \
+                    index_unidadeMedida(row['unidadedemedida'].strip())
             except ValueError:
                 itemtg.unidadedemedida = Enumerado.index_unidadeMedida('UN')
             itemtg.modelo = row.get('modelo')
             itemtg.contramarca = row.get('marca')
-            ncm = str(row.get('ncm'))
+            ncm = row.get('ncm')
             if ncm:
+                ncm = str(ncm)
                 itemtg.ncm = ''.join([s for s in ncm if s.isnumeric()])[:8]
             else:
                 if alertas.get('ncm') is None:
