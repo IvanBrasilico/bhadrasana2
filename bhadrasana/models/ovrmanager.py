@@ -773,6 +773,7 @@ def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
     # print(df.head())
     df = df.replace({np.nan: None})
     alertas = dict()
+    index = 0
     try:
         for index, original_row in df.iterrows():
             row = muda_chaves(original_row)
