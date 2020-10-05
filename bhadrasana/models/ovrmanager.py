@@ -5,6 +5,7 @@ from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
+import sqlalchemy
 from sqlalchemy import and_, text, or_, func
 from sqlalchemy.orm import Session
 
@@ -471,7 +472,7 @@ def atualiza_valortotal_tg(session, tg_id: int):
         filter(ItemTG.tg_id == tg.id).scalar()
     tg.qtde = total_qtde
     tg.valor = total_valor
-    print(total_qtde, total_valor)
+    # print(total_qtde, total_valor)
     session.add(tg)
     session.commit()
 
@@ -783,19 +784,27 @@ def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
             if numero:
                 itemtg = get_itemtg_numero(session, tg, numero)
             else:
-                itemtg = get_itemtg_descricao_qtde_modelo(
-                    session, tg,
-                    row['descricao'], row['qtde'], row.get('modelo'))
+                try:
+                    itemtg = get_itemtg_descricao_qtde_modelo(
+                        session, tg,
+                        row['descricao'], row['qtde'], row.get('modelo'))
+                except sqlalchemy.orm.exc.MultipleResultsFound:
+                    logger.info('Abortando edição de linha {} da planilha {}'
+                                'devido não ser único'.format(index, lfilename))
+                    continue
                 itemtg.numero = index
             itemtg.tg_id = tg.id
-            itemtg.descricao = row['descricao']
+            itemtg.descricao = row['descricao'].strip()
             itemtg.qtde = row['qtde']
-            itemtg.unidadedemedida = Enumerado.index_unidadeMedida(row['unidadedemedida'])
+            try:
+                itemtg.unidadedemedida = Enumerado.index_unidadeMedida(row['unidadedemedida'].strip())
+            except ValueError:
+                itemtg.unidadedemedida = Enumerado.index_unidadeMedida('UN')
             itemtg.modelo = row.get('modelo')
             itemtg.contramarca = row.get('marca')
-            ncm = row.get('ncm')
+            ncm = str(row.get('ncm'))
             if ncm:
-                itemtg.ncm = ncm
+                itemtg.ncm = ''.join([s for s in ncm if s.isnumeric()])[:8]
             else:
                 if alertas.get('ncm') is None:
                     alertas['ncm'] = 'Campo ncm ({}) não encontrado.'. \

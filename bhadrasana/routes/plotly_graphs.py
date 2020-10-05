@@ -28,9 +28,11 @@ def bar_plotly(linhas: list, nome: str) -> str:
             linhas_float.append(linha_float)
         df = pd.DataFrame(linhas_float, columns=linhas[0])
         df['strmes'] = df['Mês'].apply(lambda x: meses[int(x)])
-        df['Ano e Mês'] = df['strmes'].astype(str) + ' de ' + df['Ano'].astype(str)
+        df['Ano e Mês'] = df['Ano'].astype(str) + '-' + df['Mês'].astype(str) + '-' + \
+                          df['strmes'].astype(str) + ' de ' + df['Ano'].astype(str)
         df = df.drop(columns=['Ano', 'Mês', 'strmes'])
-        df = df.groupby(['Ano e Mês']).sum()
+        print(df.head())
+        df = df.groupby(['Ano e Mês']).sum()  # Apenas para dar a ordem correta
         df = df.reset_index()
         # print(linhas)
         print(df.head())
