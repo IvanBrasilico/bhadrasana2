@@ -1,13 +1,19 @@
 import os
+import sys
 from datetime import datetime
 
 import fitz
+
+sys.path.append('.')
+sys.path.append('../ajna_docs/commons')
+sys.path.append('../virasana')
 
 from bhadrasana.models import db_session
 from bhadrasana.models.ovr import OVR, TGOVR
 from bhadrasana.models.ovrmanager import importa_planilha_tg
 
 RAIZ = '/home/ivan/Downloads'
+RAIZ = 'C:\\Users\\25052288840\\Desktop\\Casos'
 
 
 def pegaarquivo_dirTG(dirpath, extensoes: list, nome_contem: str = None):
@@ -60,7 +66,7 @@ def processa_dirs():
                     # Cria Ficha e TG
                     tgovr = db_session.query(TGOVR).filter(TGOVR.numerolote == ce).one_or_none()
                     if not tgovr:
-                        ovr = db_session.query(OVR).filter(OVR.numeroCEmercante == ce).\
+                        ovr = db_session.query(OVR).filter(OVR.numeroCEmercante == ce). \
                             one_or_none()
                         if not ovr:
                             ovr = OVR()

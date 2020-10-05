@@ -1,10 +1,9 @@
-import os
 import sys
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
-
-sys.path.insert(0, '../ajna_docs/commons')
-sys.path.insert(0, '../virasana')
+sys.path.append('../ajna_docs/commons')
+sys.path.append('../ajna_api')
+sys.path.append('../virasana')
 
 from bhadrasana.main import app
 
