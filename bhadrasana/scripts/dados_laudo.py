@@ -1,9 +1,14 @@
 import os
+import sys
 
 from sqlalchemy import BigInteger, Column, VARCHAR, Integer, Date
 from sqlalchemy import create_engine, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+
+sys.path.append('.')
+sys.path.append('../ajna_docs/commons')
+sys.path.append('../virasana')
 
 from bhadrasana.models.laudo import SAT
 
@@ -24,10 +29,13 @@ class SATLaudos(Base):
 
 
 if __name__ == '__main__':
-    SQL_URI_LAUDOS = os.environ.get('SQL_URI_LAUDOS')  # conexao com db LAUDOS
-    # SQL_URI_STAGING = os.environ.get('SQL_URI_STAGING')  # conexao com staging
-    SQL_URI = os.environ.get('SQL_URI')  # conexao com produção
 
+    SQL_URI_LAUDOS = os.environ['SQL_URI_LAUDOS']  # conexao com db LAUDOS
+    # SQL_URI_STAGING = os.environ.get('SQL_URI_STAGING')  # conexao com staging
+    SQL_URI = os.environ['SQL_URI']  # conexao com produção
+
+    print(SQL_URI)
+    print(SQL_URI_LAUDOS)
     # engine_bhad = create_engine(SQL_URI_STAGING)  # staging
     engine_bhad = create_engine(SQL_URI)  # producao
     Session_bhad = sessionmaker(bind=engine_bhad)
