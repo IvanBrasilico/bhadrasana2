@@ -1,4 +1,7 @@
 import sys
+
+from ajna_commons.flask.conf import SQL_URI
+
 sys.path.append('.')
 sys.path.insert(0, '../ajna_docs/commons')
 sys.path.insert(0, '../virasana')
@@ -9,7 +12,6 @@ from sqlalchemy import BigInteger, Column, DateTime, func, VARCHAR, Table, \
 from sqlalchemy import ForeignKey
 from sqlalchemy.dialects.mysql import TIMESTAMP
 from sqlalchemy.orm import relationship, sessionmaker
-
 
 from bhadrasana.models import Base, BaseRastreavel, BaseDumpable
 
@@ -177,11 +179,10 @@ if __name__ == '__main__':
     confirma = input('Revisar o código... '
                      'Esta ação pode apagar TODAS as tabelas. Confirma??')
     if confirma == 'S':
-        from ajna_commons.flask.conf import SQL_URI
-
         engine = create_engine(SQL_URI)
         Session = sessionmaker(bind=engine)
         session = Session()
+        sys.exit(0)
 
         # metadata.drop_all(engine, [ ])
         metadata.create_all(engine,
@@ -197,4 +198,3 @@ if __name__ == '__main__':
                             ])
 
         create_infracoes(session)
-
