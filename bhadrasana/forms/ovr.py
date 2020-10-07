@@ -65,6 +65,8 @@ class FiltroOVRForm(FlaskForm):
     datafim = DateField(u'Data final da pesquisa')
     cnpj_fiscalizado = StringField(u'CNPJ do Fiscalizado',
                                    default='')
+    numeroprocesso = StringField(u'Número de processo informado na Ficha',
+                                   default='')
     setor_id = SelectField('Setores')
 
     def __init__(self, *args, **kwargs):
