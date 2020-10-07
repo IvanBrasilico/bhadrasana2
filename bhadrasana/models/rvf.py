@@ -1,4 +1,8 @@
 import sys
+sys.path.append('.')
+sys.path.insert(0, '../ajna_docs/commons')
+sys.path.insert(0, '../virasana')
+sys.path.insert(0, '../ajna_api')
 
 from sqlalchemy import BigInteger, Column, DateTime, func, VARCHAR, Table, \
     Numeric, Integer, create_engine
@@ -6,9 +10,7 @@ from sqlalchemy import ForeignKey
 from sqlalchemy.dialects.mysql import TIMESTAMP
 from sqlalchemy.orm import relationship, sessionmaker
 
-sys.path.append('.')
-sys.path.insert(0, '../ajna_docs/commons')
-sys.path.insert(0, '../virasana')
+
 from bhadrasana.models import Base, BaseRastreavel, BaseDumpable
 
 from bhadrasana.models.ovr import Marca
@@ -186,13 +188,13 @@ if __name__ == '__main__':
                             [
                                 metadata.tables['ovr_apreensoes_rvf'],
                                 metadata.tables['ovr_tiposapreensao'],
-                                # metadata.tables['ovr_marcasencontradas'],
-                                # metadata.tables['ovr_lacres'],
-                                # metadata.tables['ovr_lacresverificados'],
-                                # metadata.tables['ovr_infracoes'],
-                                # metadata.tables['ovr_verificacoesfisicas'],
-                                # metadata.tables['ovr_imagensrvf'],
+                                metadata.tables['ovr_marcasencontradas'],
+                                metadata.tables['ovr_lacres'],
+                                metadata.tables['ovr_lacresverificados'],
+                                metadata.tables['ovr_infracoes'],
+                                metadata.tables['ovr_verificacoesfisicas'],
+                                metadata.tables['ovr_imagensrvf'],
                             ])
-        """
+
         create_infracoes(session)
-        """
+

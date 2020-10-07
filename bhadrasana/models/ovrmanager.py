@@ -1,3 +1,9 @@
+import sys
+sys.path.append('.')
+sys.path.insert(0, '../ajna_docs/commons')
+sys.path.insert(0, '../virasana')
+sys.path.insert(0, '../ajna_api')
+
 from collections import OrderedDict
 from datetime import timedelta, datetime
 from enum import Enum

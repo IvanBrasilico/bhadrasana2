@@ -1,10 +1,12 @@
-import os
 import sys
+sys.path.append('.')
+sys.path.insert(0, '../ajna_docs/commons')
+sys.path.insert(0, '../ajna_api')
+sys.path.insert(0, '../virasana')
+import os
 from werkzeug.serving import run_simple
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
-sys.path.insert(0, '../ajna_docs/commons')
-sys.path.insert(0, '../virasana')
 from ajna_commons.flask.conf import BHADRASANA_URL
 
 os.environ['DEBUG'] = '1'
