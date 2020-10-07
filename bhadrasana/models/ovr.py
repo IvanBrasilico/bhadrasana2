@@ -603,7 +603,7 @@ if __name__ == '__main__':  # pragma: no-cover
         Session = sessionmaker(bind=engine)
         session = Session()
         # Sair por segurança. Comentar linha abaixo para funcionar
-        # sys.exit(0)
+        sys.exit(0)
         # metadata.drop_all(engine)
         metadata.create_all(engine,
                             [

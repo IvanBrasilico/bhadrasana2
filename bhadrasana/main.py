@@ -30,12 +30,9 @@ from bhadrasana.routes.risco import risco_app
 from bhadrasana.routes.rvf import rvf_app
 from bhadrasana.views import configure_app
 
-print(MONGODB_URI)
-
 conn = MongoClient(host=MONGODB_URI)
 mongodb = conn[DATABASE]
 MONGODB_RISCO = os.environ.get('MONGODB_RISCO')
-print(MONGODB_RISCO)
 conn_risco = MongoClient(host=MONGODB_RISCO)
 mongodb_risco = conn_risco['risco']
 app = configure_app(mongodb, db_session, mongodb_risco)

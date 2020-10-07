@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+
 sys.path.append('.')
 sys.path.insert(0, '../ajna_docs/commons')
 sys.path.insert(0, '../virasana')
@@ -8,9 +9,6 @@ sys.path.insert(0, '../ajna_api')
 from collections import OrderedDict, namedtuple
 from datetime import date, datetime
 from typing import List
-
-
-
 
 import pandas as pd
 from sqlalchemy import select, and_, join, or_
