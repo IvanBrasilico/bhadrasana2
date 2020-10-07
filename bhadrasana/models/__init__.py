@@ -1,5 +1,12 @@
+import sys
+sys.path.append('.')
+sys.path.insert(0, '../ajna_docs/commons')
+sys.path.insert(0, '../virasana')
+sys.path.insert(0, '../ajna_api')
+
 import datetime
 from collections import OrderedDict
+
 
 from sqlalchemy import Column, func, VARCHAR, CHAR, ForeignKey, Integer, event
 from sqlalchemy import create_engine

@@ -1,15 +1,18 @@
 import sys
+sys.path.append('.')
+sys.path.insert(0, '../ajna_docs/commons')
+sys.path.insert(0, '../ajna_api')
+sys.path.insert(0, '../virasana')
 from datetime import datetime
 from enum import Enum
+
 
 from sqlalchemy import BigInteger, Column, DateTime, func, VARCHAR, Integer, \
     ForeignKey, Numeric, CHAR, Table, create_engine, Text
 from sqlalchemy.dialects.mysql import TIMESTAMP
 from sqlalchemy.orm import relationship, sessionmaker
 
-sys.path.insert(0, '.')
-sys.path.insert(0, '../ajna_docs/commons')
-sys.path.insert(0, '../virasana')
+
 from bhadrasana.models import Base, BaseRastreavel, BaseDumpable, myEnum
 
 metadata = Base.metadata
@@ -606,10 +609,10 @@ if __name__ == '__main__':  # pragma: no-cover
                             [
                                 metadata.tables['ovr_results'],
                                 metadata.tables['ovr_objectives'],
-                                metadata.tables['ovr_okrs']
-                                # metadata.tables['ovr_roteiros'],
-                                # metadata.tables['ovr_flags'],
-                                # metadata.tables['ovr_flags_ovr'],
+                                metadata.tables['ovr_okrs'],
+                                metadata.tables['ovr_roteiros'],
+                                metadata.tables['ovr_flags'],
+                                metadata.tables['ovr_flags_ovr'],
                             ])
         metadata.drop_all(engine,
                           [
@@ -619,9 +622,9 @@ if __name__ == '__main__':  # pragma: no-cover
                               # metadata.tables['ovr_processos'],
                               # metadata.tables['ovr_tgovr'],
                           ])
-        # metadata.create_all(engine)
-        # create_tiposevento(session)
-        # create_marcas(session)
-        # create_tipomercadoria(session)
-        # create_flags(session)
-        # create_tiposprocesso(session)
+        metadata.create_all(engine)
+        create_tiposevento(session)
+        create_marcas(session)
+        create_tipomercadoria(session)
+        create_flags(session)
+        create_tiposprocesso(session)
