@@ -7,12 +7,14 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 import virasana.integracao.mercante.mercantealchemy as mercante
+from bhadrasana.models.rvf import RVF
+from bhadrasana.models.rvfmanager import lista_rvfovr
 
 sys.path.append('.')
 
 from bhadrasana.models import Setor, Usuario
 from bhadrasana.models.ovr import metadata, Enumerado, create_tiposevento, create_tiposprocesso, create_flags, Flag, \
-    Relatorio, create_tipomercadoria, create_marcas, Marca, ItemTG, VisualizacaoOVR, OVR
+    Relatorio, create_tipomercadoria, create_marcas, Marca, ItemTG, VisualizacaoOVR, OVR, ProcessoOVR
 
 from bhadrasana.models.ovrmanager import gera_eventoovr, \
     gera_processoovr, cadastra_tgovr, atribui_responsavel_ovr, get_setores_filhos_recursivo, get_tipos_evento, \
@@ -478,6 +480,7 @@ class OVRTestCase(BaseTestCase):
         session.add(setor2)
         session.commit()
         ovr1 = self.create_OVR_campos('R1', 'U1', 'C1', '2020-05-01', 'teste1', setor)
+        session.refresh(ovr1)
         ovr2 = self.create_OVR_campos('R2', 'U2', 'C2', '2020-05-02', 'teste2', setor2)
         ovr3 = self.create_OVR_campos('R3', 'U3', 'C3', '2020-05-03', 'teste3', setor)
         ovr4 = self.create_OVR_campos('R4', 'U4', 'C4', '2020-05-01', 'teste4', setor, '20')
@@ -500,6 +503,29 @@ class OVRTestCase(BaseTestCase):
         assert len(ovrs) == 0
         ovrs = get_ovr_filtro(session, {'numerodeclaracao': '20'})
         assert len(ovrs) == 1
+        # Teste de pesquisa por numero processo
+        ovrs = get_ovr_filtro(session, {'numeroprocesso': '12345'})
+        assert len(ovrs) == 0
+        processo = ProcessoOVR()
+        processo.ovr_id = ovr1.id
+        processo.numero = '12345'
+        session.add(processo)
+        ovrs = get_ovr_filtro(session, {'numeroprocesso': '12345'})
+        assert len(ovrs) == 1
+        # Teste de pesquisa por numeroCEmercante de RVF
+        rvf = RVF()
+        rvf.ovr_id = ovr1.id
+        rvf.numeroCEmercante = 'C2'
+        session.add(rvf)
+        session.commit()
+        ovrs = get_ovr_filtro(session, {'numeroCEmercante': 'C2'})
+        rvfs = lista_rvfovr(session, ovr1.id)
+        print(rvfs)
+        print(ovr1.numeroCEmercante, ovr1.id)
+        print(ovr2.numeroCEmercante)
+        print(rvf.numeroCEmercante, rvf.ovr_id)
+        assert len(ovrs) == 2
+
 
     def test_get_ovr_empresa(self):
         ovr = self.create_OVR_valido()

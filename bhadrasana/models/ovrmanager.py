@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append('.')
 sys.path.insert(0, '../ajna_docs/commons')
 sys.path.insert(0, '../virasana')
@@ -179,9 +180,15 @@ def get_ovr_filtro(session,
             datafim = datafim + timedelta(days=1)
             filtro = and_(OVR.datahora <= datafim, filtro)
         if pfiltro.get('numeroCEmercante'):
-            filtro = and_(OVR.numeroCEmercante.like(
-                pfiltro.get('numeroCEmercante') + '%'),
+            filtro = and_(
+                or_(
+                    OVR.numeroCEmercante.like(
+                        pfiltro.get('numeroCEmercante') + '%'),
+                    RVF.numeroCEmercante.like(
+                        pfiltro.get('numeroCEmercante') + '%')
+                ),
                 filtro)
+            tables.append(RVF)
         if pfiltro.get('cnpj_fiscalizado'):
             filtro = and_(OVR.cnpj_fiscalizado.like(
                 pfiltro.get('cnpj_fiscalizado')[:8] + '%'),
@@ -213,12 +220,17 @@ def get_ovr_filtro(session,
             setores = get_setores_filhos_recursivo_id(session, setor_id)
             ids_setores = [setor_id, *[setor.id for setor in setores]]
             filtro = and_(OVR.setor_id.in_(ids_setores), filtro)
+        numeroprocesso = pfiltro.get('numeroprocesso')
+        if numeroprocesso and len(numeroprocesso) >= 4:
+            filtro = and_(ProcessoOVR.numero.like(numeroprocesso + '%'), filtro)
+            tables.append(ProcessoOVR)
     logger.info('get_ovr_filtro - pfiltro' + str(pfiltro))
     logger.info('get_ovr_filtro - filtro' + str(filtro))
     q = session.query(OVR)
     if len(tables) > 0:
+        tables = set(tables)
         for table in tables:
-            q = q.join(table)
+            q = q.join(table, isouter=True)
         # ovrs = q.filter(filtro).limit(100).all()
     logger.info('get_ovr_filtro - query' + str(q))
     ovrs = q.filter(filtro).limit(200).all()
