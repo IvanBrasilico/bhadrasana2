@@ -70,7 +70,6 @@ def run(inicio, fim):
     df = pd.DataFrame.from_dict(dict_planilha)
     print(df.head())
     df.to_csv('test_RILO.csv')
-    # exporta_csv_rilo(dict_planilha)
 
 
 if __name__ == '__main__':
