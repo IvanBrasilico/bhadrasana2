@@ -1,11 +1,11 @@
-Holmes (supervisor) entra no Sistema
+Watson (supervisor) entra no Sistema
 
 1. Consulta as fichas do tipo “Mercadoria Abandonada” com Status “FMA cadastrada por importação automática”
 2. Após informar no Siscomex Carga que foi emitida FMA para a carga, informa evento “Bloqueio de CE incluído”
-3. Verifica se é o caso de carga perecível e adiciona Alerta se for o caso
-4. Se não é perecível, informa evento “Aguardando distribuição”.
+3. Se não é perecível, informa evento “Aguardando distribuição”.
+4. Se é perecível, adiciona Alerta “perecível” e distribui a ficha a Holmes para solicitar manifestação de órgão anuente.
 
-Watson (AT ou apoio) verifica todas as fichas do tipo “Mercadoria Abandonada” com bloqueio de CE incluído
+Holmes (AT ou apoio) verifica todas as fichas em "Minhas fichas"
 
 1. Verifica as fichas de carga perecível e após prazo de aproximadamente 15 (quinze) dias, se não houver pedido de retomada de despacho (IN69), elabora ofício para órgão anuente;
 2. Informa evento “Aguardando manifestação de órgão anuente” e anexa o ofício;
@@ -20,30 +20,32 @@ Irene Adler entra no sistema
 3. Informar RVF carregando fotos;
 4. Registra Termo de Guarda;
 5. Informa a Emissão de Auto de Infração;
+6. Distribui novamente a ficha para Holmes;
 
-Com esse evento, Watson volta a atuar:
+Holmes encontra a ficha em “Minhas fichas”
 
 1. Abre processo no SIEF e informa evento “Processo aberto no SIEF”;
 2. Em “Informar processo” registra o nº do processo de perdimento;
 3. Anexa os documentos de integração ao CTMA no e-processo e informa evento “Geração de documentos de integração ao CTMA”.
+4. Distribui novamente a ficha para Irene Adler para montagem do processo.
 
 Irene Adler entra no sistema
 
 1. Monta o processo e informa evento “Montagem de processo”.
 
-Watson (supervisor) entra no Sistema
+Watson (supervisor) entra no Sistema ao receber o e-processo finalizado
 
 1. Altera o bloqueio no Siscomex Carga e informa evento “Bloqueio de CE atualizado”
-2. Informa evento “Encerramento com resultado”.
+2. Informa evento “Encerramento com resultado” ao encaminhar o e-processo ao EQMAP.
 
-Holmes (supervisor) entra no Sistema para saber
+Watson (supervisor) entra no Sistema para saber
 
 1. Acompanha fichas do Setor
 
-Holmes (supervisor) precisa informar gerenciais/produtividade
+Watson (supervisor) precisa informar gerenciais/produtividade
 
 1. Roda relatórios
 
-Holmes (supervisor) precisa pesquisar cargas perecíveis (ou outra pesquisa)
+Watson (supervisor) precisa pesquisar cargas perecíveis (ou outra pesquisa)
 
 1. Roda pesquisa Ficha
