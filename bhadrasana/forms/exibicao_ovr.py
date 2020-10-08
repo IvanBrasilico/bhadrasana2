@@ -29,7 +29,8 @@ class ExibicaoOVR:
              'Número doc.',
              'CE Mercante',
              'Alertas',
-             'Último Evento'],
+             'Último Evento',
+             'Auditor Responsável'],
         TipoExibicao.Descritivo:
             ['ID',
              'Data',
@@ -123,7 +124,8 @@ class ExibicaoOVR:
                 ovr.numero,
                 ovr.numeroCEmercante,
                 ', '.join(alertas),
-                tipo_evento_nome]
+                tipo_evento_nome,
+                ovr.cpfauditorresponsavel]
         if self.tipo == TipoExibicao.Descritivo:
             return ovr.id, visualizado, [
                 ovr.datahora,

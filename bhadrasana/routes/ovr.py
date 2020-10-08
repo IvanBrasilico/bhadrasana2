@@ -33,7 +33,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     desfaz_ultimo_eventoovr, get_delta_date, exporta_planilha_tg, TipoPlanilha, \
     exclui_item_tg, get_setores, get_objectives_setor, executa_okr_results, gera_okrobjective, \
     exclui_okrobjective, get_key_results_choice, gera_okrmeta, exclui_okrmeta, \
-    get_usuarios_setores, get_setores_cpf
+    get_usuarios_setores, get_setores_cpf, get_ovr_auditor, get_ovr_passagem
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
@@ -118,6 +118,11 @@ def ovr_app(app):
                         usuario = get_usuario(session, ovr.user_name)
                         if usuario:
                             ovr_form.user_descricao.data = usuario.nome
+                        auditor = get_usuario(session, ovr.cpfauditorresponsavel)
+                        if auditor:
+                            ovr_form.auditor_descricao.data = auditor.nome
+                        if ovr.setor:
+                            ovr_form.setor_descricao.data = ovr.setor.nome
                         fiscalizado = get_empresa(session, ovr.cnpj_fiscalizado)
                         if fiscalizado:
                             ovr_form.nome_fiscalizado.data = fiscalizado.nome
@@ -238,23 +243,27 @@ def ovr_app(app):
                                responsavel_form=responsavel_form,
                                historico_form=historico_ovr_form)
 
+    @app.route('/minhas_ovrs', methods=['GET', 'POST'])
     @app.route('/ovrs_meus_setores', methods=['GET', 'POST'])
     @app.route('/ovrs_criador', methods=['GET', 'POST'])
-    @app.route('/minhas_ovrs', methods=['GET', 'POST'])
+    @app.route('/ovrs_passagem', methods=['GET', 'POST'])
+    @app.route('/ovrs_auditor', methods=['GET', 'POST'])
     @login_required
     def minhas_ovrs():
-        TABS = ('minhas_ovrs', 'ovrs_meus_setores', 'ovrs_criador')
+        TABS = ('minhas_ovrs', 'ovrs_meus_setores', 'ovrs_criador',
+                'ovrs_passagem', 'ovrs_auditor')
         session = app.config.get('dbsession')
         listasovrs = defaultdict(list)
         titulos_exibicao = []
         today = date.today()
         inicio = date(year=today.year, month=today.month, day=1)
         active_tab = request.args.get('active_tab')
+        print(request.url)
         if active_tab is None or active_tab not in TABS:
-            if 'minhas_ovrs' in request.url:
-                active_tab = 'minhas_ovrs'
-            elif 'ovrs_meus_setores' in request.url:
-                active_tab = 'ovrs_meus_setores'
+            tab_url = request.url.split('/')[-1]
+            print(tab_url)
+            if tab_url in TABS:
+                active_tab = tab_url
             else:
                 active_tab = 'ovrs_criador'
         if request.method == 'POST':
@@ -280,6 +289,10 @@ def ovr_app(app):
                 ovrs = get_ovr_filtro(session,
                                       dict(oform.data.items()),
                                       user_name=current_user.name)
+            elif active_tab == 'ovrs_auditor':
+                ovrs = get_ovr_auditor(session, current_user.name)
+            elif active_tab == 'ovrs_passagem':
+                ovrs = get_ovr_passagem(session, current_user.name)
             else:
                 ovrs = get_ovr_criadaspor(session, current_user.name)
             exibicao = ExibicaoOVR(session, int(oform.tipoexibicao.data), current_user.id)
@@ -386,6 +399,27 @@ def ovr_app(app):
             atribui_responsavel_ovr(session,
                                     ovr_id=ovr_id,
                                     responsavel=responsavel_ovr_form.responsavel.data
+                                    )
+            return redirect(url_for('ovr', id=ovr_id))
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return redirect(url_for('ovr', id=ovr_id))
+
+    @app.route('/auditorresponsavelovr', methods=['POST'])
+    @login_required
+    def atribuir_auditor_responsavel():
+        session = app.config.get('dbsession')
+        ovr_id = None
+        try:
+            responsavel_ovr_form = ResponsavelOVRForm(request.form)
+            ovr_id = responsavel_ovr_form.ovr_id.data
+            atribui_responsavel_ovr(session,
+                                    ovr_id=ovr_id,
+                                    responsavel=responsavel_ovr_form.responsavel.data,
+                                    auditor=True
                                     )
             return redirect(url_for('ovr', id=ovr_id))
         except Exception as err:

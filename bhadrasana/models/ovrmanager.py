@@ -160,6 +160,17 @@ def get_ovr_responsavel(session, user_name: str) -> List[OVR]:
     return session.query(OVR).filter(OVR.responsavel_cpf == user_name).all()
 
 
+def get_ovr_auditor(session, user_name: str) -> List[OVR]:
+    return session.query(OVR).filter(OVR.cpfauditorresponsavel == user_name).all()
+
+
+def get_ovr_passagem(session, user_name: str) -> List[OVR]:
+    eventos = session.query(EventoOVR).filter(
+        EventoOVR.user_name == user_name).all()
+    ids_ovrs = [evento.ovr_id for evento in eventos]
+    return session.query(OVR).filter(OVR.id.in_(ids_ovrs)).all()
+
+
 def get_ovr_criadaspor(session, user_name: str) -> List[OVR]:
     return session.query(OVR).filter(OVR.user_name == user_name).all()
 
@@ -330,7 +341,7 @@ def gerencia_flag_ovr(session, ovr_id, flag_id, inclui=True) -> List[Flag]:
 
 
 def atribui_responsavel_ovr(session, ovr_id: int,
-                            responsavel: str) -> OVR:
+                            responsavel: str, auditor=False) -> OVR:
     """Atualiza campo responsável na OVR. Gera evento correspondente.
 
     :param session: Conexão com banco SQLAlchemy
@@ -340,19 +351,26 @@ def atribui_responsavel_ovr(session, ovr_id: int,
     """
     try:
         ovr = get_ovr(session, ovr_id)
-        tipoevento = session.query(TipoEventoOVR).filter(
-            TipoEventoOVR.eventoespecial == EventoEspecial.Responsavel.value).first()
-        if ovr.responsavel_cpf is None:
+        if auditor:
+            tipoevento = session.query(TipoEventoOVR).filter(
+                TipoEventoOVR.eventoespecial == EventoEspecial.AuditorResponsavel.value).first()
+        else:
+            tipoevento = session.query(TipoEventoOVR).filter(
+                TipoEventoOVR.eventoespecial == EventoEspecial.Responsavel.value).first()
+        if ovr.cpfauditorresponsavel is None:
             responsavel_anterior = 'Nenhum'
         else:
-            responsavel_anterior = ovr.responsavel_cpf
+            responsavel_anterior = ovr.cpfauditorresponsavel
         evento_params = {'tipoevento_id': tipoevento.id,
                          'motivo': 'Anterior: ' + responsavel_anterior,
                          'user_name': responsavel,  # Novo Responsável
                          'ovr_id': ovr.id
                          }
         evento = gera_eventoovr(session, evento_params, commit=False)
-        ovr.responsavel_cpf = responsavel  # Novo responsavel
+        if auditor:
+            ovr.cpfauditorresponsavel = responsavel  # Novo Auditor
+        else:
+            ovr.responsavel_cpf = responsavel  # Novo responsavel
         session.add(evento)
         session.add(ovr)
         session.commit()
