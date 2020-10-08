@@ -23,6 +23,7 @@ class EventoEspecial(Enum):
     RVF = 2
     TG = 3
     Autuacao = 4
+    AuditorResponsavel = 5
 
 
 tipoStatusOVREspecial = [
@@ -157,6 +158,7 @@ class OVR(BaseRastreavel, BaseDumpable):
     tgs = relationship('TGOVR', back_populates='ovr')
     flags = relationship('Flag', secondary=flags_table)
     cnpj_fiscalizado = Column(VARCHAR(15), index=True)
+    cpfauditorresponsavel = Column(VARCHAR(15))
 
     def get_ano(self):
         if self.datahora is not None and isinstance(self.datahora, datetime):

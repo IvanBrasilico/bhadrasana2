@@ -30,6 +30,8 @@ class OVRForm(FlaskForm):
     user_descricao = StringField(default='')
     cnpj_fiscalizado = StringField()
     nome_fiscalizado = StringField(default='')
+    setor_descricao = StringField(default='')
+    auditor_descricao = StringField(default='')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
