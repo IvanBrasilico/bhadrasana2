@@ -31,7 +31,7 @@ from virasana.integracao.mercante.mercantealchemy import Item
 
 def get_recintos(session) -> List[Tuple[int, str]]:
     recintos = session.query(Recinto).all()
-    recintos_list = [(recinto.id, recinto.nome) for recinto in recintos]
+    recintos_list = [(recinto.id, f'{recinto.nome} ({recinto.cod_dte})') for recinto in recintos]
     return sorted(recintos_list, key=lambda x: x[1])
 
 
