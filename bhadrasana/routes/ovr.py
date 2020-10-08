@@ -214,14 +214,16 @@ def ovr_app(app):
             infracoes=infracoes,
             setores=lista_setores
         )
-        usuario = get_usuario(session, current_user.name)
-        filtro_form.setor_id.data = usuario.setor_id
         responsaveis = get_usuarios(session)
         responsavel_form = ResponsavelOVRForm(responsaveis=responsaveis,
                                               responsavel=current_user.name)
         historico_ovr_form = HistoricoOVRForm(
             tiposeventos=get_tipos_evento_comfase_choice(session))
         try:
+            usuario = get_usuario(session, current_user.name)
+            if usuario is None:
+                raise Exception('Erro: Usuário não encontrado!')
+            filtro_form.setor_id.data = usuario.setor_id
             if request.method == 'POST':
                 logger.info('Consulta de Ficha: ' + str(dict(request.form.items())))
                 filtro_form = FiltroOVRForm(request.form, tiposeventos=tiposeventos,
