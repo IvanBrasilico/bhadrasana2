@@ -12,8 +12,11 @@ from ajna_commons.flask.log import logger
 
 # AJNA_API_URL = 'https://ajna.labin.rf08.srf/ajnaapi/api'
 AJNA_API_URL = 'http://localhost:5004/api'
-with open('bhadrasana2_password.txt') as pwd_in:
-    bhadrasana2_password = pwd_in.read()
+try:
+    with open('bhadrasana2_password.txt') as pwd_in:
+        bhadrasana2_password = pwd_in.read()
+except FileNotFoundError:
+    bhadrasana2_password = ''
 
 mapa_SBT = {'dataevento': ['dtHrOcorrencia', 'dtHrRegistro'],
             'Conteiner': {'listaContainersUld': 'num'},

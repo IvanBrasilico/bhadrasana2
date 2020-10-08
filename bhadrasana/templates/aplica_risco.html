@@ -81,6 +81,11 @@
                                    {% endif %}/>
                             Porto de Destino
                         </div>
+                        <div class="col-sm-2">
+                            <input type="checkbox" name="recinto" {% if oform.recinto.data %} checked
+                                   {% endif %}/>
+                            Recinto
+                        </div>
                     </div>
                     {% endif %}
                     {% if active_tab=='recintos' %}
