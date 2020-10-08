@@ -6,12 +6,17 @@ sys.path.append('.')
 sys.path.insert(0, '../ajna_docs/commons')
 sys.path.insert(0, '../virasana')
 sys.path.insert(0, '../ajna_api')
+
+from ajna_commons.flask.conf import SQL_URI
+from sqlalchemy.orm import sessionmaker
+from virasana.integracao.gmci_alchemy import GMCI
+
 from collections import OrderedDict, namedtuple
 from datetime import date, datetime
 from typing import List
 
 import pandas as pd
-from sqlalchemy import select, and_, join, or_
+from sqlalchemy import select, and_, join, or_, create_engine
 
 from ajna_commons.flask.log import logger
 from ajnaapi.recintosapi.models import AcessoVeiculo, ConteinerUld, PesagemVeiculo, \
@@ -30,7 +35,8 @@ CAMPOS_RISCO = {'carga':
                      ('4', 'codigoConteiner'),
                      ('5', 'descricao'),
                      ('6', 'embarcador'),
-                     ('7', 'portoDestFinal')
+                     ('7', 'portoDestFinal'),
+                     ('8', 'recinto')
                      ],
                 'recintos':
                     [('0', 'Selecione'),
@@ -61,6 +67,14 @@ def myconverter(o):
         return o.__str__()  # datetime.strftime(o, '%Y%m%d %x')
 
 
+def container_recinto(session, recinto: int, datainicio: datetime, datafim: datetime):
+    rows = session.query(GMCI).filter(and_(
+        GMCI.create_date.between(datainicio, datafim),
+        GMCI.cod_recinto == recinto
+    )).all()
+    return [row.num_conteiner for row in rows]
+
+
 def mercanterisco(session, pfiltros: dict, limit=1000, operador_ou=False):
     keys = ['numeroCEmercante', 'descricao', 'embarcador', 'portoDestFinal',
             'consignatario', 'portoOrigemCarga', 'codigoConteiner', 'identificacaoNCM']
@@ -89,6 +103,11 @@ def mercanterisco(session, pfiltros: dict, limit=1000, operador_ou=False):
               for ncm in pfiltros.get('ncm')]
         )
         filtros = operador(filtros, filtro)
+    if pfiltros.get('recinto'):
+        conteineres_gmcis = []
+        for recinto in pfiltros.get('recinto'):
+            conteineres_gmcis.extend(container_recinto(session, int(recinto), datainicio, datafim))
+        filtros = and_(filtros, NCMItem.codigoConteiner.in_(conteineres_gmcis))
     j = join(
         Conhecimento, NCMItem,
         Conhecimento.numeroCEmercante == NCMItem.numeroCEMercante
@@ -328,3 +347,12 @@ def consulta_container_objects(values: dict, session, mongodb):
     logger.info('get_eventos_container')
     eventos = get_eventos_conteiner(session, numero, datainicio, datafim)
     return rvfs, ovrs, infoces, dues, eventos
+
+
+if __name__ == '__main__':
+    engine = create_engine(SQL_URI)
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    start = datetime.combine(date.today(), datetime.min.time())
+    end = datetime.now()
+    print(container_recinto(session, 11, start, end))

@@ -18,9 +18,10 @@ Adicionalmente, permite o merge entre bases, navegação de bases, e
 a aplicação de filtros/parâmetros de risco.
 """
 import os
+import sys
 
 from pymongo import MongoClient
-
+sys.path.append('../ajna_api')
 from ajna_commons.flask.conf import DATABASE, MONGODB_URI
 from ajna_commons.flask.log import logger
 from bhadrasana.models import db_session
@@ -30,9 +31,12 @@ from bhadrasana.routes.risco import risco_app
 from bhadrasana.routes.rvf import rvf_app
 from bhadrasana.views import configure_app
 
+
+print(MONGODB_URI)
 conn = MongoClient(host=MONGODB_URI)
 mongodb = conn[DATABASE]
 MONGODB_RISCO = os.environ.get('MONGODB_RISCO')
+print(MONGODB_RISCO)
 conn_risco = MongoClient(host=MONGODB_RISCO)
 mongodb_risco = conn_risco['risco']
 app = configure_app(mongodb, db_session, mongodb_risco)
