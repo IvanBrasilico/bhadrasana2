@@ -34,11 +34,11 @@ nav:
         - "Analise geral da Divisão": exemplos/SYd.md
         - "Resumo do roteiro (parte 2 - SY)": exemplos/roteiro2completo.md
     - "Roteiro de uso da ficha de controle - mercadoria abandonada":
-        - "Verificação física, registro do TG e lavratura do Auto": exemplos/MAa.md
-        - "Solicitando e recebendo a manifestação de órgão anuente": exemplos/MAb.md
-        - "Direcionando a ficha após resposta do órgão anuente": exemplos/MAc.md
-        - "Recebimento de pedido de retomada de despacho": exemplos/MAd.md
-        - "Roteiro GMAB AJNA": exemplos/MAe.md
+        - "Verificação física, registro do TG e lavratura do Auto": exemplos/mercadoria_abandonada/MAa.md
+        - "Solicitando e recebendo a manifestação de órgão anuente": exemplos/mercadoria_abandonada/MAb.md
+        - "Direcionando a ficha após resposta do órgão anuente": exemplos/mercadoria_abandonada/MAc.md
+        - "Recebimento de pedido de retomada de despacho": exemplos/mercadoria_abandonada/MAd.md
+        - "Roteiro GMAB AJNA": exemplos/mercadoria_abandonada/MAe.md
     - "Roteiro de uso dos Relatórios Gerenciais":
         - "Relatórios Gerenciais - Introdução": exemplos/RLa.md
         - "1 - Contagem de Eventos Especiais (Produtividade)": exemplos/RLb.md
