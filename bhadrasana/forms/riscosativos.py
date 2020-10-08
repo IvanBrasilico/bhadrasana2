@@ -25,6 +25,8 @@ class RiscosAtivosForm(RiscosForm):
                              default=0)
     embarcador = BooleanField(u'Embarcador',
                               default=0)
+    recinto = BooleanField(u'Recinto',
+                              default=0)
 
 
 class RecintoRiscosAtivosForm(RiscosForm):
