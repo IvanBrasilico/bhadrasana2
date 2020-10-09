@@ -16,7 +16,7 @@ try:
     with open('bhadrasana2_password.txt') as pwd_in:
         bhadrasana2_password = pwd_in.read()
 except FileNotFoundError:
-    bhadrasana2_password = ''
+    bhadrasana2_password = ''  # nosec
 
 mapa_SBT = {'dataevento': ['dtHrOcorrencia', 'dtHrRegistro'],
             'Conteiner': {'listaContainersUld': 'num'},
