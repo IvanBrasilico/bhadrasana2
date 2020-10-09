@@ -5,7 +5,7 @@ from typing import Tuple, List
 from bhadrasana.models import get_usuario
 from bhadrasana.models.laudo import get_empresa
 from bhadrasana.models.ovr import OVR
-from bhadrasana.models.ovrmanager import get_visualizacoes
+from bhadrasana.models.ovrmanager import get_visualizacoes, lista_tgovr
 from bhadrasana.models.rvfmanager import lista_rvfovr
 
 
@@ -14,6 +14,7 @@ class TipoExibicao(Enum):
     Descritivo = 2
     Ocorrencias = 3
     Empresa = 4
+    Resultado = 5
 
 
 class ExibicaoOVR:
@@ -29,10 +30,11 @@ class ExibicaoOVR:
              'Número doc.',
              'CE Mercante',
              'Alertas',
-             'Último Evento'],
+             'Último Evento',
+             'Auditor Responsável'],
         TipoExibicao.Descritivo:
             ['ID',
-             'Data',
+             'Data Ficha',
              'Tipo Operação',
              'CE Mercante',
              'Declaração',
@@ -43,7 +45,7 @@ class ExibicaoOVR:
              'Usuário'],
         TipoExibicao.Ocorrencias:
             ['ID',
-             'Data',
+             'Data Ficha',
              'CE Mercante',
              'Observações',
              'Infrações RVFs',
@@ -52,13 +54,23 @@ class ExibicaoOVR:
              'Usuário'],
         TipoExibicao.Empresa:
             ['ID',
-             'Data',
+             'Data Ficha',
              'CE Mercante',
              'CNPJ/Nome Fiscalizado',
              'Infrações RVFs',
              'Marcas RVFs',
              'Último Evento',
              'Usuário'],
+        TipoExibicao.Resultado:
+            ['ID',
+             'Data Ficha',
+             'CE Mercante',
+             'CNPJ/Nome Fiscalizado',
+             'Infrações RVFs',
+             'Marcas RVFs',
+             'Peso apreensões',
+             'Valor TG',
+             'Auditor Responsável'],
     }
 
     def __init__(self, session, tipo, user_name: str):
@@ -74,14 +86,10 @@ class ExibicaoOVR:
             raise TypeError(
                 'Deve ser informado parâmetro do tipo TipoExibicao, str ou int')
 
-    def get_linha(self, ovr: OVR) -> Tuple[int, bool, List]:
-        evento_user_descricao = ''
-        user_descricao = ''
+    def evento_campos(self, ovr):
         tipo_evento_nome = ''
-        recinto_nome = ''
-        fiscalizado = ''
-        visualizado = False
         data_evento = ovr.create_date
+        evento_user_descricao = ''
         if len(ovr.historico) > 0:
             evento_atual = ovr.historico[len(ovr.historico) - 1]
             if evento_atual.user_name:
@@ -92,14 +100,20 @@ class ExibicaoOVR:
                     evento_user_descricao = evento_atual.user_name
             tipo_evento_nome = evento_atual.tipoevento.nome
             data_evento = evento_atual.create_date
-        if ovr.user_name:
-            usuario = get_usuario(self.session, ovr.user_name)
+        return evento_user_descricao, tipo_evento_nome, data_evento
+
+    def usuario_name(self, user_name):
+        user_descricao = ''
+        if user_name:
+            usuario = get_usuario(self.session, user_name)
             if usuario:
                 user_descricao = usuario.nome
             else:
-                user_descricao = ovr.user_name
-        if ovr.recinto:
-            recinto_nome = ovr.recinto.nome
+                user_descricao = user_name
+        return user_descricao
+
+    def get_visualizado_pelo_usuario(self, ovr, data_evento):
+        visualizado = False
         visualizacoes = get_visualizacoes(self.session, ovr, self.user_name)
         if len(visualizacoes) > 0:
             max_visualizacao_date = datetime.min
@@ -108,11 +122,62 @@ class ExibicaoOVR:
                                             max_visualizacao_date)
             if max_visualizacao_date > data_evento:
                 visualizado = True
+        return visualizado
+
+    def get_fiscalizado(self, ovr):
+        fiscalizado = ''
         if ovr.cnpj_fiscalizado:
             fiscalizado = ovr.cnpj_fiscalizado
             empresa = get_empresa(self.session, ovr.cnpj_fiscalizado)
             if empresa:
                 fiscalizado = fiscalizado + ' - ' + empresa.nome
+        return fiscalizado
+
+    def get_recinto_nome(self, ovr):
+        recinto_nome = ''
+        if ovr.recinto:
+            recinto_nome = ovr.recinto.nome
+        return recinto_nome
+
+    def get_infracoes_e_marcas(self, ovr):
+        infracoes = set()
+        marcas = set()
+        rvfs = lista_rvfovr(self.session, ovr.id)
+        for rvf in rvfs:
+            for infracao in rvf.infracoesencontradas:
+                infracoes.add(infracao.nome)
+            for marca in rvf.marcasencontradas:
+                marcas.add(marca.nome)
+        return infracoes, marcas
+
+    def get_peso_apreensoes(self, ovr):
+        peso = 0.
+        rvfs = lista_rvfovr(self.session, ovr.id)
+        for rvf in rvfs:
+            for apreensao in rvf.apreensoes:
+                try:
+                    peso += float(apreensao.peso)
+                except TypeError:
+                    pass
+        return peso
+
+    def get_valor_tgs(self, ovr):
+        valor = 0.
+        tgs = lista_tgovr(self.session, ovr.id)
+        for tg in tgs:
+            try:
+                valor += float(tg.valor)
+            except TypeError:
+                pass
+        return valor
+
+    def get_linha(self, ovr: OVR) -> Tuple[int, bool, List]:
+        recinto_nome = self.get_recinto_nome(ovr)
+        evento_user_descricao, tipo_evento_nome, data_evento = self.evento_campos(ovr)
+        user_descricao = self.usuario_name(ovr.user_name)
+        auditor_descricao = self.usuario_name(ovr.cpfauditorresponsavel)
+        visualizado = self.get_visualizado_pelo_usuario(ovr, data_evento)
+        fiscalizado = self.get_fiscalizado(ovr)
         if self.tipo == TipoExibicao.FMA:
             alertas = [flag.nome for flag in ovr.flags]
             return ovr.id, visualizado, [
@@ -123,7 +188,8 @@ class ExibicaoOVR:
                 ovr.numero,
                 ovr.numeroCEmercante,
                 ', '.join(alertas),
-                tipo_evento_nome]
+                tipo_evento_nome,
+                auditor_descricao]
         if self.tipo == TipoExibicao.Descritivo:
             return ovr.id, visualizado, [
                 ovr.datahora,
@@ -137,15 +203,7 @@ class ExibicaoOVR:
                 evento_user_descricao]
         if (self.tipo == TipoExibicao.Ocorrencias or
                 self.tipo == TipoExibicao.Empresa):
-            infracoes = set()
-            marcas = set()
-            rvfs = lista_rvfovr(self.session, ovr.id)
-            for rvf in rvfs:
-                for infracao in rvf.infracoesencontradas:
-                    infracoes.add(infracao.nome)
-                for marca in rvf.marcasencontradas:
-                    marcas.add(marca.nome)
-            campo_comum = ''
+            infracoes, marcas = self.get_infracoes_e_marcas(ovr)
             if self.tipo == TipoExibicao.Ocorrencias:
                 campo_comum = ovr.observacoes
             else:
@@ -158,6 +216,19 @@ class ExibicaoOVR:
                 ', '.join(marcas),
                 tipo_evento_nome,
                 evento_user_descricao]
+        if self.tipo == TipoExibicao.Resultado:
+            infracoes, marcas = self.get_infracoes_e_marcas(ovr)
+            peso_apreensoes = self.get_peso_apreensoes(ovr)
+            valor_tgs = self.get_valor_tgs(ovr)
+            return ovr.id, visualizado, [
+                ovr.datahora,
+                ovr.numeroCEmercante,
+                fiscalizado,
+                ', '.join(infracoes),
+                ', '.join(marcas),
+                '{:0.2f}'.format(peso_apreensoes),
+                '{:0.2f}'.format(valor_tgs),
+                auditor_descricao]
 
     def get_titulos(self):
         return ExibicaoOVR.titulos[self.tipo]

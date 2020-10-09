@@ -160,6 +160,17 @@ def get_ovr_responsavel(session, user_name: str) -> List[OVR]:
     return session.query(OVR).filter(OVR.responsavel_cpf == user_name).all()
 
 
+def get_ovr_auditor(session, user_name: str) -> List[OVR]:
+    return session.query(OVR).filter(OVR.cpfauditorresponsavel == user_name).all()
+
+
+def get_ovr_passagem(session, user_name: str) -> List[OVR]:
+    eventos = session.query(EventoOVR).filter(
+        EventoOVR.user_name == user_name).all()
+    ids_ovrs = [evento.ovr_id for evento in eventos]
+    return session.query(OVR).filter(OVR.id.in_(ids_ovrs)).all()
+
+
 def get_ovr_criadaspor(session, user_name: str) -> List[OVR]:
     return session.query(OVR).filter(OVR.user_name == user_name).all()
 
@@ -222,7 +233,8 @@ def get_ovr_filtro(session,
             filtro = and_(OVR.setor_id.in_(ids_setores), filtro)
         numeroprocesso = pfiltro.get('numeroprocesso')
         if numeroprocesso and len(numeroprocesso) >= 4:
-            filtro = and_(ProcessoOVR.numero.like(numeroprocesso + '%'), filtro)
+            numerolimpo = ''.join([s for s in numeroprocesso if s.isnumeric()])
+            filtro = and_(ProcessoOVR.numerolimpo.like('%' + numerolimpo + '%'), filtro)
             tables.append(ProcessoOVR)
     logger.info('get_ovr_filtro - pfiltro' + str(pfiltro))
     logger.info('get_ovr_filtro - filtro' + str(filtro))
@@ -330,7 +342,7 @@ def gerencia_flag_ovr(session, ovr_id, flag_id, inclui=True) -> List[Flag]:
 
 
 def atribui_responsavel_ovr(session, ovr_id: int,
-                            responsavel: str) -> OVR:
+                            responsavel: str, auditor=False) -> OVR:
     """Atualiza campo responsável na OVR. Gera evento correspondente.
 
     :param session: Conexão com banco SQLAlchemy
@@ -340,19 +352,55 @@ def atribui_responsavel_ovr(session, ovr_id: int,
     """
     try:
         ovr = get_ovr(session, ovr_id)
-        tipoevento = session.query(TipoEventoOVR).filter(
-            TipoEventoOVR.eventoespecial == EventoEspecial.Responsavel.value).first()
-        if ovr.responsavel_cpf is None:
+        if auditor:
+            tipoevento = session.query(TipoEventoOVR).filter(
+                TipoEventoOVR.eventoespecial == EventoEspecial.AuditorResponsavel.value).first()
+        else:
+            tipoevento = session.query(TipoEventoOVR).filter(
+                TipoEventoOVR.eventoespecial == EventoEspecial.Responsavel.value).first()
+        if ovr.cpfauditorresponsavel is None:
             responsavel_anterior = 'Nenhum'
         else:
-            responsavel_anterior = ovr.responsavel_cpf
+            responsavel_anterior = ovr.cpfauditorresponsavel
         evento_params = {'tipoevento_id': tipoevento.id,
                          'motivo': 'Anterior: ' + responsavel_anterior,
                          'user_name': responsavel,  # Novo Responsável
                          'ovr_id': ovr.id
                          }
         evento = gera_eventoovr(session, evento_params, commit=False)
-        ovr.responsavel_cpf = responsavel  # Novo responsavel
+        if auditor:
+            ovr.cpfauditorresponsavel = responsavel  # Novo Auditor
+        else:
+            ovr.responsavel_cpf = responsavel  # Novo responsavel
+        session.add(evento)
+        session.add(ovr)
+        session.commit()
+    except Exception as err:
+        session.rollback()
+        raise err
+    return ovr
+
+
+def muda_setor_ovr(session, ovr_id: int,
+                   setor_id: str, user_name: str) -> OVR:
+    """Atualiza campo setor na OVR. Gera evento correspondente.
+
+    :param session: Conexão com banco SQLAlchemy
+    :param ovr_id: ID da OVR a atribuir responsável
+    :param setor_id: ID do novo setor
+    :return: OVR modificado
+    """
+    try:
+        ovr = get_ovr(session, ovr_id)
+        tipoevento = session.query(TipoEventoOVR).filter(
+            TipoEventoOVR.eventoespecial == EventoEspecial.MudancaSetor.value).first()
+        evento_params = {'tipoevento_id': tipoevento.id,
+                         'motivo': 'Setor Anterior: ' + ovr.setor.nome,
+                         'user_name': user_name,  # Novo Responsável
+                         'ovr_id': ovr.id
+                         }
+        evento = gera_eventoovr(session, evento_params, commit=False)
+        ovr.setor_id = setor_id
         session.add(evento)
         session.add(ovr)
         session.commit()
@@ -442,6 +490,9 @@ def desfaz_ultimo_eventoovr(session, ovr_id: int) -> EventoOVR:
 
 
 def gera_processoovr(session, params) -> ProcessoOVR:
+    numero = params.get('numero')
+    if numero:
+        params['numerolimpo'] = ''.join([s for s in numero if s.isnumeric()])
     return gera_objeto(ProcessoOVR(),
                        session, params)
 

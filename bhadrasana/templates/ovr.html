@@ -44,15 +44,32 @@
                     </div>
                 </div>
                 <div class="col-sm-2">
-                    <label for="user_name">Cadastrador</label>
+                    Cadastrador
                     <div class="form-control">
                         <span>{{ oform.user_descricao.data }}</span>
                     </div>
                 </div>
             </div>
-            <div class="row col-sm-12">
-                CE Mercante
-                {{ oform.numeroCEmercante(class='form-control')}}
+            <div class="row">
+                <div class="col-sm-8">
+                    CE Mercante
+                    {{ oform.numeroCEmercante(class='form-control')}}
+                </div>
+                <div class="col-sm-2">
+                    Auditor Responsável
+                    <div class="form-control">
+                        <span>{{ oform.auditor_descricao.data }}</span>
+                    </div>
+                </div>
+                <div class="col-sm-2">
+                    Setor
+                    <div class="form-control">
+                        <span>{{ oform.setor_descricao.data }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+            &nbsp;
             </div>
             <div class="row col-sm-12">
                 <div class="panel panel-info rounded-pill">
@@ -111,7 +128,7 @@
             </div>
             <div class="row">
                 <div class="col-sm-3">
-<!--                    {{ oform.cnpj_fiscalizado(class='form-control', data_inputmask='"mask": "99.999.999/9999-99"') }}-->
+                    <!--                    {{ oform.cnpj_fiscalizado(class='form-control', data_inputmask='"mask": "99.999.999/9999-99"') }}-->
                     {{ oform.cnpj_fiscalizado(class='form-control') }}
                 </div>
                 <div class="col-sm-9">
@@ -123,26 +140,44 @@
                 {{ oform.observacoes(class='form-control') }}
             </div>
             <div class="row">
-                <div class="col-sm-3">
+                <div class="col-sm-2">
                     <label for="adata">Data da Entrada da Carga</label>
                     {{ oform.dataentrada(class='form-control') }}
                 </div>
-                <div class="col-sm-3">
+                <div class="col-sm-2">
                     <label for="adata">Data da Emissão</label>
                     {{ oform.adata(class='form-control') }}
                 </div>
-                <div class="col-sm-3">
+                <div class="col-sm-2">
                     <label for="responsavel">Responsável</label>
                     <div class="form-control">
                         {{ ovr.responsavel.nome }}
                     </div>
                 </div>
-                <div class="col-sm-3">
+                <div class="col-sm-2">
                     &nbsp;
                     {% if oform.id.data %}
                     <button id="btn_responsavel" type="button" class="btn btn-warning form-control"
                             data-toggle="modal" data-target="#responsavel">
                         Atribuir responsável
+                    </button>
+                    {% endif %}
+                </div>
+                <div class="col-sm-2">
+                    &nbsp;
+                    {% if oform.id.data %}
+                    <button id="btn_auditorresponsavel" type="button" class="btn btn-warning form-control"
+                            data-toggle="modal" data-target="#auditorresponsavel">
+                        Definir Auditor
+                    </button>
+                    {% endif %}
+                </div>
+                <div class="col-sm-2">
+                    &nbsp;
+                    {% if oform.id.data %}
+                    <button id="btn_mudarsetor" type="button" class="btn btn-warning form-control"
+                            data-toggle="modal" data-target="#mudarsetor">
+                        Transferir para outro Setor
                     </button>
                     {% endif %}
                 </div>
@@ -343,6 +378,64 @@
                         </div>
                     </div>
                     <input class="btn btn-primary" type="submit" value="Atribuir"/>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="auditorresponsavel" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title" id="ModalLabel21">Auditor responsável pela fiscalização</h1>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="auditorresponsavelovr" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <input type="hidden" name="ovr_id" value="{{ oform.id.data }}"/>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label for="tipoprocesso">Nome Auditor</label>
+                        </div>
+                        <div class="col-sm-9">
+                            {{ responsavel_form.responsavel(class='form-control') }}
+                        </div>
+                    </div>
+                    <input class="btn btn-primary" type="submit" value="Atribuir"/>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="mudarsetor" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title" id="ModalLabel23">Transfere ficha para outro Setor</h1>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="mudasetorficha" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <input type="hidden" name="ovr_id" value="{{ oform.id.data }}"/>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label for="setores">Nome novo Setor</label>
+                        </div>
+                        <div class="col-sm-9">
+                            {{ setor_ovr_form.setor(class='form-control') }}
+                        </div>
+                    </div>
+                    <input class="btn btn-primary" type="submit" value="Transferir"/>
                 </form>
             </div>
             <div class="modal-footer">
@@ -600,6 +693,7 @@
         $("#numeroCEmercante").inputmask("999999999999999", {removeMaskOnSubmit: true});
         $("#numerodeclaracao").inputmask("99AA9999999999", {removeMaskOnSubmit: true});
     });
+
 
 
 

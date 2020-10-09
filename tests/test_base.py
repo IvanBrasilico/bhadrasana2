@@ -47,7 +47,7 @@ class BaseTestCase(unittest.TestCase):
         self.session.add(recinto)
         self.session.commit()
         recintos = get_recintos(self.session)
-        assert recintos[numeroatual][1] == recinto.nome
+        assert recintos[numeroatual][0] == recinto.id
         return recinto
 
     def create_OVR_valido(self, numeroCEmercante=None) -> OVR:
