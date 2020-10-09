@@ -30,6 +30,8 @@ class OVRForm(FlaskForm):
     user_descricao = StringField(default='')
     cnpj_fiscalizado = StringField()
     nome_fiscalizado = StringField(default='')
+    setor_descricao = StringField(default='')
+    auditor_descricao = StringField(default='')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -66,7 +68,7 @@ class FiltroOVRForm(FlaskForm):
     cnpj_fiscalizado = StringField(u'CNPJ do Fiscalizado',
                                    default='')
     numeroprocesso = StringField(u'Número de processo informado na Ficha',
-                                   default='')
+                                 default='')
     setor_id = SelectField('Setores')
 
     def __init__(self, *args, **kwargs):
@@ -151,6 +153,17 @@ class ResponsavelOVRForm(FlaskForm):
         self.responsavel.choices = []
         if kwargs.get('responsaveis'):
             self.responsavel.choices.extend(kwargs.get('responsaveis'))
+
+
+class SetorOVRForm(FlaskForm):
+    ovr_id = IntegerField('OVR')
+    setor = SelectField('Novo Setor')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setor.choices = []
+        if kwargs.get('setores'):
+            self.setor.choices = kwargs.get('setores')
 
 
 class TGOVRForm(FlaskForm):

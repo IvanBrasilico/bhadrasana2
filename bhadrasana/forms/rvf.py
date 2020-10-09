@@ -50,5 +50,6 @@ class ApreensaoRVFForm(RastreavelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.tipo_id.choices = []
         if kwargs.get('tiposapreensao'):
             self.tipo_id.choices = kwargs.get('tiposapreensao')

@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append('.')
 sys.path.insert(0, '../ajna_docs/commons')
 sys.path.insert(0, '../ajna_api')
@@ -6,12 +7,10 @@ sys.path.insert(0, '../virasana')
 from datetime import datetime
 from enum import Enum
 
-
 from sqlalchemy import BigInteger, Column, DateTime, func, VARCHAR, Integer, \
     ForeignKey, Numeric, CHAR, Table, create_engine, Text
 from sqlalchemy.dialects.mysql import TIMESTAMP
 from sqlalchemy.orm import relationship, sessionmaker
-
 
 from bhadrasana.models import Base, BaseRastreavel, BaseDumpable, myEnum
 
@@ -23,6 +22,8 @@ class EventoEspecial(Enum):
     RVF = 2
     TG = 3
     Autuacao = 4
+    AuditorResponsavel = 5
+    MudancaSetor = 6
 
 
 tipoStatusOVREspecial = [
@@ -157,6 +158,7 @@ class OVR(BaseRastreavel, BaseDumpable):
     tgs = relationship('TGOVR', back_populates='ovr')
     flags = relationship('Flag', secondary=flags_table)
     cnpj_fiscalizado = Column(VARCHAR(15), index=True)
+    cpfauditorresponsavel = Column(VARCHAR(15))
 
     def get_ano(self):
         if self.datahora is not None and isinstance(self.datahora, datetime):
@@ -304,6 +306,11 @@ class ProcessoOVR(BaseRastreavel, BaseDumpable):
                              ForeignKey('ovr_tiposprocesso.id'))
     tipoprocesso = relationship('TipoProcessoOVR')
     numero = Column(VARCHAR(50), index=True)
+    numerolimpo = Column(VARCHAR(50), index=True)
+
+    def set_numero(self, numero):
+        self.numero = numero
+        self.numerolimpo = ''.join([s for s in numero if s.isnumeric()])
 
     def dump(self, exclude=None, explode=True):
         dumped = super().dump(exclude)
@@ -405,7 +412,7 @@ class ItemTG(BaseRastreavel, BaseDumpable):
 
     @property
     def valor_str(self):
-        return '{:0f}'.format(self.qtde)
+        return '{:0.2f}'.format(self.qtde)
 
     def dump(self, exclude=None, explode=True):
         dumped = super().dump(exclude)
