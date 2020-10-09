@@ -233,7 +233,8 @@ def get_ovr_filtro(session,
             filtro = and_(OVR.setor_id.in_(ids_setores), filtro)
         numeroprocesso = pfiltro.get('numeroprocesso')
         if numeroprocesso and len(numeroprocesso) >= 4:
-            filtro = and_(ProcessoOVR.numero.like(numeroprocesso + '%'), filtro)
+            numerolimpo = ''.join([s for s in numeroprocesso if s.isnumeric()])
+            filtro = and_(ProcessoOVR.numerolimpo.like('%' + numerolimpo + '%'), filtro)
             tables.append(ProcessoOVR)
     logger.info('get_ovr_filtro - pfiltro' + str(pfiltro))
     logger.info('get_ovr_filtro - filtro' + str(filtro))
@@ -489,6 +490,9 @@ def desfaz_ultimo_eventoovr(session, ovr_id: int) -> EventoOVR:
 
 
 def gera_processoovr(session, params) -> ProcessoOVR:
+    numero = params.get('numero')
+    if numero:
+        params['numerolimpo'] = ''.join([s for s in numero if s.isnumeric()])
     return gera_objeto(ProcessoOVR(),
                        session, params)
 
