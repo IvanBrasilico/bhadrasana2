@@ -140,11 +140,11 @@
                 {{ oform.observacoes(class='form-control') }}
             </div>
             <div class="row">
-                <div class="col-sm-3">
+                <div class="col-sm-2">
                     <label for="adata">Data da Entrada da Carga</label>
                     {{ oform.dataentrada(class='form-control') }}
                 </div>
-                <div class="col-sm-3">
+                <div class="col-sm-2">
                     <label for="adata">Data da Emissão</label>
                     {{ oform.adata(class='form-control') }}
                 </div>
@@ -169,6 +169,15 @@
                     <button id="btn_auditorresponsavel" type="button" class="btn btn-warning form-control"
                             data-toggle="modal" data-target="#auditorresponsavel">
                         Definir Auditor
+                    </button>
+                    {% endif %}
+                </div>
+                <div class="col-sm-2">
+                    &nbsp;
+                    {% if oform.id.data %}
+                    <button id="btn_mudarsetor" type="button" class="btn btn-warning form-control"
+                            data-toggle="modal" data-target="#mudarsetor">
+                        Transferir para outro Setor
                     </button>
                     {% endif %}
                 </div>
@@ -383,7 +392,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title" id="ModalLabel21">Registra responsável pela ficha</h1>
+                <h1 class="modal-title" id="ModalLabel21">Auditor responsável pela fiscalização</h1>
             </div>
             <div class="modal-body">
                 <form method="POST" action="auditorresponsavelovr" enctype="multipart/form-data">
@@ -398,6 +407,35 @@
                         </div>
                     </div>
                     <input class="btn btn-primary" type="submit" value="Atribuir"/>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="mudarsetor" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title" id="ModalLabel23">Transfere ficha para outro Setor</h1>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="mudasetorficha" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <input type="hidden" name="ovr_id" value="{{ oform.id.data }}"/>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label for="setores">Nome novo Setor</label>
+                        </div>
+                        <div class="col-sm-9">
+                            {{ setor_ovr_form.setor(class='form-control') }}
+                        </div>
+                    </div>
+                    <input class="btn btn-primary" type="submit" value="Transferir"/>
                 </form>
             </div>
             <div class="modal-footer">

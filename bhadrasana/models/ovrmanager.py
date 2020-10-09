@@ -380,6 +380,35 @@ def atribui_responsavel_ovr(session, ovr_id: int,
     return ovr
 
 
+def muda_setor_ovr(session, ovr_id: int,
+                   setor_id: str, user_name: str) -> OVR:
+    """Atualiza campo setor na OVR. Gera evento correspondente.
+
+    :param session: Conexão com banco SQLAlchemy
+    :param ovr_id: ID da OVR a atribuir responsável
+    :param setor_id: ID do novo setor
+    :return: OVR modificado
+    """
+    try:
+        ovr = get_ovr(session, ovr_id)
+        tipoevento = session.query(TipoEventoOVR).filter(
+            TipoEventoOVR.eventoespecial == EventoEspecial.MudancaSetor.value).first()
+        evento_params = {'tipoevento_id': tipoevento.id,
+                         'motivo': 'Setor Anterior: ' + ovr.setor.nome,
+                         'user_name': user_name,  # Novo Responsável
+                         'ovr_id': ovr.id
+                         }
+        evento = gera_eventoovr(session, evento_params, commit=False)
+        ovr.setor_id = setor_id
+        session.add(evento)
+        session.add(ovr)
+        session.commit()
+    except Exception as err:
+        session.rollback()
+        raise err
+    return ovr
+
+
 def informa_lavratura_auto(session, ovr_id: int,
                            responsavel: str) -> OVR:
     """Atualiza campo responsável na OVR. Gera evento correspondente.

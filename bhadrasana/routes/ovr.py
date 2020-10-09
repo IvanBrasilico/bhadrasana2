@@ -15,7 +15,7 @@ from bhadrasana.forms.filtro_container import FiltroContainerForm
 from bhadrasana.forms.filtro_empresa import FiltroEmpresaForm
 from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
     ProcessoOVRForm, ItemTGForm, ResponsavelOVRForm, TGOVRForm, FiltroRelatorioForm, \
-    FiltroMinhasOVRsForm, OKRObjectiveForm, OKRMetaForm
+    FiltroMinhasOVRsForm, OKRObjectiveForm, OKRMetaForm, SetorOVRForm
 from bhadrasana.models import delete_objeto, get_usuario
 from bhadrasana.models.laudo import get_empresa, get_empresas_nome, get_sats_cnpj
 from bhadrasana.models.ovr import OVR, OKRObjective
@@ -33,7 +33,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     desfaz_ultimo_eventoovr, get_delta_date, exporta_planilha_tg, TipoPlanilha, \
     exclui_item_tg, get_setores, get_objectives_setor, executa_okr_results, gera_okrobjective, \
     exclui_okrobjective, get_key_results_choice, gera_okrmeta, exclui_okrmeta, \
-    get_usuarios_setores, get_setores_cpf, get_ovr_auditor, get_ovr_passagem
+    get_usuarios_setores, get_setores_cpf, get_ovr_auditor, get_ovr_passagem, muda_setor_ovr
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
@@ -65,6 +65,8 @@ def ovr_app(app):
         processo_form = ProcessoOVRForm(tiposprocesso=tiposprocesso)
         responsavel_form = ResponsavelOVRForm(responsaveis=responsaveis,
                                               responsavel=current_user.name)
+        listasetores = get_setores(session)
+        setor_ovr_form = SetorOVRForm(setores=listasetores)
         conhecimento = None
         ncms = []
         containers = []
@@ -154,7 +156,8 @@ def ovr_app(app):
                                flags=flags,
                                flags_ovr=flags_ovr,
                                itens_roteiro=itens_roteiro,
-                               due=due)
+                               due=due,
+                               setor_ovr_form=setor_ovr_form)
 
     @app.route('/ovr/<id>', methods=['POST', 'GET'])
     @login_required
@@ -245,11 +248,11 @@ def ovr_app(app):
                                responsavel_form=responsavel_form,
                                historico_form=historico_ovr_form)
 
-    @app.route('/minhas_ovrs', methods=['GET', 'POST'])
     @app.route('/ovrs_meus_setores', methods=['GET', 'POST'])
     @app.route('/ovrs_criador', methods=['GET', 'POST'])
     @app.route('/ovrs_passagem', methods=['GET', 'POST'])
     @app.route('/ovrs_auditor', methods=['GET', 'POST'])
+    @app.route('/minhas_ovrs', methods=['GET', 'POST'])
     @login_required
     def minhas_ovrs():
         TABS = ('minhas_ovrs', 'ovrs_meus_setores', 'ovrs_criador',
@@ -423,6 +426,27 @@ def ovr_app(app):
                                     responsavel=responsavel_ovr_form.responsavel.data,
                                     auditor=True
                                     )
+            return redirect(url_for('ovr', id=ovr_id))
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return redirect(url_for('ovr', id=ovr_id))
+
+    @app.route('/mudasetorficha', methods=['POST'])
+    @login_required
+    def mudasetorficha():
+        session = app.config.get('dbsession')
+        ovr_id = None
+        try:
+            setor_ovr_form = SetorOVRForm(request.form)
+            ovr_id = setor_ovr_form.ovr_id.data
+            muda_setor_ovr(session,
+                           ovr_id=ovr_id,
+                           setor_id=setor_ovr_form.setor.data,
+                           user_name=current_user.name
+                           )
             return redirect(url_for('ovr', id=ovr_id))
         except Exception as err:
             logger.error(err, exc_info=True)

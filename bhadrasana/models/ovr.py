@@ -24,6 +24,7 @@ class EventoEspecial(Enum):
     TG = 3
     Autuacao = 4
     AuditorResponsavel = 5
+    MudancaSetor = 6
 
 
 tipoStatusOVREspecial = [
@@ -407,7 +408,7 @@ class ItemTG(BaseRastreavel, BaseDumpable):
 
     @property
     def valor_str(self):
-        return '{:0f}'.format(self.qtde)
+        return '{:0.2f}'.format(self.qtde)
 
     def dump(self, exclude=None, explode=True):
         dumped = super().dump(exclude)
