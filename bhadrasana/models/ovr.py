@@ -609,6 +609,13 @@ if __name__ == '__main__':  # pragma: no-cover
         engine = create_engine(SQL_URI)
         Session = sessionmaker(bind=engine)
         session = Session()
+        processos = []  # session.query(ProcessoOVR).all()
+        for processo in processos:
+            # print(processo)
+            processo.set_numero(processo.numero)
+            session.add(processo)
+            # print(processo.numero, processo.numerolimpo)
+        session.commit()
         # Sair por segurança. Comentar linha abaixo para funcionar
         sys.exit(0)
         # metadata.drop_all(engine)
