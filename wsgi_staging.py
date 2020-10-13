@@ -8,8 +8,8 @@ sys.path.insert(0, '../virasana')
 os.environ['SQL_URI'] = os.environ['SQL_URI_HOM']
 os.environ['MONGODB_URI'] = os.environ['MONGODB_URI_HOM']
 os.environ['MONGODB_RISCO'] = os.environ['MONGODB_URI_HOM']
-print(MONGODB_URI)
-print(MONGODB_RISCO)
+print(os.environ['MONGODB_URI'])
+print(os.environ['MONGODB_RISCO'])
 
 from bhadrasana.main import app
 
