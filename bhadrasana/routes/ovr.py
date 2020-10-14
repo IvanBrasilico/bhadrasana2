@@ -128,8 +128,8 @@ def ovr_app(app):
                         fiscalizado = get_empresa(session, ovr.cnpj_fiscalizado)
                         if fiscalizado:
                             ovr_form.nome_fiscalizado.data = fiscalizado.nome
-                        if ovr.tipooperacao != 0:
-                            historico_form.user_name.render_kw = {'disabled': 'disabled'}
+                        # Desabiltar edição de Usuário ao informar Evento
+                        historico_form.user_name.render_kw = {'disabled': 'disabled'}
                         if ovr_form.dataentrada.data and ovr.setor_id == '2':
                             if get_delta_date(ovr_form.adata.data,
                                               ovr_form.dataentrada.data) >= 90:
