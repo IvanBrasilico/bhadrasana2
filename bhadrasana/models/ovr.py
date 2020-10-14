@@ -8,7 +8,7 @@ from datetime import datetime
 from enum import Enum
 
 from sqlalchemy import BigInteger, Column, DateTime, func, VARCHAR, Integer, \
-    ForeignKey, Numeric, CHAR, Table, create_engine, Text
+    ForeignKey, Numeric, CHAR, Table, create_engine, Text, event
 from sqlalchemy.dialects.mysql import TIMESTAMP
 from sqlalchemy.orm import relationship, sessionmaker
 
@@ -308,8 +308,7 @@ class ProcessoOVR(BaseRastreavel, BaseDumpable):
     numero = Column(VARCHAR(50), index=True)
     numerolimpo = Column(VARCHAR(50), index=True)
 
-    def set_numero(self, numero):
-        self.numero = numero
+    def atualiza_numerolimpo(self, numero):
         self.numerolimpo = ''.join([s for s in numero if s.isnumeric()])
 
     def dump(self, exclude=None, explode=True):
@@ -317,6 +316,12 @@ class ProcessoOVR(BaseRastreavel, BaseDumpable):
         if explode:
             dumped['tipoprocesso'] = self.tipoprocesso.descricao
         return dumped
+
+
+@event.listens_for(ProcessoOVR.numero, 'set', retval=True)
+def atualiza_numerolimpo(target, value, oldvalue, initiator):
+    target.atualiza_numerolimpo(value)
+    return value
 
 
 class Marca(Base):
