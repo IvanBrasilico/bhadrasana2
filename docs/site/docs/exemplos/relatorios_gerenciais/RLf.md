@@ -5,4 +5,4 @@ A coluna “pendentes” compara a quantidade de pedidos de saneamento
 que estão aguardando retorno com a quantidade de retornos recebidos 
 para cada ficha.
 
-![Relatorio Gerencial](../images/RLf1.png)
+![Relatorio Gerencial](../../images/RLf1.png)

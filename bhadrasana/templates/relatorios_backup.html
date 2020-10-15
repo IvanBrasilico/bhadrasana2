@@ -31,20 +31,16 @@
                         </div>
                     </div>
                 </div>
-                <div class="row">
+                <div class="row col-sm-12">
                     &nbsp;<br>
-                    <div class="col-sm-4">
+                    <div class="col-sm-5">
                         <button class="btn btn-default btn-info form-control" onclick="submit">
                             Pesquisar
                         </button>
                     </div>
                     <div class="col-sm-4">
-                        <button onclick="exporta_cen_rilo()" id="btn_cen_rilo"
-                                type="button" class="btn btn-default form-control">
-                            Planilha CEN-RILO
-                        </button>
                     </div>
-                    <div class="col-sm-4">
+                    <div class="col-sm-3">
                         <button onclick="exporta_planilhaovr()" id="btn_exportar"
                                 type="button" class="btn btn-default form-control">
                             Planilha de Controle de Procedimentos
@@ -114,9 +110,6 @@
     function getCellValue(row, index){ return $(row).children('td').eq(index).text() }
     function exporta_planilhaovr() {
         window.location.assign('exportaplanilhaovr');
-    }
-    function exporta_cen_rilo() {
-        window.location.assign('exporta_cen_rilo');
     }
 </script>
 {% endblock %}

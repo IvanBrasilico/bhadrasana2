@@ -1240,3 +1240,32 @@ def ovr_app(app):
             logger.error(err, exc_info=True)
             jsonify({'msg': str(err)}), 500
         return jsonify({'msg': 'Excluído'}), 201
+
+
+    @app.route('/exporta_cen_rilo', methods=['GET', 'POST'])
+    @login_required
+    def exporta_cen_rilo():
+        """Exporta tabelão de OVRs do Setor com pivot table."""
+        try:
+            session = app.config.get('dbsession')
+            today = date.today()
+            inicio = date(year=today.year, month=today.month, day=1)
+            usuario = get_usuario(session, current_user.name)
+            lista_setores = get_setores(session)
+            filtro_form = FiltroRelatorioForm(
+                datainicio=inicio,
+                datafim=date.today(),
+                setores=lista_setores
+            )
+            filtro_form.setor_id.data = usuario.setor_id
+            try:
+                if request.method == 'POST':
+                    filtro_form = FiltroRelatorioForm(request.form, setores=lista_setores)
+                    filtro_form.validate()
+                    return redirect('static/%s/%s' % (current_user.name, out_filename))
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return render_template('cen_rilo.html', oform=filtro_form)

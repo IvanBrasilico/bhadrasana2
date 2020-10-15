@@ -278,6 +278,10 @@ def mynavbar():
                  Separator(),
                  View('Importa planilhas recintos', 'importa_planilha_recinto'),
                  View('Administração', 'admin.index'),
+             ),
+             Subgroup(
+                 'Exportações',
+                 View('Exporta Planilha CEN Rilo', 'exporta_cen_rilo')
              )]
     if current_user.is_authenticated:
         items.append(View('Sair (%s)' % current_user.id, 'commons.logout'))

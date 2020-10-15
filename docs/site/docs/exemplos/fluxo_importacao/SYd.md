@@ -6,13 +6,13 @@ Note-se que, como o Usuário mycroft está um uma divisão que possui duas equip
 das duas equipes são exibidas. É possível optar por diversos conuntos de campos mudando 
 a seleção "Campos a visualizar".
 
-![Equipe SY](../images/SYd1.png)
+![Equipe SY](../../images/SYd1.png)
 
-![Equipe SY](../images/SYd1.png)
+![Equipe SY](../../images/SYd1.png)
 
 2 - Roda pesquisa Ficha
 
 Além da visualização rápida de fichas de interesse em "Minhas Fichas", é possível fazer pesquisa por filtros
  personalizados. Abaixo, pesquisa por intervalo de datas de fichas com alerta de "Perecível".
  
-![Equipe SY](../images/SYd3.png)
+![Equipe SY](../../images/SYd3.png)

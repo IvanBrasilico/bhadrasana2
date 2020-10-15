@@ -14,7 +14,7 @@ vermelha nos gráficos abaixo.
 Dessa forma é possível acompanhar, para cada objetivo, se os resultados 
 estão próximos da meta e qual a velocidade com que se atinge a meta. 
 
-![Painel OKR](../images/OKRb1.png)
+![Painel OKR](../../images/OKRb1.png)
 
 
 2 - No setor Direp, para o objetivo “Fiscalizar a exportação com foco 
@@ -26,4 +26,4 @@ em exportação fictícia e drogas”,  foram incluídos os resultados:
 
 - “Quantidade de VFs realizadas na exportação”
 
-![Painel OKR](../images/OKRb2.png)
+![Painel OKR](../../images/OKRb2.png)
