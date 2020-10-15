@@ -389,7 +389,7 @@ def ovr_app(app):
             flash('Erro! Detalhes no log da aplicação.')
             flash(str(type(err)))
             flash(str(err))
-        return render_template('relatorios2.html',
+        return render_template('relatorios.html',
                                oform=filtro_form,
                                linhas=linhas_formatadas,
                                sql=sql,
