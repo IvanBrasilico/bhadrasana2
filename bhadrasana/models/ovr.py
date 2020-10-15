@@ -279,7 +279,7 @@ class EventoOVR(BaseRastreavel, BaseDumpable):
                            ForeignKey('ovr_tiposevento.id'))
     tipoevento = relationship('TipoEventoOVR')
     fase = Column(Integer(), index=True, default=0)
-    motivo = Column(VARCHAR(50), index=True)
+    motivo = Column(VARCHAR(200), index=True)
     anexo_filename = Column(VARCHAR(100), index=True)  # ID no Mongo
 
     @property

@@ -118,6 +118,7 @@ class HistoricoOVRForm(FlaskForm):
     tipoevento_id = SelectField('tipoevento', default=0)
     user_name = SelectField('CPF do Responsável')
     motivo = StringField(u'Nome do usuário',
+                         render_kw={'rows': 1, 'cols': 200, 'maxlength': 200},
                          default='')
 
     def __init__(self, *args, **kwargs):
