@@ -1,4 +1,5 @@
 import os
+import pandas as pd
 from _collections import defaultdict
 from datetime import datetime, date, timedelta
 from decimal import Decimal
@@ -43,6 +44,7 @@ from bhadrasana.models.virasana_manager import get_conhecimento, \
     get_imagens_container, get_dues_empresa, get_ces_empresa, \
     get_due, get_detalhes_mercante
 from bhadrasana.routes.plotly_graphs import bar_plotly, gauge_plotly, burndown_plotly
+from bhadrasana.scripts.gera_planilha_rilo import monta_planilha_rilo
 from bhadrasana.views import get_user_save_path, valid_file, csrf
 
 
@@ -387,7 +389,7 @@ def ovr_app(app):
             flash('Erro! Detalhes no log da aplicação.')
             flash(str(type(err)))
             flash(str(err))
-        return render_template('relatorios.html',
+        return render_template('relatorios2.html',
                                oform=filtro_form,
                                linhas=linhas_formatadas,
                                sql=sql,
@@ -1241,15 +1243,15 @@ def ovr_app(app):
             jsonify({'msg': str(err)}), 500
         return jsonify({'msg': 'Excluído'}), 201
 
-
     @app.route('/exporta_cen_rilo', methods=['GET', 'POST'])
     @login_required
     def exporta_cen_rilo():
         """Exporta tabelão de OVRs do Setor com pivot table."""
+        session = app.config.get('dbsession')
+        today = date.today()
+        inicio = date(year=today.year, month=today.month, day=1)
+        filtro_form = FiltroRelatorioForm()
         try:
-            session = app.config.get('dbsession')
-            today = date.today()
-            inicio = date(year=today.year, month=today.month, day=1)
             usuario = get_usuario(session, current_user.name)
             lista_setores = get_setores(session)
             filtro_form = FiltroRelatorioForm(
@@ -1258,11 +1260,17 @@ def ovr_app(app):
                 setores=lista_setores
             )
             filtro_form.setor_id.data = usuario.setor_id
-            try:
-                if request.method == 'POST':
-                    filtro_form = FiltroRelatorioForm(request.form, setores=lista_setores)
-                    filtro_form.validate()
-                    return redirect('static/%s/%s' % (current_user.name, out_filename))
+            if request.method == 'POST':
+                filtro_form = FiltroRelatorioForm(request.form, setores=lista_setores)
+                filtro_form.validate()
+                out_filename = 'rilo.xlsx'
+                dict_planilha = monta_planilha_rilo(filtro_form.datainicio.data, filtro_form.datafim.data,
+                                                    filtro_form.setor_id.data)
+                print(dict_planilha)
+                df = pd.DataFrame.from_dict(dict_planilha)
+                print(df.head())
+                df.to_csv(os.path.join(get_user_save_path(), out_filename))
+                return redirect('static/%s/%s' % (current_user.name, out_filename))
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
