@@ -37,10 +37,10 @@ def rilo_dump_ovr(ovr: OVR) -> dict:
     ))
 
 
-def monta_planilha_rilo(start: datetime, end: datetime) -> List[dict]:
+def monta_planilha_rilo(start: datetime, end: datetime, setor_id: str) -> List[dict]:
     result = []
     ovrs = db_session.query(OVR).join(TGOVR).filter(TGOVR.create_date.between(start, end)). \
-        filter(OVR.setor_id == '2').all()
+        filter(OVR.setor_id == setor_id).all()
     print([ovr.id for ovr in ovrs])
     print(len(ovrs))
     for ovr in ovrs:
@@ -72,7 +72,8 @@ def run(inicio, fim):
     start = datetime.strptime(inicio, '%d/%m/%Y')
     end = datetime.strptime(fim, '%d/%m/%Y')
     print(start, end)
-    dict_planilha = monta_planilha_rilo(start, end)
+    setor_id = '2'
+    dict_planilha = monta_planilha_rilo(start, end, setor_id)
     print(dict_planilha)
     df = pd.DataFrame.from_dict(dict_planilha)
     print(df.head())
