@@ -20,19 +20,19 @@ nav:
         - "Melhorias em Minhas Fichas - 7/Maio/2020": novidades/20200507.md
         - "Programação de verificação física - 1/Maio/2020": novidades/20200501.md
     - "Roteiro de uso da ficha de controle - fluxo de importação":
-        - "Introdução": exemplos/inicio.md
-        - "Cadastrando ficha e programando verificação - Equipe 221B": exemplos/221ba.md
-        - "Preenchendo a verificação física - Equipe 221B": exemplos/221bb.md
-        - "Analisando a primeira parte - Equipe 221b": exemplos/221bc.md
-        - "Solicitando Laudos - Equipe 221b": exemplos/221bd.md
-        - "Saneamento, auto, RFFP - Equipe 221b": exemplos/221be.md
-        - "Analise geral da Divisão": exemplos/221bf.md
-        - "Resumo do roteiro (parte 1 - 221b)": exemplos/roteiro1completo.md
-        - "Cadastrando ficha - Equipe SY": exemplos/SYa.md
-        - "Verificação física, Intimação, Saneamento - Equipe SY": exemplos/SYb.md
-        - "Auto, RFFP, check-list - Equipe SY": exemplos/SYc.md
-        - "Analise geral da Divisão": exemplos/SYd.md
-        - "Resumo do roteiro (parte 2 - SY)": exemplos/roteiro2completo.md
+        - "Introdução": exemplos/fluxo_importacao/inicio.md
+        - "Cadastrando ficha e programando verificação - Equipe 221B": exemplos/fluxo_importacao/221ba.md
+        - "Preenchendo a verificação física - Equipe 221B": exemplos/fluxo_importacao/221bb.md
+        - "Analisando a primeira parte - Equipe 221b": exemplos/fluxo_importacao/221bc.md
+        - "Solicitando Laudos - Equipe 221b": exemplos/fluxo_importacao/221bd.md
+        - "Saneamento, auto, RFFP - Equipe 221b": exemplos/fluxo_importacao/221be.md
+        - "Analise geral da Divisão": exemplos/fluxo_importacao/221bf.md
+        - "Resumo do roteiro (parte 1 - 221b)": exemplos/fluxo_importacao/roteiro1completo.md
+        - "Cadastrando ficha - Equipe SY": exemplos/fluxo_importacao/SYa.md
+        - "Verificação física, Intimação, Saneamento - Equipe SY": exemplos/fluxo_importacao/SYb.md
+        - "Auto, RFFP, check-list - Equipe SY": exemplos/fluxo_importacao/SYc.md
+        - "Analise geral da Divisão": exemplos/fluxo_importacao/SYd.md
+        - "Resumo do roteiro (parte 2 - SY)": exemplos/fluxo_importacao/roteiro2completo.md
     - "Roteiro de uso da ficha de controle - mercadoria abandonada":
         - "Verificação física, registro do TG e lavratura do Auto": exemplos/mercadoria_abandonada/MAa.md
         - "Solicitando e recebendo a manifestação de órgão anuente": exemplos/mercadoria_abandonada/MAb.md
@@ -40,22 +40,22 @@ nav:
         - "Recebimento de pedido de retomada de despacho": exemplos/mercadoria_abandonada/MAd.md
         - "Roteiro GMAB AJNA": exemplos/mercadoria_abandonada/MAe.md
     - "Roteiro de uso dos Relatórios Gerenciais":
-        - "Relatórios Gerenciais - Introdução": exemplos/RLa.md
-        - "1 - Contagem de Eventos Especiais (Produtividade)": exemplos/RLb.md
-        - "2 - Pendências – Intimações": exemplos/RLc.md
-        - "3 - Pendências – Laudos Diversos (marca e assistente)": exemplos/RLd.md
-        - "4 - Pendências – Manifestação de anuentes": exemplos/RLe.md
-        - "5 - Pendências – Saneamentos pendentes / realizados": exemplos/RLf.md
-        - "6 - Relação de apreensão sem TG por Ano, mês e Setor": exemplos/RLg.md
-        - "7 - Relação de Fichas e Tgs por Ano, Mês e Setor": exemplos/RLh.md
-        - "8 - Relação de Verificações sem Ficha por Ano e Mês": exemplos/RLi.md
-        - "9 - Resumo das Verificações Físicas por Ficha por Setor": exemplos/RLj.md
-        - "10 - Resumo dos Tgs por Ficha por Setor": exemplos/RLk.md
-        - "11 - Visão de apreensões sem TG": exemplos/RLl.md
-        - "12 - Visão Geral Gerencial das Fichas por Setor": exemplos/RLm.md
+        - "Relatórios Gerenciais - Introdução": exemplos/relatorios_gerenciais/RLa.md
+        - "1 - Contagem de Eventos Especiais (Produtividade)": exemplos/relatorios_gerenciais/RLb.md
+        - "2 - Pendências – Intimações": exemplos/relatorios_gerenciais/RLc.md
+        - "3 - Pendências – Laudos Diversos (marca e assistente)": exemplos/relatorios_gerenciais/RLd.md
+        - "4 - Pendências – Manifestação de anuentes": exemplos/relatorios_gerenciais/RLe.md
+        - "5 - Pendências – Saneamentos pendentes / realizados": exemplos/relatorios_gerenciais/RLf.md
+        - "6 - Relação de apreensão sem TG por Ano, mês e Setor": exemplos/relatorios_gerenciais/RLg.md
+        - "7 - Relação de Fichas e Tgs por Ano, Mês e Setor": exemplos/relatorios_gerenciais/RLh.md
+        - "8 - Relação de Verificações sem Ficha por Ano e Mês": exemplos/relatorios_gerenciais/RLi.md
+        - "9 - Resumo das Verificações Físicas por Ficha por Setor": exemplos/relatorios_gerenciais/RLj.md
+        - "10 - Resumo dos Tgs por Ficha por Setor": exemplos/relatorios_gerenciais/RLk.md
+        - "11 - Visão de apreensões sem TG": exemplos/relatorios_gerenciais/RLl.md
+        - "12 - Visão Geral Gerencial das Fichas por Setor": exemplos/relatorios_gerenciais/RLm.md
     - "Painel de OKRs":
-        - "Como configurar": exemplos/OKRa.md
-        - "Exemplos": exemplos/OKRb.md
+        - "Como configurar": exemplos/painel_de_okrs/OKRa.md
+        - "Exemplos": exemplos/painel_de_okrs/OKRb.md
 
 
 

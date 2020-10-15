@@ -1,0 +1,53 @@
+{% extends "layout.html" %} {% block content %} {{super()}}
+<div id="main" class="container-fluid">
+    <div id="top" class="row col-sm-12">
+        <div class="form-group">
+            <form method="POST" id="filtrocenrilo" action="exporta_cen_rilo">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="row">
+                    <div class="col-sm-4">
+                        <label for="datainicio">Início e fim de período de pesquisa</label>
+                    </div>
+                    <div class="col-sm-3">
+                        <label for="setor_id">Setor a filtrar</label>
+                    </div>
+                    <div class="col-sm-5"></div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <div class="col-sm-2">
+                            {{ oform.datainicio(class='form-control') }}
+                        </div>
+                        <div class="col-sm-2">
+                            {{ oform.datafim(class='form-control') }}
+                        </div>
+                        <div class="col-sm-3">
+                            {{ oform.setor_id(class='form-control') }}
+                        </div>
+                        <div class="col-sm-5"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    &nbsp;<br>
+                    <div class="col-sm-4">
+                        <button class="btn btn-default btn-info form-control" onclick="submit">
+                            Pesquisar
+                        </button>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <div id="bottom" class="row col-sm-12">
+        AJNA - Receita Federal do Brasil 2017
+    </div>
+</div>
+{% endblock %} {% block scripts %} {{super()}}
+<script>
+
+
+</script>
+{% endblock %}

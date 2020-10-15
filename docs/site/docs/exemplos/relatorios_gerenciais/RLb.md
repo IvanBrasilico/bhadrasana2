@@ -14,4 +14,4 @@ Dessa forma, pode-se avaliar/mensurar:
 
 4 - quantidade de “Verificação física informada” por membro.
 
-![Relatorio Gerencial](../images/RLb1.png)
+![Relatorio Gerencial](../../images/RLb1.png)
