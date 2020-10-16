@@ -1294,7 +1294,7 @@ def ovr_app(app):
 
     @app.route('/exporta_docx', methods=['GET'])
     @login_required
-    def exporta_docx(ovr_id):
+    def exporta_docx():
         """Preenche um docx com dados da OVR"""
         session = app.config['dbsession']
         db = app.config['mongo_risco']
