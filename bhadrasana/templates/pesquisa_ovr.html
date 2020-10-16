@@ -93,7 +93,10 @@
                 <div class="col-sm-2">
                     <label for="numeroprocesso">Número do processo</label>
                 </div>
-                <div class="col-sm-8">
+                <div class="col-sm-2">
+                    <label for="numeroprocesso">Campos a exibir</label>
+                </div>
+                <div class="col-sm-6">
                 </div>
             </div>
             <div class="row col-sm-12">
@@ -103,7 +106,10 @@
                 <div class="col-sm-2">
                     {{ oform.numeroprocesso(class='form-control') }}
                 </div>
-                <div class="col-sm-8">
+                <div class="col-sm-2">
+                    {{ oform.tipoexibicao(class='form-control') }}
+                </div>
+                <div class="col-sm-6">
                 </div>
             </div>
             <div class="row col-sm-12">&nbsp;</div>
@@ -120,7 +126,7 @@
 
     <div class="row col-sm-12">
         <hr>
-        <h3>Fichas encontradas: {{ ovrs | length }} resultados - limite de 200 resultados</h3>
+        <h3>Fichas encontradas: {{ listaovrs | length }} resultados - limite de {{limit}} resultados</h3>
         <div id="actions" class="row col-sm-12">
             <div class="col-sm-3">
                 <h4>Com linhas selecionadas, fazer ação:</h4>
@@ -142,40 +148,26 @@
     </div>
     <div id="list" class="row col-sm-12">
         &nbsp;<br>
-        <h4><u>Clique nos títulos da tabela para ordenar</u></h4>
         <div class="table">
             <table class="inlineTable table table-bordered table-hover table-responsive"
-                   id="pesquisa_ovr_table" title="Lista de OVRs encontradas - limite de 200 resultados">
+                   id="minhas_ovrs_table">
                 <thead>
                 <tr>
-                    <th><input type="checkbox" id="selectAll" class="action-checkbox"></th>
-                    <th style="cursor: pointer;">Ficha Nº <i class="fa fa-fw fa-sort"></i></th>
-                    <th style="cursor: pointer;">Tipo Operação <i class="fas fa-sort"></i></th>
-                    <th style="cursor: pointer;">Recinto</th>
-                    <th style="cursor: pointer;">Ano</th>
-                    <th style="cursor: pointer;">Número doc.</th>
-                    <th style="cursor: pointer;">CE Mercante</th>
-                    <th style="cursor: pointer;">Declaração</th>
-                    <th style="cursor: pointer;">Fiscalizado</th>
-                    <th style="cursor: pointer;">Data</th>
-                    <th style="cursor: pointer;">Último Evento</th>
+                    <th></th>
+                    {% for col in titulos %}
+                    <th>{{ col }}</th>
+                    {% endfor %}
                 </tr>
                 </thead>
                 <tbody>
-                {% for ovr in ovrs %}
-                <tr>
-                    <td><input type="checkbox" name="rowid" class="action-checkbox" value="{{ovr.id}}"
+                {% for ovr in listaovrs %}
+                <tr class="{% if ovr[1] %}default{% else %}warning{% endif %}">
+                    <td><input type="checkbox" name="rowid" class="action-checkbox" value="{{ovr[0]}}"
                                title="Selecionar linha"></td>
-                    <td><a href="ovr?id={{ ovr.id }}" target="_blank">{{ ovr.id }}</a></td>
-                    <td>{{ ovr.get_tipooperacao() }}</td>
-                    <td>{{ ovr.recinto.nome }}</td>
-                    <td>{{ ovr.get_ano() }}</td>
-                    <td>{{ ovr.get_numero() }}</td>
-                    <td>{{ ovr.numeroCEmercante }}</td>
-                    <td>{{ ovr.numerodeclaracao }}</td>
-                    <td>{{ ovr.cnpj_fiscalizado }}</td>
-                    <td>{{ ovr.datahora }}</td>
-                    <td>{{ ovr.tipoevento.nome }}</td>
+                    <td><a href="ovr?id={{ovr[0]}}" target="_blank">{{ ovr[0] }}</a></td>
+                    {% for col in ovr[2] %}
+                    <td>{{ col }}</td>
+                    {% endfor %}
                 </tr>
                 {% endfor %}
                 </tbody>
@@ -305,6 +297,10 @@ function abre_ovr_numero(){
 $('#selectAll').click(function (e) {
     $(this).closest('table').find('td input:checkbox').prop('checked', this.checked);
 });
+
+
+
+
 
 
 </script>

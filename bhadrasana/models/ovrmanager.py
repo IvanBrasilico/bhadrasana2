@@ -177,7 +177,8 @@ def get_ovr_criadaspor(session, user_name: str) -> List[OVR]:
 
 def get_ovr_filtro(session,
                    pfiltro: dict = None,
-                   user_name: str = None) -> List[OVR]:
+                   user_name: str = None,
+                   limit=200) -> List[OVR]:
     filtro = and_()
     tables = []
     if user_name:
@@ -245,7 +246,7 @@ def get_ovr_filtro(session,
             q = q.join(table, isouter=True)
         # ovrs = q.filter(filtro).limit(100).all()
     logger.info('get_ovr_filtro - query' + str(q))
-    ovrs = q.filter(filtro).limit(200).all()
+    ovrs = q.filter(filtro).limit(limit).all()
     return [ovr for ovr in ovrs]
 
 
