@@ -1,16 +1,16 @@
 import os
-import pandas as pd
 from _collections import defaultdict
 from datetime import datetime, date, timedelta
 from decimal import Decimal
 from typing import Tuple
 
-from ajna_commons.flask.log import logger
+import pandas as pd
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
 from gridfs import GridFS
 from werkzeug.utils import redirect
 
+from ajna_commons.flask.log import logger
 from bhadrasana.forms.exibicao_ovr import ExibicaoOVR, TipoExibicao
 from bhadrasana.forms.filtro_container import FiltroContainerForm
 from bhadrasana.forms.filtro_empresa import FiltroEmpresaForm
@@ -204,7 +204,9 @@ def ovr_app(app):
     @login_required
     def pesquisa_ovr():
         session = app.config.get('dbsession')
-        ovrs = []
+        LIMIT = 200
+        titulos_exibicao = []
+        listaovrs = []
         tiposeventos = get_tipos_evento_todos(session)
         recintos = get_recintos(session)
         flags = get_flags_choice(session)
@@ -237,8 +239,13 @@ def ovr_app(app):
                 filtro_form.validate()
                 logger.info('filtro_form data: ' + str(dict(filtro_form.data.items())))
                 ovrs = get_ovr_filtro(session,
-                                      dict(filtro_form.data.items()))
+                                      pfiltro=dict(filtro_form.data.items()),
+                                      limit=LIMIT)
                 # print('******', ovrs)
+                tipoexibicao = int(filtro_form.tipoexibicao.data)
+                exibicao = ExibicaoOVR(session, tipoexibicao, current_user.id)
+                titulos_exibicao = exibicao.get_titulos()
+                listaovrs = [exibicao.get_linha(ovr) for ovr in ovrs]
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
@@ -246,7 +253,9 @@ def ovr_app(app):
             flash(str(err))
         return render_template('pesquisa_ovr.html',
                                oform=filtro_form,
-                               ovrs=ovrs,
+                               limit=LIMIT,
+                               titulos=titulos_exibicao,
+                               listaovrs=listaovrs,
                                responsavel_form=responsavel_form,
                                historico_form=historico_ovr_form)
 
