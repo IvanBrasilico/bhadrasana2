@@ -1299,7 +1299,7 @@ def ovr_app(app):
         session = app.config['dbsession']
         db = app.config['mongo_risco']
         try:
-            out_filename = 'relatorio%s' % ovr_id
+            out_filename = 'relatorio%s.docx' % ovr_id
             ovr_dict = monta_ovr_dict(db, session, int(ovr_id))
             document = get_doc_generico_ovr(ovr_dict, 'relatorio.docx')
             document.save(os.path.join(get_user_save_path(), out_filename))
