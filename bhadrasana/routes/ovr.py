@@ -1,19 +1,17 @@
 import os
 import time
-
-import pandas as pd
 from _collections import defaultdict
 from datetime import datetime, date, timedelta
 from decimal import Decimal
 from typing import Tuple
 
-
+import pandas as pd
+from ajna_commons.flask.log import logger
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
 from gridfs import GridFS
 from werkzeug.utils import redirect
 
-from ajna_commons.flask.log import logger
 from bhadrasana.forms.exibicao_ovr import ExibicaoOVR, TipoExibicao
 from bhadrasana.forms.filtro_container import FiltroContainerForm
 from bhadrasana.forms.filtro_empresa import FiltroEmpresaForm
@@ -37,7 +35,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     desfaz_ultimo_eventoovr, get_delta_date, exporta_planilha_tg, TipoPlanilha, \
     exclui_item_tg, get_setores, get_objectives_setor, executa_okr_results, gera_okrobjective, \
     exclui_okrobjective, get_key_results_choice, gera_okrmeta, exclui_okrmeta, \
-    get_usuarios_setores, get_setores_cpf, get_ovr_auditor, get_ovr_passagem, muda_setor_ovr
+    get_usuarios_setores, get_setores_cpf, get_ovr_auditor, get_ovr_passagem, muda_setor_ovr, monta_ovr_dict
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
@@ -49,6 +47,7 @@ from bhadrasana.models.virasana_manager import get_conhecimento, \
 from bhadrasana.routes.plotly_graphs import bar_plotly, gauge_plotly, burndown_plotly
 from bhadrasana.scripts.gera_planilha_rilo import monta_planilha_rilo
 from bhadrasana.views import get_user_save_path, valid_file, csrf
+from docx.docx_functions import get_doc_generico_ovr
 
 
 def ovr_app(app):
@@ -1276,7 +1275,7 @@ def ovr_app(app):
                 filtro_form = FiltroRelatorioForm(request.form, setores=lista_setores)
                 filtro_form.validate()
                 timestamp = time.time()
-                out_filename = 'rilo-'+str(timestamp)+'.xlsx'
+                out_filename = 'rilo-' + str(timestamp) + '.xlsx'
                 dict_planilha = monta_planilha_rilo(filtro_form.datainicio.data,
                                                     filtro_form.datafim.data,
 
@@ -1292,3 +1291,22 @@ def ovr_app(app):
             flash(str(type(err)))
             flash(str(err))
         return render_template('cen_rilo.html', oform=filtro_form)
+
+    @app.route('/exporta_docx/<ovr_id>', methods=['GET'])
+    @login_required
+    def exporta_docx(ovr_id):
+        """Preenche um docx com dados da OVR"""
+        session = app.config.get('dbsession')
+        db = app.config('mongo_risco')
+        try:
+            out_filename = 'relatorio%s' % ovr_id
+            ovr_dict = monta_ovr_dict(db, session, int(ovr_id))
+            document = get_doc_generico_ovr(ovr_dict, 'relatorio.docx')
+            document.save(os.path.join(get_user_save_path(), out_filename))
+            return redirect('static/%s/%s' % (current_user.name, out_filename))
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return render_template('index.html')
