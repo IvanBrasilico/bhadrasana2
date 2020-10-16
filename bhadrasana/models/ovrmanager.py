@@ -1078,6 +1078,7 @@ def monta_ovr_dict(db, session, ovr_id: id,
                 image = mongo_image(db, imagem_dict['imagem'])
                 imagem_dict['content'] = io.BytesIO(image)
                 lista_imagens.append(imagem_dict)
+        ovr_dict['imagens'] = lista_imagens
     return ovr_dict
 
 
