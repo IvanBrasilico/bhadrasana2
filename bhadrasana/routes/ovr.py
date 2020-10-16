@@ -1,10 +1,13 @@
 import os
+import time
+
+import pandas as pd
 from _collections import defaultdict
 from datetime import datetime, date, timedelta
 from decimal import Decimal
 from typing import Tuple
 
-import pandas as pd
+
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
 from gridfs import GridFS
@@ -1272,13 +1275,16 @@ def ovr_app(app):
             if request.method == 'POST':
                 filtro_form = FiltroRelatorioForm(request.form, setores=lista_setores)
                 filtro_form.validate()
-                out_filename = 'rilo.xlsx'
-                dict_planilha = monta_planilha_rilo(filtro_form.datainicio.data, filtro_form.datafim.data,
+                timestamp = time.time()
+                out_filename = 'rilo-'+str(timestamp)+'.xlsx'
+                dict_planilha = monta_planilha_rilo(filtro_form.datainicio.data,
+                                                    filtro_form.datafim.data,
+
                                                     filtro_form.setor_id.data)
                 print(dict_planilha)
                 df = pd.DataFrame.from_dict(dict_planilha)
                 print(df.head())
-                df.to_csv(os.path.join(get_user_save_path(), out_filename))
+                df.to_csv(os.path.join(get_user_save_path(), out_filename), index=False)
                 return redirect('static/%s/%s' % (current_user.name, out_filename))
         except Exception as err:
             logger.error(err, exc_info=True)
