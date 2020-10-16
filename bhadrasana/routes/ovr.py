@@ -1292,13 +1292,14 @@ def ovr_app(app):
             flash(str(err))
         return render_template('cen_rilo.html', oform=filtro_form)
 
-    @app.route('/exporta_docx/<ovr_id>', methods=['GET'])
+    @app.route('/exporta_docx', methods=['GET'])
     @login_required
     def exporta_docx(ovr_id):
         """Preenche um docx com dados da OVR"""
         session = app.config['dbsession']
         db = app.config['mongo_risco']
         try:
+            ovr_id = request.values['ovr_id']
             out_filename = 'relatorio%s.docx' % ovr_id
             ovr_dict = monta_ovr_dict(db, session, int(ovr_id))
             document = get_doc_generico_ovr(ovr_dict, 'relatorio.docx')
