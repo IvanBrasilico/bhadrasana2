@@ -47,7 +47,7 @@ from bhadrasana.models.virasana_manager import get_conhecimento, \
 from bhadrasana.routes.plotly_graphs import bar_plotly, gauge_plotly, burndown_plotly
 from bhadrasana.scripts.gera_planilha_rilo import monta_planilha_rilo
 from bhadrasana.views import get_user_save_path, valid_file, csrf
-from docx.docx_functions import get_doc_generico_ovr
+from bhadrasana.docx.docx_functions import get_doc_generico_ovr
 
 
 def ovr_app(app):
