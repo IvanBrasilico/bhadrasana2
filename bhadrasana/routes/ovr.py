@@ -1296,8 +1296,8 @@ def ovr_app(app):
     @login_required
     def exporta_docx(ovr_id):
         """Preenche um docx com dados da OVR"""
-        session = app.config.get('dbsession')
-        db = app.config('mongo_risco')
+        session = app.config['dbsession']
+        db = app.config['mongo_risco']
         try:
             out_filename = 'relatorio%s' % ovr_id
             ovr_dict = monta_ovr_dict(db, session, int(ovr_id))
