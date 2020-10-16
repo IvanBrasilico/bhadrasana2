@@ -70,6 +70,7 @@ class FiltroOVRForm(FlaskForm):
     numeroprocesso = StringField(u'Número de processo informado na Ficha',
                                  default='')
     setor_id = SelectField('Setores')
+    tipoexibicao = SelectField('Campos a serem exibidos na tela', default=1)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -93,6 +94,7 @@ class FiltroOVRForm(FlaskForm):
         self.setor_id.choices = [(None, 'Selecione')]
         if kwargs.get('setores'):
             self.setor_id.choices.extend(kwargs.get('setores'))
+        self.tipoexibicao.choices = [(tipo.value, tipo.name) for tipo in TipoExibicao]
 
 
 class FiltroRelatorioForm(FlaskForm):
