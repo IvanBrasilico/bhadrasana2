@@ -30,7 +30,8 @@ def rilo_dump_itemtg(itemtg: ItemTG) -> dict:
 def rilo_dump_ovr(ovr: OVR) -> dict:
     return OrderedDict((
         ('COUNTRY OF SEIZURE', 'BRASIL'),
-        ('NATIONAL REF', 'DIREP08/%s/STS/ALF/%s' % (datetime.strftime(ovr.create_date, '%Y'), ovr.id)),
+        ('NATIONAL REF', 'DIREP08/%s/STS/ALF/%s' %
+         (datetime.strftime(ovr.create_date, '%Y'), ovr.id)),
         ('OFFENCE DATE', datetime.strftime(ovr.create_date, '%d/%m/%y')),
         ('OFFENCE LOCATION', 'SANTOS'),
         ('CE', ovr.numeroCEmercante)
