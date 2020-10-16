@@ -135,7 +135,8 @@ def gera_taseda(rvf: dict):
 
 def get_doc_generico_ovr(ovr: dict, documento: str):
     conteudo = {'unidade': 'ALFSTS', **ovr}
-    document = Document(documento)
+    basepath = os.path.dirname(__file__)
+    document = Document(os.path.join(basepath, documento))
     docx_replacein(document, conteudo)
     return document
 
