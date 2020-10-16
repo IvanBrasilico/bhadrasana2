@@ -1273,7 +1273,8 @@ def ovr_app(app):
                 filtro_form = FiltroRelatorioForm(request.form, setores=lista_setores)
                 filtro_form.validate()
                 out_filename = 'rilo.xlsx'
-                dict_planilha = monta_planilha_rilo(filtro_form.datainicio.data, filtro_form.datafim.data,
+                dict_planilha = monta_planilha_rilo(filtro_form.datainicio.data,
+                                                    filtro_form.datafim.data,
                                                     filtro_form.setor_id.data)
                 print(dict_planilha)
                 df = pd.DataFrame.from_dict(dict_planilha)
