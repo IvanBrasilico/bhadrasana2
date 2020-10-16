@@ -72,7 +72,7 @@ class RVF(BaseRastreavel, BaseDumpable):
         dumped['peso'] = str(dumped['peso'])
         dumped['volume'] = str(dumped['volume'])
         if explode:
-            dumped['imagens'] = [imagem.dump() for imagem in self.imagens]
+            dumped['imagens'] = [imagem.dump(explode=True) for imagem in self.imagens]
             dumped['infracoesencontradas'] = [infracao.nome
                                               for infracao in self.infracoesencontradas]
             dumped['marcasencontradas'] = [marca.nome

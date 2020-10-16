@@ -1,4 +1,8 @@
+import io
+import os
 import sys
+
+from pymongo import MongoClient
 
 sys.path.append('.')
 sys.path.insert(0, '../ajna_docs/commons')
@@ -13,10 +17,11 @@ from typing import List, Tuple
 import numpy as np
 import pandas as pd
 import sqlalchemy
-from sqlalchemy import and_, text, or_, func
-from sqlalchemy.orm import Session
+from sqlalchemy import and_, text, or_, func, create_engine
+from sqlalchemy.orm import Session, sessionmaker
 
 from ajna_commons.flask.log import logger
+from ajna_commons.utils.images import mongo_image
 from bhadrasana.models import Usuario, Setor, EBloqueado
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto, \
     get_usuario_logado
@@ -1055,3 +1060,34 @@ def exclui_okrmeta(session, metaid):
     except Exception as err:
         logger.error(err, exc_info=True)
         session.rollback()
+
+
+def monta_ovr_dict(db, session, ovr_id: id,
+                   explode=True, rvfs=True, imagens=True) -> dict:
+    """Retorna um dicionário com conteúdo do OVR, inclusive imagens."""
+    ovr = get_ovr(session, ovr_id)
+    ovr_dict = ovr.dump(explode=explode)
+    if rvfs:
+        lista_rvfs = session.query(RVF).filter(RVF.ovr_id == ovr_id).all()
+        rvfs_dicts = [rvf.dump(explode=True) for rvf in lista_rvfs]
+        ovr_dict['rvfs'] = rvfs_dicts
+    if imagens:
+        lista_imagens = []
+        for rvf_dict in rvfs_dicts:
+            for imagem_dict in rvf_dict['imagens']:
+                image = mongo_image(db, imagem_dict['imagem'])
+                imagem_dict['content'] = io.BytesIO(image)
+                lista_imagens.append(imagem_dict)
+    return ovr_dict
+
+
+if __name__ == '__main__':
+    from ajna_commons.flask.conf import SQL_URI
+
+    engine = create_engine(SQL_URI)
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    MONGODB_RISCO = os.environ.get('MONGODB_RISCO')
+    conn_risco = MongoClient(host=MONGODB_RISCO)
+    mongodb_risco = conn_risco['risco']
+    print(monta_ovr_dict(mongodb_risco, session, 1016))
