@@ -1,8 +1,9 @@
 import io
-import os
 import sys
 
-from pymongo import MongoClient
+from gridfs import GridFS
+
+from ajna_commons.models.bsonimage import BsonImage
 
 sys.path.append('.')
 sys.path.insert(0, '../ajna_docs/commons')
@@ -17,8 +18,8 @@ from typing import List, Tuple
 import numpy as np
 import pandas as pd
 import sqlalchemy
-from sqlalchemy import and_, text, or_, func, create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy import and_, text, or_, func
+from sqlalchemy.orm import Session
 
 from ajna_commons.flask.log import logger
 from ajna_commons.utils.images import mongo_image
@@ -28,7 +29,7 @@ from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
     TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria, \
     EventoEspecial, Flag, Relatorio, RoteiroOperacaoOVR, flags_table, VisualizacaoOVR, \
-    OKRObjective, OKRResultMeta, OKRResult
+    OKRObjective, OKRResultMeta, OKRResult, ModeloDocx
 from bhadrasana.models.rvf import Infracao, infracoesencontradas_table, RVF
 from bhadrasana.models.virasana_manager import get_conhecimento
 from virasana.integracao.mercante.mercantealchemy import Item
@@ -1082,13 +1083,39 @@ def monta_ovr_dict(db, session, ovr_id: id,
     return ovr_dict
 
 
-if __name__ == '__main__':
-    from ajna_commons.flask.conf import SQL_URI
+def get_lista_docx(session) -> List[ModeloDocx]:
+    return session.query(ModeloDocx).all()
 
-    engine = create_engine(SQL_URI)
-    Session = sessionmaker(bind=engine)
-    session = Session()
-    MONGODB_RISCO = os.environ.get('MONGODB_RISCO')
-    conn_risco = MongoClient(host=MONGODB_RISCO)
-    mongodb_risco = conn_risco['risco']
-    print(monta_ovr_dict(mongodb_risco, session, 1016))
+
+def get_docx_choices(session) -> List[Tuple[int, str]]:
+    return [(modelo.id, modelo.filename) for modelo in get_lista_docx(session)]
+
+
+def get_docx_or_none(session, docx_id: int) -> ModeloDocx:
+    return session.query(ModeloDocx).filter(
+        ModeloDocx.id == docx_id).one_or_none()
+
+
+def get_docx(session, docx_id: int) -> ModeloDocx:
+    docx = get_docx_or_none(session, docx_id)
+    if docx is None:
+        return ModeloDocx()
+    return docx
+
+
+def inclui_docx(mongodb, session, filename: str, image):
+    bson_img = BsonImage()
+    bson_img.set_campos(filename, image.read())
+    fs = GridFS(mongodb)
+    _id = bson_img.tomongo(fs)
+    # print(rvf_id, filename)
+    docx = ModeloDocx()
+    try:
+        docx.filename = filename
+        docx._id = str(_id)
+        session.add(docx)
+        session.commit()
+    except Exception as err:
+        session.rollback()
+        logger.error(err, exc_info=True)
+        raise err

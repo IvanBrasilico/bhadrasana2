@@ -1,8 +1,9 @@
 import os
 
 from docx import Document
-from docx.text.paragraph import Paragraph
 from docx.shared import Inches
+from docx.text.paragraph import Paragraph
+
 
 def move_table_after(table, paragraph):
     tbl, p = table._tbl, paragraph._p
@@ -90,7 +91,6 @@ def edit_image_tag(text: str, paragraph: Paragraph, conteudo: dict, document: Do
             document.add_picture(row['content'], width=Inches(5.5))
 
 
-
 def paragraph_text_replace(paragraph: Paragraph, conteudo: dict, document: Document):
     text = paragraph.text
     if text and text.find('{{') != -1:
@@ -133,11 +133,10 @@ def gera_taseda(rvf: dict):
     return document
     # document.save('testes_docx/taseda_RVF{}.docx'.format(rvf.id))
 
+
 def get_doc_generico_ovr(ovr: dict, documento: str):
     conteudo = {'unidade': 'ALFSTS', **ovr}
-    basepath = os.path.dirname(__file__)
-    document = Document(os.path.join(basepath, documento))
+    # basepath = os.path.dirname(__file__)
+    document = Document(documento)
     docx_replacein(document, conteudo)
     return document
-
-
