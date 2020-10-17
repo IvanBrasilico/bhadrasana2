@@ -270,7 +270,7 @@ class FiltroDocxForm(FlaskForm):
         super().__init__(*args, **kwargs)
         self.docx_id.choices = []
         if kwargs.get('lista_docx'):
-            self.docx_id.choices.extend(*kwargs.get('lista_docx'))
+            self.docx_id.choices.extend(kwargs.get('lista_docx'))
         self.fonte.choices = [(tipo.value, tipo.name) for tipo in FonteDocx]
 
 
