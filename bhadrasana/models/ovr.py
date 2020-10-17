@@ -1,5 +1,8 @@
 import sys
 
+from bson import ObjectId
+from gridfs import GridFS
+
 sys.path.append('.')
 sys.path.insert(0, '../ajna_docs/commons')
 sys.path.insert(0, '../ajna_api')
@@ -15,6 +18,12 @@ from sqlalchemy.orm import relationship, sessionmaker
 from bhadrasana.models import Base, BaseRastreavel, BaseDumpable, myEnum
 
 metadata = Base.metadata
+
+
+class FonteDocx(Enum):
+    OVR = 1
+    RVF = 2
+    Marcas = 3
 
 
 class EventoEspecial(Enum):
@@ -523,6 +532,18 @@ class ResultadoOVR(BaseRastreavel):
     ovr = relationship('OVR')
 
 
+class ModeloDocx(BaseRastreavel):
+    __tablename__ = 'ovr_docx'
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'),
+                primary_key=True)
+    filename = Column(VARCHAR(200), index=True)
+    _id = Column(VARCHAR(100), index=True)  # ID no Mongo
+
+    def get_documento(self, db):
+        fs = GridFS(db)
+        return fs.get(ObjectId(self._id))
+
+
 def create_marcas(session):
     """Cria testes para classe Marcas"""
     for nome in ('Adidas',
@@ -627,16 +648,11 @@ if __name__ == '__main__':  # pragma: no-cover
             # print(processo.numero, processo.numerolimpo)
         session.commit()
         # Sair por segurança. Comentar linha abaixo para funcionar
-        sys.exit(0)
         # metadata.drop_all(engine)
+        # sys.exit(0)
         metadata.create_all(engine,
                             [
-                                metadata.tables['ovr_results'],
-                                metadata.tables['ovr_objectives'],
-                                metadata.tables['ovr_okrs'],
-                                metadata.tables['ovr_roteiros'],
-                                metadata.tables['ovr_flags'],
-                                metadata.tables['ovr_flags_ovr'],
+                                metadata.tables['ovr_docx'],
                             ])
         metadata.drop_all(engine,
                           [
@@ -646,6 +662,7 @@ if __name__ == '__main__':  # pragma: no-cover
                               # metadata.tables['ovr_processos'],
                               # metadata.tables['ovr_tgovr'],
                           ])
+        sys.exit(0)
         metadata.create_all(engine)
         create_tiposevento(session)
         create_marcas(session)

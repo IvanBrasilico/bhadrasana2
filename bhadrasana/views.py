@@ -275,13 +275,14 @@ def mynavbar():
                  Separator(),
                  View('Relatórios', 'ver_relatorios'),
                  View('Painel de OKRs', 'ver_okrs'),
-                 Separator(),
-                 View('Importa planilhas recintos', 'importa_planilha_recinto'),
-                 View('Administração', 'admin.index'),
              ),
              Subgroup(
                  'Exportações',
-                 View('Exporta Planilha CEN Rilo', 'exporta_cen_rilo')
+                 View('Exporta Planilha CEN Rilo', 'exporta_cen_rilo'),
+                 View('Gerador de documentos docx', 'gera_docx'),
+                 Separator(),
+                 View('Importa planilhas recintos', 'importa_planilha_recinto'),
+                 View('Administração', 'admin.index'),
              )]
     if current_user.is_authenticated:
         items.append(View('Sair (%s)' % current_user.id, 'commons.logout'))
