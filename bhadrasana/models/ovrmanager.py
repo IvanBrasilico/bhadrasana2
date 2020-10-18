@@ -1077,7 +1077,7 @@ def monta_ovr_dict(db, session, ovr_id: id,
         ovr_dict['nome_fiscalizado'] = empresa.nome
         ovr_dict['marcas'] = []
         for rvf_dict in rvfs_dicts:
-            ovr_dict['marcas'].extend(rvf_dict['marcas'])
+            ovr_dict['marcas'].extend(rvf_dict['marcasencontradas'])
     if imagens:
         lista_imagens = []
         for rvf_dict in rvfs_dicts:
