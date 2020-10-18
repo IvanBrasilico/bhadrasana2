@@ -1,9 +1,10 @@
 import io
 import sys
 
+from ajna_commons.models.bsonimage import BsonImage
 from gridfs import GridFS
 
-from ajna_commons.models.bsonimage import BsonImage
+from bhadrasana.models.laudo import get_empresa
 
 sys.path.append('.')
 sys.path.insert(0, '../ajna_docs/commons')
@@ -1072,6 +1073,11 @@ def monta_ovr_dict(db, session, ovr_id: id,
         lista_rvfs = session.query(RVF).filter(RVF.ovr_id == ovr_id).all()
         rvfs_dicts = [rvf.dump(explode=True) for rvf in lista_rvfs]
         ovr_dict['rvfs'] = rvfs_dicts
+        empresa = get_empresa(session, ovr.cnpj_fiscalizado)
+        ovr_dict['nome_fiscalizado'] = empresa.nome
+        ovr_dict['marcas'] = []
+        for rvf_dict in rvfs_dicts:
+            ovr_dict['marcas'].extend(rvf_dict['marcas'])
     if imagens:
         lista_imagens = []
         for rvf_dict in rvfs_dicts:

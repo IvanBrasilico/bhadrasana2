@@ -208,6 +208,8 @@ class OVR(BaseRastreavel, BaseDumpable):
                 dumped['responsavel'] = self.responsavel.nome
             if self.setor:
                 dumped['setor'] = self.setor.nome
+            if self.recinto:
+                dumped['recinto'] = self.recinto.nome
             dumped['numero'] = self.get_numero()
             dumped['flags'] = [flag.nome for flag in self.flags]
             dumped['historico'] = [evento.dump() for evento in self.historico]

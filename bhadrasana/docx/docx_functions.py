@@ -55,6 +55,7 @@ def edit_paragraph_tag(text: str, paragraph: Paragraph, conteudo: dict, document
         for row in valores:
             print(row)
             p = document.add_paragraph()
+            paragraph._p.add_next(p)
             for key in tags[1:]:
                 print(key)
                 if key.find(';') != -1:
