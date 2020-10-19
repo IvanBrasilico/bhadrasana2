@@ -3,7 +3,8 @@ from wtforms import StringField, IntegerField, TextAreaField, SelectField
 from wtforms.fields.html5 import DateField, TimeField, DecimalField
 
 from bhadrasana.forms.exibicao_ovr import TipoExibicao
-from bhadrasana.models.ovr import Enumerado, FonteDocx
+from bhadrasana.models.ovr import Enumerado
+from bhadrasana.models.ovr_dict_repr import FonteDocx
 
 
 class OVRForm(FlaskForm):
