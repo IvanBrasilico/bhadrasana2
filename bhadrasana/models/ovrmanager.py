@@ -1,4 +1,10 @@
+import io
 import sys
+
+from ajna_commons.models.bsonimage import BsonImage
+from gridfs import GridFS
+
+from bhadrasana.models.laudo import get_empresa
 
 sys.path.append('.')
 sys.path.insert(0, '../ajna_docs/commons')
@@ -17,13 +23,14 @@ from sqlalchemy import and_, text, or_, func
 from sqlalchemy.orm import Session
 
 from ajna_commons.flask.log import logger
+from ajna_commons.utils.images import mongo_image
 from bhadrasana.models import Usuario, Setor, EBloqueado
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto, \
     get_usuario_logado
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
     TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria, \
     EventoEspecial, Flag, Relatorio, RoteiroOperacaoOVR, flags_table, VisualizacaoOVR, \
-    OKRObjective, OKRResultMeta, OKRResult
+    OKRObjective, OKRResultMeta, OKRResult, ModeloDocx
 from bhadrasana.models.rvf import Infracao, infracoesencontradas_table, RVF
 from bhadrasana.models.virasana_manager import get_conhecimento
 from virasana.integracao.mercante.mercantealchemy import Item
@@ -1055,3 +1062,66 @@ def exclui_okrmeta(session, metaid):
     except Exception as err:
         logger.error(err, exc_info=True)
         session.rollback()
+
+
+def monta_ovr_dict(db, session, ovr_id: id,
+                   explode=True, rvfs=True, imagens=True) -> dict:
+    """Retorna um dicionário com conteúdo do OVR, inclusive imagens."""
+    ovr = get_ovr(session, ovr_id)
+    ovr_dict = ovr.dump(explode=explode)
+    if rvfs:
+        lista_rvfs = session.query(RVF).filter(RVF.ovr_id == ovr_id).all()
+        rvfs_dicts = [rvf.dump(explode=True) for rvf in lista_rvfs]
+        ovr_dict['rvfs'] = rvfs_dicts
+        empresa = get_empresa(session, ovr.cnpj_fiscalizado)
+        ovr_dict['nome_fiscalizado'] = empresa.nome
+        ovr_dict['marcas'] = []
+        for rvf_dict in rvfs_dicts:
+            ovr_dict['marcas'].extend(rvf_dict['marcasencontradas'])
+    if imagens:
+        lista_imagens = []
+        for rvf_dict in rvfs_dicts:
+            for imagem_dict in rvf_dict['imagens']:
+                image = mongo_image(db, imagem_dict['imagem'])
+                imagem_dict['content'] = io.BytesIO(image)
+                lista_imagens.append(imagem_dict)
+        ovr_dict['imagens'] = lista_imagens
+    return ovr_dict
+
+
+def get_lista_docx(session) -> List[ModeloDocx]:
+    return session.query(ModeloDocx).all()
+
+
+def get_docx_choices(session) -> List[Tuple[int, str]]:
+    return [(modelo.id, modelo.filename) for modelo in get_lista_docx(session)]
+
+
+def get_docx_or_none(session, docx_id: int) -> ModeloDocx:
+    return session.query(ModeloDocx).filter(
+        ModeloDocx.id == docx_id).one_or_none()
+
+
+def get_docx(session, docx_id: int) -> ModeloDocx:
+    docx = get_docx_or_none(session, docx_id)
+    if docx is None:
+        return ModeloDocx()
+    return docx
+
+
+def inclui_docx(mongodb, session, filename: str, image):
+    bson_img = BsonImage()
+    bson_img.set_campos(filename, image.read())
+    fs = GridFS(mongodb)
+    _id = bson_img.tomongo(fs)
+    # print(rvf_id, filename)
+    docx = ModeloDocx()
+    try:
+        docx.filename = filename
+        docx._id = str(_id)
+        session.add(docx)
+        session.commit()
+    except Exception as err:
+        session.rollback()
+        logger.error(err, exc_info=True)
+        raise err

@@ -1,25 +1,25 @@
 import os
 import time
-
-import pandas as pd
 from _collections import defaultdict
 from datetime import datetime, date, timedelta
 from decimal import Decimal
 from typing import Tuple
 
-
+import pandas as pd
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
 from gridfs import GridFS
 from werkzeug.utils import redirect
 
 from ajna_commons.flask.log import logger
+from bhadrasana.docx.docx_functions import get_doc_generico_ovr
 from bhadrasana.forms.exibicao_ovr import ExibicaoOVR, TipoExibicao
 from bhadrasana.forms.filtro_container import FiltroContainerForm
 from bhadrasana.forms.filtro_empresa import FiltroEmpresaForm
 from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
     ProcessoOVRForm, ItemTGForm, ResponsavelOVRForm, TGOVRForm, FiltroRelatorioForm, \
-    FiltroMinhasOVRsForm, OKRObjectiveForm, OKRMetaForm, SetorOVRForm
+    FiltroMinhasOVRsForm, OKRObjectiveForm, OKRMetaForm, SetorOVRForm, FiltroDocxForm, \
+    ModeloDocxForm
 from bhadrasana.models import delete_objeto, get_usuario
 from bhadrasana.models.laudo import get_empresa, get_empresas_nome, get_sats_cnpj
 from bhadrasana.models.ovr import OVR, OKRObjective
@@ -37,7 +37,8 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     desfaz_ultimo_eventoovr, get_delta_date, exporta_planilha_tg, TipoPlanilha, \
     exclui_item_tg, get_setores, get_objectives_setor, executa_okr_results, gera_okrobjective, \
     exclui_okrobjective, get_key_results_choice, gera_okrmeta, exclui_okrmeta, \
-    get_usuarios_setores, get_setores_cpf, get_ovr_auditor, get_ovr_passagem, muda_setor_ovr
+    get_usuarios_setores, get_setores_cpf, get_ovr_auditor, get_ovr_passagem, muda_setor_ovr, \
+    monta_ovr_dict, get_docx, inclui_docx, get_docx_choices
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
@@ -1276,7 +1277,7 @@ def ovr_app(app):
                 filtro_form = FiltroRelatorioForm(request.form, setores=lista_setores)
                 filtro_form.validate()
                 timestamp = time.time()
-                out_filename = 'rilo-'+str(timestamp)+'.xlsx'
+                out_filename = 'rilo-' + str(timestamp) + '.xlsx'
                 dict_planilha = monta_planilha_rilo(filtro_form.datainicio.data,
                                                     filtro_form.datafim.data,
 
@@ -1292,3 +1293,74 @@ def ovr_app(app):
             flash(str(type(err)))
             flash(str(err))
         return render_template('cen_rilo.html', oform=filtro_form)
+
+    @app.route('/exporta_docx', methods=['GET'])
+    @login_required
+    def exporta_docx():
+        """Preenche um docx com dados da OVR"""
+        session = app.config['dbsession']
+        db = app.config['mongo_risco']
+        try:
+            ovr_id = request.values['ovr_id']
+            out_filename = 'relatorio%s.docx' % ovr_id
+            ovr_dict = monta_ovr_dict(db, session, int(ovr_id))
+            document = get_doc_generico_ovr(ovr_dict, 'relatorio.docx')
+            document.save(os.path.join(get_user_save_path(), out_filename))
+            return redirect('static/%s/%s' % (current_user.name, out_filename))
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return render_template('gera_docx.html')
+
+    @app.route('/gera_docx', methods=['GET', 'POST'])
+    @login_required
+    def gera_docx():
+        """Preenche um docx com dados da Fonte especicada (OVR, RVF, etc)"""
+        session = app.config['dbsession']
+        db = app.config['mongo_risco']
+        formdocx = FiltroDocxForm()
+        modeloform = ModeloDocxForm()
+        try:
+            lista_docx = get_docx_choices(session)
+            formdocx = FiltroDocxForm(lista_docx=lista_docx)
+            if request.method == 'POST':
+                formdocx = FiltroDocxForm(request.form, lista_docx=lista_docx)
+                formdocx.validate()
+                out_filename = 'relatorio%s.docx' % ovr_id
+                docx = get_docx(session, formdocx.docx_id.data)
+                ovr_dict = monta_ovr_dict(db, session, formdocx.fonte_id.data)
+                documento = docx.get_documento(db)
+                document = get_doc_generico_ovr(ovr_dict, documento)  # 'relatorio.docx')
+                document.save(os.path.join(get_user_save_path(), out_filename))
+                return redirect('static/%s/%s' % (current_user.name, out_filename))
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return render_template('gera_docx.html', formdocx=formdocx, modeloform=modeloform)
+
+    @app.route('/novo_docx', methods=['POST'])
+    @login_required
+    def novo_docx():
+        """Cadastro um novo modelo docx"""
+        session = app.config['dbsession']
+        db = app.config['mongo_risco']
+        try:
+            modeloform = ModeloDocxForm(request.form)
+            file = request.files.get('documento')
+            if file:
+                validfile, mensagem = \
+                    valid_file(file, extensions=['docx'])
+                if validfile:
+                    inclui_docx(db, session, modeloform.filename.data, file)
+                else:
+                    flash(mensagem)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return redirect(url_for('gera_docx'))

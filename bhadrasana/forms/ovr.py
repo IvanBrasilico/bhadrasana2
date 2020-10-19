@@ -3,7 +3,7 @@ from wtforms import StringField, IntegerField, TextAreaField, SelectField
 from wtforms.fields.html5 import DateField, TimeField, DecimalField
 
 from bhadrasana.forms.exibicao_ovr import TipoExibicao
-from bhadrasana.models.ovr import Enumerado
+from bhadrasana.models.ovr import Enumerado, FonteDocx
 
 
 class OVRForm(FlaskForm):
@@ -259,3 +259,21 @@ class OKRMetaForm(FlaskForm):
         super().__init__(*args, **kwargs)
         if kwargs.get('key_results'):
             self.result_id.choices = kwargs.get('key_results')
+
+
+class FiltroDocxForm(FlaskForm):
+    docx_id = SelectField('Documentos disponiveis', default=-1)
+    fonte = SelectField('Tipo de fonte', default=-1)
+    fonte_id = IntegerField('ID do objeto que será fonte para preenchimento do docx')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.docx_id.choices = []
+        if kwargs.get('lista_docx'):
+            self.docx_id.choices.extend(kwargs.get('lista_docx'))
+        self.fonte.choices = [(tipo.value, tipo.name) for tipo in FonteDocx]
+
+
+class ModeloDocxForm(FlaskForm):
+    id = IntegerField()
+    filename = StringField()
