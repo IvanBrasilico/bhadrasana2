@@ -1,0 +1,87 @@
+{% extends "layout.html" %} {% block content %} {{super()}}
+<div id="main" class="container-fluid">
+    <div id="top" class="row">
+        <div class="col-sm-12">
+            <form method="POST" id="formfiltro" action="gera_docx">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label for="campo">Nome do modelo</label>
+                    </div>
+                    <div class="col-sm-2">
+                        <label for="valor">Tipo de fonte de dados</label>
+                    </div>
+                    <div class="col-sm-2">
+                        <label for="motivo">ID da fonte</label>
+                    </div>
+                    <div class="col-sm-6">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <input type="hidden" name="active_tab" value="{{active_tab}}">
+                        <div class="col-sm-2">
+                            {{ formdocx.docx_id(class='form-control') }}
+                        </div>
+                        <div class="col-sm-2">
+                            {{ formdocx.fonte(class='form-control') }}
+                        </div>
+                        <div class="col-sm-2">
+                            {{ formdocx.fonte_id(class='form-control') }}
+                        </div>
+                        <div class="col-sm-2">
+                            <input class="btn btn-default btn-info form-control" type="submit" value="Gerar docx"/>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="row col-sm-12">
+            &nbsp;<br>
+        </div>
+        <div class="row col-sm-12">
+        <h3>Inserir novo modelo de documento</h3>
+        </div>
+        <div class="col-sm-12">
+            <form method="POST" action="novo_docx" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label for="filename">Nome do modelo de documento</label>
+                    </div>
+                    <div class="col-sm-4">
+                        {{ modeloform.filename(class='form-control') }}
+                    </div>
+                    <div class="col-sm-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <label class="btn btn-default btn-choose" for="documento">
+                            <input id="documento" name="documento" type="file" style="display:none"
+                                   onchange="change_anexo(this)"> Informe arquivo a anexar
+                        </label>
+                        <big>
+                            <span class='label label-success' id="upload-file-info"></span>
+                        </big>
+                    </div>
+                </div>
+                <div class="row">
+                    &nbsp;<br>
+                    <div class="col-sm-12">
+                        <input class="btn btn-primary" type="submit" value="Movimentar"/>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="bottom" class="row">
+        AJNA - Receita Federal do Brasil 2017
+    </div>
+</div>
+{% endblock %} {% block scripts %} {{super()}}
+
+<script>
+
+
+</script> {% endblock %}

@@ -1,6 +1,7 @@
 import os
 
 from docx import Document
+from docx.shared import Inches
 from docx.text.paragraph import Paragraph
 
 
@@ -44,12 +45,62 @@ def edit_table_tag(text: str, paragraph: Paragraph, conteudo: dict, document: Do
                 row_cells[ind_col].text = content
 
 
+def edit_paragraph_tag(text: str, paragraph: Paragraph, conteudo: dict, document: Document):
+    print(f'*{text}*')
+    tags = text[2:-2].split(':')
+    print(tags)
+    valores = conteudo.get(tags[0])
+    if valores is not None:
+        paragraph.text = ' '
+        for row in valores:
+            print(row)
+            p = document.add_paragraph()
+            paragraph._p.add_next(p)
+            for key in tags[1:]:
+                print(key)
+                if key.find(';') != -1:
+                    titulo, key = key.split(';')
+                else:
+                    titulo = key.capitalize()
+                valor = row[key]
+                print(key, valor)
+                run = p.add_run('{}: {}'.format(titulo, valor))
+                run.add_break()
+
+
+def edit_image_tag(text: str, paragraph: Paragraph, conteudo: dict, document: Document):
+    print(f'*{text}*')
+    tags = text[2:-2].split(':')
+    print(tags)
+    valores = conteudo.get(tags[0])
+    if valores is not None:
+        paragraph.text = ' '
+        for row in valores:
+            print(row)
+            document.add_page_break()
+            p = document.add_paragraph()
+            for key in tags[1:]:
+                print(key)
+                if key.find(';') != -1:
+                    titulo, key = key.split(';')
+                else:
+                    titulo = key.capitalize()
+                valor = row[key]
+                print(key, valor)
+                run = p.add_run('{}: {}'.format(titulo, valor))
+                run.add_break()
+            document.add_picture(row['content'], width=Inches(5.5))
+
+
 def paragraph_text_replace(paragraph: Paragraph, conteudo: dict, document: Document):
     text = paragraph.text
-    if text and text.find('{') != -1:
+    if text and text.find('{{') != -1:
+        edit_paragraph_tag(text, paragraph, conteudo, document)
+    elif text and text.find('{') != -1:
         edit_text_tag(text, paragraph, conteudo)
-    if text and \
-            text.find('<') != -1:
+    elif text and text.find('<<') != -1:
+        edit_image_tag(text, paragraph, conteudo, document)
+    elif text and text.find('<') != -1:
         edit_table_tag(text, paragraph, conteudo, document)
 
 
@@ -82,3 +133,11 @@ def gera_taseda(rvf: dict):
     docx_replacein(document, conteudo)
     return document
     # document.save('testes_docx/taseda_RVF{}.docx'.format(rvf.id))
+
+
+def get_doc_generico_ovr(ovr: dict, documento: str):
+    conteudo = {'unidade': 'ALFSTS', **ovr}
+    # basepath = os.path.dirname(__file__)
+    document = Document(documento)
+    docx_replacein(document, conteudo)
+    return document
