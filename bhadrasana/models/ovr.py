@@ -341,6 +341,38 @@ class Marca(Base):
                 primary_key=True)
     nome = Column(VARCHAR(50), index=True)
 
+    def __str__(self):
+        return '{}'.format(self.nome)
+
+
+class RepresentanteMarca(Base):
+    __tablename__ = 'ovr_representantes_marcas'
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'),
+                primary_key=True)
+    cnpj = Column(VARCHAR(15), index=True)
+    nome = Column(VARCHAR(200), index=True)
+    endereco = Column(VARCHAR(200), index=True)
+    cep = Column(VARCHAR(10), index=True)
+    telefone = Column(VARCHAR(20), index=True)
+    representacoes = relationship('Representacao', back_populates='representante')
+
+    def __str__(self):
+        return '{} - {}'.format(self.nome, self.cnpj)
+
+
+class Representacao(Base):
+    __tablename__ = 'ovr_representacoes'
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'),
+                primary_key=True)
+    marca_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
+                      ForeignKey('ovr_marcas.id'))
+    marca = relationship('Marca')
+    representante_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
+                              ForeignKey('ovr_representantes_marcas.id'))
+    representante = relationship('RepresentanteMarca', back_populates='representacoes')
+    inicio = Column(TIMESTAMP, index=True)
+    fim = Column(DateTime, index=True)
+
 
 class TipoMercadoria(Base):
     __tablename__ = 'ovr_tiposmercadoria'
@@ -645,9 +677,16 @@ if __name__ == '__main__':  # pragma: no-cover
         # Sair por segurança. Comentar linha abaixo para funcionar
         # metadata.drop_all(engine)
         # sys.exit(0)
+        metadata.drop_all(engine,
+                          [
+                              metadata.tables['ovr_representantes_marcas'],
+                              metadata.tables['ovr_representacoes']
+                          ])
         metadata.create_all(engine,
                             [
                                 metadata.tables['ovr_docx'],
+                                metadata.tables['ovr_representantes_marcas'],
+                                metadata.tables['ovr_representacoes']
                             ])
         sys.exit(0)
         metadata.drop_all(engine,
