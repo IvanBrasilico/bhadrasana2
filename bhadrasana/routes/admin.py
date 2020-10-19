@@ -10,7 +10,7 @@ from bhadrasana.models import Enumerado as ModelEnumerado, usuario_tem_perfil, \
     perfilAcesso
 from bhadrasana.models import Setor, Usuario, PerfilUsuario
 from bhadrasana.models.ovr import Marca, RoteiroOperacaoOVR, TipoEventoOVR, \
-    Enumerado, Recinto
+    Enumerado, Recinto, RepresentanteMarca, Representacao
 
 
 class ProtectedModelView(ModelView):
@@ -83,8 +83,16 @@ class RecintosModel(SupervisorModelView):
     form_columns = ('nome', 'descricao', 'cod_dte', 'cod_siscomex', 'cod_unidade')
 
 
-class MarcasModel(SupervisorModelView):
+class MarcaModel(SupervisorModelView):
     column_searchable_list = ['nome']
+
+
+class RepresentanteModel(SupervisorModelView):
+    column_searchable_list = ['cnpj', 'nome']
+
+
+class RepresentacaoModel(SupervisorModelView):
+    column_display_pk = False
 
 
 class RoteirosModel(SupervisorModelView):
@@ -137,13 +145,15 @@ def admin_app(app, session):
 
     admin = Admin(app, name='Controle de Cargas', template_mode='bootstrap3')
     # Add administrative views here
-    admin.add_view(UsuarioModel(Usuario, session))
-    admin.add_view(PerfilUsuarioModel(PerfilUsuario, session))
-    admin.add_view(SetorModel(Setor, session))
-    admin.add_view(MarcasModel(Marca, session))
+    admin.add_view(UsuarioModel(Usuario, session, category='Cadastramento'))
+    admin.add_view(PerfilUsuarioModel(PerfilUsuario, session, category='Cadastramento'))
+    admin.add_view(SetorModel(Setor, session, category='Cadastramento'))
+    admin.add_view(MarcaModel(Marca, session, category='Marca'))
+    admin.add_view(RepresentanteModel(RepresentanteMarca, session, category='Marca'))
+    admin.add_view(RepresentacaoModel(Representacao, session, category='Marca'))
+    admin.add_view(TipoEventoModel(TipoEventoOVR, session, category='Eventos'))
+    admin.add_view(RoteirosModel(RoteiroOperacaoOVR, session, category='Eventos'))
     admin.add_view(RecintosModel(Recinto, session))
-    admin.add_view(TipoEventoModel(TipoEventoOVR, session))
-    admin.add_view(RoteirosModel(RoteiroOperacaoOVR, session))
 
     admin.add_link(LogoutMenuLink(name='Janela principal',
                                   url='/bhadrasana2/', category='Ir para'))
