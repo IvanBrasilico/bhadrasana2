@@ -20,10 +20,6 @@ from bhadrasana.models import Base, BaseRastreavel, BaseDumpable, myEnum
 metadata = Base.metadata
 
 
-class FonteDocx(Enum):
-    OVR = 1
-    RVF = 2
-    Marcas = 3
 
 
 class EventoEspecial(Enum):

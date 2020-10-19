@@ -1,0 +1,95 @@
+import io
+from enum import Enum
+from typing import List
+
+from ajna_commons.utils.images import mongo_image
+from bhadrasana.models.laudo import get_empresa
+from bhadrasana.models.ovrmanager import get_ovr, get_tgovr
+from bhadrasana.models.rvf import RVF
+from bhadrasana.models.rvfmanager import get_rvf
+
+
+class FonteDocx(Enum):
+    OVR = 1
+    RVF = 2
+    Marcas = 3
+    TG_OVR = 4
+
+
+def not_implemented():
+    raise NotImplementedError()
+
+
+class OVRDict():
+
+    def __init__(self, formato: FonteDocx):
+        self.formato = formato
+        self.formatos = {
+            FonteDocx.OVR: self.monta_ovr_dict,
+            FonteDocx.RVF: not_implemented,
+            FonteDocx.Marcas: self.monta_marcas_dict,
+            FonteDocx.TG_OVR: self.monta_tgovr_dict,
+
+        }
+
+    def __repr__(self):
+        return self.formatos[self.formato]
+
+    def monta_ovr_dict(self, db, session, ovr_id: int,
+                       explode=True, rvfs=True, imagens=True) -> dict:
+        """Retorna um dicionário com conteúdo do OVR, inclusive imagens."""
+        ovr = get_ovr(session, ovr_id)
+        ovr_dict = ovr.dump(explode=explode)
+        if rvfs:
+            lista_rvfs = session.query(RVF).filter(RVF.ovr_id == ovr_id).all()
+            rvfs_dicts = [rvf.dump(explode=True) for rvf in lista_rvfs]
+            ovr_dict['rvfs'] = rvfs_dicts
+            empresa = get_empresa(session, ovr.cnpj_fiscalizado)
+            ovr_dict['nome_fiscalizado'] = empresa.nome
+            ovr_dict['marcas'] = []
+            for rvf_dict in rvfs_dicts:
+                ovr_dict['marcas'].extend(rvf_dict['marcasencontradas'])
+            if imagens:
+                lista_imagens = []
+                for rvf_dict in rvfs_dicts:
+                    for imagem_dict in rvf_dict['imagens']:
+                        image = mongo_image(db, imagem_dict['imagem'])
+                        imagem_dict['content'] = io.BytesIO(image)
+                        lista_imagens.append(imagem_dict)
+                ovr_dict['imagens'] = lista_imagens
+        return ovr_dict
+
+    def monta_rvf_dict(self, db, session, rvf_id: int,
+                       explode=True, imagens=True) -> dict:
+        """Retorna um dicionário com conteúdo do RVF, inclusive imagens."""
+        rvf = get_rvf(session, rvf_id)
+        rvf_dump = rvf.dump()
+        return rvf_dump
+
+    def monta_tgovr_dict(self, db, session, tg_id: int) -> dict:
+        """Monta dict com dados do OVR e número deste TG.
+
+        Útil para preenchimento de autos e representações
+        """
+        tgovr = get_tgovr(session, tg_id)
+        ovr_dict = self.monta_ovr_dict(session, tgovr.ovr_id, imagens=False)
+        ovr_dict['numerotg'] = tgovr.numerotg
+        ovr_dict['valor'] = tgovr.valor
+        ovr_dict['datatg'] = tgovr.create_date
+        return ovr_dict
+
+    def monta_marcas_dict(self, db, session, ovr_id: int) -> List[dict]:
+        """Monta vários dicts com dados do OVR, com marcas separados por representante.
+
+        Útil para preenchimento de retirada de amostras
+        """
+        ovr_dicts = []
+        ovr = get_ovr(session, ovr_id)
+        ovr_dict = ovr.dump()
+        lista_rvfs = session.query(RVF).filter(RVF.ovr_id == ovr_id).all()
+        rvfs_dicts = [rvf.dump(explode=True) for rvf in lista_rvfs]
+        # TODO: Separar marcas e RVFs por representante
+        for rvf_dict in rvfs_dicts:
+            ovr_dict['marcas'].extend(rvf_dict['marcasencontradas'])
+        return ovr_dicts
+
