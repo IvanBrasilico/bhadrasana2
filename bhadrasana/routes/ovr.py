@@ -50,6 +50,7 @@ from bhadrasana.models.virasana_manager import get_conhecimento, \
 from bhadrasana.routes.plotly_graphs import bar_plotly, gauge_plotly, burndown_plotly
 from bhadrasana.scripts.gera_planilha_rilo import monta_planilha_rilo
 from bhadrasana.views import get_user_save_path, valid_file, csrf
+from bhadrasana.models.ovr_dict_repr import OVRDict
 
 
 def ovr_app(app):
@@ -1330,7 +1331,8 @@ def ovr_app(app):
                 formdocx.validate()
                 out_filename = 'relatorio%s.docx' % ovr_id
                 docx = get_docx(session, formdocx.docx_id.data)
-                ovr_dict = monta_ovr_dict(db, session, formdocx.fonte_id.data)
+                ovrdict = OVRDict(formdocx.fonte_id.data)
+                ovr_dict = ovrdict.get_dict(session, db)
                 documento = docx.get_documento(db)
                 document = get_doc_generico_ovr(ovr_dict, documento)  # 'relatorio.docx')
                 document.save(os.path.join(get_user_save_path(), out_filename))

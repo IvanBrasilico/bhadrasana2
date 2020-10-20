@@ -26,14 +26,13 @@ class OVRDict():
         self.formato = formato
         self.formatos = {
             FonteDocx.OVR: self.monta_ovr_dict,
-            FonteDocx.RVF: not_implemented,
+            FonteDocx.RVF: self.monta_rvf_dict,
             FonteDocx.Marcas: self.monta_marcas_dict,
             FonteDocx.TG_OVR: self.monta_tgovr_dict,
-
         }
 
-    def __repr__(self):
-        return self.formatos[self.formato]
+    def get_dict(self, **kwargs):
+        return self.formatos[self.formato](**kwargs)
 
     def monta_ovr_dict(self, db, session, ovr_id: int,
                        explode=True, rvfs=True, imagens=True) -> dict:
