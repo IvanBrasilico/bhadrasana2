@@ -23,6 +23,7 @@ from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
 from bhadrasana.models import delete_objeto, get_usuario
 from bhadrasana.models.laudo import get_empresa, get_empresas_nome, get_sats_cnpj
 from bhadrasana.models.ovr import OVR, OKRObjective
+from bhadrasana.models.ovr_dict_repr import OVRDict
 from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_ovr_filtro, gera_eventoovr, gera_processoovr, get_tipos_processo, lista_itemtg, \
     get_itemtg, get_recintos, \
@@ -50,7 +51,6 @@ from bhadrasana.models.virasana_manager import get_conhecimento, \
 from bhadrasana.routes.plotly_graphs import bar_plotly, gauge_plotly, burndown_plotly
 from bhadrasana.scripts.gera_planilha_rilo import monta_planilha_rilo
 from bhadrasana.views import get_user_save_path, valid_file, csrf
-from bhadrasana.models.ovr_dict_repr import OVRDict, FonteDocx
 
 
 def ovr_app(app):
@@ -1329,14 +1329,31 @@ def ovr_app(app):
             if request.method == 'POST':
                 formdocx = FiltroDocxForm(request.form, lista_docx=lista_docx)
                 formdocx.validate()
-                out_filename = 'relatorio%s.docx' % formdocx.oid.data
-                fonte = FonteDocx(int(formdocx.fonte_id.data))
-                ovrdict = OVRDict(fonte)
-                ovr_dict = ovrdict.get_dict(db=db, session=session, id=formdocx.oid.data)
                 docx = get_docx(session, formdocx.docx_id.data)
-                documento = docx.get_documento(db)
-                document = get_doc_generico_ovr(ovr_dict, documento)  # 'relatorio.docx')
-                document.save(os.path.join(get_user_save_path(), out_filename))
+                if request.form.get('excluir'):
+                    session.delete(docx)
+                    session.commit()
+                    return redirect(url_for('gera_docx'))
+                elif request.form.get('preencher'):
+                    documento = docx.get_documento(db)
+                    out_filename = '{}_{}_{}.docx'.format(
+                        docx.filename,
+                        formdocx.oid.data,
+                        datetime.strftime(datetime.now(), '%Y-%m-%dT%H-%M-%S')
+                    )
+                    ovr_dict = OVRDict(docx.fonte_docx_id).get_dict(
+                        db=db, session=session, id=formdocx.oid.data)
+                    # print(ovr_dict)
+                    document = get_doc_generico_ovr(ovr_dict, documento)
+                    document.save(os.path.join(get_user_save_path(), out_filename))
+                else:
+                    documento = docx.get_documento(db)
+                    out_filename = '{}_{}.docx'.format(
+                        docx.filename,
+                        datetime.strftime(datetime.now(), '%Y-%m-%dT%H-%M-%S')
+                    )
+                    with open(os.path.join(get_user_save_path(), out_filename), 'wb') as out:
+                        out.write(documento.read())
                 return redirect('static/%s/%s' % (current_user.name, out_filename))
         except Exception as err:
             logger.error(err, exc_info=True)
@@ -1358,7 +1375,10 @@ def ovr_app(app):
                 validfile, mensagem = \
                     valid_file(file, extensions=['docx'])
                 if validfile:
-                    inclui_docx(db, session, modeloform.filename.data, file)
+                    inclui_docx(db, session,
+                                modeloform.filename.data,
+                                modeloform.fonte_docx_id.data,
+                                file)
                 else:
                     flash(mensagem)
         except Exception as err:

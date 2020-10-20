@@ -4,6 +4,8 @@ from docx import Document
 from docx.shared import Inches
 from docx.text.paragraph import Paragraph
 
+from ajna_commons.flask.log import logger
+
 
 def move_table_after(table, paragraph):
     tbl, p = table._tbl, paragraph._p
@@ -13,17 +15,20 @@ def move_table_after(table, paragraph):
 def edit_text_tag(text: str, paragraph: Paragraph, conteudo: dict):
     inicio = text.find('{')
     fim = text.find('}')
-    tag = text[inicio + 1:fim].strip()
-    # print('*' + tag + '*')
-    valor = conteudo.get(tag)
-    if valor is not None:
-        new_text = text[:inicio] + str(valor) + text[fim + 1:]
-        paragraph.text = new_text
+    while inicio != -1:
+        tag = text[inicio + 1:fim].strip()
+        # print('*' + tag + '*')
+        valor = conteudo.get(tag)
+        if valor is not None:
+            text = text[:inicio] + str(valor) + text[fim + 1:]
+        inicio = text.find('{')
+        fim = text.find('}')
+    paragraph.text = text
 
 
 def edit_table_tag(text: str, paragraph: Paragraph, conteudo: dict, document: Document):
     tags = text[1:-1].split(':')
-    print(tags)
+    # print(tags)
     valor = conteudo.get(tags[0])
     if valor is not None:
         paragraph.text = ' '
@@ -31,8 +36,8 @@ def edit_table_tag(text: str, paragraph: Paragraph, conteudo: dict, document: Do
         try:
             table.style = document.styles['Tabela']
         except Exception as err:
-            print(list(document.styles))
-            print(err)
+            logger.error(list(document.styles))
+            logger.error(err, exc_info=True)
         move_table_after(table, paragraph)
         hdr_cells = table.rows[0].cells
         for ind_col, key in enumerate(tags[1:]):
@@ -46,47 +51,47 @@ def edit_table_tag(text: str, paragraph: Paragraph, conteudo: dict, document: Do
 
 
 def edit_paragraph_tag(text: str, paragraph: Paragraph, conteudo: dict, document: Document):
-    print(f'*{text}*')
+    # print(f'*{text}*')
     tags = text[2:-2].split(':')
-    print(tags)
+    # print(tags)
     valores = conteudo.get(tags[0])
     if valores is not None:
         paragraph.text = ' '
         for row in valores:
-            print(row)
+            # print(row)
             p = document.add_paragraph()
-            paragraph._p.addnext(p)
+            paragraph._p.addnext(p._p)
             for key in tags[1:]:
-                print(key)
+                # print(key)
                 if key.find(';') != -1:
                     titulo, key = key.split(';')
                 else:
                     titulo = key.capitalize()
                 valor = row[key]
-                print(key, valor)
+                # print(key, valor)
                 run = p.add_run('{}: {}'.format(titulo, valor))
                 run.add_break()
 
 
 def edit_image_tag(text: str, paragraph: Paragraph, conteudo: dict, document: Document):
-    print(f'*{text}*')
+    # print(f'*{text}*')
     tags = text[2:-2].split(':')
-    print(tags)
+    # print(tags)
     valores = conteudo.get(tags[0])
     if valores is not None:
         paragraph.text = ' '
         for row in valores:
-            print(row)
+            # print(row)
             document.add_page_break()
             p = document.add_paragraph()
             for key in tags[1:]:
-                print(key)
+                # print(key)
                 if key.find(';') != -1:
                     titulo, key = key.split(';')
                 else:
                     titulo = key.capitalize()
                 valor = row[key]
-                print(key, valor)
+                # print(key, valor)
                 run = p.add_run('{}: {}'.format(titulo, valor))
                 run.add_break()
             document.add_picture(row['content'], width=Inches(5.5))
@@ -109,7 +114,7 @@ def docx_replacein(document: Document, conteudo: dict):
         try:
             paragraph_text_replace(paragraph, conteudo, document)
         except Exception as err:
-            print(err)
+            logger.error(err, exc_info=True)
     for table in document.tables:
         for row in table.rows:
             for cell in row.cells:
