@@ -50,7 +50,7 @@ from bhadrasana.models.virasana_manager import get_conhecimento, \
 from bhadrasana.routes.plotly_graphs import bar_plotly, gauge_plotly, burndown_plotly
 from bhadrasana.scripts.gera_planilha_rilo import monta_planilha_rilo
 from bhadrasana.views import get_user_save_path, valid_file, csrf
-from bhadrasana.models.ovr_dict_repr import OVRDict
+from bhadrasana.models.ovr_dict_repr import OVRDict, FonteDocx
 
 
 def ovr_app(app):
@@ -1329,10 +1329,11 @@ def ovr_app(app):
             if request.method == 'POST':
                 formdocx = FiltroDocxForm(request.form, lista_docx=lista_docx)
                 formdocx.validate()
-                out_filename = 'relatorio%s.docx' % ovr_id
+                out_filename = 'relatorio%s.docx' % formdocx.oid.data
+                fonte = FonteDocx(int(formdocx.fonte_id.data))
+                ovrdict = OVRDict(fonte)
+                ovr_dict = ovrdict.get_dict(db=db, session=session, id=formdocx.oid.data)
                 docx = get_docx(session, formdocx.docx_id.data)
-                ovrdict = OVRDict(formdocx.fonte_id.data)
-                ovr_dict = ovrdict.get_dict(session, db)
                 documento = docx.get_documento(db)
                 document = get_doc_generico_ovr(ovr_dict, documento)  # 'relatorio.docx')
                 document.save(os.path.join(get_user_save_path(), out_filename))

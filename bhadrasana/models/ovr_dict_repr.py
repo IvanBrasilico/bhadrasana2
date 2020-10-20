@@ -32,15 +32,16 @@ class OVRDict():
         }
 
     def get_dict(self, **kwargs):
-        return self.formatos[self.formato](**kwargs)
+        method = self.formatos[self.formato]
+        return method(**kwargs)
 
-    def monta_ovr_dict(self, db, session, ovr_id: int,
+    def monta_ovr_dict(self, db, session, id: int,
                        explode=True, rvfs=True, imagens=True) -> dict:
         """Retorna um dicionário com conteúdo do OVR, inclusive imagens."""
-        ovr = get_ovr(session, ovr_id)
+        ovr = get_ovr(session, id)
         ovr_dict = ovr.dump(explode=explode)
         if rvfs:
-            lista_rvfs = session.query(RVF).filter(RVF.ovr_id == ovr_id).all()
+            lista_rvfs = session.query(RVF).filter(RVF.ovr_id == id).all()
             rvfs_dicts = [rvf.dump(explode=True) for rvf in lista_rvfs]
             ovr_dict['rvfs'] = rvfs_dicts
             empresa = get_empresa(session, ovr.cnpj_fiscalizado)
@@ -58,34 +59,34 @@ class OVRDict():
                 ovr_dict['imagens'] = lista_imagens
         return ovr_dict
 
-    def monta_rvf_dict(self, db, session, rvf_id: int,
+    def monta_rvf_dict(self, db, session, id: int,
                        explode=True, imagens=True) -> dict:
         """Retorna um dicionário com conteúdo do RVF, inclusive imagens."""
-        rvf = get_rvf(session, rvf_id)
+        rvf = get_rvf(session, id)
         rvf_dump = rvf.dump()
         return rvf_dump
 
-    def monta_tgovr_dict(self, db, session, tg_id: int) -> dict:
+    def monta_tgovr_dict(self, db, session, id: int) -> dict:
         """Monta dict com dados do OVR e número deste TG.
 
         Útil para preenchimento de autos e representações
         """
-        tgovr = get_tgovr(session, tg_id)
+        tgovr = get_tgovr(session, id)
         ovr_dict = self.monta_ovr_dict(session, tgovr.ovr_id, imagens=False)
         ovr_dict['numerotg'] = tgovr.numerotg
         ovr_dict['valor'] = tgovr.valor
         ovr_dict['datatg'] = tgovr.create_date
         return ovr_dict
 
-    def monta_marcas_dict(self, db, session, ovr_id: int) -> List[dict]:
+    def monta_marcas_dict(self, db, session, id: int) -> List[dict]:
         """Monta vários dicts com dados do OVR, com marcas separados por representante.
 
         Útil para preenchimento de retirada de amostras
         """
         ovr_dicts = []
-        ovr = get_ovr(session, ovr_id)
+        ovr = get_ovr(session, id)
         ovr_dict = ovr.dump()
-        lista_rvfs = session.query(RVF).filter(RVF.ovr_id == ovr_id).all()
+        lista_rvfs = session.query(RVF).filter(RVF.ovr_id == ovr.id).all()
         rvfs_dicts = [rvf.dump(explode=True) for rvf in lista_rvfs]
         # TODO: Separar marcas e RVFs por representante
         for rvf_dict in rvfs_dicts:
