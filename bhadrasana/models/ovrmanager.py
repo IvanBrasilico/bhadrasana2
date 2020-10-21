@@ -1,10 +1,7 @@
 import io
 import sys
 
-from ajna_commons.models.bsonimage import BsonImage
 from gridfs import GridFS
-
-from bhadrasana.models.laudo import get_empresa
 
 sys.path.append('.')
 sys.path.insert(0, '../ajna_docs/commons')
@@ -22,11 +19,14 @@ import sqlalchemy
 from sqlalchemy import and_, text, or_, func
 from sqlalchemy.orm import Session
 
+from ajna_commons.models.bsonimage import BsonImage
 from ajna_commons.flask.log import logger
 from ajna_commons.utils.images import mongo_image
 from bhadrasana.models import Usuario, Setor, EBloqueado
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto, \
     get_usuario_logado
+from bhadrasana.models.laudo import get_empresa
+from bhadrasana.models.ovr import FonteDocx, Representacao
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
     TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria, \
     EventoEspecial, Flag, Relatorio, RoteiroOperacaoOVR, flags_table, VisualizacaoOVR, \
@@ -161,6 +161,10 @@ def get_ovr(session, ovr_id: int = None) -> OVR:
     if ovr is None:
         return get_ovr(session)
     return ovr
+
+
+def get_ovr_one(session, ovr_id: int = None) -> OVR:
+    return session.query(OVR).filter(OVR.id == ovr_id).one()
 
 
 def get_ovr_responsavel(session, user_name: str) -> List[OVR]:
@@ -1094,7 +1098,8 @@ def get_lista_docx(session) -> List[ModeloDocx]:
 
 
 def get_docx_choices(session) -> List[Tuple[int, str]]:
-    return [(modelo.id, modelo.filename) for modelo in get_lista_docx(session)]
+    return [(modelo.id, modelo.filename + ' - ' + FonteDocx(modelo.fonte_docx_id).name)
+            for modelo in get_lista_docx(session)]
 
 
 def get_docx_or_none(session, docx_id: int) -> ModeloDocx:
@@ -1103,13 +1108,11 @@ def get_docx_or_none(session, docx_id: int) -> ModeloDocx:
 
 
 def get_docx(session, docx_id: int) -> ModeloDocx:
-    docx = get_docx_or_none(session, docx_id)
-    if docx is None:
-        return ModeloDocx()
-    return docx
+    return session.query(ModeloDocx).filter(
+        ModeloDocx.id == docx_id).one()
 
 
-def inclui_docx(mongodb, session, filename: str, image):
+def inclui_docx(mongodb, session, filename: str, fonte_docx_id: int, image):
     bson_img = BsonImage()
     bson_img.set_campos(filename, image.read())
     fs = GridFS(mongodb)
@@ -1119,9 +1122,40 @@ def inclui_docx(mongodb, session, filename: str, image):
     try:
         docx.filename = filename
         docx._id = str(_id)
+        docx.fonte_docx_id = fonte_docx_id
         session.add(docx)
         session.commit()
     except Exception as err:
         session.rollback()
         logger.error(err, exc_info=True)
         raise err
+
+
+class Manager():
+
+    def __init__(self, dbsession):
+        self.session = dbsession
+
+
+class MarcaManager(Manager):
+    def get_marcas(self):
+        marcas = self.session.query(Marca).all()
+        return [marca for marca in marcas]
+
+    def get_marcas_choice(self):
+        marcas = self.session.query(Marca).all()
+        return [(marca.id, marca.nome) for marca in marcas]
+
+    def get_marcas_ativas_representante(self, representante_id):
+        marcas_representadas = self.session.query(Representacao.marca_id).filter(
+            Representacao.inicio <= datetime.today()
+        ).filter(
+            Representacao.fim.is_(None)
+        ).filter(
+            Representacao.representante_id == representante_id
+        ).all()
+        marcas = [r[0] for r in marcas_representadas]
+        return self.session.query(Marca).filter(Marca.id.in_(marcas)).all()
+
+    def get_marcas_rvf_por_representante(self, rvf_id: int):
+        return {}

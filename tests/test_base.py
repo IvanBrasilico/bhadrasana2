@@ -1,6 +1,7 @@
 import sys
 import unittest
 from datetime import datetime
+from typing import List, Tuple
 
 sys.path.append('.')
 
@@ -18,6 +19,15 @@ class BaseTestCase(unittest.TestCase):
 
     def debug(self) -> None:
         pass
+
+    def assert_choices(self, tipos: List[Tuple[int, float]]):
+        assert tipos is not None
+        assert isinstance(tipos, list)
+        assert len(tipos) > 0
+        umtipoevento = tipos[0]
+        assert isinstance(umtipoevento, tuple)
+        assert isinstance(umtipoevento[0], int)
+        assert isinstance(umtipoevento[1], str)
 
     def create_usuario(self, cpf, nome, setor: Setor = None):
         usuario = self.session.query(Usuario).filter(Usuario.cpf == cpf).one_or_none()

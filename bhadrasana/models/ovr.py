@@ -20,8 +20,6 @@ from bhadrasana.models import Base, BaseRastreavel, BaseDumpable, myEnum
 metadata = Base.metadata
 
 
-
-
 class EventoEspecial(Enum):
     Responsavel = 1
     RVF = 2
@@ -93,6 +91,13 @@ unidadeMedida = [
     'UN',
     'KG'
 ]
+
+
+class FonteDocx(Enum):
+    Ficha = 1
+    RVF = 2
+    Marcas = 3
+    TG_Ficha = 4
 
 
 class Enumerado(myEnum):
@@ -369,6 +374,10 @@ class Representacao(Base):
     inicio = Column(TIMESTAMP, index=True)
     fim = Column(DateTime, index=True)
 
+    def __str__(self):
+        return 'Marca: {} - Representante: {} - Inicio: {} - Fim: {}'.format(
+            self.marca.nome, self.representante.nome, self.inicio, self.fim)
+
 
 class TipoMercadoria(Base):
     __tablename__ = 'ovr_tiposmercadoria'
@@ -568,6 +577,7 @@ class ModeloDocx(BaseRastreavel):
                 primary_key=True)
     filename = Column(VARCHAR(200), index=True)
     _id = Column(VARCHAR(100), index=True)  # ID no Mongo
+    fonte_docx_id = Column(Integer())
 
     def get_documento(self, db):
         fs = GridFS(db)
@@ -675,8 +685,7 @@ if __name__ == '__main__':  # pragma: no-cover
         # sys.exit(0)
         metadata.drop_all(engine,
                           [
-                              metadata.tables['ovr_representantes_marcas'],
-                              metadata.tables['ovr_representacoes']
+                              metadata.tables['ovr_docx'],
                           ])
         metadata.create_all(engine,
                             [
