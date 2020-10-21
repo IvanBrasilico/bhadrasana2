@@ -23,23 +23,65 @@
                             {{ formdocx.oid(class='form-control') }}
                         </div>
                         <div class="col-sm-2">
-                            <input class="btn btn-default btn-warning form-control" type="submit" name="preencher" value="Gerar docx preenchido"/>
+                            <input class="btn btn-default btn-warning form-control" type="submit" name="preencher"
+                                   value="Gerar docx preenchido"/>
                         </div>
                         <div class="col-sm-2">
-                            <input class="btn btn-default btn-info form-control" type="submit" name="baixar" value="Baixar modelo docx"/>
+                            <input class="btn btn-default btn-danger form-control" type="submit" name="excluir"
+                                   value="Excluir modelo docx"/>
                         </div>
                         <div class="col-sm-2">
-                            <input class="btn btn-default btn-danger form-control" type="submit" name="excluir"value="Excluir modelo docx"/>
+                            <input class="btn btn-default btn-info form-control" type="submit" name="baixar"
+                                   value="Baixar modelo docx"/>
+                        </div>
+                        <div class="col-sm-2">
+                            <input class="btn btn-default btn-info form-control" type="submit" name="visualizar"
+                                   value="Ver Campos disponíveis Tipo"/>
                         </div>
                     </div>
                 </div>
             </form>
         </div>
         <div class="row col-sm-12">
+            {% if ovr_dict %}
+            <h3>Guia de uso das TAGS (para o tipo de fonte de dados selecionado)</h3>
+            <h4>Utilizar chaves para os campos simples. Para campos "filhos", há três opções:
+                 <span>&#60;</span> gera tabelas, <span>&#123;&#123;</span> gera parágrafos e
+            <span>&#60;&#60;</span> gera páginas, exibindo imagem contida no primeiro campo.</h4>
+            <h4>Baixar modelos disponíveis para exemplos</h4>
+            {% for key, value in ovr_dict.items() %}
+                {% if value is iterable and value is not string and value[0] is mapping %}
+                <span>&#60;</span>{{key}}:{% for subkey, subvalue in value[0].items() %}{{subkey}}:{% endfor %}<span>&#62;</span><br>
+                {% else %}
+                <span>&#123;</span>{{key}}<span>&#125;</span><br>
+                {% endif %}
+            {% endfor %}
+            {% endif %}
             &nbsp;<br>
+            <h3>Conteúdo disponível na fonte selecionada para o ID</h3>
+            <ul>
+            {% for key, value in ovr_dict.items() %}
+                {% if value is iterable and value is not string  %}
+                    {% for item in value %}
+                    <li>{{ key }}</li>
+                    <ul>
+                    {% if item is mapping %}
+                        {% for subkey, subvalue in item.items() %}
+                        <li>{{ subkey }} - {{ subvalue }}</li>
+                        {% endfor %}
+                    {% else %}
+                    <li>{{ item }}</li>
+                    {% endif %}
+                    </ul>
+                    {% endfor %}
+                {% else %}
+                <li>{{ key }} - {{ value }}</li>
+                {% endif %}
+            {% endfor %}
+            </ul>
         </div>
         <div class="row col-sm-12">
-        <h3>Inserir novo modelo de documento</h3>
+            <h3>Inserir novo modelo de documento</h3>
         </div>
         <div class="col-sm-12">
             <form method="POST" action="novo_docx" enctype="multipart/form-data">
