@@ -1161,20 +1161,21 @@ def ovr_app(app):
         try:
             if id_objetivo is not None:
                 objective = session.query(OKRObjective). \
-                    filter(OKRObjective.id == int(id_objetivo)).one()
-                setor_id = objective.setor_id
-                results = executa_okr_results(session, objective)
-                plots = []
-                for result in results:
-                    if plot_type == '1':
-                        plot = burndown_plotly(result)
-                    else:
-                        delta = ((today - objective.inicio.date()) /
-                                 (objective.fim - objective.inicio)) * result.ameta
-                        plot = gauge_plotly(result.result.nome, result.ameta,
-                                            sum([row['result'] for row in result.resultados]),
-                                            delta)
-                    plots.append(plot)
+                    filter(OKRObjective.id == int(id_objetivo)).one_or_none()
+                if objective is not None:
+                    setor_id = objective.setor_id
+                    results = executa_okr_results(session, objective)
+                    plots = []
+                    for result in results:
+                        if plot_type == '1':
+                            plot = burndown_plotly(result)
+                        else:
+                            delta = ((today - objective.inicio.date()) /
+                                     (objective.fim - objective.inicio)) * result.ameta
+                            plot = gauge_plotly(result.result.nome, result.ameta,
+                                                sum([row['result'] for row in result.resultados]),
+                                                delta)
+                        plots.append(plot)
             if setor_id is None:
                 usuario = get_usuario(session, current_user.name)
                 setor_id = usuario.setor_id
@@ -1215,17 +1216,22 @@ def ovr_app(app):
             flash(str(err))
         return redirect(url_for('ver_okrs', objetivo=objective_id, setor_id=setor_id))
 
-    @app.route('/exclui_okrobjective', methods=['GET'])
+    @app.route('/exclui_okrobjective/<objetivo_id>', methods=['POST'])
     @login_required
-    def exclui_objective():
+    def exclui_objective(objetivo_id):
         session = app.config.get('dbsession')
-        objective_id = request.args.get('objective_id')
+        setor_id = request.form.get('setor_id')
+
         try:
-            exclui_okrobjective(session, int(objective_id))
+            exclui_okrobjective(session, int(objetivo_id))
+            flash(f'Objetivo {objetivo_id} excluído')
         except Exception as err:
             logger.error(err, exc_info=True)
-            jsonify({'msg': str(err)}), 500
-        return jsonify({'msg': 'Excluído'}), 201
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return redirect(url_for('ver_okrs', setor_id=setor_id))
+
 
     @app.route('/okrmeta', methods=['POST'])
     @login_required
