@@ -50,10 +50,12 @@
                                 </button>
                             </td>
                             <td>
-                                <button id="btn_exclui_objetivo{{objetivo.id}}" type="button"
-                                        class="btn btn-primary btn-danger form-control"
-                                        onclick="exclui_objetivo({{objetivo.id}})">Excluir
-                                </button>
+
+                            <form action="{{ url_for('exclui_objective', objetivo_id=objetivo.id) }}" method="post">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                <input type="hidden" name="setor_id" value="{{okrobjective_form.setor_id.data}}"/>
+                                <button  class="btn btn-primary btn-danger form-control" type="submit">Excluir</button>
+                            </form>
                             </td>
                         </tr>
                         {% endfor %}
@@ -215,13 +217,6 @@
 {% endif %}
 {% endblock %} {% block scripts %} {{super()}}
 <script>
-    function exclui_objetivo(objective_id){
-        $.getJSON('exclui_okrobjective', {
-          objective_id: objective_id
-        }, function(flags_ovr) {
-          document.location.reload(true);
-        });
-    }
 
     function exclui_meta(meta_id){
         $.getJSON('exclui_okrmeta', {
