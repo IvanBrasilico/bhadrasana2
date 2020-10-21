@@ -328,15 +328,6 @@ class OVRTestCase(BaseTestCase):
         assert len(setores) == 3
         assert isinstance(setores[0], Setor)
 
-    def assert_choices(self, tipos: List[Tuple[int, float]]):
-        assert tipos is not None
-        assert isinstance(tipos, list)
-        assert len(tipos) > 0
-        umtipoevento = tipos[0]
-        assert isinstance(umtipoevento, tuple)
-        assert isinstance(umtipoevento[0], int)
-        assert isinstance(umtipoevento[1], str)
-
     def test_tiposevento(self):
         tiposevento = get_tipos_evento(session)
         self.assert_choices(tiposevento)
