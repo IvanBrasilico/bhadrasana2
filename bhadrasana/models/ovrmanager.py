@@ -26,7 +26,7 @@ from bhadrasana.models import Usuario, Setor, EBloqueado
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto, \
     get_usuario_logado
 from bhadrasana.models.laudo import get_empresa
-from bhadrasana.models.ovr import FonteDocx
+from bhadrasana.models.ovr import FonteDocx, Representacao
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
     TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria, \
     EventoEspecial, Flag, Relatorio, RoteiroOperacaoOVR, flags_table, VisualizacaoOVR, \
@@ -1129,3 +1129,33 @@ def inclui_docx(mongodb, session, filename: str, fonte_docx_id: int, image):
         session.rollback()
         logger.error(err, exc_info=True)
         raise err
+
+
+class Manager():
+
+    def __init__(self, dbsession):
+        self.session = dbsession
+
+
+class MarcaManager(Manager):
+    def get_marcas(self):
+        marcas = self.session.query(Marca).all()
+        return [marca for marca in marcas]
+
+    def get_marcas_choice(self):
+        marcas = self.session.query(Marca).all()
+        return [(marca.id, marca.nome) for marca in marcas]
+
+    def get_marcas_ativas_representante(self, representante_id):
+        marcas_representadas = self.session.query(Representacao.marca_id).filter(
+            Representacao.inicio <= datetime.today()
+        ).filter(
+            Representacao.fim.is_(None)
+        ).filter(
+            Representacao.representante_id == representante_id
+        ).all()
+        marcas = [r[0] for r in marcas_representadas]
+        return self.session.query(Marca).filter(Marca.id.in_(marcas)).all()
+
+    def get_marcas_rvf_por_representante(self, rvf_id: int):
+        return {}

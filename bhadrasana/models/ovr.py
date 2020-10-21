@@ -374,6 +374,10 @@ class Representacao(Base):
     inicio = Column(TIMESTAMP, index=True)
     fim = Column(DateTime, index=True)
 
+    def __str__(self):
+        return 'Marca: {} - Representante: {} - Inicio: {} - Fim: {}'.format(
+            self.marca.nome, self.representante.nome, self.inicio, self.fim)
+
 
 class TipoMercadoria(Base):
     __tablename__ = 'ovr_tiposmercadoria'
