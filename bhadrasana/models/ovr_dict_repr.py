@@ -4,9 +4,9 @@ from typing import List
 from ajna_commons.utils.images import mongo_image
 from bhadrasana.models.laudo import get_empresa
 from bhadrasana.models.ovr import FonteDocx
-from bhadrasana.models.ovrmanager import get_ovr, get_tgovr, get_ovr_one
+from bhadrasana.models.ovrmanager import get_tgovr, get_ovr_one, MarcaManager, get_tgovr_one
 from bhadrasana.models.rvf import RVF
-from bhadrasana.models.rvfmanager import get_rvf
+from bhadrasana.models.rvfmanager import get_rvf, get_rvf_one
 
 
 def not_implemented():
@@ -62,7 +62,7 @@ class OVRDict():
     def monta_rvf_dict(self, db, session, id: int,
                        explode=True, imagens=True) -> dict:
         """Retorna um dicionário com conteúdo do RVF, inclusive imagens."""
-        rvf = get_rvf(session, id)
+        rvf = get_rvf_one(session, id)
         rvf_dump = rvf.dump()
         return rvf_dump
 
@@ -71,7 +71,7 @@ class OVRDict():
 
         Útil para preenchimento de autos e representações
         """
-        tgovr = get_tgovr(session, id)
+        tgovr = get_tgovr_one(session, id)
         ovr_dict = self.monta_ovr_dict(db, session, tgovr.ovr_id)
         # print('OVR DICT IMAGENS', ovr_dict.get('imagens'))
         # print('OVR DICT', [(k, v) for k, v in ovr_dict.items() if not isinstance(v, list)])
@@ -82,16 +82,17 @@ class OVRDict():
         return ovr_dict
 
     def monta_marcas_dict(self, db, session, id: int) -> List[dict]:
-        """Monta vários dicts com dados do OVR, com marcas separados por representante.
+        """Monta vários dicts com dados da RVF, com marcas separados por representante.
 
         Útil para preenchimento de retirada de amostras
         """
-        ovr_dicts = []
-        ovr = get_ovr(session, id)
-        ovr_dict = ovr.dump()
-        lista_rvfs = session.query(RVF).filter(RVF.ovr_id == ovr.id).all()
-        rvfs_dicts = [rvf.dump(explode=True) for rvf in lista_rvfs]
-        # TODO: Separar marcas e RVFs por representante
-        for rvf_dict in rvfs_dicts:
-            ovr_dict['marcas'].extend(rvf_dict['marcasencontradas'])
-        return ovr_dicts
+        rvf = get_rvf_one(session, id)
+        marcas_por_representante = MarcaManager(session).get_marcas_rvf_por_representante(rvf_id)
+        rvf_dump = rvf.dump()
+        rvf_dicts = []
+        for representante, marcas in marcas_por_representante.items():
+            rvf_dict = rvf_dump.copy()
+            rvf_dict.update(representante.dump())
+            rvf_dict['marcas'] = ''.join([marca.nome for marca in marcas])
+            rvf_dicts.append(rvf_dict)
+        return rvf_dicts

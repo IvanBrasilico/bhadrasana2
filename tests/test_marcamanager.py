@@ -101,6 +101,7 @@ class OVRTestCase(BaseTestCase):
         marcas_nome = [marca.nome for marca in marcas]
         assert 'Adidas' not in marcas_nome
         assert 'Apple' in marcas_nome
+        assert 'Disney' in marcas_nome
 
     def test_representacoes_marcas_rvf(self):
         adidas = session.query(Marca).filter(Marca.nome == 'Adidas').one()
@@ -112,10 +113,29 @@ class OVRTestCase(BaseTestCase):
         rvf.marcasencontradas.append(burberry)
         rvf.marcasencontradas.append(apple)
         session.add(rvf)
-        marcas = MarcaManager(self.session).get_marcas_rvf_por_representante(1)
+        session.commit()
+        session.refresh(rvf)
+        representante1 = session.query(RepresentanteMarca). \
+            filter(RepresentanteMarca.id == '1').one()
+        representante2 = session.query(RepresentanteMarca). \
+            filter(RepresentanteMarca.id == '2').one()
+        marcas = MarcaManager(self.session).get_marcas_rvf_por_representante(rvf.id)
         assert marcas is not None
         assert isinstance(marcas, dict)
-
+        print(marcas)
+        marcas1 = marcas[representante1]
+        assert len(marcas1) == 2
+        marcas_nome = [marca.nome for marca in marcas1]
+        assert 'Adidas' in marcas_nome
+        assert 'Burberry' in marcas_nome
+        assert 'Apple' not in marcas_nome
+        marcas2 = marcas[representante2]
+        assert len(marcas2) == 1
+        marcas_nome = [marca.nome for marca in marcas2]
+        assert 'Adidas' not in marcas_nome
+        assert 'Burberry' not in marcas_nome
+        assert 'Apple' in marcas_nome
+        assert 'Disney' not in marcas_nome
 
 
 if __name__ == '__main__':

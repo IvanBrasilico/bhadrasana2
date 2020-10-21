@@ -8,7 +8,7 @@ sys.path.insert(0, '../ajna_docs/commons')
 sys.path.insert(0, '../virasana')
 sys.path.insert(0, '../ajna_api')
 
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from datetime import timedelta, datetime
 from enum import Enum
 from typing import List, Tuple
@@ -26,7 +26,7 @@ from bhadrasana.models import Usuario, Setor, EBloqueado
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto, \
     get_usuario_logado
 from bhadrasana.models.laudo import get_empresa
-from bhadrasana.models.ovr import FonteDocx, Representacao
+from bhadrasana.models.ovr import FonteDocx, Representacao, RepresentanteMarca
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
     TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria, \
     EventoEspecial, Flag, Relatorio, RoteiroOperacaoOVR, flags_table, VisualizacaoOVR, \
@@ -556,6 +556,10 @@ def atualiza_valortotal_tg(session, tg_id: int):
     # print(total_qtde, total_valor)
     session.add(tg)
     session.commit()
+
+
+def get_tgovr_one(session, tg_id: int) -> TGOVR:
+    return session.query(TGOVR).filter(TGOVR.id == tg_id).one()
 
 
 def get_tgovr(session, tg_id: int = None) -> TGOVR:
@@ -1146,7 +1150,19 @@ class MarcaManager(Manager):
         marcas = self.session.query(Marca).all()
         return [(marca.id, marca.nome) for marca in marcas]
 
-    def get_marcas_ativas_representante(self, representante_id):
+    def get_representantes_ativos_marca(self, marca_id) -> List[RepresentanteMarca]:
+        representantes = self.session.query(Representacao.representante_id).filter(
+            Representacao.inicio <= datetime.today()
+        ).filter(
+            Representacao.fim.is_(None)
+        ).filter(
+            Representacao.marca_id == marca_id
+        ).all()
+        representantes = [r[0] for r in representantes]
+        return self.session.query(RepresentanteMarca).filter(
+            RepresentanteMarca.id.in_(representantes)).all()
+
+    def get_marcas_ativas_representante(self, representante_id) -> List[Marca]:
         marcas_representadas = self.session.query(Representacao.marca_id).filter(
             Representacao.inicio <= datetime.today()
         ).filter(
@@ -1158,4 +1174,11 @@ class MarcaManager(Manager):
         return self.session.query(Marca).filter(Marca.id.in_(marcas)).all()
 
     def get_marcas_rvf_por_representante(self, rvf_id: int):
-        return {}
+        result = defaultdict(list)
+        rvf = self.session.query(RVF).filter(RVF.id == rvf_id).one_or_none()
+        if rvf is not None:
+            for marca in rvf.marcasencontradas:
+                representantes = self.get_representantes_ativos_marca(marca.id)
+                for representante in representantes:
+                    result[representante].append(marca)
+        return result
