@@ -264,7 +264,6 @@ class OKRMetaForm(FlaskForm):
 
 class FiltroDocxForm(FlaskForm):
     docx_id = SelectField('Documentos disponiveis', default=-1)
-    fonte_id = SelectField('Tipo de fonte', default=-1)
     oid = IntegerField('ID do objeto que será fonte para preenchimento do docx')
 
     def __init__(self, *args, **kwargs):
@@ -272,9 +271,13 @@ class FiltroDocxForm(FlaskForm):
         self.docx_id.choices = []
         if kwargs.get('lista_docx'):
             self.docx_id.choices.extend(kwargs.get('lista_docx'))
-        self.fonte_id.choices = [(tipo.value, tipo.name) for tipo in FonteDocx]
 
 
 class ModeloDocxForm(FlaskForm):
     id = IntegerField()
     filename = StringField()
+    fonte_docx_id = SelectField('Tipo de fonte', default=-1)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fonte_docx_id.choices = [(tipo.value, tipo.name) for tipo in FonteDocx]

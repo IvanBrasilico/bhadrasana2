@@ -1,19 +1,19 @@
 from datetime import timedelta
 from typing import Callable, List, Tuple
 
-from ajna_commons.flask.log import logger
-from ajna_commons.models.bsonimage import BsonImage
 from bson import ObjectId
 from gridfs import GridFS, NoFile
 from sqlalchemy import and_
-from virasana.integracao.mercante.mercantealchemy import Item
 
+from ajna_commons.flask.log import logger
+from ajna_commons.models.bsonimage import BsonImage
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, \
     get_usuario_logado, gera_objeto, EBloqueado
 from bhadrasana.models.ovr import Marca, TipoEventoOVR, EventoEspecial, OVR
 from bhadrasana.models.ovrmanager import get_ovr, gera_eventoovr
 from bhadrasana.models.rvf import RVF, Infracao, ImagemRVF, Lacre, \
     TipoApreensao, ApreensaoRVF
+from virasana.integracao.mercante.mercantealchemy import Item
 
 
 def get_peso(session, numeroCE, conteiner) -> float:
@@ -64,6 +64,10 @@ def get_rvf(session, rvf_id: int = None) -> RVF:
     if rvf_id is None:
         return RVF()
     return session.query(RVF).filter(RVF.id == rvf_id).one_or_none()
+
+
+def get_rvf_one(session, rvf_id: int = None) -> RVF:
+    return session.query(RVF).filter(RVF.id == rvf_id).one()
 
 
 def lista_rvfovr(session, ovr_id: int) -> List[RVF]:

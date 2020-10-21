@@ -9,28 +9,27 @@
                         <label for="campo">Nome do modelo</label>
                     </div>
                     <div class="col-sm-2">
-                        <label for="valor">Tipo de fonte de dados</label>
-                    </div>
-                    <div class="col-sm-2">
                         <label for="motivo">ID da fonte</label>
                     </div>
-                    <div class="col-sm-6">
+                    <div class="col-sm-8">
                     </div>
                 </div>
                 <div class="row">
                     <div class="form-group">
-                        <input type="hidden" name="active_tab" value="{{active_tab}}">
                         <div class="col-sm-2">
                             {{ formdocx.docx_id(class='form-control') }}
-                        </div>
-                        <div class="col-sm-2">
-                            {{ formdocx.fonte_id(class='form-control') }}
                         </div>
                         <div class="col-sm-2">
                             {{ formdocx.oid(class='form-control') }}
                         </div>
                         <div class="col-sm-2">
-                            <input class="btn btn-default btn-info form-control" type="submit" value="Gerar docx"/>
+                            <input class="btn btn-default btn-warning form-control" type="submit" name="preencher" value="Gerar docx preenchido"/>
+                        </div>
+                        <div class="col-sm-2">
+                            <input class="btn btn-default btn-info form-control" type="submit" name="baixar" value="Baixar modelo docx"/>
+                        </div>
+                        <div class="col-sm-2">
+                            <input class="btn btn-default btn-danger form-control" type="submit" name="excluir"value="Excluir modelo docx"/>
                         </div>
                     </div>
                 </div>
@@ -56,6 +55,16 @@
                     </div>
                 </div>
                 <div class="row">
+                    <div class="col-sm-2">
+                        <label for="fonte_docx_id">Tipo de fonte de dados</label>
+                    </div>
+                    <div class="col-sm-4">
+                        {{ modeloform.fonte_docx_id(class='form-control') }}
+                    </div>
+                    <div class="col-sm-4">
+                    </div>
+                </div>
+                <div class="row">
                     <div class="col-sm-12">
                         <label class="btn btn-default btn-choose" for="documento">
                             <input id="documento" name="documento" type="file" style="display:none"
@@ -69,7 +78,7 @@
                 <div class="row">
                     &nbsp;<br>
                     <div class="col-sm-12">
-                        <input class="btn btn-primary" type="submit" value="Movimentar"/>
+                        <input class="btn btn-primary" type="submit" value="Fazer Upload de novo modelo"/>
                     </div>
                 </div>
             </form>
