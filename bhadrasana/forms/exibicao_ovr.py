@@ -7,6 +7,7 @@ from bhadrasana.models.laudo import get_empresa
 from bhadrasana.models.ovr import OVR
 from bhadrasana.models.ovrmanager import get_visualizacoes, lista_tgovr
 from bhadrasana.models.rvfmanager import lista_rvfovr
+from bhadrasana.models.virasana_manager import get_conhecimento
 
 
 class TipoExibicao(Enum):
@@ -15,6 +16,7 @@ class TipoExibicao(Enum):
     Ocorrencias = 3
     Empresa = 4
     Resultado = 5
+    Resumo = 6
 
 
 class ExibicaoOVR:
@@ -71,6 +73,16 @@ class ExibicaoOVR:
              'Peso apreensões',
              'Valor TG',
              'Auditor Responsável'],
+        TipoExibicao.Resumo:
+            ['ID',
+             'Data Ficha',
+             'Auditor Responsável',
+             'Data Último Evento',
+             'Último Evento',
+             'Usuário',
+             'CNPJ/Nome Fiscalizado',
+             'Resumo para compartilhamento',
+             ],
     }
 
     def __init__(self, session, tipo, user_name: str):
@@ -149,6 +161,13 @@ class ExibicaoOVR:
             for marca in rvf.marcasencontradas:
                 marcas.add(marca.nome)
         return infracoes, marcas
+
+    def get_conteineres(self, ovr):
+        conteineres = set()
+        rvfs = lista_rvfovr(self.session, ovr.id)
+        for rvf in rvfs:
+            conteineres.add(rvf.numerolote)
+        return conteineres
 
     def get_peso_apreensoes(self, ovr):
         peso = 0.
@@ -229,6 +248,38 @@ class ExibicaoOVR:
                 '{:0.2f}'.format(peso_apreensoes),
                 '{:0.2f}'.format(valor_tgs),
                 auditor_descricao]
+        if self.tipo == TipoExibicao.Resumo:
+            infracoes, marcas = self.get_infracoes_e_marcas(ovr)
+            peso_apreensoes = self.get_peso_apreensoes(ovr)
+            valor_tgs = self.get_valor_tgs(ovr)
+            conhecimento = get_conhecimento(self.session,
+                                            ovr.numeroCEmercante)
+            resumo = []
+            if conhecimento:
+                resumo.append(f'<b>BL</b>: {conhecimento.numConhecimento}')
+                conteineres = self.get_conteineres(ovr)
+                if conteineres:
+                    resumo.append(f'<b>Contêineres</b>: {conteineres}')
+                resumo.append(f'<b>Porto de Origem</b>: {conhecimento.portoOrigemCarga}')
+                resumo.append(f'<b>Porto de Destino Final</b>: {conhecimento.portoDestFinal}')
+                resumo.append(f'<b>Mercadoria</b>: {conhecimento.descricao}')
+                resumo.append(f'<b>M3</b>: {conhecimento.cubagem}')
+            if peso_apreensoes:
+                resumo.append(f'<b>Peso das Apreensões</b>: {peso_apreensoes}')
+            if infracoes:
+                resumo.append(f'<b>Infrações</b>: {infracoes}')
+            if marcas:
+                resumo.append(f'<b>Marcas contrafeitas</b>: {marcas}')
+            if valor_tgs:
+                resumo.append(f'<b>Valor dos TGs</b>: {valor_tgs}')
+            return ovr.id, visualizado, [
+                ovr.datahora,
+                auditor_descricao,
+                data_evento,
+                tipo_evento_nome,
+                evento_user_descricao,
+                fiscalizado,
+                '<br>'.join(resumo)]
 
     def get_titulos(self):
         return ExibicaoOVR.titulos[self.tipo]
