@@ -166,7 +166,7 @@
                                title="Selecionar linha"></td>
                     <td><a href="ovr?id={{ovr[0]}}" target="_blank">{{ ovr[0] }}</a></td>
                     {% for col in ovr[2] %}
-                    <td>{{ col }}</td>
+                    <td style="text-align:left">{{ col | safe }}</td>
                     {% endfor %}
                 </tr>
                 {% endfor %}
