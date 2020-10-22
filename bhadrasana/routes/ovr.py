@@ -1232,7 +1232,6 @@ def ovr_app(app):
             flash(str(err))
         return redirect(url_for('ver_okrs', setor_id=setor_id))
 
-
     @app.route('/okrmeta', methods=['POST'])
     @login_required
     def okrmeta():
