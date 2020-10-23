@@ -65,8 +65,9 @@ class OVRDict():
         rvf = get_rvf_one(session, id)
         rvf_dump = rvf.dump()
         ovr = rvf.ovr
-        rvf_dump['responsavel'] = ovr.responsavel_cpf
+        rvf_dump['responsavel'] = ovr.responsavel.nome
         rvf_dump['recinto'] = ovr.recinto.nome
+        rvf_dump['setor'] = ovr.setor.nome
         return rvf_dump
 
     def monta_tgovr_dict(self, db, session, id: int) -> dict:
