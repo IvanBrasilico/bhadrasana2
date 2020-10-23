@@ -3,7 +3,7 @@ from typing import List
 
 from ajna_commons.utils.images import mongo_image
 from bhadrasana.models.laudo import get_empresa
-from bhadrasana.models.ovr import FonteDocx
+from bhadrasana.models.ovr import FonteDocx, OVR
 from bhadrasana.models.ovrmanager import get_ovr_one, MarcaManager, get_tgovr_one
 from bhadrasana.models.rvf import RVF
 from bhadrasana.models.rvfmanager import get_rvf_one
@@ -64,6 +64,10 @@ class OVRDict():
         """Retorna um dicionário com conteúdo do RVF, inclusive imagens."""
         rvf = get_rvf_one(session, id)
         rvf_dump = rvf.dump()
+        ovr = rvf.ovr
+        rvf_dump['responsavel'] = ovr.responsavel.nome
+        rvf_dump['recinto'] = ovr.recinto.nome
+        rvf_dump['setor'] = ovr.setor.nome
         return rvf_dump
 
     def monta_tgovr_dict(self, db, session, id: int) -> dict:
@@ -86,9 +90,8 @@ class OVRDict():
 
         Útil para preenchimento de retirada de amostras
         """
-        rvf = get_rvf_one(session, id)
+        rvf_dump = self.monta_rvf_dict(db, session, id, imagens=False)
         marcas_por_representante = MarcaManager(session).get_marcas_rvf_por_representante(id)
-        rvf_dump = rvf.dump()
         rvf_dicts = []
         for representante, marcas in marcas_por_representante.items():
             rvf_dict = rvf_dump.copy()

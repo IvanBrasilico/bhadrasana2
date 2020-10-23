@@ -1250,17 +1250,21 @@ def ovr_app(app):
             flash(str(err))
         return redirect(url_for('ver_okrs', objetivo=objective_id))
 
-    @app.route('/exclui_okrmeta', methods=['GET'])
+    @app.route('/exclui_okrmeta/<metaid>', methods=['POST'])
     @login_required
-    def exclui_meta():
+    def exclui_meta(metaid):
         session = app.config.get('dbsession')
-        meta_id = request.args.get('meta_id')
+        setor_id = request.form.get('setor_id')
+        objective_id = request.form.get('objective_id')
         try:
-            exclui_okrmeta(session, int(meta_id))
+            exclui_okrmeta(session, int(metaid))
+            flash(f'Meta {metaid} excluída')
         except Exception as err:
             logger.error(err, exc_info=True)
-            jsonify({'msg': str(err)}), 500
-        return jsonify({'msg': 'Excluído'}), 201
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return redirect(url_for('ver_okrs', objetivo=objective_id, setor_id=setor_id))
 
     @app.route('/exporta_cen_rilo', methods=['GET', 'POST'])
     @login_required
@@ -1282,8 +1286,9 @@ def ovr_app(app):
             if request.method == 'POST':
                 filtro_form = FiltroRelatorioForm(request.form, setores=lista_setores)
                 filtro_form.validate()
-                timestamp = time.time()
-                out_filename = 'rilo-' + str(timestamp) + '.xlsx'
+                out_filename = f'rilo_{datetime.strftime(filtro_form.datainicio.data, "%Y-%m-%d")} a ' \
+                               f'{datetime.strftime(filtro_form.datafim.data, "%Y-%m-%d")}_' \
+                               f'{datetime.strftime(datetime.now(), "%y-%m-%dT%H-%M-%S")}.xlsx'
                 dict_planilha = monta_planilha_rilo(filtro_form.datainicio.data,
                                                     filtro_form.datafim.data,
 
