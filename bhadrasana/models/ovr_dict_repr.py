@@ -90,9 +90,8 @@ class OVRDict():
 
         Útil para preenchimento de retirada de amostras
         """
-        rvf = get_rvf_one(session, id)
+        rvf_dump = self.monta_rvf_dict(db, session, id, imagens=False)
         marcas_por_representante = MarcaManager(session).get_marcas_rvf_por_representante(id)
-        rvf_dump = rvf.dump()
         rvf_dicts = []
         for representante, marcas in marcas_por_representante.items():
             rvf_dict = rvf_dump.copy()
