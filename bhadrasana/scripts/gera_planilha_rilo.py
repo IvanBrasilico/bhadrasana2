@@ -33,7 +33,27 @@ def rilo_dump_ovr(ovr: OVR) -> dict:
         ('NATIONAL REF', 'DIREP08/%s/STS/ALF/%s' %
          (datetime.strftime(ovr.create_date, '%Y'), ovr.id)),
         ('OFFENCE DATE', datetime.strftime(ovr.create_date, '%d/%m/%y')),
+        ('OFFENCE TIME', datetime.strftime(datetime.now(), '%H:%M')),
         ('OFFENCE LOCATION', 'SANTOS'),
+        ('OFFENCE LOCATION TYPE', 'PORTO MARITIMO'),
+        ('SERVICE', 'ALFANDEGA'),
+        ('COMMON FIELDS - ALL COMMODITIES', ''),
+        ('CONCEALMENT', ''),
+        ('CONCEALMENT DETAILS', ''),
+        ('BAGGAGE BRAND', ''),
+        ('ABANDANDEB BAGGAGE', ''),
+        ('COVERLOAD USED', ''),
+        ('TYPE OF COVERLOAD', ''),
+        ('COVERLOAD HS CODE', ''),
+        ('DESCRIPTION OF COVERLOAD', ''),
+        ('COUNTRY OF ORIGIN', ''),
+        ('DIRECTION', 'IMPORT'),
+        ('LINKAGE TO TRADE BASED MONEY LAUNDRING', ''),
+        ('STATUS OF GOODS', ''),
+        ('COUNTRY INITIATING CONTROLLED DELIVERY', ''),
+        ('INDICATORS RELATED TO TERRORISM', 'UNKNOWN'),
+        ('SEIZURE MADE WITHIN AN OPERATION', ''),
+        ('TAX/DUTY OTHER FIELDS', ''),
         ('CE', ovr.numeroCEmercante)
     ))
 
