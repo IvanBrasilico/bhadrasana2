@@ -16,10 +16,10 @@
                 </div>
                 <div class="row">
                     <div class="form-group">
-                        <div class="col-sm-2">
+                        <div class="col-sm-3">
                             {{ formdocx.docx_id(class='form-control') }}
                         </div>
-                        <div class="col-sm-2">
+                        <div class="col-sm-1">
                             {{ formdocx.oid(class='form-control') }}
                         </div>
                         <div class="col-sm-2">
@@ -36,13 +36,13 @@
                         </div>
                         <div class="col-sm-2">
                             <input class="btn btn-default btn-info form-control" type="submit" name="visualizar"
-                                   value="Ver Campos disponíveis Tipo"/>
+                                   value="Ver Campos do Tipo de Fonte"/>
                         </div>
                     </div>
                 </div>
             </form>
         </div>
-        <div class="row col-sm-12">
+        <div class="row col-sm-12" id="visualizar">
             {% if ovr_dict %}
             <h3>Guia de uso das TAGS (para o tipo de fonte de dados selecionado)</h3>
             <h4>Utilizar chaves para os campos simples. Para campos "filhos", há três opções:
@@ -79,6 +79,21 @@
             {% endfor %}
             </ul>
             {% endif %}
+        </div>
+        <div class="row col-sm-12" id="arquivos">
+            {% if arquivos %}
+            <h3>Arquivos gerados no Servidor</h3>
+            <div class="table">
+                <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive">
+                    {% for arquivo in arquivos %}
+                    <tr>
+                        <td>
+                            <a href="static/{{ current_user.name }}/{{arquivo}}">{{ arquivo }}</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>            {% endif %}
         </div>
         <div class="row col-sm-12">
             <h3>Inserir novo modelo de documento</h3>
