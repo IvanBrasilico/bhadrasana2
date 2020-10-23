@@ -1355,10 +1355,17 @@ def ovr_app(app):
                         db=db, session=session, id=formdocx.oid.data)
                     # print(ovr_dict)
                     if isinstance(ovr_dict, list):
+                        arquivos = []
                         for odict in ovr_dict:
                             document = get_doc_generico_ovr(odict, documento)
+                            nome_arquivo = out_filename + '_' + odict.get('nome')
+                            arquivos.append(nome_arquivo)
                             document.save(os.path.join(
-                                get_user_save_path(), out_filename + '_' + odict.get('nome')))
+                                get_user_save_path(), nome_arquivo))
+                        return render_template('gera_docx.html',
+                                               formdocx=formdocx,
+                                               modeloform=modeloform,
+                                               arquivos=arquivos)
                     else:
                         document = get_doc_generico_ovr(ovr_dict, documento)
                         document.save(os.path.join(get_user_save_path(), out_filename))

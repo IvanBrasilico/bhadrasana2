@@ -63,7 +63,7 @@ class OVRDict():
                        explode=True, imagens=True) -> dict:
         """Retorna um dicionário com conteúdo do RVF, inclusive imagens."""
         rvf = get_rvf_one(session, id)
-        rvf_dump = rvf.dump()
+        rvf_dump = rvf.dump(explode=explode, imagens=imagens)
         ovr = rvf.ovr
         rvf_dump['responsavel'] = ovr.responsavel.nome
         rvf_dump['recinto'] = ovr.recinto.nome
