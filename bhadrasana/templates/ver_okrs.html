@@ -1,29 +1,40 @@
 {% extends "layout.html" %} {% block content %} {{super()}}
-<div id="main" class="container-fluid">
-    <div id="top" class="row col-sm-12">
+<div id="main" class="container">
+
+    <div id="top" class="row">
+        <!--Imagem OKR-->
         <div class="col-sm-4">
             <img src="static/okrs.jpg" width="90%"/>
         </div>
+
+        <!--Tabela de objetivos-->
         <div class="col-sm-8">
+
+            <!--Parte superior-->
             <div class="row">
+
                 <div class="col-sm-5">
-                    <h1>Objetivos do Setor</h1>
+                    <h2>Objetivos do Setor</h2>
                 </div>
+
+                <!--Seleciona setor-->
                 <div class="col-sm-3">
                     &nbsp;<br>
                     {{okrobjective_form.setor_id(class='form-control')}}
                 </div>
-                <div class="col-sm-2">
-                </div>
-                <div class="col-sm-2">
-                    &nbsp;<br>
+                <div class="col-sm-2"></div>
+
+                <!--Adiciona objetivo-->
+                <div class="col-sm-2" style="margin-top: 2.5%;">
                     <button id="btn_objetivo_novo" type="button"
                             class="btn btn-primary btn-warning form-control"
                             data-toggle="modal" data-target="#objetivo_novo">Adicionar
                     </button>
                 </div>
             </div>
-            <div class="row col-sm-12">
+
+            <!--Parte inferior-->
+            <div class="row">
                 <div class="table">
                     <table class="inlineTable table table-bordered table-hover table-responsive"
                            id="objectives">
@@ -63,8 +74,11 @@
                     </table>
                 </div>
             </div>
+
         </div>
     </div>
+
+    <!--Incluir metas-->
     <div id="titulo_metas" class="row col-sm-12">
         {% if objective %}
         <div class="row">
@@ -81,16 +95,25 @@
         {% endif %}
         &nbsp;<br>
     </div>
+
+    <!--Gráficos de resultados-->
     <div id="plots" class="row col-sm-12">
         {% for plot in plots %}
         <div class="col-sm-4">
-            <div class="col-sm-8">
-            </div>
+            <div class="col-sm-8"></div>
             <div class="col-sm-4">
-                <button id="btn_exclui_meta{{results[loop.index - 1].id}}" type="button"
-                        class="btn btn-primary btn-danger form-control"
-                        onclick="exclui_meta({{results[loop.index - 1].id}})">Excluir
-                </button>
+<!--                <button id="btn_exclui_meta{{results[loop.index - 1].id}}" type="button"-->
+<!--                        class="btn btn-primary btn-danger form-control"-->
+<!--                        onclick="exclui_meta({{results[loop.index - 1].id}})">Excluir-->
+<!--                </button>-->
+
+                <form action="{{ url_for('exclui_meta', metaid=results[loop.index - 1].id )}}" method="post">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <input type="hidden" name="setor_id" value="{{okrobjective_form.setor_id.data}}"/>
+                    <input type="hidden" name="id" value="{{objective.id}}"/>
+                    <button type="submit" class="btn btn-primary btn-danger form-control">Excluir</button>
+                </form>
+
             </div>
             <div class="col-sm-12">
                 {{ plot | safe }}
@@ -98,10 +121,15 @@
         </div>
         {% endfor %}
     </div>
+
+
+    <!--Footer-->
     <div id="bottom" class="row col-sm-12">
         AJNA - Receita Federal do Brasil 2017
     </div>
 </div>
+
+<!--Modal editar objetivo-->
 {% for objetivo in objectives %}
 <div class="modal fade modal-lg" id="objetivo{{objetivo.id}}" tabindex="-1" role="dialog"
      aria-labelledby="ModalLabel"
@@ -143,6 +171,8 @@
     </div>
 </div>
 {% endfor %}
+
+<!--Modal adicionar objetivo-->
 <div class="modal fade modal-lg" id="objetivo_novo" tabindex="-1" role="dialog"
      aria-labelledby="ModalLabel"
      aria-hidden="true">
@@ -181,6 +211,8 @@
         </div>
     </div>
 </div>
+
+<!--Modal incluir meta-->
 {% if objective %}
 <div class="modal fade modal-lg" id="meta_nova" tabindex="-1" role="dialog"
      aria-labelledby="ModalLabel"
@@ -215,16 +247,17 @@
     </div>
 </div>
 {% endif %}
+
 {% endblock %} {% block scripts %} {{super()}}
 <script>
 
-    function exclui_meta(meta_id){
-        $.getJSON('exclui_okrmeta', {
-          meta_id: meta_id
-        }, function(flags_ovr) {
-          document.location.reload(true);
-        });
-    }
+<!--    function exclui_meta(meta_id){-->
+<!--        $.getJSON('exclui_okrmeta', {-->
+<!--          meta_id: meta_id-->
+<!--        }, function(flags_ovr) {-->
+<!--          document.location.reload(true);-->
+<!--        });-->
+<!--    }-->
 
     $( "#setor_id" ).change(function() {
         window.location.href = 'ver_okrs?setor_id=' + this.value;
