@@ -336,7 +336,7 @@ def atualiza_numerolimpo(target, value, oldvalue, initiator):
     return value
 
 
-class Marca(Base):
+class Marca(BaseDumpable):
     __tablename__ = 'ovr_marcas'
     id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                 primary_key=True)
@@ -346,7 +346,7 @@ class Marca(Base):
         return '{}'.format(self.nome)
 
 
-class RepresentanteMarca(Base):
+class RepresentanteMarca(BaseDumpable):
     __tablename__ = 'ovr_representantes_marcas'
     id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                 primary_key=True)
