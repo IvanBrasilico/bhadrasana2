@@ -93,6 +93,7 @@ class OVRDict():
         for representante, marcas in marcas_por_representante.items():
             rvf_dict = rvf_dump.copy()
             rvf_dict.update(representante.dump())
-            rvf_dict['marcas'] = ''.join([marca.nome for marca in marcas])
+            print(representante.dump())
+            rvf_dict['marcasencontradas'] = ', '.join([marca.nome for marca in marcas])
             rvf_dicts.append(rvf_dict)
         return rvf_dicts

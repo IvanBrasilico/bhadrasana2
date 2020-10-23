@@ -1349,15 +1349,24 @@ def ovr_app(app):
                     ovr_dict = OVRDict(docx.fonte_docx_id).get_dict(
                         db=db, session=session, id=formdocx.oid.data)
                     # print(ovr_dict)
-                    document = get_doc_generico_ovr(ovr_dict, documento)
-                    document.save(os.path.join(get_user_save_path(), out_filename))
+                    if isinstance(ovr_dict, list):
+                        for odict in ovr_dict:
+                            document = get_doc_generico_ovr(odict, documento)
+                            document.save(os.path.join(
+                                get_user_save_path(), out_filename + '_' + odict.get('nome')))
+                    else:
+                        document = get_doc_generico_ovr(ovr_dict, documento)
+                        document.save(os.path.join(get_user_save_path(), out_filename))
                 elif request.form.get('visualizar'):
                     ovr_dict = OVRDict(docx.fonte_docx_id).get_dict(
                         db=db, session=session, id=formdocx.oid.data)
-                    ovr_dict.pop('historico', None)
-                    ovr_dict.pop('tgs', None)
-                    for rvf in ovr_dict.get('rvfs', []):
-                        rvf.pop('imagens', None)
+                    if isinstance(ovr_dict, list):
+                        ovr_dict = ovr_dict[0]
+                    if isinstance(ovr_dict, dict):
+                        ovr_dict.pop('historico', None)
+                        # ovr_dict.pop('tgs', None)
+                        # for rvf in ovr_dict.get('rvfs', []):
+                        #    rvf.pop('imagens', None)
                     return render_template('gera_docx.html', formdocx=formdocx,
                                            modeloform=modeloform, ovr_dict=ovr_dict)
                 else:
