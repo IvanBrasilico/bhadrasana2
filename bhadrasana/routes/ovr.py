@@ -1,5 +1,4 @@
 import os
-import time
 from _collections import defaultdict
 from datetime import datetime, date, timedelta
 from decimal import Decimal
@@ -1286,9 +1285,10 @@ def ovr_app(app):
             if request.method == 'POST':
                 filtro_form = FiltroRelatorioForm(request.form, setores=lista_setores)
                 filtro_form.validate()
-                out_filename = f'rilo_{datetime.strftime(filtro_form.datainicio.data, "%Y-%m-%d")} a ' \
-                               f'{datetime.strftime(filtro_form.datafim.data, "%Y-%m-%d")}_' \
-                               f'{datetime.strftime(datetime.now(), "%y-%m-%dT%H-%M-%S")}.xlsx'
+                out_filename = \
+                    f'rilo_{datetime.strftime(filtro_form.datainicio.data, "%Y-%m-%d")} a ' \
+                    f'{datetime.strftime(filtro_form.datafim.data, "%Y-%m-%d")}_' \
+                    f'{datetime.strftime(datetime.now(), "%y-%m-%dT%H-%M-%S")}.xlsx'
                 dict_planilha = monta_planilha_rilo(filtro_form.datainicio.data,
                                                     filtro_form.datafim.data,
 

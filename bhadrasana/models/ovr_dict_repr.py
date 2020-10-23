@@ -3,7 +3,7 @@ from typing import List
 
 from ajna_commons.utils.images import mongo_image
 from bhadrasana.models.laudo import get_empresa
-from bhadrasana.models.ovr import FonteDocx, OVR
+from bhadrasana.models.ovr import FonteDocx
 from bhadrasana.models.ovrmanager import get_ovr_one, MarcaManager, get_tgovr_one
 from bhadrasana.models.rvf import RVF
 from bhadrasana.models.rvfmanager import get_rvf_one
