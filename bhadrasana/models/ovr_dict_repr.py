@@ -4,9 +4,9 @@ from typing import List
 from ajna_commons.utils.images import mongo_image
 from bhadrasana.models.laudo import get_empresa
 from bhadrasana.models.ovr import FonteDocx
-from bhadrasana.models.ovrmanager import get_tgovr, get_ovr_one, MarcaManager, get_tgovr_one
+from bhadrasana.models.ovrmanager import get_ovr_one, MarcaManager, get_tgovr_one
 from bhadrasana.models.rvf import RVF
-from bhadrasana.models.rvfmanager import get_rvf, get_rvf_one
+from bhadrasana.models.rvfmanager import get_rvf_one
 
 
 def not_implemented():
@@ -87,7 +87,7 @@ class OVRDict():
         Útil para preenchimento de retirada de amostras
         """
         rvf = get_rvf_one(session, id)
-        marcas_por_representante = MarcaManager(session).get_marcas_rvf_por_representante(rvf_id)
+        marcas_por_representante = MarcaManager(session).get_marcas_rvf_por_representante(id)
         rvf_dump = rvf.dump()
         rvf_dicts = []
         for representante, marcas in marcas_por_representante.items():
