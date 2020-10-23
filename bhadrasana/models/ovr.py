@@ -683,10 +683,6 @@ if __name__ == '__main__':  # pragma: no-cover
         # Sair por segurança. Comentar linha abaixo para funcionar
         # metadata.drop_all(engine)
         # sys.exit(0)
-        metadata.drop_all(engine,
-                          [
-                              metadata.tables['ovr_docx'],
-                          ])
         metadata.create_all(engine,
                             [
                                 metadata.tables['ovr_docx'],
