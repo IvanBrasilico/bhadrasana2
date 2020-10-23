@@ -67,12 +67,13 @@ class RVF(BaseRastreavel, BaseDumpable):
     last_modified = Column(DateTime, index=True,
                            onupdate=func.current_timestamp())
 
-    def dump(self, exclude=None, explode=True):
+    def dump(self, exclude=None, explode=True, imagens=True):
         dumped = super().dump(exclude)
         dumped['peso'] = str(dumped['peso'])
         dumped['volume'] = str(dumped['volume'])
         if explode:
-            dumped['imagens'] = [imagem.dump(explode=True) for imagem in self.imagens]
+            if imagens:
+                dumped['imagens'] = [imagem.dump(explode=True) for imagem in self.imagens]
             dumped['infracoesencontradas'] = [infracao.nome
                                               for infracao in self.infracoesencontradas]
             dumped['marcasencontradas'] = [marca.nome
