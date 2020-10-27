@@ -213,7 +213,7 @@ class ExibicaoOVR:
         html_penultimo_evento = '<br>'.join(campos_penultimo_evento)
         user_descricao = self.usuario_name(ovr.user_name)
         auditor_descricao = self.usuario_name(ovr.cpfauditorresponsavel)
-        visualizado = self.get_visualizado_pelo_usuario(ovr, ovr.last_modified)
+        visualizado = self.get_visualizado_pelo_usuario(ovr, data_evento)
         fiscalizado = self.get_fiscalizado(ovr)
         if self.tipo == TipoExibicao.FMA:
             alertas = [flag.nome for flag in ovr.flags]
