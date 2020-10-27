@@ -33,6 +33,7 @@ class ExibicaoOVR:
              'CE Mercante',
              'Alertas',
              'Último Evento',
+             'Evento Anterior',
              'Auditor Responsável'],
         TipoExibicao.Descritivo:
             ['ID',
@@ -53,7 +54,7 @@ class ExibicaoOVR:
              'Infrações RVFs',
              'Marcas RVFs',
              'Último Evento',
-             'Usuário'],
+             'Evento Anterior'],
         TipoExibicao.Empresa:
             ['ID',
              'Data Ficha',
@@ -62,7 +63,7 @@ class ExibicaoOVR:
              'Infrações RVFs',
              'Marcas RVFs',
              'Último Evento',
-             'Usuário'],
+             'Evento Anterior'],
         TipoExibicao.Resultado:
             ['ID',
              'Data Ficha',
@@ -77,9 +78,7 @@ class ExibicaoOVR:
             ['ID',
              'Data Ficha',
              'Auditor Responsável',
-             'Data Último Evento',
              'Último Evento',
-             'Usuário',
              'CNPJ/Nome Fiscalizado',
              'Resumo para compartilhamento',
              ],
@@ -98,12 +97,21 @@ class ExibicaoOVR:
             raise TypeError(
                 'Deve ser informado parâmetro do tipo TipoExibicao, str ou int')
 
-    def evento_campos(self, ovr):
+    def evento_campos(self, ovr, ind=1):
+        """Retorna campos do evento -ind da ovr
+
+        :param ovr: OVR
+        :param ind: índice inverso (1 último, 2 penúltimo, etc)
+        :return: evento_user_descricao: Nome do Usuário do Evento,
+                tipo_evento_nome: Nome do Tipo de Evento,
+                 data_evento: Data de ocorrência do Evento
+        """
         tipo_evento_nome = ''
         data_evento = ovr.create_date
         evento_user_descricao = ''
-        if len(ovr.historico) > 0:
-            evento_atual = ovr.historico[len(ovr.historico) - 1]
+        motivo = ''
+        if len(ovr.historico) >= ind:
+            evento_atual = ovr.historico[len(ovr.historico) - ind]
             if evento_atual.user_name:
                 usuario_evento = get_usuario(self.session, evento_atual.user_name)
                 if usuario_evento:
@@ -112,7 +120,8 @@ class ExibicaoOVR:
                     evento_user_descricao = evento_atual.user_name
             tipo_evento_nome = evento_atual.tipoevento.nome
             data_evento = evento_atual.create_date
-        return evento_user_descricao, tipo_evento_nome, data_evento
+            motivo = evento_atual.motivo
+        return evento_user_descricao, tipo_evento_nome, data_evento, motivo
 
     def usuario_name(self, user_name):
         user_descricao = ''
@@ -192,10 +201,19 @@ class ExibicaoOVR:
 
     def get_linha(self, ovr: OVR) -> Tuple[int, bool, List]:
         recinto_nome = self.get_recinto_nome(ovr)
-        evento_user_descricao, tipo_evento_nome, data_evento = self.evento_campos(ovr)
+        evento_user, tipo_evento_nome, data_evento, motivo = self.evento_campos(ovr)
+        campos_ultimo_evento = [tipo_evento_nome, evento_user,
+                                datetime.strftime(data_evento, '%Y-%m-%d %H:%M'),
+                                motivo]
+        html_ultimo_evento = '<br>'.join(campos_ultimo_evento)
+        evento_user2, tipo_evento_nome2, data_evento2, motivo2 = self.evento_campos(ovr, 2)
+        campos_penultimo_evento = [tipo_evento_nome2, evento_user2,
+                                   datetime.strftime(data_evento2, '%Y-%m-%d %H:%M'),
+                                   motivo2]
+        html_penultimo_evento = '<br>'.join(campos_penultimo_evento)
         user_descricao = self.usuario_name(ovr.user_name)
         auditor_descricao = self.usuario_name(ovr.cpfauditorresponsavel)
-        visualizado = self.get_visualizado_pelo_usuario(ovr, data_evento)
+        visualizado = self.get_visualizado_pelo_usuario(ovr, ovr.last_modified)
         fiscalizado = self.get_fiscalizado(ovr)
         if self.tipo == TipoExibicao.FMA:
             alertas = [flag.nome for flag in ovr.flags]
@@ -207,7 +225,8 @@ class ExibicaoOVR:
                 ovr.numero,
                 ovr.numeroCEmercante,
                 ', '.join(alertas),
-                tipo_evento_nome,
+                html_ultimo_evento,
+                html_penultimo_evento,
                 auditor_descricao]
         if self.tipo == TipoExibicao.Descritivo:
             return ovr.id, visualizado, [
@@ -218,8 +237,8 @@ class ExibicaoOVR:
                 fiscalizado,
                 ovr.observacoes,
                 user_descricao,
-                tipo_evento_nome,
-                evento_user_descricao]
+                html_ultimo_evento,
+                html_penultimo_evento]
         if (self.tipo == TipoExibicao.Ocorrencias or
                 self.tipo == TipoExibicao.Empresa):
             infracoes, marcas = self.get_infracoes_e_marcas(ovr)
@@ -233,8 +252,8 @@ class ExibicaoOVR:
                 campo_comum,
                 ', '.join(infracoes),
                 ', '.join(marcas),
-                tipo_evento_nome,
-                evento_user_descricao]
+                html_ultimo_evento,
+                html_penultimo_evento]
         if self.tipo == TipoExibicao.Resultado:
             infracoes, marcas = self.get_infracoes_e_marcas(ovr)
             peso_apreensoes = self.get_peso_apreensoes(ovr)
@@ -275,9 +294,8 @@ class ExibicaoOVR:
             return ovr.id, visualizado, [
                 ovr.datahora,
                 auditor_descricao,
-                data_evento,
-                tipo_evento_nome,
-                evento_user_descricao,
+                html_ultimo_evento,
+                html_penultimo_evento,
                 fiscalizado,
                 '<br>'.join(resumo)]
 
