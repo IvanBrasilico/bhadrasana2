@@ -203,12 +203,12 @@ class ExibicaoOVR:
         recinto_nome = self.get_recinto_nome(ovr)
         evento_user, tipo_evento_nome, data_evento, motivo = self.evento_campos(ovr)
         campos_ultimo_evento = [tipo_evento_nome, evento_user,
-                                datetime.strftime(data_evento, '%Y-%m-%d %H:%M'),
+                                datetime.strftime(data_evento, '%d/%m/%Y %H:%M'),
                                 motivo]
         html_ultimo_evento = '<br>'.join(campos_ultimo_evento)
         evento_user2, tipo_evento_nome2, data_evento2, motivo2 = self.evento_campos(ovr, 2)
         campos_penultimo_evento = [tipo_evento_nome2, evento_user2,
-                                   datetime.strftime(data_evento2, '%Y-%m-%d %H:%M'),
+                                   datetime.strftime(data_evento2, '%d/%m/%Y %H:%M'),
                                    motivo2]
         html_penultimo_evento = '<br>'.join(campos_penultimo_evento)
         user_descricao = self.usuario_name(ovr.user_name)
