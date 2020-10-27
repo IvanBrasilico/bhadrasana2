@@ -565,7 +565,7 @@
                             <label for="motivo">Número</label>
                         </div>
                         <div class="col-sm-9">
-                            {{ processo_form.numero(class='form-control') }}
+                            {{ processo_form.numero_processo(class='form-control') }}
                         </div>
                     </div>
                     <input class="btn btn-primary" type="submit" value="Registrar"/>
@@ -692,6 +692,7 @@
         });
         $("#numeroCEmercante").inputmask("999999999999999", {removeMaskOnSubmit: true});
         $("#numerodeclaracao").inputmask("99AA9999999999", {removeMaskOnSubmit: true});
+        $("#numero_processo").inputmask("99999.999999/9999-99", {removeMaskOnSubmit: false});
     });
 
 
