@@ -138,7 +138,7 @@ class ProcessoOVRForm(FlaskForm):
     id = IntegerField('ID')
     ovr_id = IntegerField('OVR')
     tipoprocesso_id = SelectField('tipoprocesso', default=0)
-    numero = StringField(u'Número do processo',
+    numero_processo = StringField(u'Número do processo',
                          default='')
 
     def __init__(self, *args, **kwargs):
