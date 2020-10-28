@@ -1,0 +1,89 @@
+{% extends "layout.html" %} {% block content %} {{super()}}
+<div id="main" class="container-fluid">
+
+    <div id="top" class="row">
+        <h2>Gera lista de contêineres previstos em GMCI para Recinto Seco, para ordem de escaneamento no Operador Portuário</h2>
+        <div class="col-sm-12">
+            <form method="POST" id="filtroform" action="escaneamento_operador">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="row">
+                    <div class="col-sm-5">
+                        Escolha o recinto
+                    </div>
+                    <div class="col-sm-3">
+                        <label for="recintos">Recintos incluídos</label>
+                    </div>
+                    <div class="col-sm-3">
+                        <label for="qtde">Qtde contêineres</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <div class="col-sm-4">
+                            {{ filtro_form.recinto_id(class='form-control') }}
+                        </div>
+                        <div class="col-sm-1">
+                            <input type="button" class="btn btn-default btn-info form-control" id="incluir"
+                                   value="Incluir >>"/>
+                        </div>
+                        <div class="col-sm-3">
+                            {{ filtro_form.lista_recintos(class='form-control') }}
+                        </div>
+                        <div class="col-sm-2">
+                            {{ filtro_form.qtde(class='form-control') }}
+                        </div>
+                        <div class="col-sm-2">
+                            <input class="btn btn-default btn-warning form-control" type="submit" name="preencher"
+                                   value="Gerar lista"/>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="row col-sm-12" id="visualizar">
+            {% if gmcis is mapping %}
+            {% for operador in gmcis.keys()|sort() %}
+            <h4>{{ operador }}</h4>
+            <div class="table">
+                <table class="inlineTable table table-bordered table-hover table-responsive"
+                       id="minhas_ovrs_table">
+                    <thead>
+                    <tr>
+                        {% for colname in gmcis[operador][0].keys() %}
+                        <th>{{ colname }}</th>
+                        {% endfor %}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for row_dict in gmcis[operador] %}
+                    <tr>
+                        {% if row_dict is mapping %}
+                        {% for k, v in row_dict.items() %}
+                        <td>{{v}}</td>
+                        {% endfor %}
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            {% endfor %}
+            {% else %}
+            Erro! Mostrando dados que retornaram do Servidor:<br>
+            {{gmcis}}
+            {% endif %}
+        </div>
+    </div>
+    <div id="bottom" class="row">
+        AJNA - Receita Federal do Brasil 2017
+    </div>
+</div>
+{% endblock %} {% block scripts %} {{super()}}
+
+<script>
+$('#incluir').click(function() {
+    console.log($('#recinto_id').val());
+    $('#lista_recintos').val($('#lista_recintos').val() + ',' + $('#recinto_id').val());
+});
+
+</script>
+{% endblock %}

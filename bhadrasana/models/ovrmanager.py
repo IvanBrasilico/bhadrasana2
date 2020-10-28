@@ -42,6 +42,13 @@ def get_recintos(session) -> List[Tuple[int, str]]:
     return sorted(recintos_list, key=lambda x: x[1])
 
 
+def get_recintos_dte(session) -> List[Tuple[int, str]]:
+    recintos = session.query(Recinto).filter(Recinto.cod_dte.isnot(None)).all()
+    recintos_list = [(recinto.cod_dte, f'{recinto.nome} ({recinto.cod_dte})')
+                     for recinto in recintos]
+    return sorted(recintos_list, key=lambda x: x[1])
+
+
 def get_tipos_evento(session) -> List[Tuple[int, str]]:
     tiposeventos = session.query(TipoEventoOVR).filter(
         TipoEventoOVR.eventoespecial.is_(None)).order_by(

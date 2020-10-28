@@ -11,6 +11,7 @@ from flask_login import login_required, current_user
 from gridfs import GridFS
 from werkzeug.utils import redirect
 
+from bhadrasana.analises.escaneamento_operador import sorteia_GMCIs
 from bhadrasana.docx.docx_functions import get_doc_generico_ovr
 from bhadrasana.forms.exibicao_ovr import ExibicaoOVR, TipoExibicao
 from bhadrasana.forms.filtro_container import FiltroContainerForm
@@ -18,7 +19,7 @@ from bhadrasana.forms.filtro_empresa import FiltroEmpresaForm
 from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
     ProcessoOVRForm, ItemTGForm, ResponsavelOVRForm, TGOVRForm, FiltroRelatorioForm, \
     FiltroMinhasOVRsForm, OKRObjectiveForm, OKRMetaForm, SetorOVRForm, FiltroDocxForm, \
-    ModeloDocxForm
+    ModeloDocxForm, EscaneamentoOperadorForm
 from bhadrasana.models import delete_objeto, get_usuario
 from bhadrasana.models.laudo import get_empresa, get_empresas_nome, get_sats_cnpj
 from bhadrasana.models.ovr import OVR, OKRObjective
@@ -38,7 +39,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     exclui_item_tg, get_setores, get_objectives_setor, executa_okr_results, gera_okrobjective, \
     exclui_okrobjective, get_key_results_choice, gera_okrmeta, exclui_okrmeta, \
     get_usuarios_setores, get_setores_cpf, get_ovr_auditor, get_ovr_passagem, muda_setor_ovr, \
-    monta_ovr_dict, get_docx, inclui_docx, get_docx_choices
+    monta_ovr_dict, get_docx, inclui_docx, get_docx_choices, get_recintos_dte
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
@@ -1422,3 +1423,39 @@ def ovr_app(app):
             flash(str(type(err)))
             flash(str(err))
         return redirect(url_for('gera_docx'))
+
+    @app.route('/escaneamento_operador', methods=['GET', 'POST'])
+    @login_required
+    def escaneamento_operador():
+        session = app.config['dbsession']
+        gmcis = []
+        escaneamento_form = EscaneamentoOperadorForm()
+        try:
+            recintos = get_recintos_dte(session)
+            if request.method == 'POST':
+                end = datetime.now()
+                start = end - timedelta(hours=48)
+                escaneamento_form = EscaneamentoOperadorForm(request.form, recintos=recintos)
+                if escaneamento_form.validate():
+                    qtde = escaneamento_form.qtde.data
+                    lista_recintos = []
+                    for recinto in escaneamento_form.lista_recintos.data.split(','):
+                        try:
+                            lista_recintos.append(int(recinto))
+                        except ValueError:
+                            pass
+                    logger.info('Usuário %s escolheu %s escaneamentos_operador de GMCIS de %s a %s' %
+                                (current_user.name, qtde, start, end))
+                    gmcis = sorteia_GMCIs(session, lista_recintos, start, end, qtde)
+                else:
+                    flash(escaneamento_form.errors)
+            else:
+                escaneamento_form = EscaneamentoOperadorForm(recintos=recintos)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return render_template('escaneamento_operador.html',
+                               filtro_form=escaneamento_form,
+                               gmcis=gmcis)
