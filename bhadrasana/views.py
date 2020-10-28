@@ -268,7 +268,7 @@ def mynavbar():
              View('Fichas de Carga', 'pesquisa_ovr'),
              View('Minhas Fichas', 'minhas_ovrs'),
              Subgroup(
-                 'Pesquisas',
+                 'Pesquisas/relatórios',
                  View('Pesquisa Contêiner', 'consulta_container'),
                  View('Pesquisa Empresa', 'consulta_empresa'),
                  View('Verificações físicas', 'pesquisa_rvf'),
@@ -277,9 +277,10 @@ def mynavbar():
                  View('Painel de OKRs', 'ver_okrs'),
              ),
              Subgroup(
-                 'Exportações',
+                 'Administração/exportações',
                  View('Exporta Planilha CEN Rilo', 'exporta_cen_rilo'),
                  View('Gerador de documentos docx', 'gera_docx'),
+                 View('Lista para escaneamento no Operador', 'escaneamento_operador'),
                  Separator(),
                  View('Importa planilhas recintos', 'importa_planilha_recinto'),
                  View('Administração', 'admin.index'),

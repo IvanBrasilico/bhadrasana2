@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, IntegerField, TextAreaField, SelectField
+from wtforms import StringField, IntegerField, TextAreaField, SelectField, validators
 from wtforms.fields.html5 import DateField, TimeField, DecimalField
 
 from bhadrasana.forms.exibicao_ovr import TipoExibicao
@@ -139,7 +139,7 @@ class ProcessoOVRForm(FlaskForm):
     ovr_id = IntegerField('OVR')
     tipoprocesso_id = SelectField('tipoprocesso', default=0)
     numero_processo = StringField(u'Número do processo',
-                         default='')
+                                  default='')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -281,3 +281,17 @@ class ModeloDocxForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fonte_docx_id.choices = [(tipo.value, tipo.name) for tipo in FonteDocx]
+
+
+class EscaneamentoOperadorForm(FlaskForm):
+    qtde = IntegerField('Qtde de contêineres',
+                        [validators.NumberRange(min=1, max=100)],
+                        default=10)
+    lista_recintos = StringField()
+    recinto_id = SelectField(u'Recinto')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.recinto_id.choices = [[0, 'Selecione']]
+        if kwargs.get('recintos'):
+            self.recinto_id.choices.extend(kwargs.get('recintos'))

@@ -268,6 +268,7 @@ class Recinto(Base):
     cod_dte = Column(Integer())
     cod_siscomex = Column(VARCHAR(20), index=True)
     cod_unidade = Column(VARCHAR(20), index=True)
+    cod_carga = Column(VARCHAR(20), index=True)
     create_date = Column(TIMESTAMP, index=True,
                          server_default=func.current_timestamp())
 
