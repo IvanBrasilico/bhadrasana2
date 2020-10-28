@@ -502,9 +502,10 @@ def desfaz_ultimo_eventoovr(session, ovr_id: int) -> EventoOVR:
 
 
 def gera_processoovr(session, params) -> ProcessoOVR:
-    numero = params.get('numero')
+    numero = params.get('numero_processo')
     if numero:
         params['numerolimpo'] = ''.join([s for s in numero if s.isnumeric()])
+        params['numero'] = params['numero_processo']
     return gera_objeto(ProcessoOVR(),
                        session, params)
 
