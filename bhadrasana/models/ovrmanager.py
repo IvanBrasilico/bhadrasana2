@@ -4,8 +4,8 @@ import sys
 from gridfs import GridFS
 
 sys.path.append('.')
-sys.path.insert(0, '../ajna_docs/commons')
-sys.path.insert(0, '../virasana')
+sys.path.append('../ajna_docs/commons')
+sys.path.append('../virasana')
 sys.path.insert(0, '../ajna_api')
 
 from collections import OrderedDict, defaultdict
