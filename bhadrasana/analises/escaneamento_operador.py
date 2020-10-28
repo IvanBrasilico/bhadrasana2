@@ -45,7 +45,6 @@ def get_dict_codigos_recinto(dbsession, codigos):
     return {recinto.cod_dte: recinto.nome for recinto in recintos}
 
 
-
 def sorteia_GMCIs(dbsession: Session, recintos: List[int],
                   start: datetime, end: datetime, qtde=10) -> dict:
     """Retorna dicionário contendo campos, agrupado por nome do Recinto.
@@ -66,7 +65,6 @@ def sorteia_GMCIs(dbsession: Session, recintos: List[int],
     print(sql)
     rs = dbsession.execute(sql)
     operadores_recintos = get_dict_operador_recinto(dbsession)
-    keys = rs.keys()
     result = defaultdict(list)
     for row in rs.fetchall():
         nome_operador = operadores_recintos[row[0]]
