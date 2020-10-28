@@ -73,3 +73,11 @@ if __name__ == '__main__':
         session_bhad.commit()
     else:
         print('não há novos registros')
+
+    rows = session_laudos.query(SATLaudos). \
+        filter(SATLaudos.importador == '30235607000111').all()
+
+    result = session_laudos.execute('SELECT * FROM pdfs where idobjeto in (%s)' %
+                                    ','.join([str(row.id) for row in rows]))
+    for pdf in result:
+        print(pdf.filesize, pdf.idobjeto)
