@@ -216,6 +216,7 @@ class OVR(BaseRastreavel, BaseDumpable):
             dumped['historico'] = [evento.dump() for evento in self.historico]
             dumped['processos'] = [processo.dump() for processo in self.processos]
             dumped['tgs'] = [tg.dump() for tg in self.tgs]
+            dumped['datahora'] = datetime.strftime(self.datahora, '%d-%m-%Y %H:%M:%S')
         return dumped
 
 
