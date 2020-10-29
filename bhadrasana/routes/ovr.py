@@ -616,7 +616,6 @@ def ovr_app(app):
             flash(str(err))
         return redirect(url_for('ovr', id=ovr_id))
 
-
     @app.route('/lista_tgovr', methods=['GET'])
     @login_required
     def listatgovr():
