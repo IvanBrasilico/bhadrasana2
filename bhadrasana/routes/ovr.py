@@ -39,7 +39,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     exclui_item_tg, get_setores, get_objectives_setor, executa_okr_results, gera_okrobjective, \
     exclui_okrobjective, get_key_results_choice, gera_okrmeta, exclui_okrmeta, \
     get_usuarios_setores, get_setores_cpf, get_ovr_auditor, get_ovr_passagem, muda_setor_ovr, \
-    monta_ovr_dict, get_docx, inclui_docx, get_docx_choices, get_recintos_dte
+    monta_ovr_dict, get_docx, inclui_docx, get_docx_choices, get_recintos_dte, exclui_processoovr
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
@@ -599,6 +599,23 @@ def ovr_app(app):
             flash(str(type(err)))
             flash(str(err))
         return redirect(url_for('ovr', id=ovr_id))
+
+    @app.route('/deleta_processoovr')
+    @login_required
+    def deleta_processoovr():
+        session = app.config.get('dbsession')
+        ovr_id = request.args.get('ovr_id')
+        processo_id = request.args.get('processo_id')
+        print(ovr_id)
+        try:
+            exclui_processoovr(session, processo_id)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return redirect(url_for('ovr', id=ovr_id))
+
 
     @app.route('/lista_tgovr', methods=['GET'])
     @login_required

@@ -310,6 +310,8 @@
 <div class="row col-sm-12">
     &nbsp;<br>
 </div>
+
+<!--Lista de processos-->
 <div class="row col-sm-12">
     <div class="col-sm-3">
         <h4>Lista de Processos</h4>
@@ -319,18 +321,17 @@
                 data-toggle="modal" data-target="#processo">Informar processo
         </button>
     </div>
-    <div class="col-sm-3">
-    </div>
+    <div class="col-sm-3"></div>
     <div class="table-responsive table row col-sm-12">
         <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive"
                cellspacing="0"
                cellpadding="0"
-               id="table_processos"
-        >
+               id="table_processos">
             <tr>
                 <th>Tipo de Processo</th>
                 <th>Número</th>
                 <th>Data</th>
+                <th>Excluir</th>
             </tr>
             {% for processo in processos %}
             <tr>
@@ -343,7 +344,29 @@
                 <td align="center">
                     {{ processo.create_date }}
                 </td>
+                <td align="center">
+                    <a href="#" data-toggle="modal" data-target="#modalDeletaProcesso">&times;</a>
+                </td>
             </tr>
+
+            <!--Modal deleta processo-->
+            <div class="modal fade" id="modalDeletaProcesso" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title" id="ModalLabel3">Deletar processo</h1>
+            </div>
+            <div class="modal-body">
+                <p>Deseja realmente deletar o processo?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <a type="button" class="btn btn-danger" href="deleta_processoovr?processo_id={{processo.id}}&ovr_id={{ovr.id}}">Deletar</a>
+            </div>
+        </div>
+    </div>
+</div>
             {% endfor %}
             {% if not processos %}
             <tr>
@@ -355,9 +378,13 @@
 </div>
 {% endif %}
 </div>
+
+<!--Footer-->
 <div id="bottom" class="row col-sm-12">
     Sistema AJNA - Receita Federal do Brasil
 </div>
+
+<!--Modais-->
 <div class="modal fade" id="responsavel" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
      aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -541,6 +568,7 @@
         </div>
     </div>
 </div>
+
 <div class="modal fade" id="processo" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
      aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -577,6 +605,8 @@
         </div>
     </div>
 </div>
+
+
 {% for historico in listahistorico %}
 {% if historico.anexo_filename %}
 <div class="modal fade modal-lg" id="anexomodal{{historico.id}}" tabindex="-1" role="dialog"
