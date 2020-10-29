@@ -174,6 +174,10 @@ def rvf_app(app):
                 tipo, rvf_id,
                 datetime.strftime(datetime.now(), '%Y-%m%dT%H%M%S'))
             rvf_dump = rvf.dump()
+            ovr = rvf.ovr
+            rvf_dump['responsavel'] = ovr.responsavel.nome
+            rvf_dump['recinto'] = ovr.recinto.nome
+            rvf_dump['setor'] = ovr.setor.nome
             if tipo == 'OVR':
                 document = gera_OVR(rvf_dump)
             else:
