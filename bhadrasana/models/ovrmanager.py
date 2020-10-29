@@ -517,6 +517,17 @@ def gera_processoovr(session, params) -> ProcessoOVR:
                        session, params)
 
 
+def exclui_processoovr(session, processo_id):
+    processoovr = session.query(ProcessoOVR). \
+        filter(ProcessoOVR.id == processo_id).one_or_none()
+    session.delete(processoovr)
+    try:
+        session.commit()
+    except Exception as err:
+        logger.error(err, exc_info=True)
+        session.rollback()
+
+
 def cadastra_tgovr(session, params, user_name: str) -> TGOVR:
     usuario = get_usuario_logado(session, user_name)
     tgovr = get_tgovr(session, params.get('id'))
