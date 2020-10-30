@@ -22,7 +22,7 @@ def edit_text_tag(text: str, paragraph: Paragraph, conteudo: dict):
         if valor is not None:
             text = text[:inicio] + str(valor) + text[fim + 1:]
         else:
-            text = text[:inicio] + f'{tag} - vazio' + text[fim + 1:]
+            text = text[:inicio] + f'{{ {tag} - vazio }}' + text[fim + 1:]
         inicio = text.find('{')
         fim = text.find('}')
     paragraph.text = text
