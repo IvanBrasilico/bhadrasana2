@@ -2,6 +2,7 @@ import io
 from typing import List
 
 from ajna_commons.utils.images import mongo_image
+from bhadrasana.models import get_usuario
 from bhadrasana.models.laudo import get_empresa
 from bhadrasana.models.ovr import FonteDocx
 from bhadrasana.models.ovrmanager import get_ovr_one, MarcaManager, get_tgovr_one
@@ -46,6 +47,9 @@ class OVRDict():
                 ovr_dict['nome_fiscalizado'] = empresa.nome
             except ValueError:
                 ovr_dict['nome_fiscalizado'] = ''
+            usuario = get_usuario(session, ovr.cpfauditorresponsavel)
+            if usuario:
+                ovr_dict['nome_auditorresponsavel'] = usuario.nome
             ovr_dict['marcas'] = []
             for rvf_dict in rvfs_dicts:
                 ovr_dict['marcas'].extend(rvf_dict['marcasencontradas'])
@@ -57,6 +61,8 @@ class OVRDict():
                         imagem_dict['content'] = io.BytesIO(image)
                         lista_imagens.append(imagem_dict)
                 ovr_dict['imagens'] = lista_imagens
+            for processo in ovr.processos:
+                ovr_dict['processo_%s' % processo.tipoprocesso.descricao] = processo.numero
         return ovr_dict
 
     def monta_rvf_dict(self, db, session, id: int,
