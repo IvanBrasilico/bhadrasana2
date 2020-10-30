@@ -517,10 +517,21 @@ def gera_processoovr(session, params) -> ProcessoOVR:
                        session, params)
 
 
-def exclui_processoovr(session, processo_id):
-    processoovr = session.query(ProcessoOVR). \
+def excluir_processo(session, processo_id):
+    processo = session.query(ProcessoOVR). \
         filter(ProcessoOVR.id == processo_id).one_or_none()
-    session.delete(processoovr)
+    session.delete(processo)
+    try:
+        session.commit()
+    except Exception as err:
+        logger.error(err, exc_info=True)
+        session.rollback()
+
+
+def excluir_evento(session, evento_id):
+    evento_id = session.query(EventoOVR). \
+        filter(EventoOVR.id == evento_id).one_or_none()
+    session.delete(evento_id)
     try:
         session.commit()
     except Exception as err:
