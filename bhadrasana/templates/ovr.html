@@ -241,6 +241,8 @@
 <div class="row col-sm-12">
     &nbsp;<br>
 </div>
+
+<!--Histórico de eventos-->
 {% if oform.id.data %}
 <div class="row col-sm-12">
     <div class="col-sm-3">
@@ -264,14 +266,14 @@
         <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive"
                cellspacing="0"
                cellpadding="0"
-               id="table_eventos"
-        >
+               id="table_eventos">
             <tr>
                 <th>Tipo de Evento</th>
                 <th>Usuário</th>
                 <th>Detalhes</th>
                 <th>Data</th>
                 <th>Anexo</th>
+                <th>Excluir</th>
             </tr>
             {% for historico in listahistorico %}
             <tr>
@@ -297,7 +299,29 @@
                     </btn>
                     {% endif %}
                 </td>
+                <td>
+                    <a href="#" data-target="#modalDeletaEvento" data-toggle="modal">&times;</a>
+                </td>
             </tr>
+
+            <!--Modal deleta processo-->
+            <div class="modal fade" id="modalDeletaEvento" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+            aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title" id="ModalLabel4">Excluir evento</h1>
+                        </div>
+                        <div class="modal-body">
+                            <p>Deseja realmente excluir o evento?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <a type="button" class="btn btn-danger" href="exclui_evento?evento_id={{historico.id}}&ovr_id={{ovr.id}}">Excluir</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
             {% endfor %}
             {% if not listahistorico %}
             <tr>
@@ -307,9 +331,7 @@
         </table>
     </div>
 </div>
-<div class="row col-sm-12">
-    &nbsp;<br>
-</div>
+<div class="row col-sm-12"></div>
 
 <!--Lista de processos-->
 <div class="row col-sm-12">
@@ -349,24 +371,24 @@
                 </td>
             </tr>
 
-            <!--Modal deleta processo-->
+            <!--Modal exclui processo-->
             <div class="modal fade" id="modalDeletaProcesso" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
-     aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title" id="ModalLabel3">Deletar processo</h1>
+            aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title" id="ModalLabel3">Excluir processo</h1>
+                        </div>
+                        <div class="modal-body">
+                            <p>Deseja realmente excluir o processo?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <a type="button" class="btn btn-danger" href="exclui_processo?processo_id={{processo.id}}&ovr_id={{ovr.id}}">Excluir</a>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="modal-body">
-                <p>Deseja realmente deletar o processo?</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <a type="button" class="btn btn-danger" href="deleta_processoovr?processo_id={{processo.id}}&ovr_id={{ovr.id}}">Deletar</a>
-            </div>
-        </div>
-    </div>
-</div>
             {% endfor %}
             {% if not processos %}
             <tr>
@@ -607,6 +629,8 @@
 </div>
 
 
+
+
 {% for historico in listahistorico %}
 {% if historico.anexo_filename %}
 <div class="modal fade modal-lg" id="anexomodal{{historico.id}}" tabindex="-1" role="dialog"
@@ -631,6 +655,7 @@
 </div>
 {% endif %}
 {% endfor %}
+
 <div class="modal fade" id="roteiro" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
      aria-hidden="true">
     <div class="modal-dialog" role="document">
