@@ -19,7 +19,7 @@ from bhadrasana.models.ovr import metadata, Enumerado, create_tiposevento, creat
 from bhadrasana.models.ovrmanager import gera_eventoovr, \
     gera_processoovr, cadastra_tgovr, atribui_responsavel_ovr, get_setores_filhos_recursivo, get_tipos_evento, \
     get_tipos_processo, get_flags_choice, get_flags, get_ovr_container, \
-    get_relatorios_choice, get_relatorio, executa_relatorio, get_setores, get_setores_cpf, get_setores_usuario, \
+    get_relatorios_choice, get_relatorio, executa_relatorio, get_setores_choice, get_setores_cpf, get_setores_usuario, \
     inclui_flag_ovr, get_tiposmercadoria_choice, get_marcas_choice, lista_tgovr, get_tgovr, cadastra_itemtg, \
     lista_itemtg, get_itemtg, get_itemtg_numero, informa_lavratura_auto, get_marcas, usuario_index, \
     cadastra_visualizacao, get_visualizacoes, get_ovr_filtro, cadastra_ovr, desfaz_ultimo_eventoovr, get_ovr_empresa, \
@@ -316,7 +316,7 @@ class OVRTestCase(BaseTestCase):
         usuario_setor2.setor_id = setor2.id
         session.add(usuario_setor2)
         session.commit()
-        setores = get_setores(session)
+        setores = get_setores_choice(session)
         assert isinstance(setores, list)
         setores = get_setores_cpf(session, '1')
         assert len(setores) == 1

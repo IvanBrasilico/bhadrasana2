@@ -295,3 +295,15 @@ class EscaneamentoOperadorForm(FlaskForm):
         self.recinto_id.choices = [[0, 'Selecione']]
         if kwargs.get('recintos'):
             self.recinto_id.choices.extend(kwargs.get('recintos'))
+
+
+class FiltroAbasForm(FlaskForm):
+    datainicio = DateField(u'Data inicial da pesquisa')
+    datafim = DateField(u'Data final da pesquisa')
+    setor_id = SelectField('Setores')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setor_id.choices = []
+        if kwargs.get('setores'):
+            self.setor_id.choices = kwargs.get('setores')

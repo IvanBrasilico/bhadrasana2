@@ -275,6 +275,8 @@ def mynavbar():
                  Separator(),
                  View('Relatórios', 'ver_relatorios'),
                  View('Painel de OKRs', 'ver_okrs'),
+                 Separator(),
+                 View('Fichas em Abas', 'fichas_em_abas'),
              ),
              Subgroup(
                  'Administração/exportações',

@@ -1,5 +1,5 @@
 import io
-from typing import List
+from typing import List, Union
 
 from ajna_commons.utils.images import mongo_image
 from bhadrasana.models import get_usuario
@@ -16,7 +16,7 @@ def not_implemented():
 
 class OVRDict():
 
-    def __init__(self, formato: [int, FonteDocx]):
+    def __init__(self, formato: Union[int, FonteDocx]):
         if isinstance(formato, str):
             formato = int(formato)
         if isinstance(formato, int):

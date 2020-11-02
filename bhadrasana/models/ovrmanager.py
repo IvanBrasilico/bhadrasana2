@@ -22,7 +22,7 @@ from sqlalchemy.orm import Session
 from ajna_commons.models.bsonimage import BsonImage
 from ajna_commons.flask.log import logger
 from ajna_commons.utils.images import mongo_image
-from bhadrasana.models import Usuario, Setor, EBloqueado
+from bhadrasana.models import Usuario, Setor, EBloqueado, PerfilUsuario
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto, \
     get_usuario_logado
 from bhadrasana.models.laudo import get_empresa
@@ -191,6 +191,27 @@ def get_ovr_passagem(session, user_name: str) -> List[OVR]:
 
 def get_ovr_criadaspor(session, user_name: str) -> List[OVR]:
     return session.query(OVR).filter(OVR.user_name == user_name).all()
+
+
+def get_ovr_visao_usuario(session, datainicio: datetime,
+                          datafim: datetime, setor_id: str, usuario_cpf: str) -> List[OVR]:
+    """Traz todas que for importante visualizar, de acordo com o perfil.
+
+    Mostra se usuário criou, se é responsável, ou se é auditor responsável
+
+    Se usuário for Supervisor, mostra todos do Setor escolhido também
+    """
+    filtro = or_(OVR.user_name == usuario_cpf,
+                 OVR.responsavel_cpf == usuario_cpf,
+                 OVR.cpfauditorresponsavel == usuario_cpf,
+                 )
+    perfisusuario = session.query(PerfilUsuario.perfil). \
+        filter(PerfilUsuario.cpf == usuario_cpf).all()
+    if 'Supervisor' in perfisusuario:
+        filtro = or_(filtro, OVR.setor_id == setor_id)
+    ovrs = session.query(OVR).filter(filtro) \
+        .filter(OVR.datahora.between(datainicio, datafim)).all()
+    return ovrs
 
 
 def get_ovr_filtro(session,
@@ -756,7 +777,7 @@ def get_setores_filhos_recursivo(session, setor: Setor) -> List[Setor]:
     return get_setores_filhos_recursivo_id(session, setor.id)
 
 
-def get_setores(session) -> List[Tuple[str, str]]:
+def get_setores_choice(session) -> List[Tuple[str, str]]:
     setores = session.query(Setor).all()
     setores_list = [(setor.id, setor.nome) for setor in setores]
     return sorted(setores_list, key=lambda x: x[1])
@@ -778,6 +799,12 @@ def get_setores_cpf(session, cpf_usuario: str) -> List[Setor]:
     if usuario is None:
         return []
     return get_setores_usuario(session, usuario)
+
+
+def get_setores_cpf_choice(session, cpf_usuario: str) -> List[Tuple[str, str]]:
+    setores = get_setores_cpf(session, cpf_usuario)
+    setores_list = [(setor.id, setor.nome) for setor in setores]
+    return sorted(setores_list, key=lambda x: x[1])
 
 
 def get_ovrs_setor(session, setor: Setor) -> list:
