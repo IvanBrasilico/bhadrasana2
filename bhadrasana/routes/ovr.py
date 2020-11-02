@@ -19,10 +19,10 @@ from bhadrasana.forms.filtro_empresa import FiltroEmpresaForm
 from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
     ProcessoOVRForm, ItemTGForm, ResponsavelOVRForm, TGOVRForm, FiltroRelatorioForm, \
     FiltroMinhasOVRsForm, OKRObjectiveForm, OKRMetaForm, SetorOVRForm, FiltroDocxForm, \
-    ModeloDocxForm, EscaneamentoOperadorForm
+    ModeloDocxForm, EscaneamentoOperadorForm, FiltroAbasForm
 from bhadrasana.models import delete_objeto, get_usuario
 from bhadrasana.models.laudo import get_empresa, get_empresas_nome, get_sats_cnpj
-from bhadrasana.models.ovr import OVR, OKRObjective
+from bhadrasana.models.ovr import OVR, OKRObjective, faseOVR
 from bhadrasana.models.ovr_dict_repr import OVRDict
 from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_ovr_filtro, gera_eventoovr, gera_processoovr, get_tipos_processo, lista_itemtg, \
@@ -36,11 +36,12 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_flags_choice, cadastra_visualizacao, get_tipos_evento_comfase_choice, \
     get_ovr_criadaspor, get_ovr_empresa, get_tipos_evento_todos, \
     desfaz_ultimo_eventoovr, get_delta_date, exporta_planilha_tg, TipoPlanilha, \
-    exclui_item_tg, get_setores, get_objectives_setor, executa_okr_results, gera_okrobjective, \
+    exclui_item_tg, get_setores_choice, get_objectives_setor, \
+    executa_okr_results, gera_okrobjective, \
     exclui_okrobjective, get_key_results_choice, gera_okrmeta, exclui_okrmeta, \
     get_usuarios_setores, get_setores_cpf, get_ovr_auditor, get_ovr_passagem, muda_setor_ovr, \
     monta_ovr_dict, get_docx, inclui_docx, get_docx_choices, get_recintos_dte, excluir_processo, \
-    excluir_evento
+    excluir_evento, get_ovr_visao_usuario, get_setores_cpf_choice
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
@@ -73,7 +74,7 @@ def ovr_app(app):
         processo_form = ProcessoOVRForm(tiposprocesso=tiposprocesso)
         responsavel_form = ResponsavelOVRForm(responsaveis=responsaveis,
                                               responsavel=current_user.name)
-        listasetores = get_setores(session)
+        listasetores = get_setores_choice(session)
         setor_ovr_form = SetorOVRForm(setores=listasetores)
         conhecimento = None
         ncms = []
@@ -217,7 +218,7 @@ def ovr_app(app):
         recintos = get_recintos(session)
         flags = get_flags_choice(session)
         infracoes = get_infracoes_choice(session)
-        lista_setores = get_setores(session)
+        lista_setores = get_setores_choice(session)
         filtro_form = FiltroOVRForm(
             datainicio=date.today() - timedelta(days=10),
             datafim=date.today(),
@@ -366,7 +367,7 @@ def ovr_app(app):
     def ver_relatorios():
         session = app.config.get('dbsession')
         lista_relatorios = get_relatorios_choice(session)
-        lista_setores = get_setores(session)
+        lista_setores = get_setores_choice(session)
         linhas = []
         linhas_formatadas = []
         sql = ''
@@ -1189,7 +1190,7 @@ def ovr_app(app):
         today = date.today()
         lista_key_results = get_key_results_choice(session)
         okrmeta_form = OKRMetaForm(key_results=lista_key_results)
-        lista_setores = get_setores(session)
+        lista_setores = get_setores_choice(session)
         okrobjective_form = OKRObjectiveForm(setores=lista_setores)
         try:
             if id_objetivo is not None:
@@ -1233,7 +1234,7 @@ def ovr_app(app):
         session = app.config.get('dbsession')
         objective_id = None
         setor_id = None
-        lista_setores = get_setores(session)
+        lista_setores = get_setores_choice(session)
         try:
             okrobjective_form = OKRObjectiveForm(request.form, setores=lista_setores)
             # usuario = get_usuario(session, current_user.name)
@@ -1309,7 +1310,7 @@ def ovr_app(app):
         filtro_form = FiltroRelatorioForm()
         try:
             usuario = get_usuario(session, current_user.name)
-            lista_setores = get_setores(session)
+            lista_setores = get_setores_choice(session)
             filtro_form = FiltroRelatorioForm(
                 datainicio=inicio,
                 datafim=date.today(),
@@ -1492,3 +1493,45 @@ def ovr_app(app):
         return render_template('escaneamento_operador.html',
                                filtro_form=escaneamento_form,
                                gmcis=gmcis)
+
+    @app.route('/fichas_em_abas', methods=['GET', 'POST'])
+    @login_required
+    def fichas_em_abas():
+        session = app.config['dbsession']
+        listasficharesumo = []
+        filtroform = FiltroAbasForm()
+        count_iniciadas = 0
+        try:
+            setores = get_setores_cpf_choice(session, current_user.id)
+            if request.method == 'POST':
+                filtroform = FiltroAbasForm(request.form, setores=setores)
+                if filtroform.validate():
+                    listaficharesumo = get_ovr_visao_usuario(session,
+                                                             filtroform.datainicio.data,
+                                                             filtroform.datafim.data,
+                                                             filtroform.setor_id.data,
+                                                             current_user.id)
+                    listasficharesumo = defaultdict(list)
+                    exibicao_ovr = ExibicaoOVR(session, TipoExibicao.Resumo, current_user.id)
+                    for ovr in listaficharesumo:
+                        resumo = exibicao_ovr.get_OVR_Resumo(ovr, mercante=False, fiscalizado=True)
+                        listasficharesumo[ovr.get_fase()].append(resumo)
+                else:
+                    flash(filtroform.errors)
+            else:
+                today = date.today()
+                start = today - timedelta(days=62)
+                inicio = date(year=start.year, month=start.month, day=1)
+                filtroform = FiltroAbasForm(datainicio=inicio,
+                                            datafim=today,
+                                            setores=setores)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return render_template('fichas_em_abas.html',
+                               oform=filtroform,
+                               listafases=faseOVR,
+                               listasficharesumo=listasficharesumo,
+                               count_iniciadas=count_iniciadas)

@@ -226,6 +226,9 @@ class Flag(Base):
     id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
     nome = Column(VARCHAR(100), index=True)
 
+    def __str__(self):
+        return '{}'.format(self.nome)
+
 
 class TipoEventoOVR(BaseDumpable):
     __tablename__ = 'ovr_tiposevento'

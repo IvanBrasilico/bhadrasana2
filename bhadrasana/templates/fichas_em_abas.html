@@ -1,0 +1,60 @@
+{% extends "layout.html" %} {% block content %} {{super()}}
+<div id="main" class="container-fluid">
+    <div class="form-group">
+        <form method="POST" id="filtrofichaabas" action="fichas_em_abas">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <div class="row">
+                <div class="col-sm-4">
+                    <label for="datainicio">Início e fim de período de pesquisa</label>
+                </div>
+                <div class="col-sm-4">
+                    <label for="setor_id">Setor a visualizar</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <div class="col-sm-2">
+                        {{ oform.datainicio(class='form-control') }}
+                    </div>
+                    <div class="col-sm-2">
+                        {{ oform.datafim(class='form-control') }}
+                    </div>
+                    <div class="col-sm-2">
+                        {{ oform.setor_id(class='form-control') }}
+                    </div>
+                    <div class="col-sm-2">
+                        <button class="btn btn-default btn-info form-control" onclick="submit">
+                            Pesquisar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div id="list" class="row col-xl-12">
+        {% for fase in listafases %}
+        <div class={% if fase == 'Ativa' or fase == 'Suspensa' %}"col-lg-3"{% elif fase == 'Arquivada' %}"col-lg-2"{% else %}"col-lg-2"{% endif %}>
+            <div class="panel rounded-pill panel-info">
+            <div class="panel-heading">
+            <h3>{{ fase }} ({{ listasficharesumo[fase] | length }})</h3>
+            </div>
+            <div class="panel-body panel-primary">
+                {% for ficharesumo in listasficharesumo[fase] %}
+                <div class="panel panel-heading panel-primary rounded-pill">
+                    {{ ficharesumo | safe }}
+                </div>
+                {% endfor %}
+            </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <!--Footer-->
+    <div id="bottom" class="row col-sm-12">
+        AJNA - Receita Federal do Brasil 2017
+    </div>
+</div>
+{% endblock %} {% block scripts %} {{super()}}
+<script>
+</script>
+{% endblock %}

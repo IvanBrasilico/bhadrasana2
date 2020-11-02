@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Callable, List, Tuple
+from typing import Callable, List, Tuple, Optional
 
 from bson import ObjectId
 from gridfs import GridFS, NoFile
@@ -70,7 +70,7 @@ def get_rvf_one(session, rvf_id: int = None) -> RVF:
     return session.query(RVF).filter(RVF.id == rvf_id).one()
 
 
-def lista_rvfovr(session, ovr_id: int) -> List[RVF]:
+def lista_rvfovr(session, ovr_id: int) -> Optional[List[RVF]]:
     try:
         ovr_id = int(ovr_id)
     except (ValueError, TypeError):
@@ -94,7 +94,7 @@ def gera_evento_rvf(session, rvf):
 def cadastra_rvf(session,
                  user_name: str,
                  params: dict = None,
-                 ovr_id: int = None) -> RVF:
+                 ovr_id: int = None) -> Optional[RVF]:
     rvf = None
     geraevento = False
     if ovr_id:
