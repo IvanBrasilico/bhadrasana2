@@ -1,7 +1,6 @@
 import sys
 import unittest
 from datetime import datetime, timedelta
-from typing import List, Tuple
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -12,7 +11,7 @@ from bhadrasana.models.rvfmanager import lista_rvfovr
 
 sys.path.append('.')
 
-from bhadrasana.models import Setor, Usuario
+from bhadrasana.models import Setor, Usuario, PerfilUsuario, perfilAcesso
 from bhadrasana.models.ovr import metadata, Enumerado, create_tiposevento, create_tiposprocesso, create_flags, Flag, \
     Relatorio, create_tipomercadoria, create_marcas, Marca, ItemTG, VisualizacaoOVR, OVR, ProcessoOVR
 
@@ -23,7 +22,7 @@ from bhadrasana.models.ovrmanager import gera_eventoovr, \
     inclui_flag_ovr, get_tiposmercadoria_choice, get_marcas_choice, lista_tgovr, get_tgovr, cadastra_itemtg, \
     lista_itemtg, get_itemtg, get_itemtg_numero, informa_lavratura_auto, get_marcas, usuario_index, \
     cadastra_visualizacao, get_visualizacoes, get_ovr_filtro, cadastra_ovr, desfaz_ultimo_eventoovr, get_ovr_empresa, \
-    get_ovrs_setor, exclui_item_tg
+    get_ovrs_setor, exclui_item_tg, get_ovr_visao_usuario
 
 engine = create_engine('sqlite://')
 Session = sessionmaker(bind=engine)
@@ -517,7 +516,6 @@ class OVRTestCase(BaseTestCase):
         print(rvf.numeroCEmercante, rvf.ovr_id)
         assert len(ovrs) == 2
 
-
     def test_get_ovr_empresa(self):
         ovr = self.create_OVR_valido()
         ovr.cnpj_fiscalizado = '00.280.273/0002-18'
@@ -551,6 +549,62 @@ class OVRTestCase(BaseTestCase):
         ovrs = get_ovrs_setor(session, setor)
         assert len(ovrs) == 1
         assert isinstance(ovrs, list)
+
+    def test_get_ovrs_visao_usuario(self):
+        ovr1 = self.create_OVR_valido()
+        ovr1.setor_id = '9001'
+        ovr1.user_name = 'user1'
+        session.add(ovr1)
+        ovr2 = self.create_OVR_valido()
+        ovr2.setor_id = '9002'
+        ovr2.cpfauditorresponsavel = 'user1'
+        session.add(ovr2)
+        ovr3 = self.create_OVR_valido()
+        ovr3.setor_id = '9002'
+        ovr3.responsavel_cpf = 'user2'
+        session.add(ovr3)
+        ovr4 = self.create_OVR_valido()
+        ovr4.setor_id = '9001'
+        session.add(ovr4)
+        session.commit()
+        setor = Setor()
+        setor.id = '9001'
+        setor.nome = 'Setor Teste'
+        session.add(setor)
+        setor12 = Setor()
+        setor12.id = '9002'
+        setor12.pai_id = '9001'
+        setor12.nome = 'Filho de Setor Teste'
+        session.add(setor12)
+        session.commit()
+        ovrs = get_ovr_visao_usuario(session,
+                                     datetime(2020, 1, 1),
+                                     datetime(2020, 1, 2),
+                                     'user1')
+        assert len(ovrs) == 2
+        assert isinstance(ovrs, list)
+        ovrs = get_ovr_visao_usuario(session,
+                                     datetime(2020, 1, 1),
+                                     datetime(2020, 1, 2),
+                                     'user2')
+        assert len(ovrs) == 1
+        ovrs = get_ovr_visao_usuario(session,
+                                     datetime(2020, 1, 1),
+                                     datetime(2020, 1, 2),
+                                     'user2',
+                                     '9001')
+        assert len(ovrs) == 1
+        perfil = PerfilUsuario()
+        perfil.cpf = 'user2'
+        perfil.perfil = Enumerado.get_id(perfilAcesso, 'Supervisor')  # Supervisor
+        session.add(perfil)
+        session.commit()
+        ovrs = get_ovr_visao_usuario(session,
+                                     datetime(2020, 1, 1),
+                                     datetime(2020, 1, 2),
+                                     'user2',
+                                     '9001')
+        assert len(ovrs) == 3
 
 
 if __name__ == '__main__':

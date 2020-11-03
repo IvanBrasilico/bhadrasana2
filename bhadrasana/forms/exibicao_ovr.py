@@ -279,7 +279,7 @@ class ExibicaoOVR:
                 resumo]
 
     def get_OVR_Resumo(self, ovr, mercante=True, fiscalizado=False) -> str:
-        datahora = ovr.datahora.strftime('%D') if ovr.datahora else ''
+        datahora = ovr.datahora.strftime('%d/%m/%Y') if ovr.datahora else ''
         resumo = [f'<h4><a href="ovr?id={ovr.id}" style="color: orange">' +
                   f'{ovr.id} - {datahora}</a></h4>{ovr.get_tipooperacao()}']
         if ovr.observacoes:
