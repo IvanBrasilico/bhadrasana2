@@ -1502,7 +1502,7 @@ def ovr_app(app):
         filtroform = FiltroAbasForm()
         count_iniciadas = 0
         try:
-            setores = get_setores_cpf_choice(session, current_user.id)
+            setores = get_setores_choice(session)  # , current_user.id)
             if request.method == 'POST':
                 filtroform = FiltroAbasForm(request.form, setores=setores)
                 if filtroform.validate():
