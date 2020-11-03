@@ -54,7 +54,7 @@ def sorteia_GMCIs(dbsession: Session, recintos: List[int],
     gmcis = dbsession.query(GMCI).filter(
         GMCI.cod_recinto.in_(recintos)).filter(
         GMCI.datahora.between(start, end)
-    ).all()
+    ).order_by(GMCI.ID.desc()).limit(5000).all()
     gmcis = random.sample(gmcis, qtde)
     gmcis_conteineres = [gmci.num_conteiner for gmci in gmcis]
     cod_recintos_nome_dict = get_dict_codigos_recinto(dbsession, recintos)

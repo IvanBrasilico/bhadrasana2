@@ -1468,7 +1468,7 @@ def ovr_app(app):
             recintos = get_recintos_dte(session)
             if request.method == 'POST':
                 end = datetime.now()
-                start = end - timedelta(hours=48)
+                start = end - timedelta(days=7)
                 escaneamento_form = EscaneamentoOperadorForm(request.form, recintos=recintos)
                 if escaneamento_form.validate():
                     qtde = escaneamento_form.qtde.data
