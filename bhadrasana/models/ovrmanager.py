@@ -22,7 +22,7 @@ from sqlalchemy.orm import Session
 from ajna_commons.models.bsonimage import BsonImage
 from ajna_commons.flask.log import logger
 from ajna_commons.utils.images import mongo_image
-from bhadrasana.models import Usuario, Setor, EBloqueado, PerfilUsuario
+from bhadrasana.models import Usuario, Setor, EBloqueado, PerfilUsuario, perfilAcesso
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto, \
     get_usuario_logado
 from bhadrasana.models.laudo import get_empresa
@@ -193,8 +193,16 @@ def get_ovr_criadaspor(session, user_name: str) -> List[OVR]:
     return session.query(OVR).filter(OVR.user_name == user_name).all()
 
 
+def usuario_tem_perfil(session, usuario_cpf: str, perfil: str) -> bool:
+    perfisusuario = session.query(PerfilUsuario.perfil). \
+        filter(PerfilUsuario.cpf == usuario_cpf).all()
+    codigo_perfil = Enumerado.get_id(perfilAcesso, perfil)
+    print(codigo_perfil, perfisusuario)
+    return codigo_perfil in [row[0] for row in perfisusuario]
+
+
 def get_ovr_visao_usuario(session, datainicio: datetime,
-                          datafim: datetime, setor_id: str, usuario_cpf: str) -> List[OVR]:
+                          datafim: datetime, usuario_cpf: str, setor_id='') -> List[OVR]:
     """Traz todas que for importante visualizar, de acordo com o perfil.
 
     Mostra se usuário criou, se é responsável, ou se é auditor responsável
@@ -205,12 +213,9 @@ def get_ovr_visao_usuario(session, datainicio: datetime,
                  OVR.responsavel_cpf == usuario_cpf,
                  OVR.cpfauditorresponsavel == usuario_cpf,
                  )
-    perfisusuario = session.query(PerfilUsuario). \
-        filter(PerfilUsuario.cpf == usuario_cpf).all()
-    perfis_nomes = [perfil.perfil_descricao for perfil in perfisusuario]
-    print(perfis_nomes)
-    if 'Supervisor' in perfis_nomes:
-        filtro = or_(filtro, OVR.setor_id == setor_id)
+    if setor_id:
+        if usuario_tem_perfil(session, usuario_cpf, 'Supervisor'):
+            filtro = or_(filtro, OVR.setor_id == setor_id)
     ovrs = session.query(OVR).filter(filtro) \
         .filter(OVR.datahora.between(datainicio, datafim)).all()
     return ovrs
@@ -1145,14 +1150,14 @@ def monta_ovr_dict(db, session, ovr_id: id,
         ovr_dict['marcas'] = []
         for rvf_dict in rvfs_dicts:
             ovr_dict['marcas'].extend(rvf_dict['marcasencontradas'])
-    if imagens:
-        lista_imagens = []
-        for rvf_dict in rvfs_dicts:
-            for imagem_dict in rvf_dict['imagens']:
-                image = mongo_image(db, imagem_dict['imagem'])
-                imagem_dict['content'] = io.BytesIO(image)
-                lista_imagens.append(imagem_dict)
-        ovr_dict['imagens'] = lista_imagens
+        if imagens:
+            lista_imagens = []
+            for rvf_dict in rvfs_dicts:
+                for imagem_dict in rvf_dict['imagens']:
+                    image = mongo_image(db, imagem_dict['imagem'])
+                    imagem_dict['content'] = io.BytesIO(image)
+                    lista_imagens.append(imagem_dict)
+            ovr_dict['imagens'] = lista_imagens
     return ovr_dict
 
 
