@@ -608,14 +608,17 @@ def ovr_app(app):
         session = app.config.get('dbsession')
         ovr_id = request.args.get('ovr_id')
         processo_id = request.args.get('processo_id')
-        print(ovr_id)
-        try:
-            excluir_processo(session, processo_id)
-        except Exception as err:
-            logger.error(err, exc_info=True)
-            flash('Erro! Detalhes no log da aplicação.')
-            flash(str(type(err)))
-            flash(str(err))
+        responsavel = request.args.get('responsavel')
+        if responsavel == current_user.name:
+            try:
+                excluir_processo(session, processo_id)
+            except Exception as err:
+                logger.error(err, exc_info=True)
+                flash('Erro! Detalhes no log da aplicação.')
+                flash(str(type(err)))
+                flash(str(err))
+        else:
+            flash('Somente o responsável pela ficha pode excluir processos')
         return redirect(url_for('ovr', id=ovr_id))
 
     @app.route('/exclui_evento')
