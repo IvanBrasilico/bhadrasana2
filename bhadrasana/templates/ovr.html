@@ -357,6 +357,7 @@
                 <th>Excluir</th>
             </tr>
             {% for processo in processos %}
+
             <tr>
                 <td align="center">
                     {{ processo.tipoprocesso.descricao }}
@@ -367,15 +368,11 @@
                 <td align="center">
                     {{ processo.create_date }}
                 </td>
-                <!--
                 <td align="center">
-                    <a href="#" data-toggle="modal" data-target="#modalDeletaProcesso">&times;</a>
+                    <a href="#" data-toggle="modal" data-target="#modalDeletaProcesso{{processo.id}}">&times;</a>
                 </td>
-                -->
-            </tr>
-
-            <!--Modal exclui processo-->
-            <div class="modal fade" id="modalDeletaProcesso" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+                <!--Modal exclui processo-->
+                <div class="modal fade" id="modalDeletaProcesso{{processo.id}}" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
             aria-hidden="true">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
@@ -387,11 +384,13 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                            <a type="button" class="btn btn-danger" href="exclui_processo?processo_id={{processo.id}}&ovr_id={{ovr.id}}">Excluir</a>
+                            <a type="button" class="btn btn-danger" href="exclui_processo?processo_id={{processo.id}}&ovr_id={{ovr.id}}&responsavel={{ovr.responsavel_cpf}}">Excluir</a>
                         </div>
                     </div>
                 </div>
             </div>
+            </tr>
+
             {% endfor %}
             {% if not processos %}
             <tr>
