@@ -205,9 +205,11 @@ def get_ovr_visao_usuario(session, datainicio: datetime,
                  OVR.responsavel_cpf == usuario_cpf,
                  OVR.cpfauditorresponsavel == usuario_cpf,
                  )
-    perfisusuario = session.query(PerfilUsuario.perfil). \
+    perfisusuario = session.query(PerfilUsuario). \
         filter(PerfilUsuario.cpf == usuario_cpf).all()
-    if 'Supervisor' in perfisusuario:
+    perfis_nomes = [perfil.perfil_descricao for perfil in perfisusuario]
+    print(perfis_nomes)
+    if 'Supervisor' in perfis_nomes:
         filtro = or_(filtro, OVR.setor_id == setor_id)
     ovrs = session.query(OVR).filter(filtro) \
         .filter(OVR.datahora.between(datainicio, datafim)).all()
