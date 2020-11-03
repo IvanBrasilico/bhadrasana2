@@ -1509,8 +1509,8 @@ def ovr_app(app):
                     listaficharesumo = get_ovr_visao_usuario(session,
                                                              filtroform.datainicio.data,
                                                              filtroform.datafim.data,
-                                                             filtroform.setor_id.data,
-                                                             current_user.id)
+                                                             current_user.id,
+                                                             filtroform.setor_id.data)
                     listasficharesumo = defaultdict(list)
                     exibicao_ovr = ExibicaoOVR(session, TipoExibicao.Resumo, current_user.id)
                     for ovr in listaficharesumo:
