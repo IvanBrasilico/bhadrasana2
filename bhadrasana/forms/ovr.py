@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, IntegerField, TextAreaField, SelectField, validators
+from wtforms import StringField, IntegerField, TextAreaField, SelectField, validators, SelectMultipleField
 from wtforms.fields.html5 import DateField, TimeField, DecimalField
 
 from bhadrasana.forms.exibicao_ovr import TipoExibicao
@@ -301,9 +301,16 @@ class FiltroAbasForm(FlaskForm):
     datainicio = DateField(u'Data inicial da pesquisa')
     datafim = DateField(u'Data final da pesquisa')
     setor_id = SelectField('Setores')
+    tipooperacao_id = SelectMultipleField('TipoOperacao', default=[99], coerce=int)
+    flags_id = SelectMultipleField('Flags / Alertas', default=[99], coerce=int)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setor_id.choices = []
         if kwargs.get('setores'):
             self.setor_id.choices = kwargs.get('setores')
+        self.tipooperacao_id.choices = [(99, 'Todos'), *Enumerado.tipoOperacao()]
+        self.tipooperacao_id.default = [99]
+        if kwargs.get('flags'):
+            self.flags_id.choices = [(99, 'Todos'), *kwargs.get('flags')]
+            self.flags_id.default = [99]

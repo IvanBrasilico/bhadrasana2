@@ -7,8 +7,14 @@
                 <div class="col-sm-4">
                     <label for="datainicio">Início e fim de período de pesquisa</label>
                 </div>
-                <div class="col-sm-4">
-                    <label for="setor_id">Setor a visualizar</label>
+                <div class="col-sm-2">
+                    <label for="setor_id">Setor a filtrar</label>
+                </div>
+                <div class="col-sm-2">
+                    <label for="setor_id">Tipo de Operação</label>
+                </div>
+                <div class="col-sm-2">
+                    <label for="setor_id">Com alertas</label>
                 </div>
             </div>
             <div class="row">
@@ -20,8 +26,16 @@
                         {{ oform.datafim(class='form-control') }}
                     </div>
                     <div class="col-sm-2">
+                        {{ oform.tipooperacao_id(class='form-control') }}
+                    </div>
+                    <div class="col-sm-2">
+                        {{ oform.flags_id(class='form-control') }}
+                    </div>
+                    {% if supervisor %}
+                    <div class="col-sm-2">
                         {{ oform.setor_id(class='form-control') }}
                     </div>
+                    {% endif %}
                     <div class="col-sm-2">
                         <button class="btn btn-default btn-info form-control" onclick="submit">
                             Pesquisar
@@ -40,8 +54,8 @@
             </div>
             <div class="panel-body panel-primary">
                 {% for ficharesumo in listasficharesumo[fase] %}
-                <div class="panel panel-heading panel-primary rounded-pill">
-                    {{ ficharesumo | safe }}
+                <div class="panel panel-heading panel-primary rounded-pill" onmouseover="showMsg(this, '{{ ficharesumo['id'] }}')" onmouseout="clearMsg(this)">
+                    {{ ficharesumo['resumo'] | safe }}
                 </div>
                 {% endfor %}
             </div>
@@ -56,5 +70,20 @@
 </div>
 {% endblock %} {% block scripts %} {{super()}}
 <script>
+   function showMsg(adiv, oid) {
+        xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4) {
+                if (this.status == 200) {
+                    adiv.title = this.responseText;
+                }
+            }
+        }
+        xhttp.open("GET", "/ficha/summary/" + oid, true);
+        xhttp.send();
+    }
+    function clearMsg(adiv) {
+        adiv.title = "";
+    }
 </script>
 {% endblock %}

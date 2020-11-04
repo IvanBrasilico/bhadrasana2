@@ -193,12 +193,6 @@ def get_ovr_criadaspor(session, user_name: str) -> List[OVR]:
     return session.query(OVR).filter(OVR.user_name == user_name).all()
 
 
-def usuario_tem_perfil(session, usuario_cpf: str, perfil: str) -> bool:
-    perfisusuario = session.query(PerfilUsuario.perfil). \
-        filter(PerfilUsuario.cpf == usuario_cpf).all()
-    codigo_perfil = Enumerado.get_id(perfilAcesso, perfil)
-    print(codigo_perfil, perfisusuario)
-    return codigo_perfil in [row[0] for row in perfisusuario]
 
 
 def get_ovr_visao_usuario(session, datainicio: datetime,
