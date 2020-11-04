@@ -245,23 +245,15 @@
 <!--Histórico de eventos-->
 {% if oform.id.data %}
 <div class="row col-sm-12">
-    <div class="col-sm-3">
+    <div class="col-sm-9">
         <h4>Histórico de Eventos</h4>
     </div>
-    <div class="col-sm-6">
+    <div class="col-sm-3">
         <button id="btn_historico" type="button" class="btn btn-primary btn-warning form-control"
                 data-toggle="modal" data-target="#historico">Informar Evento
         </button>
     </div>
-    <div class="col-sm-3">
-        <form method="POST" id="desfazer_form" action="desfazer_ultimo_eventoovr">
-            <input type="hidden" name="csrf_token" value="{{csrf_token()}}"/>
-            <input type="hidden" name="ovr_id" value="{{ oform.id.data }}"/>
-            <button id="btn_desfazer" class="btn btn-primary btn-danger form-control" onclick="submit">
-                Desfazer último evento
-            </button>
-        </form>
-    </div>
+
     <div class="table-responsive table row col-sm-12">
         <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive"
                cellspacing="0"
@@ -299,14 +291,14 @@
                     </btn>
                     {% endif %}
                 </td>
-                <!--<td>
-                    <a href="#" data-target="#modalDeletaEvento" data-toggle="modal">&times;</a>
+                <td>
+                    <a href="#" data-target="#modalDeletaEvento{{historico.id}}" data-toggle="modal">&times;</a>
                 </td>
-                -->
+
             </tr>
 
             <!--Modal deleta processo-->
-            <div class="modal fade" id="modalDeletaEvento" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+            <div class="modal fade" id="modalDeletaEvento{{historico.id}}" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
             aria-hidden="true">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
@@ -336,10 +328,10 @@
 
 <!--Lista de processos-->
 <div class="row col-sm-12">
-    <div class="col-sm-3">
+    <div class="col-sm-9">
         <h4>Lista de Processos</h4>
     </div>
-    <div class="col-sm-6">
+    <div class="col-sm-3">
         <button id="btn_processo" type="button" class="btn btn-primary btn-warning form-control"
                 data-toggle="modal" data-target="#processo">Informar processo
         </button>
@@ -357,6 +349,7 @@
                 <th>Excluir</th>
             </tr>
             {% for processo in processos %}
+
             <tr>
                 <td align="center">
                     {{ processo.tipoprocesso.descricao }}
@@ -367,15 +360,11 @@
                 <td align="center">
                     {{ processo.create_date }}
                 </td>
-                <!--
                 <td align="center">
-                    <a href="#" data-toggle="modal" data-target="#modalDeletaProcesso">&times;</a>
+                    <a href="#" data-toggle="modal" data-target="#modalDeletaProcesso{{processo.id}}">&times;</a>
                 </td>
-                -->
-            </tr>
-
-            <!--Modal exclui processo-->
-            <div class="modal fade" id="modalDeletaProcesso" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+                <!--Modal exclui processo-->
+                <div class="modal fade" id="modalDeletaProcesso{{processo.id}}" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
             aria-hidden="true">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
@@ -387,11 +376,13 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                            <a type="button" class="btn btn-danger" href="exclui_processo?processo_id={{processo.id}}&ovr_id={{ovr.id}}">Excluir</a>
+                            <a type="button" class="btn btn-danger" href="exclui_processo?processo_id={{processo.id}}">Excluir</a>
                         </div>
                     </div>
                 </div>
             </div>
+            </tr>
+
             {% endfor %}
             {% if not processos %}
             <tr>

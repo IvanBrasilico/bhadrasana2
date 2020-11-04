@@ -7,7 +7,6 @@ sys.path.insert(0, '../ajna_api')
 import datetime
 from collections import OrderedDict
 
-
 from sqlalchemy import Column, func, VARCHAR, CHAR, ForeignKey, Integer, event
 from sqlalchemy import create_engine
 from sqlalchemy.dialects.mysql import TIMESTAMP
@@ -53,6 +52,11 @@ class EBloqueado(Exception):
     def __init__(self):
         Exception.__init__(self, 'Bloqueado para edição.'
                                  'Status/fase não permite alteração.')
+
+
+class ESomenteUsuarioResponsavel(Exception):
+    def __init__(self):
+        Exception.__init__(self, 'Somente o usuário responsável pode executar essa tarefa.')
 
 
 perfilAcesso = (
