@@ -11,7 +11,7 @@ from datetime import datetime
 from enum import Enum
 
 from sqlalchemy import BigInteger, Column, DateTime, func, VARCHAR, Integer, \
-    ForeignKey, Numeric, CHAR, Table, create_engine, Text, event
+    ForeignKey, Numeric, CHAR, Table, create_engine, Text, event, Boolean
 from sqlalchemy.dialects.mysql import TIMESTAMP
 from sqlalchemy.orm import relationship, sessionmaker
 
@@ -299,6 +299,7 @@ class EventoOVR(BaseRastreavel, BaseDumpable):
     fase = Column(Integer(), index=True, default=0)
     motivo = Column(VARCHAR(200), index=True)
     anexo_filename = Column(VARCHAR(100), index=True)  # ID no Mongo
+    excluido = Column(Boolean, index=True)
 
     @property
     def descricao_fase(self):

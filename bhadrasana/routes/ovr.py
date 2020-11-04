@@ -35,13 +35,13 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     executa_relatorio, get_relatorio, get_afrfb, get_itens_roteiro_checked, \
     get_flags_choice, cadastra_visualizacao, get_tipos_evento_comfase_choice, \
     get_ovr_criadaspor, get_ovr_empresa, get_tipos_evento_todos, \
-    desfaz_ultimo_eventoovr, get_delta_date, exporta_planilha_tg, TipoPlanilha, \
+    get_delta_date, exporta_planilha_tg, TipoPlanilha, \
     exclui_item_tg, get_setores_choice, get_objectives_setor, \
     executa_okr_results, gera_okrobjective, \
     exclui_okrobjective, get_key_results_choice, gera_okrmeta, exclui_okrmeta, \
     get_usuarios_setores, get_setores_cpf, get_ovr_auditor, get_ovr_passagem, muda_setor_ovr, \
     monta_ovr_dict, get_docx, inclui_docx, get_docx_choices, get_recintos_dte, excluir_processo, \
-    excluir_evento, get_ovr_visao_usuario, get_setores_cpf_choice
+    excluir_evento, get_ovr_visao_usuario, get_setores_cpf_choice, get_processo
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
@@ -606,19 +606,17 @@ def ovr_app(app):
     @login_required
     def exclui_processo():
         session = app.config.get('dbsession')
-        ovr_id = request.args.get('ovr_id')
+        ovr_id = None
         processo_id = request.args.get('processo_id')
-        responsavel = request.args.get('responsavel')
-        if responsavel == current_user.name:
-            try:
-                excluir_processo(session, processo_id)
-            except Exception as err:
-                logger.error(err, exc_info=True)
-                flash('Erro! Detalhes no log da aplicação.')
-                flash(str(type(err)))
-                flash(str(err))
-        else:
-            flash('Somente o responsável pela ficha pode excluir processos')
+        try:
+            processo = get_processo(session, processo_id)
+            ovr_id = processo.ovr.id
+            excluir_processo(session, processo, current_user.name)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
         return redirect(url_for('ovr', id=ovr_id))
 
     @app.route('/exclui_evento')
@@ -627,9 +625,8 @@ def ovr_app(app):
         session = app.config.get('dbsession')
         ovr_id = request.args.get('ovr_id')
         evento_id = request.args.get('evento_id')
-        print(ovr_id)
         try:
-            excluir_evento(session, evento_id)
+            excluir_evento(session, evento_id, current_user.name)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
