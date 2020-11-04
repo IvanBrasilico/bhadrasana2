@@ -1,3 +1,4 @@
+from flask_login import current_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, TextAreaField, SelectField, validators
 from wtforms.fields.html5 import DateField, TimeField, DecimalField
@@ -134,7 +135,15 @@ class HistoricoOVRForm(FlaskForm):
             self.user_name.choices.extend(kwargs.get('responsaveis'))
 
 
-class ProcessoOVRForm(FlaskForm):
+class RastreavelForm(FlaskForm):
+    user_name = StringField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user_name.data = current_user.name
+
+
+class ProcessoOVRForm(RastreavelForm):
     id = IntegerField('ID')
     ovr_id = IntegerField('OVR')
     tipoprocesso_id = SelectField('tipoprocesso', default=0)
