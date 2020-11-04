@@ -1,4 +1,5 @@
 import os
+import re
 from _collections import defaultdict
 from datetime import datetime, date, timedelta
 from decimal import Decimal
@@ -20,7 +21,7 @@ from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
     ProcessoOVRForm, ItemTGForm, ResponsavelOVRForm, TGOVRForm, FiltroRelatorioForm, \
     FiltroMinhasOVRsForm, OKRObjectiveForm, OKRMetaForm, SetorOVRForm, FiltroDocxForm, \
     ModeloDocxForm, EscaneamentoOperadorForm, FiltroAbasForm
-from bhadrasana.models import delete_objeto, get_usuario
+from bhadrasana.models import delete_objeto, get_usuario, usuario_tem_perfil
 from bhadrasana.models.laudo import get_empresa, get_empresas_nome, get_sats_cnpj
 from bhadrasana.models.ovr import OVR, OKRObjective, faseOVR
 from bhadrasana.models.ovr_dict_repr import OVRDict
@@ -1501,10 +1502,13 @@ def ovr_app(app):
         listasficharesumo = []
         filtroform = FiltroAbasForm()
         count_iniciadas = 0
+        supervisor = False
         try:
             setores = get_setores_cpf_choice(session, current_user.id)
+            flags = get_flags_choice(session)
+            supervisor = usuario_tem_perfil()
             if request.method == 'POST':
-                filtroform = FiltroAbasForm(request.form, setores=setores)
+                filtroform = FiltroAbasForm(request.form, setores=setores, flags=flags)
                 if filtroform.validate():
                     listaficharesumo = get_ovr_visao_usuario(session,
                                                              filtroform.datainicio.data,
@@ -1515,7 +1519,7 @@ def ovr_app(app):
                     exibicao_ovr = ExibicaoOVR(session, TipoExibicao.Resumo, current_user.id)
                     for ovr in listaficharesumo:
                         resumo = exibicao_ovr.get_OVR_Resumo(ovr, mercante=False, fiscalizado=True)
-                        listasficharesumo[ovr.get_fase()].append(resumo)
+                        listasficharesumo[ovr.get_fase()].append({'id': ovr.id, 'resumo': resumo})
                 else:
                     flash(filtroform.errors)
             else:
@@ -1524,7 +1528,8 @@ def ovr_app(app):
                 inicio = date(year=start.year, month=start.month, day=1)
                 filtroform = FiltroAbasForm(datainicio=inicio,
                                             datafim=today,
-                                            setores=setores)
+                                            setores=setores,
+                                            flags=flags)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
@@ -1535,3 +1540,19 @@ def ovr_app(app):
                                listafases=faseOVR,
                                listasficharesumo=listasficharesumo,
                                count_iniciadas=count_iniciadas)
+
+    @app.route('/ficha/summary/<oid>', methods=['GET', 'POST'])
+    @login_required
+    def ficha_summary(oid):
+        session = app.config['dbsession']
+        try:
+            exibicao_ovr = ExibicaoOVR(session, TipoExibicao.Resumo, current_user.id)
+            ovr = get_ovr(session, oid)
+            resumo_html = exibicao_ovr.get_OVR_Resumo(ovr, mercante=True,
+                                                      fiscalizado=True, eventos=True)
+            resumo_texto = resumo_html.replace('<br>', '\n')
+            resumo_texto = re.sub(re.compile('<.*?>'), ' ', resumo_texto)
+            return resumo_texto
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            return 'Erro! Detalhes no log da aplicação: %s' % err

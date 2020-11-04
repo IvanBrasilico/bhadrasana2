@@ -278,7 +278,23 @@ class ExibicaoOVR:
                 fiscalizado,
                 resumo]
 
-    def get_OVR_Resumo(self, ovr, mercante=True, fiscalizado=False) -> str:
+    def get_mercante_resumo(self, ovr):
+        resumo = []
+        conhecimento = get_conhecimento(self.session,
+                                        ovr.numeroCEmercante)
+        if conhecimento:
+            resumo.append(f'<b>BL</b>: {conhecimento.numConhecimento}')
+            conteineres = self.get_conteineres(ovr)
+            if conteineres:
+                resumo.append(f'<b>Contêineres</b>: {conteineres}')
+            resumo.append(f'<b>Porto de Origem</b>: {conhecimento.portoOrigemCarga}')
+            resumo.append(f'<b>Porto de Destino Final</b>: {conhecimento.portoDestFinal}')
+            resumo.append(f'<b>Mercadoria</b>: {conhecimento.descricao}')
+            resumo.append(f'<b>M3</b>: {conhecimento.cubagem}')
+        return resumo
+
+    def get_OVR_Resumo(self, ovr, mercante=True,
+                       fiscalizado=False, eventos=False) -> str:
         datahora = ovr.datahora.strftime('%d/%m/%Y') if ovr.datahora else ''
         resumo = [f'<h4><a href="ovr?id={ovr.id}" style="color: orange">' +
                   f'{ovr.id} - {datahora}</a></h4>{ovr.get_tipooperacao()}']
@@ -290,31 +306,30 @@ class ExibicaoOVR:
             fiscalizado = self.get_fiscalizado(ovr)
             if fiscalizado:
                 resumo.append(f'<b>Fiscalizado</b>: {fiscalizado}')
+        peso_apreensoes = self.get_peso_apreensoes(ovr)
+        if peso_apreensoes:
+            resumo.append(f'<b>Peso das Apreensões</b>: {peso_apreensoes}')
+        infracoes, marcas = self.get_infracoes_e_marcas(ovr)
+        if infracoes:
+            resumo.append(f'<b>Infrações</b>: {infracoes}')
+        if marcas:
+            resumo.append(f'<b>Marcas contrafeitas</b>: {marcas}')
+        valor_tgs = self.get_valor_tgs(ovr)
+        if valor_tgs:
+            resumo.append(f'<b>Valor dos TGs</b>: {valor_tgs}')
         if mercante:
-            conhecimento = get_conhecimento(self.session,
-                                            ovr.numeroCEmercante)
-            if conhecimento:
-                resumo.append(f'<b>BL</b>: {conhecimento.numConhecimento}')
-                conteineres = self.get_conteineres(ovr)
-                if conteineres:
-                    resumo.append(f'<b>Contêineres</b>: {conteineres}')
-                resumo.append(f'<b>Porto de Origem</b>: {conhecimento.portoOrigemCarga}')
-                resumo.append(f'<b>Porto de Destino Final</b>: {conhecimento.portoDestFinal}')
-                resumo.append(f'<b>Mercadoria</b>: {conhecimento.descricao}')
-                resumo.append(f'<b>M3</b>: {conhecimento.cubagem}')
-        if ovr.fase in [1, 2, 3, 4]:  # Se não está iniciada nem arquivada...
-            peso_apreensoes = self.get_peso_apreensoes(ovr)
-            if peso_apreensoes:
-                resumo.append(f'<b>Peso das Apreensões</b>: {peso_apreensoes}')
-            infracoes, marcas = self.get_infracoes_e_marcas(ovr)
-            if infracoes:
-                resumo.append(f'<b>Infrações</b>: {infracoes}')
-            if marcas:
-                resumo.append(f'<b>Marcas contrafeitas</b>: {marcas}')
-            valor_tgs = self.get_valor_tgs(ovr)
-            if valor_tgs:
-                resumo.append(f'<b>Valor dos TGs</b>: {valor_tgs}')
+            resumo.extend(self.get_mercante_resumo(ovr))
+        if eventos:
+            resumo.extend(self.get_eventos_resumo(ovr))
         return '<br>'.join(resumo)
 
     def get_titulos(self):
         return ExibicaoOVR.titulos[self.tipo]
+
+    def get_eventos_resumo(self, ovr):
+        resumo = []
+        for evento in ovr.historico[:-3]:
+            resumo.append('{} - {} - {} - {}'.format(
+                evento.tipoevento.nome, evento.user_name,
+                datetime.strftime(evento.create_date, '%d/%m/%Y %H:%M'), evento.motivo))
+        return resumo

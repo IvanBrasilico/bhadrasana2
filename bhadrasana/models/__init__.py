@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append('.')
 sys.path.insert(0, '../ajna_docs/commons')
 sys.path.insert(0, '../virasana')
@@ -6,7 +7,6 @@ sys.path.insert(0, '../ajna_api')
 
 import datetime
 from collections import OrderedDict
-
 
 from sqlalchemy import Column, func, VARCHAR, CHAR, ForeignKey, Integer, event
 from sqlalchemy import create_engine
@@ -206,6 +206,11 @@ def usuario_tem_perfil(session, cpf: str, perfil: int) -> PerfilUsuario:
         PerfilUsuario.perfil == perfil).one_or_none()
     # logger.info('***********' + cpf + ' ' + str(perfil))
     return operfil is not None
+
+
+def usuario_tem_perfil_nome(session, usuario_cpf: str, perfil: str) -> bool:
+    perfil_id = Enumerado.get_id(perfilAcesso, perfil)
+    return usuario_tem_perfil(session, usuario_cpf, perfil_id)
 
 
 def gera_objeto(instance: object, session, params):
