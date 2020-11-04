@@ -1491,7 +1491,7 @@ def ovr_app(app):
         try:
             setores = get_setores_cpf_choice(session, current_user.id)
             flags = get_flags_choice(session)
-            supervisor = usuario_tem_perfil()
+            supervisor = usuario_tem_perfil(session, current_user.name, 'Supervisor')
             if request.method == 'POST':
                 filtroform = FiltroAbasForm(request.form, setores=setores, flags=flags)
                 if filtroform.validate():
