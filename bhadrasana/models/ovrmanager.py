@@ -22,7 +22,8 @@ from sqlalchemy.orm import Session
 from ajna_commons.models.bsonimage import BsonImage
 from ajna_commons.flask.log import logger
 from ajna_commons.utils.images import mongo_image
-from bhadrasana.models import Usuario, Setor, EBloqueado, PerfilUsuario, perfilAcesso, ESomenteUsuarioResponsavel
+from bhadrasana.models import Usuario, Setor, EBloqueado, ESomenteUsuarioResponsavel,\
+    usuario_tem_perfil_nome
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto, \
     get_usuario_logado
 from bhadrasana.models.laudo import get_empresa
@@ -193,8 +194,6 @@ def get_ovr_criadaspor(session, user_name: str) -> List[OVR]:
     return session.query(OVR).filter(OVR.user_name == user_name).all()
 
 
-
-
 def get_ovr_visao_usuario(session, datainicio: datetime,
                           datafim: datetime, usuario_cpf: str, setor_id='') -> List[OVR]:
     """Traz todas que for importante visualizar, de acordo com o perfil.
@@ -208,7 +207,7 @@ def get_ovr_visao_usuario(session, datainicio: datetime,
                  OVR.cpfauditorresponsavel == usuario_cpf,
                  )
     if setor_id:
-        if usuario_tem_perfil(session, usuario_cpf, 'Supervisor'):
+        if usuario_tem_perfil_nome(session, usuario_cpf, 'Supervisor'):
             filtro = or_(filtro, OVR.setor_id == setor_id)
     ovrs = session.query(OVR).filter(filtro) \
         .filter(OVR.datahora.between(datainicio, datafim)).all()
