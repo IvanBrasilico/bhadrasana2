@@ -1,18 +1,20 @@
 import sys
 import unittest
+import warnings
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from bhadrasana.models import ESomenteMesmoUsuario, ESomenteUsuarioResponsavel
+from bhadrasana.models import ESomenteUsuarioResponsavel
 
 sys.path.append('.')
 
-from bhadrasana.models.ovr import metadata, Enumerado, create_tiposevento, create_tiposprocesso, create_flags, \
+from bhadrasana.models.ovr import metadata, create_tiposevento, create_tiposprocesso, create_flags, \
     create_tipomercadoria, create_marcas
 
 from bhadrasana.models.ovrmanager import gera_processoovr, atribui_responsavel_ovr, excluir_processo
 
+warnings.simplefilter('ignore')
 engine = create_engine('sqlite://')
 Session = sessionmaker(bind=engine)
 session = Session()

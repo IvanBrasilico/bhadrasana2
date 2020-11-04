@@ -1,5 +1,6 @@
 import io
 import sys
+from sqlite3 import OperationalError
 
 from gridfs import GridFS
 
@@ -22,7 +23,7 @@ from sqlalchemy.orm import Session
 from ajna_commons.models.bsonimage import BsonImage
 from ajna_commons.flask.log import logger
 from ajna_commons.utils.images import mongo_image
-from bhadrasana.models import Usuario, Setor, EBloqueado, ESomenteUsuarioResponsavel,\
+from bhadrasana.models import Usuario, Setor, EBloqueado, ESomenteUsuarioResponsavel, \
     usuario_tem_perfil_nome
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto, \
     get_usuario_logado
@@ -147,6 +148,8 @@ def cadastra_ovr(session, params: dict, user_name: str) -> OVR:
                                                 ovr.numeroCEmercante)
                 if conhecimento:
                     ovr.cnpj_fiscalizado = conhecimento.consignatario
+            except OperationalError:
+                pass
             except Exception as err:
                 logger.error(str(err), exc_info=True)
     try:
@@ -516,8 +519,17 @@ def valida_mesmo_responsavel(session, params):
         raise ESomenteUsuarioResponsavel()
 
 
+def mesmo_responsavel(func):
+    def wrapper(*args, **kwargs):
+        print(args)
+        print(kwargs)
+        valida_mesmo_responsavel(*args, **kwargs)
+        return func(*args, **kwargs)
+    return wrapper
+
+
+@mesmo_responsavel
 def gera_processoovr(session, params) -> ProcessoOVR:
-    valida_mesmo_responsavel(session, params)
     numero = params.get('numero_processo')
     if numero:
         params['numerolimpo'] = ''.join([s for s in numero if s.isnumeric()])
