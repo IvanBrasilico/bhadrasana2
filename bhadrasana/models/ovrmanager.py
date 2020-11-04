@@ -513,7 +513,18 @@ def gera_eventoovr(session, params: dict, commit=True, user_name=None) -> Evento
     return evento
 
 
+def valida_mesmo_responsavel(session, params):
+    user_name = params['user_name']
+    ovr_id = params['ovr_id']
+    ovr = session.query(OVR).filter(OVR.id == ovr_id).one_or_none()
+    if ovr is None:
+        raise Exception(f'OVR {ovr_id} inexistente.')
+    if ovr.responsavel_cpf != user_name:
+        raise ESomenteUsuarioResponsavel()
+
+
 def gera_processoovr(session, params) -> ProcessoOVR:
+    valida_mesmo_responsavel(session, params)
     numero = params.get('numero_processo')
     if numero:
         params['numerolimpo'] = ''.join([s for s in numero if s.isnumeric()])
