@@ -1,6 +1,7 @@
 from flask_login import current_user
 from flask_wtf import FlaskForm
-from wtforms import StringField, IntegerField, TextAreaField, SelectField, validators, SelectMultipleField
+from wtforms import StringField, IntegerField, TextAreaField, SelectField, \
+    validators, SelectMultipleField
 from wtforms.fields.html5 import DateField, TimeField, DecimalField
 
 from bhadrasana.forms.exibicao_ovr import TipoExibicao

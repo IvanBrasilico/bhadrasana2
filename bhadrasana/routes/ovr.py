@@ -572,21 +572,6 @@ def ovr_app(app):
             flash(str(err))
         return redirect(url_for('ovr', id=ovr_id))
 
-    @app.route('/desfazer_ultimo_eventoovr', methods=['POST'])
-    @login_required
-    def desfazer_ultimo_eventoovr():
-        session = app.config.get('dbsession')
-        ovr_id = None
-        try:
-            ovr_id = request.form['ovr_id']
-            desfaz_ultimo_eventoovr(session, ovr_id)
-        except Exception as err:
-            logger.error(err, exc_info=True)
-            flash('Erro! Detalhes no log da aplicação.')
-            flash(str(type(err)))
-            flash(str(err))
-        return redirect(url_for('ovr', id=ovr_id))
-
     @app.route('/processoovr', methods=['POST'])
     @login_required
     def processoovr():
@@ -1529,7 +1514,8 @@ def ovr_app(app):
                 filtroform = FiltroAbasForm(datainicio=inicio,
                                             datafim=today,
                                             setores=setores,
-                                            flags=flags)
+                                            flags=flags,
+                                            supervisor=supervisor)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')

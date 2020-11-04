@@ -68,6 +68,7 @@ class OVRTestCase(BaseTestCase):
         session.refresh(ovr)
         assert len(ovr.historico) == 2
 
+    """
     def test_OVR_Desfaz_1Evento(self):
         ovr = self.create_OVR_valido()
         session.refresh(ovr)
@@ -112,15 +113,19 @@ class OVRTestCase(BaseTestCase):
         desfaz_ultimo_eventoovr(session, ovr.id)
         assert ovr.fase == 0
         assert ovr.tipoevento_id is None
+    """
 
     def test_OVR_Processo(self):
         ovr = self.create_OVR_valido()
         session.refresh(ovr)
+        atribui_responsavel_ovr(session, ovr.id, 'user_1')
         for tipo in Enumerado.tipoProcesso():
             params = {
                 'numero': tipo[1],
                 'tipoprocesso_id': tipo[0],
-                'ovr_id': ovr.id
+                'ovr_id': ovr.id,
+                'user_name': 'user_1'
+
             }
             processo = gera_processoovr(session, params)
             session.refresh(processo)

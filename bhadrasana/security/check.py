@@ -17,8 +17,8 @@ class TesteInterceptor(Interceptor):
     def print(self, *args):
         print(args)
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
     teste = TesteInterceptor('ivan')
     teste.print('teste')
     teste.inexistente()
