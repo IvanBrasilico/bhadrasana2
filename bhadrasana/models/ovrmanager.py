@@ -22,7 +22,7 @@ from sqlalchemy.orm import Session
 from ajna_commons.models.bsonimage import BsonImage
 from ajna_commons.flask.log import logger
 from ajna_commons.utils.images import mongo_image
-from bhadrasana.models import Usuario, Setor, EBloqueado, PerfilUsuario, perfilAcesso
+from bhadrasana.models import Usuario, Setor, EBloqueado, PerfilUsuario, perfilAcesso, ESomenteUsuarioResponsavel
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto, \
     get_usuario_logado
 from bhadrasana.models.laudo import get_empresa
@@ -507,30 +507,18 @@ def gera_eventoovr(session, params: dict, commit=True, user_name=None) -> Evento
     return evento
 
 
-def desfaz_ultimo_eventoovr(session, ovr_id: int) -> EventoOVR:
-    evento_anterior = None
-    ovr = get_ovr(session, ovr_id)
-    ultimo_evento = ovr.historico[len(ovr.historico) - 1]
-    if ultimo_evento.tipoevento.eventoespecial is not None:
-        raise Exception('Este Evento não pode ser desfeito!!')
-    if len(ovr.historico) > 1:
-        evento_anterior = ovr.historico[len(ovr.historico) - 2]
-    try:
-        session.delete(ultimo_evento)
-        if evento_anterior:
-            ovr.fase = evento_anterior.fase
-            ovr.tipoevento_id = evento_anterior.tipoevento_id
-        else:
-            ovr.fase = 0
-            ovr.tipoevento_id = None
-        session.add(ovr)
-        session.commit()
-    except Exception as err:
-        session.rollback()
-        raise err
+def valida_mesmo_responsavel(session, params):
+    user_name = params['user_name']
+    ovr_id = params['ovr_id']
+    ovr = session.query(OVR).filter(OVR.id == ovr_id).one_or_none()
+    if ovr is None:
+        raise Exception(f'OVR {ovr_id} inexistente.')
+    if ovr.responsavel_cpf != user_name:
+        raise ESomenteUsuarioResponsavel()
 
 
 def gera_processoovr(session, params) -> ProcessoOVR:
+    valida_mesmo_responsavel(session, params)
     numero = params.get('numero_processo')
     if numero:
         params['numerolimpo'] = ''.join([s for s in numero if s.isnumeric()])
@@ -539,21 +527,50 @@ def gera_processoovr(session, params) -> ProcessoOVR:
                        session, params)
 
 
-def excluir_processo(session, processo_id):
+def get_processo(session, processo_id: int) -> ProcessoOVR:
     processo = session.query(ProcessoOVR). \
         filter(ProcessoOVR.id == processo_id).one_or_none()
+    if processo is None:
+        raise KeyError(f'Processo {processo_id} não encontrado')
+    return processo
+
+
+def excluir_processo(session, processo: ProcessoOVR, user_cpf):
+    ovr = processo.ovr
+    if ovr.responsavel_cpf != user_cpf:
+        raise ESomenteUsuarioResponsavel()
     session.delete(processo)
     try:
         session.commit()
+        return ovr
     except Exception as err:
         logger.error(err, exc_info=True)
         session.rollback()
 
 
-def excluir_evento(session, evento_id):
-    evento_id = session.query(EventoOVR). \
+def excluir_evento(session, evento_id, user_cpf):
+    evento = session.query(EventoOVR). \
         filter(EventoOVR.id == evento_id).one_or_none()
-    session.delete(evento_id)
+    if evento.tipoevento.eventoespecial is not None:
+        raise Exception('Este Evento não pode ser desfeito!!')
+    ovr = evento.ovr
+    if ovr.responsavel_cpf != user_cpf:
+        raise ESomenteUsuarioResponsavel()
+    if evento.user_name != user_cpf:
+        raise ESomenteMesmoUsuario()
+    # evento.excluido = True
+    session.delete(evento)
+    ultimo_evento = ovr.historico[-1]
+    if ultimo_evento.id == evento.id:
+        if len(ovr.historico) > 1:
+            penultimo_evento = ovr.historico[-2]
+            ovr.fase = penultimo_evento.fase
+            ovr.tipoevento_id = penultimo_evento.tipoevento_id
+            session.add(ovr)
+        else:
+            ovr.fase = 0
+            ovr.tipoevento_id = None
+            session.add(ovr)
     try:
         session.commit()
     except Exception as err:

@@ -55,6 +55,11 @@ class EBloqueado(Exception):
                                  'Status/fase não permite alteração.')
 
 
+class ESomenteUsuarioResponsavel(Exception):
+    def __init__(self):
+        Exception.__init__(self, 'Somente o usuário responsável pode executar essa tarefa.')
+
+
 perfilAcesso = (
     'Consulta',
     'Operador',

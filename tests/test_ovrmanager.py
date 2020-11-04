@@ -21,7 +21,7 @@ from bhadrasana.models.ovrmanager import gera_eventoovr, \
     get_relatorios_choice, get_relatorio, executa_relatorio, get_setores_choice, get_setores_cpf, get_setores_usuario, \
     inclui_flag_ovr, get_tiposmercadoria_choice, get_marcas_choice, lista_tgovr, get_tgovr, cadastra_itemtg, \
     lista_itemtg, get_itemtg, get_itemtg_numero, informa_lavratura_auto, get_marcas, usuario_index, \
-    cadastra_visualizacao, get_visualizacoes, get_ovr_filtro, cadastra_ovr, desfaz_ultimo_eventoovr, get_ovr_empresa, \
+    cadastra_visualizacao, get_visualizacoes, get_ovr_filtro, cadastra_ovr, get_ovr_empresa, \
     get_ovrs_setor, exclui_item_tg, get_ovr_visao_usuario
 
 engine = create_engine('sqlite://')
