@@ -6,12 +6,12 @@ from decimal import Decimal
 from typing import Tuple
 
 import pandas as pd
+from ajna_commons.flask.log import logger
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
 from gridfs import GridFS
 from werkzeug.utils import redirect
 
-from ajna_commons.flask.log import logger
 from bhadrasana.analises.escaneamento_operador import sorteia_GMCIs
 from bhadrasana.docx.docx_functions import get_doc_generico_ovr
 from bhadrasana.forms.exibicao_ovr import ExibicaoOVR, TipoExibicao
@@ -187,7 +187,7 @@ def ovr_app(app):
             session = app.config.get('dbsession')
             ovr_id = request.args.get('ovr_id')
             flag_nome = request.args.get('flag_nome')
-            novas_flags = inclui_flag_ovr(session, ovr_id, flag_nome)
+            novas_flags = inclui_flag_ovr(session, ovr_id, flag_nome, current_user.name)
         except Exception as err:
             logger.error(err, exc_info=True)
             return jsonify({'msg': str(err)}), 500
@@ -422,7 +422,8 @@ def ovr_app(app):
             ovr_id = responsavel_ovr_form.ovr_id.data
             atribui_responsavel_ovr(session,
                                     ovr_id=ovr_id,
-                                    responsavel=responsavel_ovr_form.responsavel.data
+                                    responsavel=responsavel_ovr_form.responsavel.data,
+                                    user_name=current_user.name
                                     )
             return redirect(url_for('ovr', id=ovr_id))
         except Exception as err:
