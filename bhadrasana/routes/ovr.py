@@ -444,6 +444,7 @@ def ovr_app(app):
             atribui_responsavel_ovr(session,
                                     ovr_id=ovr_id,
                                     responsavel=responsavel_ovr_form.responsavel.data,
+                                    user_name=current_user.name,
                                     auditor=True
                                     )
             return redirect(url_for('ovr', id=ovr_id))
