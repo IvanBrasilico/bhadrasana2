@@ -1515,8 +1515,10 @@ def ovr_app(app):
                     listasficharesumo = defaultdict(list)
                     exibicao_ovr = ExibicaoOVR(session, TipoExibicao.Resumo, current_user.id)
                     for ovr in listaficharesumo:
-                        resumo = exibicao_ovr.get_OVR_resumo_html(ovr, mercante=False, fiscalizado=True,
-                                                             responsabilidade=True, trabalho=True)
+                        resumo = exibicao_ovr.get_OVR_resumo_html(ovr, mercante=False,
+                                                                  fiscalizado=True,
+                                                                  responsabilidade=True,
+                                                                  trabalho=True)
                         listasficharesumo[ovr.get_fase()].append({'id': ovr.id, 'resumo': resumo})
                 else:
                     flash(filtroform.errors)
