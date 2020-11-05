@@ -362,7 +362,8 @@ def get_flags_choice(session) -> List[Tuple[int, str]]:
     return [(flag.id, flag.nome) for flag in flags]
 
 
-def inclui_flag_ovr(session, ovr_id, flag_nome) -> List[Flag]:
+def inclui_flag_ovr(session, ovr_id, flag_nome, user_name) -> List[Flag]:
+    valida_mesmo_responsavel_user_name(session, ovr_id, user_name)
     flag = session.query(Flag).filter(
         Flag.nome == flag_nome).one_or_none()
     # logger.info(flag, flag_nome)
@@ -397,16 +398,22 @@ def gerencia_flag_ovr(session, ovr_id, flag_id, inclui=True) -> List[Flag]:
 
 
 def atribui_responsavel_ovr(session, ovr_id: int,
-                            responsavel: str, auditor=False) -> OVR:
+                            responsavel: str, user_name: str,
+                            auditor=False) -> OVR:
     """Atualiza campo responsável na OVR. Gera evento correspondente.
 
     :param session: Conexão com banco SQLAlchemy
     :param ovr_id: ID da OVR a atribuir responsável
     :param responsavel: CPF do novo responsável
+    :param user_name: CPF do usuário solicitante
     :return: OVR modificado
     """
     try:
         ovr = get_ovr(session, ovr_id)
+        # Se Usuário for Supervisor, pode atribuir à vontade.
+        # Senão, precisa ser responsável atual
+        if not usuario_tem_perfil_nome(session, user_name, 'Supervisor'):
+            valida_mesmo_responsavel(session, ovr_id, user_name)
         if auditor:
             tipoevento = session.query(TipoEventoOVR).filter(
                 TipoEventoOVR.eventoespecial == EventoEspecial.AuditorResponsavel.value).first()
@@ -521,14 +528,18 @@ def gera_eventoovr(session, params: dict, commit=True, user_name=None) -> Evento
     return evento
 
 
-def valida_mesmo_responsavel(session, params):
-    user_name = params['user_name']
-    ovr_id = params['ovr_id']
+def valida_mesmo_responsavel_user_name(session, ovr_id: int, user_name: str):
     ovr = session.query(OVR).filter(OVR.id == ovr_id).one_or_none()
     if ovr is None:
         raise Exception(f'OVR {ovr_id} inexistente.')
     if ovr.responsavel_cpf != user_name:
         raise ESomenteUsuarioResponsavel()
+
+
+def valida_mesmo_responsavel(session, params):
+    user_name = params['user_name']
+    ovr_id = params['ovr_id']
+    valida_mesmo_responsavel(session, ovr_id, user_name)
 
 
 def mesmo_responsavel(func):
