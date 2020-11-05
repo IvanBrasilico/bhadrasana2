@@ -413,7 +413,7 @@ def atribui_responsavel_ovr(session, ovr_id: int,
         # Se Usuário for Supervisor, pode atribuir à vontade.
         # Senão, precisa ser responsável atual
         if not usuario_tem_perfil_nome(session, user_name, 'Supervisor'):
-            valida_mesmo_responsavel(session, ovr_id, user_name)
+            valida_mesmo_responsavel_user_name(session, ovr_id, user_name)
         if auditor:
             tipoevento = session.query(TipoEventoOVR).filter(
                 TipoEventoOVR.eventoespecial == EventoEspecial.AuditorResponsavel.value).first()
@@ -539,7 +539,7 @@ def valida_mesmo_responsavel_user_name(session, ovr_id: int, user_name: str):
 def valida_mesmo_responsavel(session, params):
     user_name = params['user_name']
     ovr_id = params['ovr_id']
-    valida_mesmo_responsavel(session, ovr_id, user_name)
+    valida_mesmo_responsavel_user_name(session, ovr_id, user_name)
 
 
 def mesmo_responsavel(func):
