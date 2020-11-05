@@ -515,6 +515,8 @@ def gera_eventoovr(session, params: dict, commit=True, user_name=None) -> Evento
     evento.fase = tipoevento.fase
     try:
         ovr = get_ovr(session, evento.ovr_id)
+        if ovr.responsavel_cpf != user_name:
+            raise ESomenteUsuarioResponsavel()
         ovr.fase = evento.fase
         ovr.tipoevento_id = evento.tipoevento_id
         session.add(ovr)
