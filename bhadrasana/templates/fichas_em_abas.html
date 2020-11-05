@@ -8,13 +8,17 @@
                     <label for="datainicio">Início e fim de período de pesquisa</label>
                 </div>
                 <div class="col-sm-2">
-                    <label for="setor_id">Setor a filtrar</label>
-                </div>
-                <div class="col-sm-2">
                     <label for="setor_id">Tipo de Operação</label>
                 </div>
                 <div class="col-sm-2">
                     <label for="setor_id">Com alertas</label>
+                </div>
+                <div class="col-sm-2">
+                    {% if supervisor %}
+                    <label for="setor_id">Setor a filtrar</label>
+                    {% endif %}
+                </div>
+                <div class="col-sm-2">
                 </div>
             </div>
             <div class="row">
@@ -31,11 +35,11 @@
                     <div class="col-sm-2">
                         {{ oform.flags_id(class='form-control') }}
                     </div>
-                    {% if supervisor %}
                     <div class="col-sm-2">
+                        {% if supervisor %}
                         {{ oform.setor_id(class='form-control') }}
+                        {% endif %}
                     </div>
-                    {% endif %}
                     <div class="col-sm-2">
                         <button class="btn btn-default btn-info form-control" onclick="submit">
                             Pesquisar
@@ -47,26 +51,29 @@
     </div>
     <div id="list" class="row col-xl-12">
         {% for fase in listafases %}
-        <div class={% if fase == 'Ativa' or fase == 'Suspensa' %}"col-lg-3"{% elif fase == 'Arquivada' %}"col-lg-2"{% else %}"col-lg-2"{% endif %}>
-            <div class="panel rounded-pill panel-info">
+        <div class={% if fase==
+        'Ativa' or fase == 'Suspensa' %}"col-lg-3"{% elif fase == 'Arquivada' %}"col-lg-2"{% else %}"col-lg-2"{% endif
+        %}>
+        <div class="panel rounded-pill panel-info">
             <div class="panel-heading">
-            <h3>{{ fase }} ({{ listasficharesumo[fase] | length }})</h3>
+                <h3>{{ fase }} ({{ listasficharesumo[fase] | length }})</h3>
             </div>
             <div class="panel-body panel-primary">
                 {% for ficharesumo in listasficharesumo[fase] %}
-                <div class="panel panel-heading panel-primary rounded-pill" onmouseover="showMsg(this, '{{ ficharesumo['id'] }}')" onmouseout="clearMsg(this)">
+                <div class="panel panel-heading panel-primary rounded-pill"
+                     onmouseover="showMsg(this, '{{ ficharesumo['id'] }}')" onmouseout="clearMsg(this)">
                     {{ ficharesumo['resumo'] | safe }}
                 </div>
                 {% endfor %}
             </div>
-            </div>
         </div>
-        {% endfor %}
     </div>
-    <!--Footer-->
-    <div id="bottom" class="row col-sm-12">
-        AJNA - Receita Federal do Brasil 2017
-    </div>
+    {% endfor %}
+</div>
+<!--Footer-->
+<div id="bottom" class="row col-sm-12">
+    AJNA - Receita Federal do Brasil 2017
+</div>
 </div>
 {% endblock %} {% block scripts %} {{super()}}
 <script>
@@ -85,5 +92,6 @@
     function clearMsg(adiv) {
         adiv.title = "";
     }
+
 </script>
 {% endblock %}

@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Tuple, List
 
-from bhadrasana.models import get_usuario
+from bhadrasana.models import get_usuario, usuario_tem_perfil_nome
 from bhadrasana.models.laudo import get_empresa
 from bhadrasana.models.ovr import OVR
 from bhadrasana.models.ovrmanager import get_visualizacoes, lista_tgovr
@@ -278,7 +278,7 @@ class ExibicaoOVR:
                 fiscalizado,
                 resumo]
 
-    def get_mercante_resumo(self, ovr):
+    def get_mercante_resumo(self, ovr) -> list:
         resumo = []
         conhecimento = get_conhecimento(self.session,
                                         ovr.numeroCEmercante)
@@ -293,10 +293,26 @@ class ExibicaoOVR:
             resumo.append(f'<b>M3</b>: {conhecimento.cubagem}')
         return resumo
 
-    def get_OVR_Resumo(self, ovr, mercante=True,
-                       fiscalizado=False, eventos=False) -> str:
+    def get_OVR_resumo_html(self, ovr, mercante=True,
+                            fiscalizado=False, eventos=False,
+                            responsaveis=False, trabalho=False,
+                            responsabilidade=False) -> str:
+        resumo = self.get_OVR_resumo(ovr,
+                                     mercante=mercante,
+                                     fiscalizado=fiscalizado,
+                                     eventos=eventos,
+                                     responsaveis=responsaveis,
+                                     trabalho=trabalho,
+                                     responsabilidade=responsabilidade)
+
+        return '<br>'.join(resumo)
+
+    def get_OVR_resumo(self, ovr, mercante=True,
+                       fiscalizado=False, eventos=False,
+                       responsaveis=False, trabalho=False,
+                       responsabilidade=False) -> list:
         datahora = ovr.datahora.strftime('%d/%m/%Y') if ovr.datahora else ''
-        resumo = [f'<h4><a href="ovr?id={ovr.id}" style="color: orange">' +
+        resumo = [f'<h4><a href="ovr?id={ovr.id}" style="color: orange" target="_blank">' +
                   f'{ovr.id} - {datahora}</a></h4>{ovr.get_tipooperacao()}']
         if ovr.observacoes:
             resumo.append(ovr.observacoes)
@@ -317,19 +333,53 @@ class ExibicaoOVR:
         valor_tgs = self.get_valor_tgs(ovr)
         if valor_tgs:
             resumo.append(f'<b>Valor dos TGs</b>: {valor_tgs}')
+        if responsaveis:
+            resumo.extend(self.get_responsaveis_resumo(ovr))
+        if responsabilidade:
+            resumo.extend(self.get_responsabilidade_resumo(ovr))
+        if trabalho:
+            resumo.extend(self.get_trabalho(ovr))
         if mercante:
             resumo.extend(self.get_mercante_resumo(ovr))
         if eventos:
             resumo.extend(self.get_eventos_resumo(ovr))
-        return '<br>'.join(resumo)
+        return resumo
 
     def get_titulos(self):
         return ExibicaoOVR.titulos[self.tipo]
 
-    def get_eventos_resumo(self, ovr):
+    def get_eventos_resumo(self, ovr) -> list:
         resumo = []
         for evento in ovr.historico[:-3]:
             resumo.append('{} - {} - {} - {}'.format(
                 evento.tipoevento.nome, evento.user_name,
                 datetime.strftime(evento.create_date, '%d/%m/%Y %H:%M'), evento.motivo))
         return resumo
+
+    def get_responsaveis_resumo(self, ovr) -> list:
+        resumo = []
+        if ovr.user_name:
+            user_descricao = self.usuario_name(ovr.user_name)
+            resumo.append(f'<b>Criador:</b>{ovr.user_name} - {user_descricao}')
+        if ovr.responsavel:
+            resumo.append(f'<b>Atribuído a:</b>{ovr.responsavel}')
+        if ovr.cpfauditorresponsavel:
+            auditor_descricao = self.usuario_name(ovr.cpfauditorresponsavel)
+            resumo.append(f'<b>Auditor:</b>{ovr.cpfauditorresponsavel} - {auditor_descricao}')
+        return resumo
+
+    def get_responsabilidade_resumo(self, ovr) -> list:
+        linha = []
+        if self.user_name == ovr.user_name:
+            linha.append('<span class="badge badge-pill">Criador</span>')
+        if self.user_name == ovr.responsavel:
+            linha.append('<span class="badge badge-pill">Responsável atual</span>')
+        if self.user_name == ovr.cpfauditorresponsavel:
+            linha.append('<span class="badge badge-pill">Auditor responsável</span>')
+        if usuario_tem_perfil_nome(self.session, self.user_name, 'Supervisor'):
+            linha.append('<span class="badge badge-pill">Supervisor</span>')
+        return [' '.join(linha)]
+
+    def get_trabalho(self, ovr) -> list:
+        tipos_evento = set([evento.tipoevento_id for evento in ovr.historico])
+        return ['Progresso: ' + '&FilledSmallSquare;' * len(tipos_evento)]
