@@ -198,7 +198,9 @@ def get_ovr_criadaspor(session, user_name: str) -> List[OVR]:
 
 
 def get_ovr_visao_usuario(session, datainicio: datetime,
-                          datafim: datetime, usuario_cpf: str, setor_id='') -> List[OVR]:
+                          datafim: datetime, usuario_cpf: str, setor_id: str = None,
+                          lista_flags: list = None,
+                          lista_tipos: list = None) -> List[OVR]:
     """Traz todas que for importante visualizar, de acordo com o perfil.
 
     Mostra se usuário criou, se é responsável, ou se é auditor responsável
@@ -209,11 +211,21 @@ def get_ovr_visao_usuario(session, datainicio: datetime,
                  OVR.responsavel_cpf == usuario_cpf,
                  OVR.cpfauditorresponsavel == usuario_cpf,
                  )
+    print('Setor ID', setor_id)
+    print(lista_flags)
+    print(lista_tipos)
     if setor_id:
         if usuario_tem_perfil_nome(session, usuario_cpf, 'Supervisor'):
             filtro = or_(filtro, OVR.setor_id == setor_id)
-    ovrs = session.query(OVR).filter(filtro) \
-        .filter(OVR.datahora.between(datainicio, datafim)).all()
+    if lista_tipos:
+        filtro = and_(filtro, OVR.tipooperacao.in_(lista_tipos))
+    if lista_flags:
+        ovrs = session.query(OVR).join(
+            flags_table).filter(flags_table.c.flag_id.in_(lista_flags)). \
+            filter(filtro).filter(OVR.datahora.between(datainicio, datafim)).all()
+    else:
+        ovrs = session.query(OVR).filter(filtro) \
+            .filter(OVR.datahora.between(datainicio, datafim)).all()
     return ovrs
 
 
@@ -525,6 +537,7 @@ def mesmo_responsavel(func):
         print(kwargs)
         valida_mesmo_responsavel(*args, **kwargs)
         return func(*args, **kwargs)
+
     return wrapper
 
 

@@ -215,6 +215,7 @@ def usuario_tem_perfil(session, cpf: str, perfil: int) -> PerfilUsuario:
 
 def usuario_tem_perfil_nome(session, usuario_cpf: str, perfil: str) -> bool:
     perfil_id = Enumerado.get_id(perfilAcesso, perfil)
+    print(usuario_cpf, perfil_id)
     return usuario_tem_perfil(session, usuario_cpf, perfil_id)
 
 
