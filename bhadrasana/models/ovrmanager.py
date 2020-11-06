@@ -473,12 +473,13 @@ def muda_setor_ovr(session, ovr_id: int,
 
 
 def informa_lavratura_auto(session, ovr_id: int,
-                           responsavel: str) -> OVR:
+                           responsavel: str, user_name: str) -> OVR:
     """Atualiza campo responsável na OVR. Gera evento correspondente.
 
     :param session: Conexão com banco SQLAlchemy
     :param ovr_id: ID da OVR a atribuir responsável
     :param responsavel: CPF do novo responsável
+    :param user_name: CPF do responsável atual
     :return: OVR modificado
     """
     try:
@@ -492,7 +493,7 @@ def informa_lavratura_auto(session, ovr_id: int,
                          'user_name': responsavel,  # Novo Responsável
                          'ovr_id': ovr.id
                          }
-        evento = gera_eventoovr(session, evento_params, commit=False)
+        evento = gera_eventoovr(session, evento_params, commit=False, user_name=user_name)
         ovr.responsavel_cpf = responsavel  # Novo responsavel
         session.add(evento)
         session.add(ovr)
