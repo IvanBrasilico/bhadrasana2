@@ -178,8 +178,13 @@ def get_ovr_one(session, ovr_id: int = None) -> OVR:
     return session.query(OVR).filter(OVR.id == ovr_id).one()
 
 
-def get_ovr_responsavel(session, user_name: str) -> List[OVR]:
-    return session.query(OVR).filter(OVR.responsavel_cpf == user_name).all()
+def get_ovr_responsavel(session, user_name: str, setores: list[Setor]) -> List[OVR]:
+    """Pegar OVRs que estejam com Usuário como responsável ou sem responsável nos setores"""
+    setores_ids = [setor.id for setor in setores]
+    return session.query(OVR).filter(or_(
+        OVR.responsavel_cpf == user_name,
+        and_(OVR.responsavel_cpf.is_(None), OVR.setor_id.in_(setores_ids))
+    )).all()
 
 
 def get_ovr_auditor(session, user_name: str) -> List[OVR]:
@@ -458,11 +463,12 @@ def muda_setor_ovr(session, ovr_id: int,
             TipoEventoOVR.eventoespecial == EventoEspecial.MudancaSetor.value).first()
         evento_params = {'tipoevento_id': tipoevento.id,
                          'motivo': 'Setor Anterior: ' + ovr.setor.nome,
-                         'user_name': user_name,  # Novo Responsável
+                         'user_name': user_name,  # Responsável pela mudança
                          'ovr_id': ovr.id
                          }
         evento = gera_eventoovr(session, evento_params, commit=False, user_name=user_name)
         ovr.setor_id = setor_id
+        ovr.responsavel_cpf = None
         session.add(evento)
         session.add(ovr)
         session.commit()
@@ -534,7 +540,9 @@ def valida_mesmo_responsavel_user_name(session, ovr_id: int, user_name: str):
     ovr = session.query(OVR).filter(OVR.id == ovr_id).one_or_none()
     if ovr is None:
         raise Exception(f'OVR {ovr_id} inexistente.')
-    if ovr.responsavel_cpf != user_name:
+    # Se tiver algum responsável, deve ser o mesmo.
+    # Se responsável for nulo, qualquer usuário pode agir
+    if ovr.responsavel_cpf is not None and ovr.responsavel_cpf != user_name:
         raise ESomenteUsuarioResponsavel()
 
 
