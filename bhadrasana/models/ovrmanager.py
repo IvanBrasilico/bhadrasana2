@@ -178,7 +178,7 @@ def get_ovr_one(session, ovr_id: int = None) -> OVR:
     return session.query(OVR).filter(OVR.id == ovr_id).one()
 
 
-def get_ovr_responsavel(session, user_name: str, setores: list[Setor]) -> List[OVR]:
+def get_ovr_responsavel(session, user_name: str, setores: List[Setor]) -> List[OVR]:
     """Pegar OVRs que estejam com Usuário como responsável ou sem responsável nos setores"""
     setores_ids = [setor.id for setor in setores]
     return session.query(OVR).filter(or_(
