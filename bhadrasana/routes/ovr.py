@@ -1495,6 +1495,8 @@ def ovr_app(app):
             if usuario is None:
                 raise Exception('Erro: Usuário não encontrado!')
             setores = get_setores_cpf_choice(session, current_user.id)
+            # Apenas para visualizar do GMAB na reunião Gabin
+            setores = get_setores_choice(session, current_user.id)
             flags = get_flags_choice(session)
             supervisor = usuario_tem_perfil_nome(session, current_user.name, 'Supervisor')
             print(supervisor)
