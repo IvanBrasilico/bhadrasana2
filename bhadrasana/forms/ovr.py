@@ -126,7 +126,7 @@ class HistoricoOVRForm(FlaskForm):
     motivo = StringField(u'Nome do usuário',
                          render_kw={'rows': 1, 'cols': 200, 'maxlength': 200},
                          default='')
-    meramente_informativo = BooleanField()
+    meramente_informativo = BooleanField(default=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
