@@ -212,6 +212,7 @@ def get_ovr_visao_usuario(session, datainicio: datetime,
 
     Se usuário for Supervisor, mostra todos do Setor escolhido também
     """
+    datafim = datafim + timedelta(days=1)
     filtro = or_(OVR.user_name == usuario_cpf,
                  OVR.responsavel_cpf == usuario_cpf,
                  OVR.cpfauditorresponsavel == usuario_cpf,
