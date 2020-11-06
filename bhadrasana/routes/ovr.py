@@ -525,7 +525,8 @@ def ovr_app(app):
             ovr_id = responsavel_ovr_form.ovr_id.data
             informa_lavratura_auto(session,
                                    ovr_id=ovr_id,
-                                   responsavel=responsavel_ovr_form.responsavel.data
+                                   responsavel=responsavel_ovr_form.responsavel.data,
+                                   user_name=current_user.name
                                    )
         except Exception as err:
             logger.error(str(err), exc_info=True)
