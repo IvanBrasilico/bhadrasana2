@@ -461,7 +461,7 @@ def muda_setor_ovr(session, ovr_id: int,
                          'user_name': user_name,  # Novo Responsável
                          'ovr_id': ovr.id
                          }
-        evento = gera_eventoovr(session, evento_params, commit=False)
+        evento = gera_eventoovr(session, evento_params, commit=False, user_name=user_name)
         ovr.setor_id = setor_id
         session.add(evento)
         session.add(ovr)
