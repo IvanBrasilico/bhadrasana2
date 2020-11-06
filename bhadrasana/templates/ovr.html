@@ -277,7 +277,11 @@
                     {{ dict(responsavel_form.responsavel.choices)[historico.user_name] }}
                 </td>
                 <td align="center">
-                    {{ historico.motivo }}
+                    {% if 'Meramente informativo' in historico.motivo%}
+                        <p style="color:red;">{{ historico.motivo }}</p>
+                    {% else %}
+                        {{ historico.motivo }}
+                    {% endif %}
                 </td>
                 <td align="center">
                     {{ historico.create_date }}
@@ -564,6 +568,14 @@
                         </div>
                         <div class="col-sm-9">
                             {{ historico_form.user_name(class='form-control') }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label for="meramente_informativo">Meramente Informativo</label>
+                        </div>
+                        <div class="col-sm-9">
+                            {{ historico_form.meramente_informativo }} <span>Sim</span>
                         </div>
                     </div>
                     <div class="row">
