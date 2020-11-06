@@ -215,6 +215,7 @@ def get_ovr_visao_usuario(session, datainicio: datetime,
     filtro = or_(OVR.user_name == usuario_cpf,
                  OVR.responsavel_cpf == usuario_cpf,
                  OVR.cpfauditorresponsavel == usuario_cpf,
+                 OVR.responsavel_cpf.is_(None)
                  )
     print('Setor ID', setor_id)
     print(lista_flags)
@@ -227,7 +228,8 @@ def get_ovr_visao_usuario(session, datainicio: datetime,
     if lista_flags:
         ovrs = session.query(OVR).join(
             flags_table).filter(flags_table.c.flag_id.in_(lista_flags)). \
-            filter(filtro).filter(OVR.datahora.between(datainicio, datafim)).all()
+            filter(filtro).filter(OVR.datahora.between(datainicio, datafim)). \
+            orderby(OVR.datahora).all()
     else:
         ovrs = session.query(OVR).filter(filtro) \
             .filter(OVR.datahora.between(datainicio, datafim)).all()
