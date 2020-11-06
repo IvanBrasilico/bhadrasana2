@@ -545,7 +545,10 @@ def valida_mesmo_responsavel_user_name(session, ovr_id: int, user_name: str):
         raise Exception(f'OVR {ovr_id} inexistente.')
     # Se tiver algum responsável, deve ser o mesmo.
     # Se responsável for nulo, qualquer usuário pode agir
-    if ovr.responsavel_cpf is not None and ovr.responsavel_cpf != user_name:
+    print('********', ovr.responsavel_cpf)
+    logger.info('******** %s ' %  ovr.responsavel_cpf)
+    if ovr.fase > 0 and (ovr.responsavel_cpf is not None or ovr.responsavel_cpf == '')\
+            and ovr.responsavel_cpf != user_name:
         raise ESomenteUsuarioResponsavel()
 
 
