@@ -217,23 +217,21 @@ def get_ovr_visao_usuario(session, datainicio: datetime,
                  OVR.cpfauditorresponsavel == usuario_cpf,
                  OVR.responsavel_cpf.is_(None)
                  )
-    print('Setor ID', setor_id)
-    print(lista_flags)
-    print(lista_tipos)
     if setor_id:
         if usuario_tem_perfil_nome(session, usuario_cpf, 'Supervisor'):
             filtro = or_(filtro, OVR.setor_id == setor_id)
     if lista_tipos:
         filtro = and_(filtro, OVR.tipooperacao.in_(lista_tipos))
     if lista_flags:
-        ovrs = session.query(OVR).join(
+        q = session.query(OVR).join(
             flags_table).filter(flags_table.c.flag_id.in_(lista_flags)). \
             filter(filtro).filter(OVR.datahora.between(datainicio, datafim)). \
-            orderby(OVR.datahora).all()
+            orderby(OVR.datahora)
     else:
-        ovrs = session.query(OVR).filter(filtro) \
-            .filter(OVR.datahora.between(datainicio, datafim)).all()
-    return ovrs
+        q = session.query(OVR).filter(filtro) \
+            .filter(OVR.datahora.between(datainicio, datafim))
+    logger.info('get_ovr_visao_usuario - query' + str(q))
+    return q.all()
 
 
 def get_ovr_filtro(session,
