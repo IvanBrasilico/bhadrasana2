@@ -308,7 +308,7 @@ def ovr_app(app):
         try:
             oform.validate()
             if active_tab == 'minhas_ovrs':
-                ovrs = get_ovr_responsavel(session, current_user.name, setores)
+                ovrs = get_ovr_responsavel(session, current_user.name)  # , setores)
             elif active_tab == 'ovrs_meus_setores':
                 ovrs = get_ovr_filtro(session,
                                       dict(oform.data.items()),
