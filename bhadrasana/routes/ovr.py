@@ -535,7 +535,7 @@ def ovr_app(app):
             flash(str(err))
         return redirect(url_for('ovr', id=ovr_id))
 
-    @app.route('/movimentaovr', methods=['POST'])
+    @app.route('/eventoovr', methods=['POST'])
     @login_required
     def movimentaovr():
         session = app.config.get('dbsession')
