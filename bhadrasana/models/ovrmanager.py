@@ -531,10 +531,6 @@ def gera_eventoovr(session, params: dict, commit=True, user_name=None) -> Evento
         if not evento.meramente_informativo:
             ovr.fase = evento.fase
             ovr.tipoevento_id = evento.tipoevento_id
-        else:
-            evento.fase = ovr.fase
-            evento.tipoevento_id = ovr.tipoevento_id
-            evento.motivo = evento.motivo + ' - Meramente informativo'
         session.add(ovr)
         session.add(evento)
         if commit:
