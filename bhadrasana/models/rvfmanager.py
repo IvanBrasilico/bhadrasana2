@@ -128,7 +128,7 @@ def cadastra_rvf(session,
             session.commit()
             if geraevento:
                 session.refresh(rvf)
-                gera_evento_rvf(session, rvf)
+                gera_evento_rvf(session, rvf, user_name)
         except Exception as err:
             session.rollback()
             logger.error(err, exc_info=True)
