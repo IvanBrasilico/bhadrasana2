@@ -308,7 +308,7 @@ def ovr_app(app):
         try:
             oform.validate()
             if active_tab == 'minhas_ovrs':
-                ovrs = get_ovr_responsavel(session, current_user.name, setores)
+                ovrs = get_ovr_responsavel(session, current_user.name)  # , setores)
             elif active_tab == 'ovrs_meus_setores':
                 ovrs = get_ovr_filtro(session,
                                       dict(oform.data.items()),
@@ -497,10 +497,11 @@ def ovr_app(app):
                                    {'ovr_id': ovr_id,
                                     'motivo': motivo,
                                     'tipoevento_id': tipoevento_id},
-                                   user_name=cpf_responsavel)
+                                   user_name=current_user.name)
                 else:
                     atribui_responsavel_ovr(session, ovr_id=ovr_id,
-                                            responsavel=cpf_responsavel)
+                                            responsavel=cpf_responsavel,
+                                            user_name=current_user.name)
             if active_tab and active_tab == 'pesquisa_ovr':
                 return jsonify({'msg': 'Sucesso!'}), 201
             return redirect(url_for('minhas_ovrs', active_tab=active_tab))
@@ -535,7 +536,7 @@ def ovr_app(app):
             flash(str(err))
         return redirect(url_for('ovr', id=ovr_id))
 
-    @app.route('/movimentaovr', methods=['POST'])
+    @app.route('/eventoovr', methods=['POST'])
     @login_required
     def movimentaovr():
         session = app.config.get('dbsession')
