@@ -434,7 +434,6 @@ def atribui_responsavel_ovr(session, ovr_id: int,
                 responsavel_anterior = 'Nenhum'
             else:
                 responsavel_anterior = ovr.cpfauditorresponsavel
-            ovr.cpfauditorresponsavel = responsavel  # Novo Auditor
         else:
             tipoevento = session.query(TipoEventoOVR).filter(
                 TipoEventoOVR.eventoespecial == EventoEspecial.Responsavel.value).first()
@@ -442,13 +441,17 @@ def atribui_responsavel_ovr(session, ovr_id: int,
                 responsavel_anterior = 'Nenhum'
             else:
                 responsavel_anterior = ovr.responsavel_cpf
-            ovr.responsavel_cpf = responsavel  # Novo responsavel
         evento_params = {'tipoevento_id': tipoevento.id,
                          'motivo': 'Anterior: ' + responsavel_anterior,
                          'user_name': responsavel,  # Novo Responsável
                          'ovr_id': ovr.id,
                          }
         evento = gera_eventoovr(session, evento_params, commit=False, user_name=user_name)
+        # Só pode editar a ovr após gerar evento para não dar problema de permissão
+        if auditor:
+            ovr.cpfauditorresponsavel = responsavel  # Novo Auditor
+        else:
+            ovr.responsavel_cpf = responsavel  # Novo responsavel
         session.add(evento)
         session.add(ovr)
         session.commit()
@@ -533,6 +536,7 @@ def gera_eventoovr(session, params: dict, commit=True, user_name=None) -> Evento
     try:
         ovr = get_ovr(session, evento.ovr_id)
         if ovr.responsavel_cpf and ovr.responsavel_cpf != user_name:
+            print('XXXXX', ovr.responsavel_cpf, user_name, ovr.fase)
             raise ESomenteUsuarioResponsavel()
         if not evento.meramente_informativo:
             ovr.fase = evento.fase
@@ -554,10 +558,11 @@ def valida_mesmo_responsavel_user_name(session, ovr_id: int, user_name: str):
         raise Exception(f'OVR {ovr_id} inexistente.')
     # Se tiver algum responsável, deve ser o mesmo.
     # Se responsável for nulo, qualquer usuário pode agir
-    # print('********', ovr.responsavel_cpf)
+    print('********', ovr.responsavel_cpf, user_name, ovr.fase)
     # logger.info('******** %s ' % ovr.responsavel_cpf)
-    if ovr.fase > 0 and (ovr.responsavel_cpf is not None or ovr.responsavel_cpf == '') \
+    if ovr.fase > 0 and ovr.responsavel_cpf \
             and ovr.responsavel_cpf != user_name:
+        print('XXXXXXXX', ovr.responsavel_cpf, user_name, ovr.fase)
         raise ESomenteUsuarioResponsavel()
 
 
