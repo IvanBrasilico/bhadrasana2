@@ -1,7 +1,7 @@
 from flask_login import current_user
 from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, TextAreaField, SelectField, \
-    validators, SelectMultipleField
+    validators, SelectMultipleField, BooleanField
 from wtforms.fields.html5 import DateField, TimeField, DecimalField
 from wtforms.validators import optional
 
@@ -126,6 +126,7 @@ class HistoricoOVRForm(FlaskForm):
     motivo = StringField(u'Nome do usuário',
                          render_kw={'rows': 1, 'cols': 200, 'maxlength': 200},
                          default='')
+    meramente_informativo = BooleanField(default=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
