@@ -429,13 +429,19 @@ def atribui_responsavel_ovr(session, ovr_id: int,
         if auditor:
             tipoevento = session.query(TipoEventoOVR).filter(
                 TipoEventoOVR.eventoespecial == EventoEspecial.AuditorResponsavel.value).first()
+            if ovr.cpfauditorresponsavel is None:
+                responsavel_anterior = 'Nenhum'
+            else:
+                responsavel_anterior = ovr.cpfauditorresponsavel
+            ovr.cpfauditorresponsavel = responsavel  # Novo Auditor
         else:
             tipoevento = session.query(TipoEventoOVR).filter(
                 TipoEventoOVR.eventoespecial == EventoEspecial.Responsavel.value).first()
-        if ovr.cpfauditorresponsavel is None:
-            responsavel_anterior = 'Nenhum'
-        else:
-            responsavel_anterior = ovr.cpfauditorresponsavel
+            if ovr.responsavel_cpf is None:
+                responsavel_anterior = 'Nenhum'
+            else:
+                responsavel_anterior = ovr.responsavel_cpf
+            ovr.responsavel_cpf = responsavel  # Novo responsavel
         evento_params = {'tipoevento_id': tipoevento.id,
                          'motivo': 'Anterior: ' + responsavel_anterior,
                          'user_name': responsavel,  # Novo Responsável
@@ -443,10 +449,6 @@ def atribui_responsavel_ovr(session, ovr_id: int,
                          'meramente_informativo': False
                          }
         evento = gera_eventoovr(session, evento_params, commit=False, user_name=user_name)
-        if auditor:
-            ovr.cpfauditorresponsavel = responsavel  # Novo Auditor
-        else:
-            ovr.responsavel_cpf = responsavel  # Novo responsavel
         session.add(evento)
         session.add(ovr)
         session.commit()
@@ -658,7 +660,7 @@ def cadastra_tgovr(session, params, user_name: str) -> TGOVR:
                          'user_name': tgovr.user_name,
                          'ovr_id': params['ovr_id']
                          }
-        evento = gera_eventoovr(session, evento_params, commit=False)
+        evento = gera_eventoovr(session, evento_params, commit=False, user_name=user_name)
         session.add(evento)
     return gera_objeto(tgovr,
                        session, params)

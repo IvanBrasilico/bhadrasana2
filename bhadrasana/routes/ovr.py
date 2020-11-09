@@ -497,10 +497,11 @@ def ovr_app(app):
                                    {'ovr_id': ovr_id,
                                     'motivo': motivo,
                                     'tipoevento_id': tipoevento_id},
-                                   user_name=cpf_responsavel)
+                                   user_name=current_user.name)
                 else:
                     atribui_responsavel_ovr(session, ovr_id=ovr_id,
-                                            responsavel=cpf_responsavel)
+                                            responsavel=cpf_responsavel,
+                                            user_name=current_user.name)
             if active_tab and active_tab == 'pesquisa_ovr':
                 return jsonify({'msg': 'Sucesso!'}), 201
             return redirect(url_for('minhas_ovrs', active_tab=active_tab))

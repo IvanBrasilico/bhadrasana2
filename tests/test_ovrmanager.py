@@ -52,18 +52,21 @@ class OVRTestCase(BaseTestCase):
 
     def test_OVR_Evento(self):
         ovr = self.create_OVR_valido()
+        ovr.responsavel_cpf = 'user1'
+        session.add(ovr)
+        session.commit()
         session.refresh(ovr)
         params = {
             'motivo': 'teste',
             'tipoevento_id': 1,
             'ovr_id': ovr.id
         }
-        evento = gera_eventoovr(session, params)
+        evento = gera_eventoovr(session, params, user_name='user1')
         assert evento.motivo == params['motivo']
         assert evento.tipoevento_id == 1
         assert ovr.fase == evento.fase
         params['tipoevento_id'] = 2
-        evento2 = gera_eventoovr(session, params)
+        evento2 = gera_eventoovr(session, params, user_name='user1')
         assert ovr.fase == evento2.fase
         session.refresh(ovr)
         assert len(ovr.historico) == 2
