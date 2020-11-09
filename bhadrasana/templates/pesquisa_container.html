@@ -137,9 +137,9 @@
                     Consignatário: {{ infoce.conhecimento.consignatario }} -
                     {% if infoce.get('empresa') %}{{ infoce.empresa.nome }} {% endif %}
                     <br>
-                    Data de emissão: {{ conhecimento.dataEmissao }}
-                    Porto de Origem: {{ conhecimento.portoOrigemCarga }}
-                    Porto de destino final: {{ conhecimento.portoDestFinal }}
+                    Data de emissão: {{ infoce.conhecimento.dataEmissao }}
+                    Porto de Origem: {{ infoce.conhecimento.portoOrigemCarga }}
+                    Porto de destino final: {{ infoce.conhecimento.portoDestFinal }}
                     <br>
                     Descrição Mercadoria:{{ infoce.conhecimento.descricao }}
                     <br>
