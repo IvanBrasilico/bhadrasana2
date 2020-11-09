@@ -302,6 +302,7 @@ class EventoOVR(BaseRastreavel, BaseDumpable):
     motivo = Column(VARCHAR(200), index=True)
     anexo_filename = Column(VARCHAR(100), index=True)  # ID no Mongo
     excluido = Column(Boolean, index=True)
+    meramente_informativo = Column(Boolean, index=False)
 
     @property
     def descricao_fase(self):
