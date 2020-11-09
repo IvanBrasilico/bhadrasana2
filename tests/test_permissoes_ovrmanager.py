@@ -39,7 +39,7 @@ class OVRPermissoesTestCase(BaseTestCase):
     def test_OVR_Processo(self):
         ovr = self.create_OVR_valido()
         session.refresh(ovr)
-        evento = atribui_responsavel_ovr(session, ovr.id, 'user_1')
+        evento = atribui_responsavel_ovr(session, ovr.id, 'user_1', None)
         params = {
             'numero': '1234',
             'tipoprocesso_id': 0,
@@ -57,7 +57,7 @@ class OVRPermissoesTestCase(BaseTestCase):
     def test_OVR_Processo_Excluir(self):
         ovr = self.create_OVR_valido()
         session.refresh(ovr)
-        evento = atribui_responsavel_ovr(session, ovr.id, 'user_1')
+        evento = atribui_responsavel_ovr(session, ovr.id, 'user_1', None)
         # Recriar processo mas atribuir para outro a Ficha (erro ao excluir)
         params = {
             'numero': '1234',
@@ -69,7 +69,7 @@ class OVRPermissoesTestCase(BaseTestCase):
         session.refresh(processo)
         session.refresh(ovr)
         assert len(ovr.processos) == 1
-        evento = atribui_responsavel_ovr(session, ovr.id, 'user_2')
+        evento = atribui_responsavel_ovr(session, ovr.id, 'user_2', 'user_1')
         with self.assertRaises(ESomenteUsuarioResponsavel):
             excluir_processo(session, processo, 'user_1')
         session.refresh(ovr)
@@ -78,7 +78,7 @@ class OVRPermissoesTestCase(BaseTestCase):
     def test_OVR_Processo_Incluir(self):
         ovr = self.create_OVR_valido()
         session.refresh(ovr)
-        evento = atribui_responsavel_ovr(session, ovr.id, 'user_2')
+        evento = atribui_responsavel_ovr(session, ovr.id, 'user_2', None)
         # Tentar criar novo processo (erro ao incluir)
         params = {
             'numero': '1234',

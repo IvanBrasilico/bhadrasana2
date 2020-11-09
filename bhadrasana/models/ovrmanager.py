@@ -446,7 +446,6 @@ def atribui_responsavel_ovr(session, ovr_id: int,
                          'motivo': 'Anterior: ' + responsavel_anterior,
                          'user_name': responsavel,  # Novo Responsável
                          'ovr_id': ovr.id,
-                         'meramente_informativo': False
                          }
         evento = gera_eventoovr(session, evento_params, commit=False, user_name=user_name)
         session.add(evento)
@@ -475,7 +474,6 @@ def muda_setor_ovr(session, ovr_id: int,
                          'motivo': 'Setor Anterior: ' + ovr.setor.nome,
                          'user_name': user_name,  # Responsável pela mudança
                          'ovr_id': ovr.id,
-                         'meramente_informativo': False
                          }
         evento = gera_eventoovr(session, evento_params, commit=False, user_name=user_name)
         ovr.setor_id = setor_id
@@ -509,7 +507,6 @@ def informa_lavratura_auto(session, ovr_id: int,
                          'motivo': 'Ficha encerrada, auto lavrado',
                          'user_name': responsavel,  # Novo Responsável
                          'ovr_id': ovr.id,
-                         'meramente_informativo': False
                          }
         evento = gera_eventoovr(session, evento_params, commit=False, user_name=user_name)
         ovr.responsavel_cpf = responsavel  # Novo responsavel
