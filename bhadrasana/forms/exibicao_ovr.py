@@ -269,7 +269,7 @@ class ExibicaoOVR:
                 '{:0.2f}'.format(valor_tgs),
                 auditor_descricao]
         if self.tipo == TipoExibicao.Resumo:
-            resumo = self.get_OVR_Resumo(ovr)
+            resumo = self.get_OVR_resumo_html(ovr)
             return ovr.id, visualizado, [
                 ovr.datahora,
                 auditor_descricao,

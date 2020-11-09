@@ -78,7 +78,7 @@ def lista_rvfovr(session, ovr_id: int) -> Optional[List[RVF]]:
     return session.query(RVF).filter(RVF.ovr_id == ovr_id).all()
 
 
-def gera_evento_rvf(session, rvf):
+def gera_evento_rvf(session, rvf, user_name):
     tipoevento = session.query(TipoEventoOVR).filter(
         TipoEventoOVR.eventoespecial == EventoEspecial.RVF.value).first()
     params = {'tipoevento_id': tipoevento.id,
@@ -86,7 +86,7 @@ def gera_evento_rvf(session, rvf):
               'user_name': rvf.user_name,
               'ovr_id': rvf.ovr_id
               }
-    evento = gera_eventoovr(session, params, commit=False)
+    evento = gera_eventoovr(session, params, commit=False, user_name=user_name)
     session.add(evento)
     return evento
 

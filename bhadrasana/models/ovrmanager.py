@@ -178,7 +178,13 @@ def get_ovr_one(session, ovr_id: int = None) -> OVR:
     return session.query(OVR).filter(OVR.id == ovr_id).one()
 
 
-def get_ovr_responsavel(session, user_name: str, setores: List[Setor]) -> List[OVR]:
+def get_ovr_responsavel(session, user_name: str) -> List[OVR]:
+    """Pegar OVRs que estejam com Usuário como responsável ou sem responsável nos setores"""
+    return session.query(OVR).filter(
+        OVR.responsavel_cpf == user_name
+    ).all()
+
+def get_ovr_responsavel_setores(session, user_name: str, setores: List[Setor]) -> List[OVR]:
     """Pegar OVRs que estejam com Usuário como responsável ou sem responsável nos setores"""
     setores_ids = [setor.id for setor in setores]
     return session.query(OVR).filter(or_(
@@ -212,6 +218,7 @@ def get_ovr_visao_usuario(session, datainicio: datetime,
 
     Se usuário for Supervisor, mostra todos do Setor escolhido também
     """
+    datafim = datafim + timedelta(days=1)
     filtro = or_(OVR.user_name == usuario_cpf,
                  OVR.responsavel_cpf == usuario_cpf,
                  OVR.cpfauditorresponsavel == usuario_cpf,
@@ -422,24 +429,25 @@ def atribui_responsavel_ovr(session, ovr_id: int,
         if auditor:
             tipoevento = session.query(TipoEventoOVR).filter(
                 TipoEventoOVR.eventoespecial == EventoEspecial.AuditorResponsavel.value).first()
+            if ovr.cpfauditorresponsavel is None:
+                responsavel_anterior = 'Nenhum'
+            else:
+                responsavel_anterior = ovr.cpfauditorresponsavel
+            ovr.cpfauditorresponsavel = responsavel  # Novo Auditor
         else:
             tipoevento = session.query(TipoEventoOVR).filter(
                 TipoEventoOVR.eventoespecial == EventoEspecial.Responsavel.value).first()
-        if ovr.cpfauditorresponsavel is None:
-            responsavel_anterior = 'Nenhum'
-        else:
-            responsavel_anterior = ovr.cpfauditorresponsavel
+            if ovr.responsavel_cpf is None:
+                responsavel_anterior = 'Nenhum'
+            else:
+                responsavel_anterior = ovr.responsavel_cpf
+            ovr.responsavel_cpf = responsavel  # Novo responsavel
         evento_params = {'tipoevento_id': tipoevento.id,
                          'motivo': 'Anterior: ' + responsavel_anterior,
                          'user_name': responsavel,  # Novo Responsável
                          'ovr_id': ovr.id,
-                         'meramente_informativo': False
                          }
         evento = gera_eventoovr(session, evento_params, commit=False, user_name=user_name)
-        if auditor:
-            ovr.cpfauditorresponsavel = responsavel  # Novo Auditor
-        else:
-            ovr.responsavel_cpf = responsavel  # Novo responsavel
         session.add(evento)
         session.add(ovr)
         session.commit()
@@ -466,7 +474,6 @@ def muda_setor_ovr(session, ovr_id: int,
                          'motivo': 'Setor Anterior: ' + ovr.setor.nome,
                          'user_name': user_name,  # Responsável pela mudança
                          'ovr_id': ovr.id,
-                         'meramente_informativo': False
                          }
         evento = gera_eventoovr(session, evento_params, commit=False, user_name=user_name)
         ovr.setor_id = setor_id
@@ -500,7 +507,6 @@ def informa_lavratura_auto(session, ovr_id: int,
                          'motivo': 'Ficha encerrada, auto lavrado',
                          'user_name': responsavel,  # Novo Responsável
                          'ovr_id': ovr.id,
-                         'meramente_informativo': False
                          }
         evento = gera_eventoovr(session, evento_params, commit=False, user_name=user_name)
         ovr.responsavel_cpf = responsavel  # Novo responsavel
@@ -530,10 +536,6 @@ def gera_eventoovr(session, params: dict, commit=True, user_name=None) -> Evento
         if not evento.meramente_informativo:
             ovr.fase = evento.fase
             ovr.tipoevento_id = evento.tipoevento_id
-        else:
-            evento.fase = ovr.fase
-            evento.tipoevento_id = ovr.tipoevento_id
-            evento.motivo = evento.motivo + ' - Meramente informativo'
         session.add(ovr)
         session.add(evento)
         if commit:
@@ -655,7 +657,7 @@ def cadastra_tgovr(session, params, user_name: str) -> TGOVR:
                          'user_name': tgovr.user_name,
                          'ovr_id': params['ovr_id']
                          }
-        evento = gera_eventoovr(session, evento_params, commit=False)
+        evento = gera_eventoovr(session, evento_params, commit=False, user_name=user_name)
         session.add(evento)
     return gera_objeto(tgovr,
                        session, params)
