@@ -184,6 +184,7 @@ def get_ovr_responsavel(session, user_name: str) -> List[OVR]:
         OVR.responsavel_cpf == user_name
     ).all()
 
+
 def get_ovr_responsavel_setores(session, user_name: str, setores: List[Setor]) -> List[OVR]:
     """Pegar OVRs que estejam com Usuário como responsável ou sem responsável nos setores"""
     setores_ids = [setor.id for setor in setores]
