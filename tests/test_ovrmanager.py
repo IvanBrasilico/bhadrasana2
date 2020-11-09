@@ -22,7 +22,7 @@ from bhadrasana.models.ovrmanager import gera_eventoovr, \
     inclui_flag_ovr, get_tiposmercadoria_choice, get_marcas_choice, lista_tgovr, get_tgovr, cadastra_itemtg, \
     lista_itemtg, get_itemtg, get_itemtg_numero, informa_lavratura_auto, get_marcas, usuario_index, \
     cadastra_visualizacao, get_visualizacoes, get_ovr_filtro, cadastra_ovr, get_ovr_empresa, \
-    get_ovrs_setor, exclui_item_tg, get_ovr_visao_usuario
+    get_ovrs_setor, exclui_item_tg, get_ovr_visao_usuario, excluir_evento
 
 engine = create_engine('sqlite://')
 Session = sessionmaker(bind=engine)
@@ -121,14 +121,13 @@ class OVRTestCase(BaseTestCase):
     def test_OVR_Processo(self):
         ovr = self.create_OVR_valido()
         session.refresh(ovr)
-        atribui_responsavel_ovr(session, ovr.id, 'user_1', None)
+        atribui_responsavel_ovr(session, ovr.id, 'user_1', 'user_1')
         for tipo in Enumerado.tipoProcesso():
             params = {
                 'numero': tipo[1],
                 'tipoprocesso_id': tipo[0],
                 'ovr_id': ovr.id,
                 'user_name': 'user_1'
-
             }
             processo = gera_processoovr(session, params)
             session.refresh(processo)
@@ -203,7 +202,7 @@ class OVRTestCase(BaseTestCase):
         assert ovr.fase == 0
         usuario = self.create_usuario('123', 'user1')
         usuario2 = self.create_usuario('456', 'user2')
-        ovr = atribui_responsavel_ovr(session, ovr.id, usuario.cpf, None)
+        ovr = atribui_responsavel_ovr(session, ovr.id, usuario.cpf, usuario2.cpf)
         session.refresh(ovr)
         assert ovr.responsavel_cpf == usuario.cpf
         assert ovr.fase == 1
@@ -222,7 +221,7 @@ class OVRTestCase(BaseTestCase):
         assert ovr.fase == evento.fase
         assert ovr.tipoevento_id == evento.tipoevento_id
         with self.assertRaises(Exception):
-            desfaz_ultimo_eventoovr(session, ovr.id)
+            excluir_evento(session, ovr.historico[-1].id, usuario2.cpf)
         assert ovr.fase == evento.fase
         assert ovr.tipoevento_id == evento.tipoevento_id
         # testa usuario_index
