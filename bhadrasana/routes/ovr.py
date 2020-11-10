@@ -542,11 +542,9 @@ def ovr_app(app):
         session = app.config.get('dbsession')
         ovr_id = request.form['ovr_id']
         historico_ovr_form = HistoricoOVRForm(request.form)
-        user_name = None
+        user_name = current_user.name
         try:
-            if historico_ovr_form.user_name.data is None or \
-                    historico_ovr_form.user_name.data == 'None':
-                user_name = current_user.name
+            print(historico_ovr_form.data.items(), user_name)
             evento = gera_eventoovr(session, dict(historico_ovr_form.data.items()),
                                     user_name=user_name)
             # TODO: Mover para ação específica ou para gera_eventoovr

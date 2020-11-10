@@ -1,4 +1,6 @@
 import sys
+
+
 sys.path.append('.')
 sys.path.insert(0, '../ajna_api')
 import unittest
@@ -11,6 +13,7 @@ from sqlalchemy.orm import sessionmaker
 
 import virasana.integracao.mercante.mercantealchemy as mercante
 from ajnaapi.recintosapi import models as recintosapi_models
+from bhadrasana.models.ovrmanager import get_ovr
 from bhadrasana.models.rvf import create_infracoes
 from bhadrasana.routes.admin import admin_app
 from bhadrasana.routes.ovr import ovr_app
@@ -300,7 +303,7 @@ class OVRAppTestCase(BaseTestCase):
         #            'ahora': '22:21'}
         # alterei a data de criação da Ficha para não quebrar a pesquisa de fichas no meu setor
         # pois a busca padrão são fichas dentro do mesmo mês
-        adata = datetime.strftime(datetime.today(),"%Y-%m-%d")
+        adata = datetime.strftime(datetime.today(), "%Y-%m-%d")
         payload = {'csrf_token': token_text,
                    'numeroCEmercante': '152005079623267',
                    'recinto_id': self.recinto_id,
@@ -415,13 +418,12 @@ class OVRAppTestCase(BaseTestCase):
         # FIXME: Teste falhando, mas OK na interface???
         assert b'152005079623267' in rv.data
 
-
     def test_b2_agendamento_verificacao_fisica(self):
         """2 - Evento de agendamento de verificação física"""
         self.login('watson', 'watson')
         rv = self.app.get('/ovr?id=%s' % 1)
         text = str(rv.data)
-        movimentaovr_pos = text.find('action="movimentaovr"')
+        movimentaovr_pos = text.find('action="eventoovr"')
         movimentaovr_text = text[movimentaovr_pos:]
         token_text = self.get_token(movimentaovr_text)
         payload = {'csrf_token': token_text,
@@ -429,7 +431,7 @@ class OVRAppTestCase(BaseTestCase):
                    'tipoevento_id': 2,
                    'motivo': 'Teste b2',
                    'user_name': 'watson'}
-        rv = self.app.post('/movimentaovr', data=payload, follow_redirects=True)
+        rv = self.app.post('/eventoovr', data=payload, follow_redirects=True)
         soup = BeautifulSoup(rv.data, features='lxml')
         table = soup.find('table', {'id': 'table_eventos'})
         rows = [str(row) for row in table.findAll("tr")]
@@ -453,7 +455,7 @@ class OVRAppTestCase(BaseTestCase):
         assert len(rows) == 2
         rv = self.app.get('/ovr?id=%s' % 1)
         text = str(rv.data)
-        movimentaovr_pos = text.find('action="movimentaovr"')
+        movimentaovr_pos = text.find('action="eventoovr"')
         movimentaovr_text = text[movimentaovr_pos:]
         token_text = self.get_token(movimentaovr_text)
         payload = {'csrf_token': token_text,
@@ -616,19 +618,27 @@ class OVRAppTestCase(BaseTestCase):
         token_text = self.get_token(responsavelovr_text)
         payload = {'csrf_token': token_text,
                    'ovr_id': 1,
-                   'responsavel': 'irene',
+                   'responsavel': 'adler',
                    'motivo': 'Solicitar Laudo das marcas encontradas!!'}
         rv = self.app.post('/responsavelovr', data=payload, follow_redirects=True)
-        movimentaovr_pos = text.find('action="movimentaovr"')
+        ovr = get_ovr(session, 1)
+        assert ovr.responsavel_cpf == 'adler'
+
+        movimentaovr_pos = text.find('action="eventoovr"')
         movimentaovr_text = text[movimentaovr_pos:]
         token_text = self.get_token(movimentaovr_text)
         payload = {'csrf_token': token_text,
                    'ovr_id': 1,
                    'tipoevento_id': 2,
                    'motivo': 'Solicitar Laudo das marcas encontradas!!',
-                   'user_name': 'irene'}
-        rv = self.app.post('/movimentaovr', data=payload, follow_redirects=True)
-        assert b'irene' in rv.data
+                   'user_name': 'adler'}
+        rv = self.app.post('/eventoovr', data=payload, follow_redirects=True)
+        assert b'ESomenteUsuarioResponsavel' in rv.data
+        self.login('adler', 'adler')
+        rv = self.app.post('/eventoovr', data=payload, follow_redirects=True)
+        with open('testc1.html', 'w') as html_out:
+            html_out.write(rv.data.decode('utf8'))
+        assert b'adler' in rv.data
         assert b'Solicitar Laudo' in rv.data
 
 
