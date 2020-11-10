@@ -102,6 +102,7 @@ class RoteirosModel(SupervisorModelView):
                    'tipoevento', 'ordem', 'quem')
     form_choices = {'tipooperacao': Enumerado.tipoOperacao()}
 
+    """
     def validate_form(self, form):
         try:
             form.tipooperacao.data = int(form.tipooperacao.data)
@@ -111,7 +112,7 @@ class RoteirosModel(SupervisorModelView):
 
     def on_form_prefill(self, form, id):
         form.tipooperacao.data = str(form.tipooperacao.data)
-
+    """
 
 class TipoEventoModel(SupervisorModelView):
     can_delete = False
@@ -121,13 +122,14 @@ class TipoEventoModel(SupervisorModelView):
     column_searchable_list = ['nome']
     column_filters = ['fase']
 
+    """
     def validate_form(self, form):
         form.fase.data = int(form.fase.data)
         return super(TipoEventoModel, self).validate_form(form)
 
     def on_form_prefill(self, form, id):
         form.fase.data = str(form.fase.data)
-
+    """
 
 class LogoutMenuLink(MenuLink):
     def is_accessible(self):
