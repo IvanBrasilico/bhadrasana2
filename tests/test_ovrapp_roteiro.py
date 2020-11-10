@@ -421,7 +421,7 @@ class OVRAppTestCase(BaseTestCase):
         self.login('watson', 'watson')
         rv = self.app.get('/ovr?id=%s' % 1)
         text = str(rv.data)
-        movimentaovr_pos = text.find('action="movimentaovr"')
+        movimentaovr_pos = text.find('action="eventoovr"')
         movimentaovr_text = text[movimentaovr_pos:]
         token_text = self.get_token(movimentaovr_text)
         payload = {'csrf_token': token_text,
@@ -429,13 +429,14 @@ class OVRAppTestCase(BaseTestCase):
                    'tipoevento_id': 2,
                    'motivo': 'Teste b2',
                    'user_name': 'watson'}
-        rv = self.app.post('/movimentaovr', data=payload, follow_redirects=True)
+        rv = self.app.post('/eventoovr', data=payload, follow_redirects=True)
         soup = BeautifulSoup(rv.data, features='lxml')
         table = soup.find('table', {'id': 'table_eventos'})
         rows = [str(row) for row in table.findAll("tr")]
         print(rows)
-        assert len(rows) == 3
-        assert 'verificação física' in ''.join(rows)
+        # assert len(rows) == 3
+        assert len(rows) == 2
+        # assert 'verificação física' in ''.join(rows)
         # Teste desfazer e refazer
         """
         rv = self.app.get('/ovr?id=%s' % 1)
@@ -577,7 +578,7 @@ class OVRAppTestCase(BaseTestCase):
         assert b'holmes' in rv.data
 
     def test_c1_Consultar_Fichas_Modificadas(self):
-        """Holmes consulta suas fichas, vê mudanças na verificação
+        """Holmes consulta suas fichas, vê mudanças na verificação física
         e que possivelmente há uma contrafação, distribui
         para Irene Adler para tratar."""
         self.login('holmes', 'holmes')
@@ -590,7 +591,7 @@ class OVRAppTestCase(BaseTestCase):
         assert 'class="warning' in table_text
         ovr_id_pos = table_text.find('"ovr?id=')
         ovr_id = table_text[ovr_id_pos + 8: ovr_id_pos + 9]
-        print('*********', ovr_id)
+        # print('*********', ovr_id)
         rv = self.app.get('/ovr?id=%s' % ovr_id)
         soup = BeautifulSoup(rv.data, features='lxml')
         btn_text = str(soup.find('button', {'id': 'btn_rvf'}).extract())
@@ -604,22 +605,28 @@ class OVRAppTestCase(BaseTestCase):
         assert len(rows) == 2  # Tem uma rvf já programada no passo anterior
         rvf_id_pos = table_text.find('"rvf?id=')
         rvf_id = table_text[rvf_id_pos + 8: rvf_id_pos + 9]
-        print('***********', rvf_id)
+        # print('***********', rvf_id)
         rv = self.app.get('rvf?id=%s' % rvf_id)
         soup = BeautifulSoup(rv.data, features='lxml')
         text_div_infracoes = soup.find('div', {'id': 'div_infracoes_encontradas'}).text
         assert 'Contra' in text_div_infracoes
         rv = self.app.get('/ovr?id=%s' % ovr_id)
         text = str(rv.data)
+        # print(text)
         responsavelovr_pos = text.find('action="responsavelovr"')
         responsavelovr_text = text[responsavelovr_pos:]
         token_text = self.get_token(responsavelovr_text)
         payload = {'csrf_token': token_text,
                    'ovr_id': 1,
-                   'responsavel': 'irene',
+                   'responsavel': 'adler',
                    'motivo': 'Solicitar Laudo das marcas encontradas!!'}
         rv = self.app.post('/responsavelovr', data=payload, follow_redirects=True)
-        movimentaovr_pos = text.find('action="movimentaovr"')
+        # soup = BeautifulSoup(rv.data, features='lxml')
+        # text = soup.text
+        # print(text)
+        assert b'irene' in rv.data
+        text = str(rv.data)
+        movimentaovr_pos = text.find('action="eventoovr"')
         movimentaovr_text = text[movimentaovr_pos:]
         token_text = self.get_token(movimentaovr_text)
         payload = {'csrf_token': token_text,
@@ -627,8 +634,8 @@ class OVRAppTestCase(BaseTestCase):
                    'tipoevento_id': 2,
                    'motivo': 'Solicitar Laudo das marcas encontradas!!',
                    'user_name': 'irene'}
-        rv = self.app.post('/movimentaovr', data=payload, follow_redirects=True)
-        assert b'irene' in rv.data
+        rv = self.app.post('/eventoovr', data=payload, follow_redirects=True)
+        assert b'adler' in rv.data
         assert b'Solicitar Laudo' in rv.data
 
 
