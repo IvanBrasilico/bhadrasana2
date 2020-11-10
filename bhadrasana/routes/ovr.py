@@ -542,6 +542,7 @@ def ovr_app(app):
         session = app.config.get('dbsession')
         ovr_id = request.form['ovr_id']
         historico_ovr_form = HistoricoOVRForm(request.form)
+        print(historico_ovr_form)
         user_name = None
         try:
             if historico_ovr_form.user_name.data is None or \
