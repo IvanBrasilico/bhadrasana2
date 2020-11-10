@@ -435,10 +435,8 @@ class OVRAppTestCase(BaseTestCase):
         soup = BeautifulSoup(rv.data, features='lxml')
         table = soup.find('table', {'id': 'table_eventos'})
         rows = [str(row) for row in table.findAll("tr")]
-        print(rows)
-        # assert len(rows) == 3
-        assert len(rows) == 2
-        # assert 'verificação física' in ''.join(rows)
+        assert len(rows) == 3
+        assert 'verificação física' in ''.join(rows)
         # Teste desfazer e refazer
         """
         rv = self.app.get('/ovr?id=%s' % 1)
