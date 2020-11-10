@@ -536,7 +536,8 @@ def gera_eventoovr(session, params: dict, commit=True, user_name=None) -> Evento
     try:
         ovr = get_ovr(session, evento.ovr_id)
         if ovr.responsavel_cpf and ovr.responsavel_cpf != user_name:
-            print('XXXXX', ovr.responsavel_cpf, user_name, ovr.fase)
+            print(f'XXXXX responsavel_cpf {ovr.responsavel_cpf} user_name {user_name} '
+            f'ovr.id {ovr.id} ovr.fase {ovr.fase}')
             raise ESomenteUsuarioResponsavel()
         if not evento.meramente_informativo:
             ovr.fase = evento.fase
