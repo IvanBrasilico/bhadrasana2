@@ -442,7 +442,7 @@ def atribui_responsavel_ovr(session, ovr_id: int,
             else:
                 responsavel_anterior = ovr.responsavel_cpf
         evento_params = {'tipoevento_id': tipoevento.id,
-                         'motivo': 'Anterior: ' + responsavel_anterior,
+                         'motivo': f'De: {responsavel_anterior} Para: {responsavel}',
                          'user_name': responsavel,  # Novo Responsável
                          'ovr_id': ovr.id,
                          }
