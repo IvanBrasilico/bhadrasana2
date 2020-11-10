@@ -6,12 +6,12 @@ from decimal import Decimal
 from typing import Tuple
 
 import pandas as pd
-from ajna_commons.flask.log import logger
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
 from gridfs import GridFS
 from werkzeug.utils import redirect
 
+from ajna_commons.flask.log import logger
 from bhadrasana.analises.escaneamento_operador import sorteia_GMCIs
 from bhadrasana.docx.docx_functions import get_doc_generico_ovr
 from bhadrasana.forms.exibicao_ovr import ExibicaoOVR, TipoExibicao
