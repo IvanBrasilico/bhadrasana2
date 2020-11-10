@@ -214,7 +214,7 @@ class OVRTestCase(BaseTestCase):
         assert len(eventos) == 2
         evento = eventos[0]
         assert evento.fase == 1
-        assert evento.motivo == 'Anterior: Nenhum'
+        assert evento.motivo == 'De: Nenhum Para: 123'
         evento = eventos[1]
         assert evento.fase == 1
         # assert evento.motivo == 'Anterior: ' + usuario.cpf
