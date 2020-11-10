@@ -418,7 +418,7 @@ def atribui_responsavel_ovr(session, ovr_id: int,
     :param session: Conexão com banco SQLAlchemy
     :param ovr_id: ID da OVR a atribuir responsável
     :param responsavel: CPF do novo responsável
-    :param user_name: CPF do usuário solicitante
+    :param user_name: CPF do responsável atual
     :return: OVR modificado
     """
     try:

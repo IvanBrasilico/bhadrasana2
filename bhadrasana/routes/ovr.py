@@ -6,6 +6,7 @@ from decimal import Decimal
 from typing import Tuple
 
 import pandas as pd
+from ajna_commons.flask.log import logger
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
 from gridfs import GridFS
