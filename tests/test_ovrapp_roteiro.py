@@ -635,8 +635,8 @@ class OVRAppTestCase(BaseTestCase):
         assert b'ESomenteUsuarioResponsavel' in rv.data
         self.login('adler', 'adler')
         rv = self.app.post('/eventoovr', data=payload, follow_redirects=True)
-        with open('testc1.html', 'w') as html_out:
-            html_out.write(rv.data.decode('utf8'))
+        # with open('testc1.html', 'w') as html_out:
+        #     html_out.write(rv.data.decode('utf8'))
         assert b'adler' in rv.data
         soup = BeautifulSoup(rv.data, features='lxml')
         text_span_responsavel = soup.find('span', {'id': 'responsavel_nome'}).text
