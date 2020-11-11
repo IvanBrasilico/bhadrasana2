@@ -638,8 +638,7 @@ def ovr_app(app):
             if item_id:
                 tgovr = get_tgovr(session, item_id)
                 oform = TGOVRForm(**tgovr.__dict__, marcas=marcas,
-                                  tiposmercadoria=tipos, lista_afrfb=lista_afrfb,
-                                  afrfb=current_user.name)
+                                  tiposmercadoria=tipos, lista_afrfb=lista_afrfb)
             else:
                 oform = TGOVRForm(ovr_id=ovr_id, marcas=marcas,
                                   tiposmercadoria=tipos, lista_afrfb=lista_afrfb,
