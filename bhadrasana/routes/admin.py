@@ -114,6 +114,7 @@ class RoteirosModel(SupervisorModelView):
         form.tipooperacao.data = str(form.tipooperacao.data)
     """
 
+
 class TipoEventoModel(SupervisorModelView):
     can_delete = False
     column_list = ('id', 'nome', 'descricao', 'descricao_fase', 'eventoespecial')
@@ -130,6 +131,7 @@ class TipoEventoModel(SupervisorModelView):
     def on_form_prefill(self, form, id):
         form.fase.data = str(form.fase.data)
     """
+
 
 class LogoutMenuLink(MenuLink):
     def is_accessible(self):
