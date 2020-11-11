@@ -223,7 +223,7 @@ def get_ovr_visao_usuario(session, datainicio: datetime,
     filtro = or_(OVR.user_name == usuario_cpf,
                  OVR.responsavel_cpf == usuario_cpf,
                  OVR.cpfauditorresponsavel == usuario_cpf,
-                 OVR.responsavel_cpf.is_(None)
+    #             OVR.responsavel_cpf.is_(None)
                  )
     if setor_id:
         if usuario_tem_perfil_nome(session, usuario_cpf, 'Supervisor'):
