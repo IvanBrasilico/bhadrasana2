@@ -446,7 +446,8 @@ def atribui_responsavel_ovr(session, ovr_id: int,
                          'user_name': responsavel,  # Novo Responsável
                          'ovr_id': ovr.id,
                          }
-        evento = gera_eventoovr(session, evento_params, commit=False, user_name=user_name)
+        evento = gera_eventoovr(session, evento_params, commit=False,
+                                user_name=user_name, valida_usuario=False)
         # Só pode editar a ovr após gerar evento para não dar problema de permissão
         if auditor:
             ovr.cpfauditorresponsavel = responsavel  # Novo Auditor
@@ -523,10 +524,13 @@ def informa_lavratura_auto(session, ovr_id: int,
     return ovr
 
 
-def gera_eventoovr(session, params: dict, commit=True, user_name=None) -> EventoOVR:
+def gera_eventoovr(session, params: dict, commit=True, user_name=None,
+                   valida_usuario=True) -> EventoOVR:
     evento = EventoOVR()
     for key, value in params.items():
         setattr(evento, key, value)
+    if valida_usuario:
+        valida_mesmo_responsavel_user_name(session, evento.ovr_id, user_name)
     if user_name:
         evento.user_name = user_name
     tipoevento = session.query(TipoEventoOVR).filter(
@@ -535,10 +539,6 @@ def gera_eventoovr(session, params: dict, commit=True, user_name=None) -> Evento
     evento.fase = tipoevento.fase
     try:
         ovr = get_ovr(session, evento.ovr_id)
-        if ovr.responsavel_cpf and ovr.responsavel_cpf != user_name:
-            print(f'XXXXX responsavel_cpf {ovr.responsavel_cpf} user_name {user_name} '
-            f'ovr.id {ovr.id} ovr.fase {ovr.fase}')
-            raise ESomenteUsuarioResponsavel()
         if not evento.meramente_informativo:
             ovr.fase = evento.fase
             ovr.tipoevento_id = evento.tipoevento_id
