@@ -5,7 +5,7 @@ import warnings
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from bhadrasana.models import ESomenteUsuarioResponsavel
+from bhadrasana.models import ESomenteUsuarioResponsavel, PerfilUsuario, Enumerado, perfilAcesso
 
 sys.path.append('.')
 
@@ -88,6 +88,37 @@ class OVRPermissoesTestCase(BaseTestCase):
         }
         with self.assertRaises(ESomenteUsuarioResponsavel):
             processo = gera_processoovr(session, params)
+
+
+    def test_OVR_Supervisor_Atribuir(self):
+        ovr = self.create_OVR_valido()
+        session.refresh(ovr)
+        evento = atribui_responsavel_ovr(session, ovr.id, 'user_1', None)
+        # Atribuir responsavel, faz uma inclusão, atribui outro, tentar retomar, vai dar erro.
+        # Colocar perfil Supervisor e auto-atribuir -
+        params = {
+            'numero': '1234',
+            'tipoprocesso_id': 0,
+            'ovr_id': ovr.id,
+            'user_name': 'user_1'
+        }
+        processo = gera_processoovr(session, params)
+        session.refresh(processo)
+        session.refresh(ovr)
+        assert len(ovr.processos) == 1
+        assert ovr.responsavel_cpf == 'user_1'
+        evento = atribui_responsavel_ovr(session, ovr.id, 'user_2', 'user_1')
+        session.refresh(ovr)
+        assert ovr.responsavel_cpf == 'user_2'
+        with self.assertRaises(ESomenteUsuarioResponsavel):
+            evento = atribui_responsavel_ovr(session, ovr.id, 'user_1', 'user_1')
+        perfilusuario = PerfilUsuario()
+        perfilusuario.cpf = 'user_1'
+        perfilusuario.perfil = Enumerado.get_id(perfilAcesso, 'Supervisor')
+        session.add(perfilusuario)
+        session.commit()
+        evento = atribui_responsavel_ovr(session, ovr.id, 'user_1', 'user_1')
+        assert ovr.responsavel_cpf == 'user_1'
 
 
 if __name__ == '__main__':
