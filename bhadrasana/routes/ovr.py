@@ -638,10 +638,12 @@ def ovr_app(app):
             if item_id:
                 tgovr = get_tgovr(session, item_id)
                 oform = TGOVRForm(**tgovr.__dict__, marcas=marcas,
-                                  tiposmercadoria=tipos, lista_afrfb=lista_afrfb)
+                                  tiposmercadoria=tipos, lista_afrfb=lista_afrfb,
+                                  afrfb=current_user.name)
             else:
                 oform = TGOVRForm(ovr_id=ovr_id, marcas=marcas,
-                                  tiposmercadoria=tipos, lista_afrfb=lista_afrfb)
+                                  tiposmercadoria=tipos, lista_afrfb=lista_afrfb,
+                                  afrfb=current_user.name)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')

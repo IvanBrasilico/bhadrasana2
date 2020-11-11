@@ -462,7 +462,7 @@ class OVRAppTestCase(BaseTestCase):
                    'tipoevento_id': 2,
                    'motivo': 'Teste b2',
                    'user_name': 'watson'}
-        rv = self.app.post('/movimentaovr', data=payload, follow_redirects=True)
+        rv = self.app.post('/eventoovr', data=payload, follow_redirects=True)
         soup = BeautifulSoup(rv.data, features='lxml')
         table = soup.find('table', {'id': 'table_eventos'})
         rows = [str(row) for row in table.findAll("tr")]
@@ -623,7 +623,6 @@ class OVRAppTestCase(BaseTestCase):
         rv = self.app.post('/responsavelovr', data=payload, follow_redirects=True)
         ovr = get_ovr(session, 1)
         assert ovr.responsavel_cpf == 'adler'
-
         movimentaovr_pos = text.find('action="eventoovr"')
         movimentaovr_text = text[movimentaovr_pos:]
         token_text = self.get_token(movimentaovr_text)
@@ -636,9 +635,12 @@ class OVRAppTestCase(BaseTestCase):
         assert b'ESomenteUsuarioResponsavel' in rv.data
         self.login('adler', 'adler')
         rv = self.app.post('/eventoovr', data=payload, follow_redirects=True)
-        with open('testc1.html', 'w') as html_out:
-            html_out.write(rv.data.decode('utf8'))
+        # with open('testc1.html', 'w') as html_out:
+        #     html_out.write(rv.data.decode('utf8'))
         assert b'adler' in rv.data
+        soup = BeautifulSoup(rv.data, features='lxml')
+        text_span_responsavel = soup.find('span', {'id': 'responsavel_nome'}).text
+        assert 'adler' in text_span_responsavel
         assert b'Solicitar Laudo' in rv.data
 
 
