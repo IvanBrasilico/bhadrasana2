@@ -1003,6 +1003,12 @@ def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
     try:
         for index, original_row in df.iterrows():
             row = muda_chaves(original_row)
+            if index == 0:
+                campos_faltantes = set(de_para.keys()) - set(row.keys())
+                if campos_faltantes:
+                    for campo in campos_faltantes:
+                        alternativas = ', '.join(de_para[campo])
+                        alertas[campo] = f'Campo {campo}({alternativas}) não encontrado.'
             if row.get('descricao') is None:
                 logger.info('Abortando linha {} da planilha {}'
                             'devido descrição vazia'.format(index, lfilename))
