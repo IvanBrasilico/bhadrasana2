@@ -165,6 +165,10 @@
                     Consignatário: {{ infoce.conhecimento.consignatario }} -
                     {% if infoce.get('empresa') %}{{ infoce.empresa.nome }} {% endif %}
                     <br>
+                    Data de emissão: {{ infoce.conhecimento.dataEmissao }}
+                    Porto de Origem: {{ infoce.conhecimento.portoOrigemCarga }}
+                    Porto de destino final: {{ infoce.conhecimento.portoDestFinal }}
+                    <br>
                     Descrição Mercadoria:{{ infoce.conhecimento.descricao }}
                     <br>
                     <!--Nº BL original: {{ infoce.conhecimento.descricao }} -->
@@ -241,6 +245,7 @@
         }
     }
     function getCellValue(row, index){ return $(row).children('td').eq(index).text() }
+
 
 </script>
 {% endblock %}
