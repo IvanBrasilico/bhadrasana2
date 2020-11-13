@@ -10,11 +10,14 @@
         <tr>
             <td width="300" style="text-align:left">
                 {{ imagem.metadata.dataescaneamento }}
+                {{ imagem.metadata.numeroinformado }}
             </td>
             <td>
-                <img src="/virasana/image/{{ imagem._id }}" alt="Sem imagem" width="auto" height="auto"
-                     style="border: 1px solid #000; max-width:800px; max-height:320px;"
-                />
+                <a href="/virasana/file?_id={{ imagem._id }}">
+                    <img src="/virasana/image/{{ imagem._id }}" alt="Sem imagem" width="auto" height="auto"
+                         style="border: 1px solid #000; max-width:800px; max-height:320px;"
+                    />
+                </a>
             </td>
         </tr>
         {% endfor %}

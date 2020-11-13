@@ -8,7 +8,7 @@
         {% set sats = infoce.sats %}
         {% endif %}
         {% if conhecimento %}
-        Número CE Mercante: {{ conhecimento.numeroCEmercante }}<br>
+        Número CE Mercante: <a href="/virasana/cemercante/{{ conhecimento.numeroCEmercante }}">{{ conhecimento.numeroCEmercante }}</a><br>
         Embarcador: {{ conhecimento.embarcador }}<br>
         Consignatário: {{ conhecimento.consignatario }} -
         {% if empresa %}{{ empresa.nome }} {% endif %}
