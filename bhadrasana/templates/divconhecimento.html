@@ -1,0 +1,37 @@
+<div class="panel panel-info rounded-pill">
+    <div class="panel-heading rounded-pill">
+        {% if infoce %}
+        {% set conhecimento = infoce.conhecimento %}
+        {% set empresa = infoce.empresa %}
+        {% set containers = infoce.containers %}
+        {% set ncms = infoce.ncms %}
+        {% set sats = infoce.sats %}
+        {% endif %}
+        {% if conhecimento %}
+        Número CE Mercante: {{ conhecimento.numeroCEmercante }}<br>
+        Embarcador: {{ conhecimento.embarcador }}<br>
+        Consignatário: {{ conhecimento.consignatario }} -
+        {% if empresa %}{{ empresa.nome }} {% endif %}
+        <br>
+        Data de emissão: {{ conhecimento.dataEmissao }}
+        Porto de Origem: {{ conhecimento.portoOrigemCarga }}
+        Porto de destino final: {{ conhecimento.portoDestFinal }}
+        <br>
+        Descrição Mercadoria:{{ conhecimento.descricao }}
+        <br>
+        <!--Nº BL original: {{ conhecimento.descricao }} -->
+        Contêineres: {% for container in containers %}
+        nº: {{container.codigoConteiner}} - {{"%.2f"|format(container.pesoBruto|float)}}kg
+        {% endfor %}
+        <br>
+        Cubagem total: {{ "%.2f"|format(conhecimento.cubagem|float) }}m³
+        NCMs: {% for ncm in ncms %}{{ ncm.identificacaoNCM }} {% endfor %}
+        <br>
+        {% if sats %}
+        Empresa possui pedidos de Laudo Técnico (SAT/LAB):
+        {% for sat in sats %} {{ sat.get_numero() }} {% endfor %}
+        {% endif %}
+
+        {% endif %}
+    </div>
+</div>
