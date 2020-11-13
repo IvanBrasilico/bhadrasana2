@@ -64,7 +64,7 @@ def get_empresa(session, cnpj: str) -> Empresa:
     if not cnpj or len(cnpj) < 8:
         raise ValueError('CNPJ deve ser informado com mínimo de 8 dígitos.')
     empresa = session.query(Empresa).filter(
-        Empresa.cnpj == cnpj).one_or_none()
+        Empresa.cnpj == cnpj).first()
     if not empresa:
         empresa = session.query(Empresa).filter(
             Empresa.cnpj.like(cnpj[:8] + '%')).limit(1).first()
