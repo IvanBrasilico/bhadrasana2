@@ -135,9 +135,6 @@ def ovr_app(app):
                             ovr_form.auditor_descricao.data = auditor.nome
                         if ovr.setor:
                             ovr_form.setor_descricao.data = ovr.setor.nome
-                        fiscalizado = get_empresa(session, ovr.cnpj_fiscalizado)
-                        if fiscalizado:
-                            ovr_form.nome_fiscalizado.data = fiscalizado.nome
                         # Desabiltar edição de Usuário ao informar Evento
                         historico_form.user_name.render_kw = {'disabled': 'disabled'}
                         if ovr_form.dataentrada.data and ovr.setor_id == '2':
@@ -145,6 +142,12 @@ def ovr_app(app):
                                               ovr_form.dataentrada.data) >= 90:
                                 flash('Alerta: Diferença entre Data de Emissão e '
                                       'Data da Entrada da Carga maior que 90 dias!')
+                        try:
+                            fiscalizado = get_empresa(session, ovr.cnpj_fiscalizado)
+                            if fiscalizado:
+                                ovr_form.nome_fiscalizado.data = fiscalizado.nome
+                        except ValueError as err:
+                            flash(err)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')

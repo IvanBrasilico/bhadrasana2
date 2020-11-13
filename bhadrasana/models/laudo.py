@@ -2,16 +2,14 @@ import sys
 from datetime import datetime
 from typing import List
 
-from flask import flash
 from sqlalchemy import BigInteger, Column, VARCHAR, Integer, Date
 from sqlalchemy.ext.declarative import declarative_base
+
 from bhadrasana.models import BaseDumpable
 
 sys.path.append('.')
 sys.path.insert(0, '../ajna_docs/commons')
 sys.path.insert(0, '../virasana')
-
-from ajna_commons.flask.log import logger
 
 Base = declarative_base()
 
@@ -61,12 +59,10 @@ def get_empresa(session, cnpj: str) -> Empresa:
 
     Não encontrando, busca pelo CNPJ raiz e retorna primeira.
     Em caso de falha, retorna None.
+    Retorna exceção se parâmetro menor que 8 dígitos
     """
     if not cnpj or len(cnpj) < 8:
-        logger.error('CNPJ deve ser informado com mínimo de 8 dígitos.', exc_info=True)
-        flash('Erro! Detalhes no log da aplicação.')
-        flash('CNPJ deve ser informado com mínimo de 8 dígitos.')
-        return None
+        raise ValueError('CNPJ deve ser informado com mínimo de 8 dígitos.')
     empresa = session.query(Empresa).filter(
         Empresa.cnpj == cnpj).one_or_none()
     if not empresa:
