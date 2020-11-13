@@ -61,6 +61,7 @@ def get_due(mongodb, numerodeclaracao: str) -> dict:
 def get_dues_container(mongodb, numero: str,
                        datainicio: datetime,
                        datafim: datetime,
+                       limit=40
                        ) -> List[dict]:
     if numero is None or numero == '':
         raise ValueError('get_dues: Informe o número do contêiner!')
@@ -69,7 +70,7 @@ def get_dues_container(mongodb, numero: str,
              'metadata.contentType': 'image/jpeg'
              }
     projection = {'metadata.due': 1}
-    cursor = mongodb['fs.files'].find(query, projection)
+    cursor = mongodb['fs.files'].find(query, projection).limit(limit)
     result = []
     for row in cursor:
         metadata = row.get('metadata')
