@@ -1,0 +1,22 @@
+<div class="table table-responsive col-sm-10">
+    <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive">
+        <thead>
+        <tr>
+            <td>Data escaneamento</td>
+            <td>Imagem contêiner</td>
+        </tr>
+        </thead>
+        {% for imagem in imagens %}
+        <tr>
+            <td width="300" style="text-align:left">
+                {{ imagem.metadata.dataescaneamento }}
+            </td>
+            <td>
+                <img src="/virasana/image/{{ imagem._id }}" alt="Sem imagem" width="auto" height="auto"
+                     style="border: 1px solid #000; max-width:800px; max-height:320px;"
+                />
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>

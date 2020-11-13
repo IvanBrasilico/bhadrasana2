@@ -2,30 +2,21 @@
 <div id="main" class="container-fluid">
     <div id="top" class="row col-sm-12">
         <div class="form-group">
-            <form method="POST" id="filtrocontainer" action="consulta_container">
+            <form method="POST" id="filtroce" action="consulta_ce">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="row">
                     <div class="col-sm-2">
-                        <label for="numerolote">Número do Contêiner ou Lote</label>
+                        <label for="numeroCEmercante">Número do CE-Mercante</label>
                     </div>
-                    <div class="col-sm-4">
-                        <label for="datainicio">Início e fim de período de pesquisa</label>
-                    </div>
-                    <div class="col-sm-6">
+                    <div class="col-sm-10">
                     </div>
                 </div>
                 <div class="row">
                     <div class="form-group">
                         <div class="col-sm-2">
-                            {{ oform.numerolote(class='form-control') }}
+                            {{ oform.numeroCEmercante(class='form-control') }}
                         </div>
-                        <div class="col-sm-2">
-                            {{ oform.datainicio(class='form-control') }}
-                        </div>
-                        <div class="col-sm-2">
-                            {{ oform.datafim(class='form-control') }}
-                        </div>
-                        <div class="col-sm-6">
+                        <div class="col-sm-10">
                         </div>
                     </div>
                 </div>
@@ -37,16 +28,21 @@
                         </button>
                     </div>
                     <div class="col-sm-2">
-                        <button class="btn btn-default btn-info form-control" onclick="window.open('rvf')">
-                            Nova RVF
+                        <button class="btn btn-default btn-info form-control" onclick="window.open('ovr')">
+                            Nova Ficha
                         </button>
                     </div>
                 </div>
             </form>
         </div>
     </div>
-    <div class="row col-sm-12">
-        Alguns resultados são limitados a {{ limit }} linhas por desempenho. Mude as datas se necessário
+    <div class="row">
+        <h2>Conhecimento de Carga</h2>
+    </div>
+        <div class="row col-sm-12">
+            {% include 'divconhecimento.html' %}
+        </div>
+    <div class="row">
         &nbsp;<br>
     </div>
     <div class="row">
@@ -60,38 +56,7 @@
         &nbsp;<br>
         <h2> Verificações físicas</h2>
     </div>
-        {% include 'divrvf.html' %}
-    <div class="row">
-        &nbsp;<br>
-    </div>
-    <div class="row">
-        <h2>Conhecimentos de Carga</h2>
-    </div>
-    <div id="list_infoces" class="row col-sm-12">
-        {% for numero, infoce in infoces.items() %}
-        <div class="row col-sm-12">
-            {% include 'divconhecimento.html' %}
-        </div>
-        {% endfor %}
-    </div>
-    <div class="row">
-        &nbsp;<br>
-    </div>
-    <div class="row">
-        <h2>DUEs</h2>
-    </div>
-    <div id="list_dues" class="row col-sm-12">
-        {% for due in dues %}
-            {% include 'divdue.html' %}
-        {% endfor %}
-    </div>
-    <div class="row">
-        &nbsp;<br>
-    </div>
-    <div class="row">
-        <h2>Eventos Recintos</h2>
-    </div>
-            {% include 'diveventos.html' %}
+    {% include 'divrvf.html' %}
     <div class="row">
         &nbsp;<br>
     </div>
@@ -99,6 +64,9 @@
         <h2>Inspeções por raio X - escaneamento</h2>
     </div>
         {% include 'divimagens.html' %}
+    <div class="row">
+        &nbsp;<br>
+    </div>
     <div id="bottom" class="row col-sm-12">
         AJNA - Receita Federal do Brasil 2017
     </div>

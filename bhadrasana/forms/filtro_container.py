@@ -8,3 +8,8 @@ class FiltroContainerForm(FlaskForm):
                              default='')
     datainicio = DateField(u'Data inicial da pesquisa')
     datafim = DateField(u'Data final da pesquisa')
+
+
+class FiltroCEForm(FlaskForm):
+    numeroCEmercante = StringField(u'Número do CE',
+                             default='')

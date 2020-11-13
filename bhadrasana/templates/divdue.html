@@ -1,0 +1,25 @@
+<div class="row col-sm-12">
+    <div class="panel panel-info rounded-pill">
+        <div class="panel-heading rounded-pill">
+            {% if due %}
+            Número: {{ due.numero }}
+            <font size="+1"><b>&nbsp;&nbsp; - &nbsp;
+                <a href="programa_rvf_ajna?ovr_id={{ovr.id}}" target="_blank">
+                    Ver imagens e mais informações / programar verificação física</a></b> </font>
+            <br>
+            País Importador: {{ due.get('PaisImportador') }} Canal: {{ due.get('canal') }} Data Processamento:
+            {{ due.get('dataProcessamentoTa') }}
+            <br>
+            Exportador: {{ due.get('Declarante') }} - {{ due.get('Nome Declarante') }}
+            <br>
+            Recinto: {% if due.get('recintoAduaneiroDespacho') %} {{ due.recintoAduaneiroDespacho.nome }} {%
+            endif %}
+            <br>
+            {% if due.get('itens') %}
+            Itens: {% for item in due.get('itens') %}{{ item.get('descricaoMercadoria') }} {% endfor %}
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
