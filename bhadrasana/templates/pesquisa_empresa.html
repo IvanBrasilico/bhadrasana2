@@ -83,40 +83,7 @@
     <div class="row col-sm-12">
         <h2>Fichas</h2>
     </div>
-    <div id="list_ovr" class="row col-sm-12">
-        &nbsp;<br>
-        <div class="table">
-            <table class="inlineTable table table-bordered table-hover table-responsive"
-                   id="ovr_table">
-                <thead>
-                <tr>
-                    <th>Ficha Nº</th>
-                    <th>Tipo Operação</th>
-                    <th>Recinto</th>
-                    <th>Ano</th>
-                    <th>Número doc.</th>
-                    <th>CE Mercante</th>
-                    <th>Data</th>
-                    <th>Último Evento</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for ovr in ovrs %}
-                <tr>
-                    <td><a href="ovr?id={{ ovr.id }}">{{ ovr.id }}</a></td>
-                    <td>{{ ovr.get_tipooperacao() }}</td>
-                    <td>{{ ovr.recinto.nome }}</td>
-                    <td>{{ ovr.get_ano() }}</td>
-                    <td>{{ ovr.numero }}</td>
-                    <td>{{ ovr.numeroCEmercante }}</td>
-                    <td>{{ ovr.datahora }}</td>
-                    <td>{{ ovr.tipoevento.nome }}</td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
+    {% include 'divovr.html' %}
     <div class="row col-sm-12">
         &nbsp;<br>
     </div>
@@ -170,27 +137,7 @@
     </div>
     <div id="list_dues" class="row col-sm-12">
         {% for due in dues %}
-        <div class="row col-sm-12">
-            <div class="panel panel-info rounded-pill">
-                <div class="panel-heading rounded-pill">
-                    {% if due %}
-                    Número: {{ due.numero }}
-                    <br>
-                    País Importador: {{ due.get('PaisImportador') }} Canal: {{ due.get('canal') }} Data Processamento:
-                    {{ due.get('dataProcessamentoTa') }}
-                    <br>
-                    Exportador: {{ due.get('Declarante') }} - {{ due.get('Nome Declarante') }}
-                    <br>
-                    Recinto: {% if due.get('recintoAduaneiroDespacho') %} {{ due.recintoAduaneiroDespacho.nome }} {%
-                    endif %}
-                    <br>
-                    {% if due.get('itens') %}
-                    Itens: {% for item in due.get('itens') %}{{ item.get('descricaoMercadoria') }} {% endfor %}
-                    {% endif %}
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+        {% include 'divdue.html' %}
         {% endfor %}
     </div>
     <div class="row">
@@ -222,6 +169,7 @@
         }
     }
     function getCellValue(row, index){ return $(row).children('td').eq(index).text() }
+
 
 
 </script>

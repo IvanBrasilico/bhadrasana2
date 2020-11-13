@@ -21,9 +21,10 @@ from sqlalchemy import select, and_, join, or_, create_engine
 from ajna_commons.flask.log import logger
 from ajnaapi.recintosapi.models import AcessoVeiculo, ConteinerUld, PesagemVeiculo, \
     EventoBase, Semirreboque
-from bhadrasana.models.ovrmanager import get_ovr_container
+from bhadrasana.models.ovrmanager import get_ovr_container, get_ovr_filtro
 from bhadrasana.models.rvfmanager import get_rvfs_filtro
-from bhadrasana.models.virasana_manager import get_dues_container, get_detalhes_mercante
+from bhadrasana.models.virasana_manager import get_dues_container, get_detalhes_mercante, \
+    get_detalhe_conhecimento
 from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, \
     RiscoAtivo
 
@@ -348,6 +349,19 @@ def consulta_container_objects(values: dict, session, mongodb, limit=40):
     logger.info('get_eventos_container')
     eventos = get_eventos_conteiner(session, numero, datainicio, datafim, limit=limit)
     return rvfs, ovrs, infoces, dues, eventos
+
+
+def consulta_ce_objects(numero: str, session, mongodb):
+    if numero is None or len(numero) < 15:
+        raise ValueError(' Dados inválidos passados nos parâmetros.'
+                         ' Parâmetros numero: 999999999999999 (15 dígitos)')
+    logger.info('Consultando ce %s' % numero)
+    logger.info('get_rvfs_filtro')
+    rvfs = get_rvfs_filtro(session, {'numeroCEmercante': numero})
+    ovrs = get_ovr_filtro(session, {'numeroCEmercante': numero})
+    logger.info('get detalhes CE Mercante')
+    infoce = get_detalhe_conhecimento(session, numero)
+    return rvfs, ovrs, infoce
 
 
 if __name__ == '__main__':

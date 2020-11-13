@@ -15,7 +15,7 @@ from ajna_commons.flask.log import logger
 from bhadrasana.analises.escaneamento_operador import sorteia_GMCIs
 from bhadrasana.docx.docx_functions import get_doc_generico_ovr
 from bhadrasana.forms.exibicao_ovr import ExibicaoOVR, TipoExibicao
-from bhadrasana.forms.filtro_container import FiltroContainerForm
+from bhadrasana.forms.filtro_container import FiltroContainerForm, FiltroCEForm
 from bhadrasana.forms.filtro_empresa import FiltroEmpresaForm
 from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
     ProcessoOVRForm, ItemTGForm, ResponsavelOVRForm, TGOVRForm, FiltroRelatorioForm, \
@@ -44,13 +44,13 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     monta_ovr_dict, get_docx, inclui_docx, get_docx_choices, get_recintos_dte, excluir_processo, \
     excluir_evento, get_ovr_visao_usuario, get_setores_cpf_choice, get_processo
 from bhadrasana.models.ovrmanager import get_marcas_choice
-from bhadrasana.models.riscomanager import consulta_container_objects
+from bhadrasana.models.riscomanager import consulta_container_objects, consulta_ce_objects
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
     get_infracoes_choice
 from bhadrasana.models.virasana_manager import get_conhecimento, \
     get_containers_conhecimento, get_ncms_conhecimento, get_imagens_dict_container_id, \
     get_imagens_container, get_dues_empresa, get_ces_empresa, \
-    get_due, get_detalhes_mercante
+    get_due, get_detalhes_mercante, get_imagens_conhecimento
 from bhadrasana.routes.plotly_graphs import bar_plotly, gauge_plotly, burndown_plotly
 from bhadrasana.scripts.gera_planilha_rilo import monta_planilha_rilo
 from bhadrasana.views import get_user_save_path, valid_file, csrf
@@ -964,6 +964,41 @@ def ovr_app(app):
                                eventos=eventos,
                                imagens=imagens,
                                limit=limit)
+
+    @app.route('/consulta_ce', methods=['GET', 'POST'])
+    @login_required
+    def consulta_ce():
+        """Tela para consulta única de número de contêiner
+
+        Dentro do intervalo de datas, traz lista de ojetos do sistema que contenham
+        alguma referência ao contêiner.
+        """
+        session = app.config.get('dbsession')
+        mongodb = app.config['mongodb']
+        ovrs = []
+        rvfs = []
+        infoce = {}
+        imagens = []
+        filtro_form = FiltroCEForm()
+        try:
+            if request.method == 'POST':
+                filtro_form = FiltroCEForm(request.form)
+                filtro_form.validate()
+                rvfs, ovrs, infoce = \
+                    consulta_ce_objects(filtro_form.numeroCEmercante.data, session, mongodb)
+                imagens = get_imagens_conhecimento(mongodb,
+                                                   filtro_form.numeroCEmercante.data)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return render_template('pesquisa_ce.html',
+                               oform=filtro_form,
+                               rvfs=rvfs,
+                               ovrs=ovrs,
+                               conhecimento=infoce,
+                               imagens=imagens)
 
     @app.route('/consulta_conteiner_text', methods=['POST'])
     # @login_required

@@ -24,7 +24,7 @@
         nº: {{container.codigoConteiner}} - {{"%.2f"|format(container.pesoBruto|float)}}kg
         {% endfor %}
         <br>
-        Cubagem total: {{ "%.2f"|format(conhecimento.cubagem|float) }}m³
+        {% if conhecimento.cubagem %}Cubagem total: {{ "%.2f"|format(conhecimento.cubagem|float) }}m³{% endif %}
         NCMs: {% for ncm in ncms %}{{ ncm.identificacaoNCM }} {% endfor %}
         <br>
         {% if sats %}

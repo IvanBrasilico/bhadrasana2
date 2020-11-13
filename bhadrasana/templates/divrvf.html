@@ -1,0 +1,26 @@
+<div id="list_rvf" class="row col-sm-12">
+&nbsp;   <br>
+    <div class="table">
+        <table class="inlineTable table table-bordered table-hover table-responsive"
+               id="rvf_table">
+            <thead>
+            <tr>
+                <th></th>
+                <th>CE Mercante</th>
+                <th>Numero Contêiner/Lote</th>
+                <th>Data da verificação</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for rvf in rvfs %}
+            <tr>
+                <td><a href="rvf?id={{ rvf.id }}">{{ rvf.id }}</a></td>
+                <td>{{ rvf.numeroCEmercante }}</td>
+                <td>{{ rvf.numerolote }}</td>
+                <td>{{ rvf.datahora }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

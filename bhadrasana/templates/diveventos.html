@@ -1,0 +1,32 @@
+<div id="list_eventos" class="row col-sm-12">
+    <div class="table">
+        <table class="inlineTable table table-bordered table-hover table-responsive"
+               id="eventos_table">
+            <thead>
+            <tr>
+                <th></th>
+                <th>Data do Evento</th>
+                <th>Recinto</th>
+                <th>Operador</th>
+                <th>Tipo de Evento</th>
+                <th>Informação</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for evento in eventos %}
+            <tr onmouseover="showEvento(this, '{{evento.recinto}}', '{{evento.tipo}}', '{{evento.id}}')" onmouseout="clearEvento(this)">
+                <td>
+                    <a href="/ajnaapi/api/resumo_evento?recinto={{evento.recinto}}&tipo={{evento.tipo}}&id={{evento.id}}" target="_blank">
+                        Ver</a>
+                </td>
+                <td>{{ evento.data }}</td>
+                <td>{{ evento.recinto }}</td>
+                <td>{{ evento.cpf }}</td>
+                <td>{{ evento.tipo }}</td>
+                <td>{{ evento.info }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

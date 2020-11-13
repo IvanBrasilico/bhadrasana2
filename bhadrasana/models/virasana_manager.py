@@ -175,26 +175,30 @@ def get_ncms_conhecimento(session, numero: str) -> List[NCMItem]:
         NCMItem.numeroCEMercante == numero).all()
 
 
+def get_detalhe_conhecimento(session, numeroCEmercante: str) -> dict:
+    linha = dict()
+    conhecimento = get_conhecimento(session, numeroCEmercante)
+    linha['conhecimento'] = conhecimento
+    linha['containers'] = get_containers_conhecimento(
+        session,
+        numeroCEmercante)
+    linha['ncms'] = get_ncms_conhecimento(session, numeroCEmercante)
+    logger.info('get_laudos')
+    if conhecimento:
+        cnpj = conhecimento.consignatario
+        if cnpj:
+            empresa = get_empresa(session, cnpj)
+            sats = get_sats_cnpj(session, cnpj)
+            linha['empresa'] = empresa
+            linha['sats'] = sats
+    return linha
+
+
 def get_detalhes_mercante(session, ces: List[str]) -> dict:
     infoces = {}
     for numeroCEmercante in ces:
         try:
-            linha = dict()
-            conhecimento = get_conhecimento(session, numeroCEmercante)
-            linha['conhecimento'] = conhecimento
-            linha['containers'] = get_containers_conhecimento(
-                session,
-                numeroCEmercante)
-            linha['ncms'] = get_ncms_conhecimento(session, numeroCEmercante)
-            logger.info('get_laudos')
-            if conhecimento:
-                cnpj = conhecimento.consignatario
-                if cnpj:
-                    empresa = get_empresa(session, cnpj)
-                    sats = get_sats_cnpj(session, cnpj)
-                    linha['empresa'] = empresa
-                    linha['sats'] = sats
-            infoces[numeroCEmercante] = linha
+            infoces[numeroCEmercante] = get_detalhe_conhecimento(session, numeroCEmercante)
         except Exception as err:
             logger.info(err)
     return infoces
