@@ -39,6 +39,8 @@ MONGODB_RISCO = os.environ.get('MONGODB_RISCO')
 conn_risco = MongoClient(host=MONGODB_RISCO)
 mongodb_risco = conn_risco['risco']
 app = configure_app(mongodb, db_session, mongodb_risco)
+if os.environ.get('SESSION_COOKIE'):
+    app.config.update(SESSION_COOKIE_NAME=os.environ.get('SESSION_COOKIE'))
 risco_app(app)
 rvf_app(app)
 ovr_app(app)
