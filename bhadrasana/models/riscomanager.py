@@ -277,6 +277,7 @@ def get_lista_csv(csvpath):
 def get_eventos_conteiner(session, numero: str,
                           datainicio: datetime,
                           datafim: datetime,
+                          limit=40
                           ) -> List[dict]:
     Atributo = namedtuple('Atributo', ['descricao', 'campo'])
 
@@ -300,7 +301,7 @@ def get_eventos_conteiner(session, numero: str,
         AcessoVeiculo.dtHrOcorrencia >= datainicio
     ).filter(
         AcessoVeiculo.dtHrOcorrencia <= datafim
-    ).all()
+    ).limit(limit).all()
     acessos = lista_eventos(eventos, [Atributo('Placa', 'placa'),
                                       Atributo('Motorista', 'motorista_nome')])
     eventos = session.query(PesagemVeiculo).join(Semirreboque).filter(
@@ -309,7 +310,7 @@ def get_eventos_conteiner(session, numero: str,
         PesagemVeiculo.dtHrOcorrencia >= datainicio
     ).filter(
         PesagemVeiculo.dtHrOcorrencia <= datafim
-    ).all()
+    ).limit(limit).all()
     pesagens = lista_eventos(eventos, [Atributo('Placa', 'placa'),
                                        Atributo('Peso', 'pesoBrutoBalanca'),
                                        Atributo('Tara', 'taraConjunto'), ])
@@ -317,7 +318,7 @@ def get_eventos_conteiner(session, numero: str,
     return [*acessos, *pesagens]
 
 
-def consulta_container_objects(values: dict, session, mongodb):
+def consulta_container_objects(values: dict, session, mongodb, limit=40):
     print(values)
     numero = values.get('numerolote')
     datainicio = None
@@ -337,15 +338,15 @@ def consulta_container_objects(values: dict, session, mongodb):
                                      'datainicio': datainicio,
                                      'datafim': datafim})
     logger.info('get_dues_container')
-    dues = get_dues_container(mongodb, numero, datainicio, datafim)
+    dues = get_dues_container(mongodb, numero, datainicio, datafim, limit=limit)
     lista_numeroDUEs = [due['numero'] for due in dues]
     logger.info('get_ovr_container')
     ces, ovrs = get_ovr_container(session, numero, datainicio, datafim,
-                                  lista_numeroDUEs)
+                                  lista_numeroDUEs, limit=limit)
     logger.info('get detalhes CE Mercante')
     infoces = get_detalhes_mercante(session, ces)
     logger.info('get_eventos_container')
-    eventos = get_eventos_conteiner(session, numero, datainicio, datafim)
+    eventos = get_eventos_conteiner(session, numero, datainicio, datafim, limit=limit)
     return rvfs, ovrs, infoces, dues, eventos
 
 

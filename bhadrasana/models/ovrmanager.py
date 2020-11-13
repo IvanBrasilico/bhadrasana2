@@ -320,7 +320,8 @@ def get_ovr_filtro(session,
 def get_ovr_container(session, numerolote: str,
                       datainicio: datetime = None,
                       datafim: datetime = None,
-                      lista_numeroDUEs=[]) -> Tuple[List[str], List[OVR]]:
+                      lista_numeroDUEs=[],
+                      limit=40) -> Tuple[List[str], List[OVR]]:
     filtro_data = and_()
     if datainicio:
         filtro_data = and_(OVR.datahora >= datainicio, filtro_data)
@@ -335,7 +336,7 @@ def get_ovr_container(session, numerolote: str,
         datafim = datafim + timedelta(days=1)
         filtro_data_ces = and_(Item.dataAtualizacao <= datafim, filtro_data_ces)
     filtro = and_(filtro_data, Item.codigoConteiner.like(numerolote.strip()))
-    itens = session.query(Item).filter(filtro).all()
+    itens = session.query(Item).filter(filtro).limit(limit).all()
     listaCE = [item.numeroCEmercante for item in itens]
     # Filtra OVRs
     filtro = and_(filtro_data,

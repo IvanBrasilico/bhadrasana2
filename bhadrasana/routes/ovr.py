@@ -930,6 +930,8 @@ def ovr_app(app):
         """
         session = app.config.get('dbsession')
         mongodb = app.config['mongodb']
+        # Limitar resultados de todas as pesquisas (exceto OVRs) em 40 linhas
+        limit = 40
         ovrs = []
         rvfs = []
         infoces = {}
@@ -945,7 +947,7 @@ def ovr_app(app):
                 filtro_form = FiltroContainerForm(request.form)
                 filtro_form.validate()
                 rvfs, ovrs, infoces, dues, eventos = \
-                    consulta_container_objects(request.form, session, mongodb)
+                    consulta_container_objects(request.form, session, mongodb, limit=limit)
                 imagens = get_imagens_container(mongodb,
                                                 filtro_form.numerolote.data)
         except Exception as err:
@@ -960,7 +962,8 @@ def ovr_app(app):
                                infoces=infoces,
                                dues=dues,
                                eventos=eventos,
-                               imagens=imagens)
+                               imagens=imagens,
+                               limit=limit)
 
     @app.route('/consulta_conteiner_text', methods=['POST'])
     # @login_required

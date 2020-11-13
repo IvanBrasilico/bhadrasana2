@@ -52,15 +52,15 @@ class OVRTestCase(BaseTestCase):
         # test xls file
         file_name = os.path.join(os.path.dirname(__file__), 'teste.xls')
         alert = importa_planilha_tg(session, tg, file_name)
-        assert alert == ''
+        assert 'Campo procedencia(País Procedência, *****) não encontrado' in alert
         # test csv file
         file_name = os.path.join(os.path.dirname(__file__), 'teste_csv')
         alert = importa_planilha_tg(session, tg, file_name)
-        assert alert == ''
+        assert 'Campo procedencia(País Procedência, *****) não encontrado' in alert
         # test ods file
         file_name = os.path.join(os.path.dirname(__file__), 'teste.ods')
         alert = importa_planilha_tg(session, tg, file_name)
-        assert alert == ''
+        assert 'Campo procedencia(País Procedência, *****) não encontrado' in alert
         # test Exception file reading
         file_name_wrong = os.path.join(os.path.dirname(__file__), '123.abc')
         with self.assertRaises(Exception):
