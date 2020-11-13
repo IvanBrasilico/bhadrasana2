@@ -939,7 +939,7 @@ def ovr_app(app):
         eventos = []
         imagens = []
         filtro_form = FiltroContainerForm(
-            datainicio=date.today() - timedelta(days=10),
+            datainicio=date.today() - timedelta(days=360),
             datafim=date.today()
         )
         try:
@@ -985,7 +985,7 @@ def ovr_app(app):
                 consulta_container_objects({'numerolote': numerolote,
                                             'datainicio': datainicio,
                                             'datafim': datafim},
-                                           session, mongodb)
+                                           session, mongodb, limit=10)
         except Exception as err:
             logger.error(err, exc_info=True)
             return 'Erro! Detalhes no log da aplicação.\n' + str(err)
@@ -1006,6 +1006,7 @@ def ovr_app(app):
         """
         session = app.config.get('dbsession')
         mongodb = app.config['mongodb']
+        limit = 50
         empresas_qtdeovrs = []
         ovrs = []
         sats = []
@@ -1033,12 +1034,12 @@ def ovr_app(app):
                     empresa = get_empresa(session, filtro_form.cnpj.data)
                     logger.info('get_dues_empresa')
                     dues = get_dues_empresa(mongodb,
-                                            filtro_form.cnpj.data)
+                                            filtro_form.cnpj.data, limit=limit)
                     logger.info('get_ovr_empresa')
                     ovrs = get_ovr_empresa(session, filtro_form.cnpj.data)
                     empresas_qtdeovrs = [{'empresa': empresa, 'qtdeovrs': len(ovrs)}]
                     logger.info('get CEs da Empresa')
-                    conhecimentos = get_ces_empresa(session, filtro_form.cnpj.data)
+                    conhecimentos = get_ces_empresa(session, filtro_form.cnpj.data, limit=limit)
                     listaCE = [ce.numeroCEmercante for ce in conhecimentos]
                     logger.info('get detalhes CE Mercante')
                     infoces = get_detalhes_mercante(session, listaCE)
@@ -1057,7 +1058,8 @@ def ovr_app(app):
                                infoces=infoces,
                                dues=dues,
                                eventos=eventos,
-                               imagens=imagens)
+                               imagens=imagens,
+                               limit=limit)
 
     @app.route('/consulta_empresa_text/<cnpj>', methods=['GET'])
     # @login_required

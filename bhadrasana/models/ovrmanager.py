@@ -223,7 +223,7 @@ def get_ovr_visao_usuario(session, datainicio: datetime,
     filtro = or_(OVR.user_name == usuario_cpf,
                  OVR.responsavel_cpf == usuario_cpf,
                  OVR.cpfauditorresponsavel == usuario_cpf,
-    #             OVR.responsavel_cpf.is_(None)
+                 #             OVR.responsavel_cpf.is_(None)
                  )
     if setor_id:
         if usuario_tem_perfil_nome(session, usuario_cpf, 'Supervisor'):
@@ -336,7 +336,8 @@ def get_ovr_container(session, numerolote: str,
         datafim = datafim + timedelta(days=1)
         filtro_data_ces = and_(Item.dataAtualizacao <= datafim, filtro_data_ces)
     filtro = and_(filtro_data, Item.codigoConteiner.like(numerolote.strip()))
-    itens = session.query(Item).filter(filtro).limit(limit).all()
+    itens = session.query(Item).filter(filtro). \
+        order_by(Item.dataAtualizacao.desc()).limit(limit).all()
     listaCE = [item.numeroCEmercante for item in itens]
     # Filtra OVRs
     filtro = and_(filtro_data,
