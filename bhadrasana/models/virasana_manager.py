@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import List
 
+import pymongo
 import requests
 
 from ajna_commons.flask.log import logger
@@ -70,7 +71,8 @@ def get_dues_container(mongodb, numero: str,
              'metadata.contentType': 'image/jpeg'
              }
     projection = {'metadata.due': 1}
-    cursor = mongodb['fs.files'].find(query, projection).limit(limit)
+    cursor = mongodb['fs.files'].find(query, projection). \
+        sort('metadata.dataescaneamento', pymongo.DESCENDING).limit(limit)
     result = []
     for row in cursor:
         metadata = row.get('metadata')
@@ -81,14 +83,15 @@ def get_dues_container(mongodb, numero: str,
     return result
 
 
-def get_dues_empresa(mongodb, cnpj: str) -> list:
+def get_dues_empresa(mongodb, cnpj: str, limit=40) -> list:
     if cnpj is None or len(cnpj) < 8:
         raise ValueError('get_dues: Informe o CNPJ da empresa com no mínimo 8 posições!')
     query = {'metadata.due.itens.Exportador': {'$regex': '^' + cnpj.strip() + '.*'},
              'metadata.contentType': 'image/jpeg'
              }
     projection = {'metadata.due': 1}
-    cursor = mongodb['fs.files'].find(query, projection)
+    cursor = mongodb['fs.files'].find(query, projection). \
+        sort('metadata.dataescaneamento', pymongo.DESCENDING).limit(limit)
     result = []
     for row in cursor:
         metadata = row.get('metadata')
@@ -154,11 +157,12 @@ def get_conhecimento(session, numero: str) -> Conhecimento:
         Conhecimento.numeroCEmercante == numero).one_or_none()
 
 
-def get_ces_empresa(session, cnpj: str) -> List[Conhecimento]:
+def get_ces_empresa(session, cnpj: str, limit=40) -> List[Conhecimento]:
     if not cnpj or len(cnpj) < 8:
         raise ValueError('CNPJ deve ser informado com mínimo de 8 dígitos.')
     return session.query(Conhecimento).filter(
-        Conhecimento.consignatario.like(cnpj[:8] + '%')).all()
+        Conhecimento.consignatario.like(cnpj[:8] + '%')). \
+        order_by(Conhecimento.dataEmissao.desc()).limit(limit).all()
 
 
 def get_containers_conhecimento(session, numero: str) -> List[Item]:

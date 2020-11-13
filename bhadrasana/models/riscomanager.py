@@ -301,7 +301,7 @@ def get_eventos_conteiner(session, numero: str,
         AcessoVeiculo.dtHrOcorrencia >= datainicio
     ).filter(
         AcessoVeiculo.dtHrOcorrencia <= datafim
-    ).limit(limit).all()
+    ).order_by(AcessoVeiculo.dtHrOcorrencia.desc()).limit(limit).all()
     acessos = lista_eventos(eventos, [Atributo('Placa', 'placa'),
                                       Atributo('Motorista', 'motorista_nome')])
     eventos = session.query(PesagemVeiculo).join(Semirreboque).filter(
@@ -310,7 +310,7 @@ def get_eventos_conteiner(session, numero: str,
         PesagemVeiculo.dtHrOcorrencia >= datainicio
     ).filter(
         PesagemVeiculo.dtHrOcorrencia <= datafim
-    ).limit(limit).all()
+    ).order_by(PesagemVeiculo.dtHrOcorrencia.desc()).limit(limit).all()
     pesagens = lista_eventos(eventos, [Atributo('Placa', 'placa'),
                                        Atributo('Peso', 'pesoBrutoBalanca'),
                                        Atributo('Tara', 'taraConjunto'), ])
