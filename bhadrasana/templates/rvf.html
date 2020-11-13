@@ -10,7 +10,7 @@
                     <div class="form-group">
                         <div class="col-sm-1">
                             ID<br>
-                            {{ oform.id.data }}
+                            <span id="rvfid">{{ oform.id.data }}</span>
                         </div>
                         <div class="col-sm-1">
                             Criador<br>
@@ -283,224 +283,131 @@
 </script>
 <script>
     function mostra_apreensoes(apreensoes){
-        console.log(apreensoes);
-        $('#div_apreensoes').empty();
-        $.each(apreensoes, function(i, apreensao) {
-            $('<button type="button" class="btn btn-primary">').text(apreensao.peso + 'Kg - ' + apreensao.descricao + ' - ' + apreensao.tipo).append(
-            $('<span class="badge" onclick="exclui_apreensao(' + apreensao.id + ')">').text('X')
-            ).appendTo('#div_apreensoes');
-        });
-    }
-    function exclui_apreensao(apreensao_id){
-        $.getJSON('exclui_apreensao', {
-          apreensao_id: apreensao_id
-        }, function(apreensoes) {
-          mostra_apreensoes(apreensoes);
-        });
-    }
-
-    function mostra_lacres(lacres_verificados){
-        $('#div_lacres_verificados').empty();
-        $.each(lacres_verificados, function(i, lacre) {
-            $('<button type="button" class="btn btn-primary">').text(lacre.numero + ' ').append(
-            $('<span class="badge" onclick="exclui_lacre_verificado({{oform.id.data}}, ' + lacre.id + ')">').text('X')
-            ).appendTo('#div_lacres_verificados');
-        });
-    }
-    function exclui_lacre_verificado(rvf_id, lacre_id){
-        $.getJSON('exclui_lacre_verificado', {
-          rvf_id: rvf_id, lacre_id: lacre_id
-        }, function(lacres_verificados) {
-          mostra_lacres(lacres_verificados);
-        });
-    }
-    function inclui_lacre_verificado(rvf_id, lacre_numero){
-        $.getJSON('inclui_lacre_verificado', {
-          rvf_id: rvf_id, lacre_numero: lacre_numero
-        }, function(lacres_verificados) {
-          mostra_lacres(lacres_verificados);
-        });
-    }
-    $('input#lacres').bind('keydown', function(e) {
-      if (e.keyCode == 13) {
-         e.preventDefault();
-         inclui_lacre_verificado({{oform.id.data}}, $('input#lacres').val());
-      }
+    console.log(apreensoes);
+    $('#div_apreensoes').empty();
+    $.each(apreensoes, function(i, apreensao) {
+        $('<button type="button" class="btn btn-primary">').text(apreensao.peso + 'Kg - ' + apreensao.descricao + ' - ' + apreensao.tipo).append(
+        $('<span class="badge" onclick="exclui_apreensao(' + apreensao.id + ')">').text('X')
+        ).appendTo('#div_apreensoes');
     });
-
-    function mostra_infracoes(infracoes_encontradas){
-        $('#div_infracoes_encontradas').empty();
-        $.each(infracoes_encontradas, function(i, infracao) {
-            $('<button type="button" class="btn btn-primary">').text(infracao.nome+ ' ').append(
-            $('<span class="badge" onclick="exclui_infracao_encontrada({{oform.id.data}}, ' + infracao.id + ')">').text('X')
-            ).appendTo('#div_infracoes_encontradas');
-        });
-    }
-    function exclui_infracao_encontrada(rvf_id, infracao_id){
-        $.getJSON('exclui_infracao_encontrada', {
-          rvf_id: rvf_id, infracao_id: infracao_id
-        }, function(infracoes_encontradas) {
-          mostra_infracoes(infracoes_encontradas);
-        });
-    }
-    function inclui_infracao_encontrada(rvf_id, infracao_nome){
-        $.getJSON('inclui_infracao_encontrada', {
-          rvf_id: rvf_id, infracao_nome: infracao_nome
-        }, function(infracoes_encontradas) {
-          mostra_infracoes(infracoes_encontradas);
-        });
-    }
-    $( function() {
-        var infracoes = [
-        {% for infracao in infracoes %}
-        "{{ infracao.nome }}",
-        {% endfor %}
-        ];
-        $( "#infracoes" ).autocomplete({
-          source: infracoes, minLength: 0
-        }).focus(function () {
-           $(this).autocomplete("search");
-        });
-    } );
-    $('input#infracoes').bind('keydown', function(e) {
-      if (e.keyCode == 13) {
-        inclui_infracao_encontrada({{oform.id.data}}, $('input#infracoes').val());
-        $(this).val('');
-      }
+}
+function exclui_apreensao(apreensao_id){
+    $.getJSON('exclui_apreensao', {
+      apreensao_id: apreensao_id
+    }, function(apreensoes) {
+      mostra_apreensoes(apreensoes);
     });
+}
 
-    function mostra_marcas(marcas_encontradas){
-        $('#div_marcas_encontradas').empty();
-        $.each(marcas_encontradas, function(i, marca) {
-            $('<button type="button" class="btn btn-primary">').text(marca.nome+ ' ').append(
-            $('<span class="badge" onclick="exclui_marca_encontrada({{oform.id.data}}, ' + marca.id + ')">').text('X')
-            ).appendTo('#div_marcas_encontradas');
-        });
-    }
-    function exclui_marca_encontrada(rvf_id, marca_id){
-        $.getJSON('exclui_marca_encontrada', {
-          rvf_id: rvf_id, marca_id: marca_id
-        }, function(marcas_encontradas) {
-          mostra_marcas(marcas_encontradas);
-        });
-    }
-    function inclui_marca_encontrada(rvf_id, marca_nome){
-        $.getJSON('inclui_marca_encontrada', {
-          rvf_id: rvf_id, marca_nome: marca_nome
-        }, function(marcas_encontradas) {
-          mostra_marcas(marcas_encontradas);
-        });
-    }
-    $( function() {
-        var marcas = [
-        {% for marca in marcas %}
-        "{{ marca.nome }}",
-        {% endfor %}
-        ];
-        $( "#marcas" ).autocomplete({
-          source: marcas, minLenght: 1
-        });
-    } );
-    $('input#marcas').bind('keydown', function(e) {
-      if (e.keyCode == 13) {
-        inclui_marca_encontrada({{oform.id.data}}, $('input#marcas').val());
-        $('input#marcas').val('');
-      }
+function mostra_lacres(lacres_verificados){
+    $('#div_lacres_verificados').empty();
+    $.each(lacres_verificados, function(i, lacre) {
+        $('<button type="button" class="btn btn-primary">').text(lacre.numero + ' ').append(
+        $('<span class="badge" onclick="exclui_lacre_verificado({{oform.id.data}}, ' + lacre.id + ')">').text('X')
+        ).appendTo('#div_lacres_verificados');
     });
+}
+function exclui_lacre_verificado(rvf_id, lacre_id){
+    $.getJSON('exclui_lacre_verificado', {
+      rvf_id: rvf_id, lacre_id: lacre_id
+    }, function(lacres_verificados) {
+      mostra_lacres(lacres_verificados);
+    });
+}
+function inclui_lacre_verificado(rvf_id, lacre_numero){
+    $.getJSON('inclui_lacre_verificado', {
+      rvf_id: rvf_id, lacre_numero: lacre_numero
+    }, function(lacres_verificados) {
+      mostra_lacres(lacres_verificados);
+    });
+}
+$('input#lacres').bind('keydown', function(e) {
+  if (e.keyCode == 13) {
+     e.preventDefault();
+     let rvf_id = document.querySelector("#rvfid").textContent;
+     inclui_lacre_verificado(rvf_id, $('input#lacres').val());
+  }
+});
 
-    function exclui_anexo(anexo_id){
-        $.getJSON('exclui_anexo', {
-         _id: anexo_id
-        }, function(anexos) {
-          // mostra_anexos(anexos);
-        });
-        location.reload();
-    }
-    function upload_files(ev){
-    // Resize images before upload if images are too big
-        // Set the image once loaded into file reader
-        // Load files into file reader
-        console.log($("input#images"));
-        console.log($("input#images").val());
-        var filesToUpload = $("input#images")[0].files;
-        console.log(filesToUpload);
-        var dataurl = null;
-        for (var i = 0; i < filesToUpload.length; i++) {
-            console.log(i);
-            file = filesToUpload[i];
-            var reader = new FileReader();
-            reader.fileName = file.name;
-            reader.onloadend = function(e)
-            {
-                var img = document.createElement("img");
-                img.src = e.target.result;
-                img.onload = function () {
-                    var canvas = document.createElement("canvas");
-                    var ctx = canvas.getContext("2d");
-                    ctx.drawImage(img, 0, 0);
-                    var MAX_WIDTH = 2592;
-                    var MAX_HEIGHT = 1944;
-                    var width = img.width;
-                    var height = img.height;
-                    if (width > height) {
-                      if (width > MAX_WIDTH) {
-                        console.log('width bigger');
-                        height *= MAX_WIDTH / width;
-                        width = MAX_WIDTH;
-                      }
-                    } else {
-                      if (height > MAX_HEIGHT) {
-                        console.log('height bigger');
-                        width *= MAX_HEIGHT / height;
-                        height = MAX_HEIGHT;
-                      }
-                    }
-                    canvas.width = width;
-                    canvas.height = height;
-                    console.log(width, height);
-                    var ctx = canvas.getContext("2d");
-                    ctx.drawImage(img, 0, 0, width, height);
-                    dataurl = canvas.toDataURL("image/jpeg");
-                    // Post the data
-                    var fd = new FormData();
-                    fd.append("filename", e.target.fileName);
-                    fd.append("content", dataurl);
-                    fd.append("rvf_id",  {{ oform.id.data }});
-                    $.ajax({
-                        url: 'api/rvf_imgupload',
-                        data: fd,
-                        cache: false,
-                        contentType: false,
-                        processData: false,
-                        type: 'POST',
-                        success: function(data){
-                        //location.reload(true);
-                        }
-                    });
-                }
-                img.onload()
-            }
-            reader.readAsDataURL(file);
-        }
-        //
-    }
-    function update_ordem_arquivos(){
-        var qttd_arq = $("#div_imagens").children().length;
-        rvf_id = {{oform.id.data}}
-        var lista = []
+function mostra_infracoes(infracoes_encontradas){
+    $('#div_infracoes_encontradas').empty();
+    $.each(infracoes_encontradas, function(i, infracao) {
+        $('<button type="button" class="btn btn-primary">').text(infracao.nome+ ' ').append(
+        $('<span class="badge" onclick="exclui_infracao_encontrada({{oform.id.data}}, ' + infracao.id + ')">').text('X')
+        ).appendTo('#div_infracoes_encontradas');
+    });
+}
+function exclui_infracao_encontrada(rvf_id, infracao_id){
+    $.getJSON('exclui_infracao_encontrada', {
+      rvf_id: rvf_id, infracao_id: infracao_id
+    }, function(infracoes_encontradas) {
+      mostra_infracoes(infracoes_encontradas);
+    });
+}
+function inclui_infracao_encontrada(rvf_id, infracao_nome){
+    $.getJSON('inclui_infracao_encontrada', {
+      rvf_id: rvf_id, infracao_nome: infracao_nome
+    }, function(infracoes_encontradas) {
+      mostra_infracoes(infracoes_encontradas);
+    });
+}
+$( function() {
+    var infracoes = [
+    {% for infracao in infracoes %}
+    "{{ infracao.nome }}",
+    {% endfor %}
+    ];
+    $( "#infracoes" ).autocomplete({
+      source: infracoes, minLength: 0
+    }).focus(function () {
+       $(this).autocomplete("search");
+    });
+} );
+$('input#infracoes').bind('keydown', function(e) {
+  if (e.keyCode == 13) {
+    inclui_infracao_encontrada({{oform.id.data}}, $('input#infracoes').val());
+    $(this).val('');
+  }
+});
 
-        $('#div_imagens').children('span').each(function(){
-            lista.push($(this).attr("name"));
-        });
-        /*for (i = 0; i < lista.length; i++){
-            console.log(lista[i]);
-        }
-        console.log(qttd_arq);
-        console.log(rvf_id);
-        */
-        $.getJSON('rvf_inclui_ordem_arquivos', {
-          rvf_id: rvf_id, qttd_arq: qttd_arq, lista: lista
-        });
-    }
-
-</script> {% endblock %}
+function mostra_marcas(marcas_encontradas){
+    $('#div_marcas_encontradas').empty();
+    $.each(marcas_encontradas, function(i, marca) {
+        $('<button type="button" class="btn btn-primary">').text(marca.nome+ ' ').append(
+        $('<span class="badge" onclick="exclui_marca_encontrada({{oform.id.data}}, ' + marca.id + ')">').text('X')
+        ).appendTo('#div_marcas_encontradas');
+    });
+}
+function exclui_marca_encontrada(rvf_id, marca_id){
+    $.getJSON('exclui_marca_encontrada', {
+      rvf_id: rvf_id, marca_id: marca_id
+    }, function(marcas_encontradas) {
+      mostra_marcas(marcas_encontradas);
+    });
+}
+function inclui_marca_encontrada(rvf_id, marca_nome){
+    $.getJSON('inclui_marca_encontrada', {
+      rvf_id: rvf_id, marca_nome: marca_nome
+    }, function(marcas_encontradas) {
+      mostra_marcas(marcas_encontradas);
+    });
+}
+$( function() {
+    var marcas = [
+    {% for marca in marcas %}
+    "{{ marca.nome }}",
+    {% endfor %}
+    ];
+    $( "#marcas" ).autocomplete({
+      source: marcas, minLenght: 1
+    });
+} );
+$('input#marcas').bind('keydown', function(e) {
+  if (e.keyCode == 13) {
+    inclui_marca_encontrada({{oform.id.data}}, $('input#marcas').val());
+    $('input#marcas').val('');
+  }
+});
+</script>
+<script src="/static/js/rvf.js"></script>
+{% endblock %}
