@@ -1,3 +1,25 @@
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <style type="text/css">
+    @page {
+    size: A4;
+    margin: 10;
+    }
+    @media print {
+      html, body {
+        width: 210mm;
+        height: 297mm;
+      }
+    }
+    img { width: 95%; max-height: 95%; margin: 5; padding: 5;
+    page-break-before: always;
+    page-break-inside: avoid;
+    }
+
+
+    </style>
+</head>
 <div id="main" class="container-fluid">
     <div id="top" class="row">
         <div class="row col-xs-12">
@@ -27,21 +49,12 @@
                 <span class="badge">
                     {{ marca.nome }}
                 </span>
-                {% endfor %}
             </div>
-        </div>
-        <div class="row col-xs-3">
-            <h3>Fotos</h3>
-        </div>
-        <div class="row col-xs-12">
-            {% for anexo in anexos %}
-            <span align="center" width="80%">
-                <img src="/bhadrasana2/image/{{anexo}}" class="btn btn-primary" alt="{{ anexo }}" width="80%"/>
-            </span>
-            {% endfor %}
         </div>
     </div>
 </div>
-<div id="bottom" class="row col-xs-12">
-    AJNA - Receita Federal do Brasil 2017
-</div>
+{% for anexo in anexos %}
+<img src="/bhadrasana2/image/{{anexo}}">
+{% endfor %}
+
+</html>
