@@ -311,7 +311,8 @@ def rvf_app(app):
                 return jsonify({'msg': 'Informe o parâmetro rvf_id'}), 500
             content = request.form.get('content')
             filename = request.form.get('filename')
-            dataModificacao = datetime.strptime(request.form.get('dataModificacao').split('.')[0], '%Y-%m-%dT%H:%M:%S')
+            dataModificacao = datetime.strptime(request.form.get('dataModificacao').split('.')[0],
+                                                '%Y-%m-%dT%H:%M:%S')
             print(len(filename), filename, len(content), type(content), dataModificacao)
             if content is None or len(content) < 100:
                 logger.error('Imagem vazia ou inválida')
@@ -453,7 +454,8 @@ def rvf_app(app):
             oform.validate()
             for n in range(int(qttd_arq)):
                 imagem = get_imagemrvf_por_data(session, rvf_id,
-                                                datetime.strptime(datas[n].split('.')[0], '%Y-%m-%dT%H:%M:%S'))
+                                                datetime.strptime(datas[n].split('.')[0],
+                                                                  '%Y-%m-%dT%H:%M:%S'))
                 sucesso = inclui_nova_ordem_arquivo(session, imagem, n + 1)
         except Exception as err:
             logger.error(err, exc_info=True)
