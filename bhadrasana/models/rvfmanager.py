@@ -278,15 +278,18 @@ def get_imagemrvf_por_data(session, rvf_id: int, _id: str):
         return ImagemRVF()
     return imagemrvf
 
+
 def get_imagemrvf_or_none(session, rvf_id: int, _id: str):
     return session.query(ImagemRVF).filter(
         ImagemRVF.rvf_id == rvf_id).filter(
         ImagemRVF.imagem == _id).first()
 
+
 def get_imagemrvf_data_modificacao(session, rvf_id: int, _id: str):
     return session.query(ImagemRVF).filter(
         ImagemRVF.rvf_id == rvf_id).filter(
         ImagemRVF.dataModificacao == _id).first()
+
 
 def get_imagemrvf_imagem_or_none(session, _id: str) -> RVF:
     return session.query(ImagemRVF).filter(
