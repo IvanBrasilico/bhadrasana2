@@ -98,6 +98,7 @@ class ImagemRVF(BaseRastreavel, BaseDumpable):
                       ForeignKey('ovr_marcas.id'))
     marca = relationship(Marca)
     ordem = Column(Integer(), index=True)
+    dataModificacao = Column(DateTime())
     rvf_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                     ForeignKey('ovr_verificacoesfisicas.id'))
     rvf = relationship(RVF)

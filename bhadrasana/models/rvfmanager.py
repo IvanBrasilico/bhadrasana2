@@ -272,11 +272,21 @@ def get_imagemrvf(session, rvf_id: int, _id: str):
     return imagemrvf
 
 
+def get_imagemrvf_por_data(session, rvf_id: int, _id: str):
+    imagemrvf = get_imagemrvf_data_modificacao(session, rvf_id, _id)
+    if imagemrvf is None:
+        return ImagemRVF()
+    return imagemrvf
+
 def get_imagemrvf_or_none(session, rvf_id: int, _id: str):
     return session.query(ImagemRVF).filter(
         ImagemRVF.rvf_id == rvf_id).filter(
         ImagemRVF.imagem == _id).first()
 
+def get_imagemrvf_data_modificacao(session, rvf_id: int, _id: str):
+    return session.query(ImagemRVF).filter(
+        ImagemRVF.rvf_id == rvf_id).filter(
+        ImagemRVF.dataModificacao == _id).first()
 
 def get_imagemrvf_imagem_or_none(session, _id: str) -> RVF:
     return session.query(ImagemRVF).filter(
@@ -311,7 +321,7 @@ def swap_ordem(session, imagem_rvf: ImagemRVF, ordem_nova: int):
             raise err
 
 
-def inclui_imagemrvf(mongodb, session, image, filename, rvf_id: int):
+def inclui_imagemrvf(mongodb, session, image, filename, dataModificacao, rvf_id: int):
     bson_img = BsonImage()
     bson_img.set_campos(filename, image, rvf_id=str(rvf_id))
     fs = GridFS(mongodb)
@@ -325,6 +335,7 @@ def inclui_imagemrvf(mongodb, session, image, filename, rvf_id: int):
         imagem.imagem = str(_id)
         imagem.descricao = filename
         imagem.ordem = len(rvf.imagens) + 1
+        imagem.dataModificacao = dataModificacao
         try:
             session.add(imagem)
             session.commit()
