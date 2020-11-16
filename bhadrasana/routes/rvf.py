@@ -175,8 +175,14 @@ def rvf_app(app):
                 datetime.strftime(datetime.now(), '%Y-%m%dT%H%M%S'))
             rvf_dump = rvf.dump()
             ovr = rvf.ovr
+            if not ovr.responsavel:
+                raise ValueError('OVR não tem responsável definido')
             rvf_dump['responsavel'] = ovr.responsavel.nome
+            if not ovr.recinto:
+                raise ValueError('OVR não tem recinto definido')
             rvf_dump['recinto'] = ovr.recinto.nome
+            if not ovr.setor:
+                raise ValueError('OVR não tem setor definido')
             rvf_dump['setor'] = ovr.setor.nome
             if tipo == 'OVR':
                 document = gera_OVR(rvf_dump)
