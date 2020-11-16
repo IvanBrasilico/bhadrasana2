@@ -23,7 +23,7 @@ from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, \
     make_and_save_transformation, exclui_lacre_verificado, \
     inclui_lacre_verificado, get_imagemrvf, inclui_nova_ordem_arquivo, \
     get_anexos_ordenado, get_tiposapreensao_choice, gera_apreensao_rvf, \
-    exclui_apreensao_rvf, get_peso
+    exclui_apreensao_rvf, get_peso, get_imagemrvf_por_data
 from bhadrasana.views import csrf, valid_file, get_user_save_path
 
 
@@ -305,7 +305,8 @@ def rvf_app(app):
                 return jsonify({'msg': 'Informe o parâmetro rvf_id'}), 500
             content = request.form.get('content')
             filename = request.form.get('filename')
-            print(len(filename), filename, len(content), type(content))
+            dataModificacao = datetime.strptime(request.form.get('dataModificacao').split('.')[0], '%Y-%m-%dT%H:%M:%S')
+            print(len(filename), filename, len(content), type(content), dataModificacao)
             if content is None or len(content) < 100:
                 logger.error('Imagem vazia ou inválida')
                 return jsonify({'msg': 'Imagem vazia ou inválida'}), 500
@@ -316,7 +317,7 @@ def rvf_app(app):
                 image = base64.decodebytes(content.split(',')[1].encode())
             except IndexError:
                 image = base64.decodebytes(content.encode())
-            inclui_imagemrvf(db, session, image, filename, rvf_id)
+            inclui_imagemrvf(db, session, image, filename, dataModificacao, rvf_id)
         except Exception as err:
             logger.error(str(err), exc_info=True)
             return jsonify({'msg': 'Erro: %s' % str(err)}), 500
@@ -425,6 +426,28 @@ def rvf_app(app):
             oform.validate()
             for n in range(int(qttd_arq)):
                 imagem = get_imagemrvf(session, rvf_id, nomes_anexo[n])
+                sucesso = inclui_nova_ordem_arquivo(session, imagem, n + 1)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            return jsonify({'success': False, 'msg': str(err)}), 500
+
+        return jsonify({'success': sucesso}), 200
+
+    @app.route('/rvf_ordena_por_data_criacao', methods=['GET'])
+    @login_required
+    def rvf_ordena_por_data_criacao():
+        session = app.config.get('dbsession')
+        rvf_id = request.args.get('rvf_id')
+        qttd_arq = request.args.get('qttd_arq')
+        datas = request.args.getlist('lista[]')
+        # oform = ImagemRVFForm()
+        sucesso = False
+        try:
+            oform = ImagemRVFForm(request.form)
+            oform.validate()
+            for n in range(int(qttd_arq)):
+                imagem = get_imagemrvf_por_data(session, rvf_id,
+                                                datetime.strptime(datas[n].split('.')[0], '%Y-%m-%dT%H:%M:%S'))
                 sucesso = inclui_nova_ordem_arquivo(session, imagem, n + 1)
         except Exception as err:
             logger.error(err, exc_info=True)
