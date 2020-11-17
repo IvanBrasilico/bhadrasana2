@@ -1,5 +1,6 @@
 import os
 import sys
+
 sys.path.append('.')
 sys.path.insert(0, '../ajna_docs/commons')
 sys.path.insert(0, '../virasana')
@@ -191,4 +192,9 @@ def update_cnpj_fiscalizado_historico(session):
 
 
 if __name__ == '__main__':  # pragma: no cover
+    print('P/ rodar automático, crie arquivo como abaixo em /etc/cron.daily/fma_update.sh')
+    print('/home/ivan/ajna/bhadrasana2/bhadrasana-venv/bin/'
+          'python bhadrasana/scripts/fma_update.py '
+          ' --sql_uri mysql+pymysql://<uri do banco SQL do Fichas> '
+          ' >> /var/log/bhadrasana2/fma_error.log 2>&1')
     update()
