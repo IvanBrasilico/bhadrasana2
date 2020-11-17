@@ -1,4 +1,3 @@
-import os
 import sys
 
 import click
@@ -27,7 +26,6 @@ class SATLaudos(Base):
     numeroSAT = Column(BigInteger().with_variant(Integer, 'sqlite'), index=True)
     dataPedido = Column(Date, index=True)
     unidade = Column(BigInteger().with_variant(Integer, 'sqlite'), index=True)
-
 
 
 @click.command()
@@ -75,4 +73,10 @@ def update(sql_uri, laudos_uri):
 
 
 if __name__ == '__main__':
+    print('Para rodar automático, crie arquivo com a linha abaixo em /etc/cron.daily/laudos_update.sh')
+    print('/home/ivan/ajna/bhadrasana2/bhadrasana-venv/bin/'
+          'python bhadrasana/scripts/dados_laudo.py '
+          ' --sql_uri mysql+pymysql://<uri do banco SQL do Fichas> '
+          ' --laudos_uri mysql+pymysql://<uri do banco SQL do Laudos> '
+          ' >> /var/log/bhadrasana2/laudos_error.log 2>&1')
     update()
