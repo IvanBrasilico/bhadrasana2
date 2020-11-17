@@ -1,6 +1,7 @@
 import os
 import sys
 
+import click
 from sqlalchemy import BigInteger, Column, VARCHAR, Integer, Date
 from sqlalchemy import create_engine, func
 from sqlalchemy.ext.declarative import declarative_base
@@ -28,16 +29,14 @@ class SATLaudos(Base):
     unidade = Column(BigInteger().with_variant(Integer, 'sqlite'), index=True)
 
 
-if __name__ == '__main__':
 
-    SQL_URI_LAUDOS = os.environ['SQL_URI_LAUDOS']  # conexao com db LAUDOS
-    # SQL_URI_STAGING = os.environ.get('SQL_URI_STAGING')  # conexao com staging
-    SQL_URI = os.environ['SQL_URI']  # conexao com produção
-
-    print(SQL_URI)
-    print(SQL_URI_LAUDOS)
-    # engine_bhad = create_engine(SQL_URI_STAGING)  # staging
-    engine_bhad = create_engine(SQL_URI)  # producao
+@click.command()
+@click.option('--sql_uri', default='mysql+pymysql://ivan@localhost:3306/mercante',
+              help='Hoje')
+@click.option('--laudos_uri', default='mysql+pymysql://ivan@localhost:3306/mercante',
+              help='Hoje')
+def update(sql_uri, laudos_uri):
+    engine_bhad = create_engine(sql_uri)
     Session_bhad = sessionmaker(bind=engine_bhad)
     session_bhad = Session_bhad()
 
@@ -48,7 +47,7 @@ if __name__ == '__main__':
     print(f'ultimo id: {ultimo_id}')
 
     # conexão com database Laudos
-    engine_laudos = create_engine(SQL_URI_LAUDOS)
+    engine_laudos = create_engine(laudos_uri)
     Session_laudos = sessionmaker(bind=engine_laudos)
     session_laudos = Session_laudos()
 
@@ -69,7 +68,11 @@ if __name__ == '__main__':
             sat.dataPedido = row.dataPedido
             sat.unidade = row.unidade
             session_bhad.add(sat)
-        print(f'foram adicionados {n} novos registros na tabela SATS')
+        print(f'foram adicionados {n + 1} novos registros na tabela SATS')
         session_bhad.commit()
     else:
         print('não há novos registros')
+
+
+if __name__ == '__main__':
+    update()
