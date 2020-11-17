@@ -1424,7 +1424,8 @@ def ovr_app(app):
                     if isinstance(ovr_dict, list):
                         arquivos = []
                         for odict in ovr_dict:
-                            document = get_doc_generico_ovr(odict, documento)
+                            document = get_doc_generico_ovr(odict, documento,
+                                                            current_user.name)
                             nome_arquivo = '%s_%s.docx' % (out_filename[:-4], odict.get('nome'))
                             arquivos.append(nome_arquivo)
                             document.save(os.path.join(
@@ -1434,7 +1435,8 @@ def ovr_app(app):
                                                modeloform=modeloform,
                                                arquivos=arquivos)
                     else:
-                        document = get_doc_generico_ovr(ovr_dict, documento)
+                        document = get_doc_generico_ovr(ovr_dict, documento,
+                                                        current_user.name)
                         document.save(os.path.join(get_user_save_path(), out_filename))
                 elif request.form.get('visualizar'):
                     ovr_dict = OVRDict(docx.fonte_docx_id).get_dict(

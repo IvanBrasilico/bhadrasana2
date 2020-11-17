@@ -29,11 +29,10 @@ class SATLaudos(Base):
 
 
 @click.command()
-@click.option('--sql_uri', default='mysql+pymysql://ivan@localhost:3306/mercante',
-              help='Hoje')
-@click.option('--laudos_uri', default='mysql+pymysql://ivan@localhost:3306/mercante',
-              help='Hoje')
+@click.option('--sql_uri')
+@click.option('--laudos_uri')
 def update(sql_uri, laudos_uri):
+    print(sql_uri, laudos_uri)
     engine_bhad = create_engine(sql_uri)
     Session_bhad = sessionmaker(bind=engine_bhad)
     session_bhad = Session_bhad()
@@ -45,18 +44,15 @@ def update(sql_uri, laudos_uri):
     print(f'ultimo id: {ultimo_id}')
 
     # conexão com database Laudos
+    print(laudos_uri)
     engine_laudos = create_engine(laudos_uri)
     Session_laudos = sessionmaker(bind=engine_laudos)
     session_laudos = Session_laudos()
 
     # filtra id maiores do que o último id da base em produção
-    resultados = session_laudos.query(SATLaudos).filter(SATLaudos.id > ultimo_id)
-    len_resultados = 0
-    for result in resultados:
-        len_resultados += 1
-    print(f'foram encontrados {len_resultados} registros a serem adicionados')
-
-    if len_resultados > 0:
+    resultados = session_laudos.query(SATLaudos).filter(SATLaudos.id > ultimo_id).all()
+    print(len(resultados))
+    if len(resultados) > 0:
         for n, row in enumerate(resultados):
             sat = SAT()
             sat.declaracao = row.declaracao
