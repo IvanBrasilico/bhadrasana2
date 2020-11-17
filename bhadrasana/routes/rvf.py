@@ -185,9 +185,9 @@ def rvf_app(app):
                 raise ValueError('OVR não tem setor definido')
             rvf_dump['setor'] = ovr.setor.nome
             if tipo == 'OVR':
-                document = gera_OVR(rvf_dump)
+                document = gera_OVR(rvf_dump, current_user.name)
             else:
-                document = gera_taseda(rvf_dump)
+                document = gera_taseda(rvf_dump, current_user.name)
             document.save(os.path.join(get_user_save_path(), OVR_out_filename))
             return redirect('static/%s/%s' % (current_user.name, OVR_out_filename))
         except Exception as err:

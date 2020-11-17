@@ -141,9 +141,9 @@ def run(inicio, fim, usuario, senha):
     conteudo_sem_imagens.pop('imagens')
     print(conteudo_sem_imagens)
     print(conteudo.keys())
-    document = gera_OVR(rvf)
+    document = gera_OVR(rvf, 'teste')
     document.save('testes_docx/OVR_RVF{}.docx'.format(conteudo['id']))
-    document = gera_taseda(rvf)
+    document = gera_taseda(rvf, 'teste')
     document.save('testes_docx/Taseda_RVF{}.docx'.format(conteudo['id']))
 
 

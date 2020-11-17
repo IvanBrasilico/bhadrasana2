@@ -1,10 +1,11 @@
 import os
+from datetime import datetime
 
-from docx import Document
+from ajna_commons.flask.log import logger
 from docx.shared import Inches
 from docx.text.paragraph import Paragraph
 
-from ajna_commons.flask.log import logger
+from docx import Document
 
 
 def move_table_after(table, paragraph):
@@ -111,7 +112,11 @@ def paragraph_text_replace(paragraph: Paragraph, conteudo: dict, document: Docum
         edit_table_tag(text, paragraph, conteudo, document)
 
 
-def docx_replacein(document: Document, conteudo: dict):
+def docx_replacein(document: Document, conteudo: dict, user_name: str):
+    agora = datetime.strftime(datetime.now(), '%m/%d/%Y %H:%M')
+    footer = f'Emitido pelo Usuário {user_name} em {agora} pelo Sistema Fichas - Ajna'
+    section = document.sections[0]
+    section.footer.paragraphs[0].text = footer
     for paragraph in document.paragraphs:
         try:
             paragraph_text_replace(paragraph, conteudo, document)
@@ -124,27 +129,27 @@ def docx_replacein(document: Document, conteudo: dict):
                     paragraph_text_replace(paragraph, conteudo, document)
 
 
-def gera_OVR(rvf: dict):
+def gera_OVR(rvf: dict, user_name:str):
     conteudo = {'unidade': 'ALFSTS', **rvf}
     basepath = os.path.dirname(__file__)
     document = Document(os.path.join(basepath, 'OVR2.docx'))
-    docx_replacein(document, conteudo)
+    docx_replacein(document, conteudo, user_name)
     return document
     # document.save('testes_docx/OVR_RVF{}.docx'.format(rvf.id))
 
 
-def gera_taseda(rvf: dict):
+def gera_taseda(rvf: dict, user_name:str):
     conteudo = {'unidade': 'ALFSTS', **rvf}
     basepath = os.path.dirname(__file__)
     document = Document(os.path.join(basepath, 'taseda.docx'))
-    docx_replacein(document, conteudo)
+    docx_replacein(document, conteudo, user_name)
     return document
     # document.save('testes_docx/taseda_RVF{}.docx'.format(rvf.id))
 
 
-def get_doc_generico_ovr(ovr: dict, documento: str):
+def get_doc_generico_ovr(ovr: dict, documento: str, user_name:str):
     conteudo = {'unidade': 'ALFSTS', **ovr}
     # basepath = os.path.dirname(__file__)
     document = Document(documento)
-    docx_replacein(document, conteudo)
+    docx_replacein(document, conteudo, user_name)
     return document
