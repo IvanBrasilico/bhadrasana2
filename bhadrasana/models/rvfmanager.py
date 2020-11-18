@@ -1,19 +1,19 @@
 from datetime import timedelta
 from typing import Callable, List, Tuple, Optional
 
+from ajna_commons.flask.log import logger
+from ajna_commons.models.bsonimage import BsonImage
 from bson import ObjectId
 from gridfs import GridFS, NoFile
 from sqlalchemy import and_
+from virasana.integracao.mercante.mercantealchemy import Item
 
-from ajna_commons.flask.log import logger
-from ajna_commons.models.bsonimage import BsonImage
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, \
     get_usuario_logado, gera_objeto, EBloqueado
 from bhadrasana.models.ovr import Marca, TipoEventoOVR, EventoEspecial, OVR
 from bhadrasana.models.ovrmanager import get_ovr, gera_eventoovr
 from bhadrasana.models.rvf import RVF, Infracao, ImagemRVF, Lacre, \
     TipoApreensao, ApreensaoRVF
-from virasana.integracao.mercante.mercantealchemy import Item
 
 
 def get_peso(session, numeroCE, conteiner) -> float:
@@ -293,7 +293,13 @@ def get_imagemrvf_data_modificacao(session, rvf_id: int, _id: str):
 
 def get_imagemrvf_imagem_or_none(session, _id: str) -> RVF:
     return session.query(ImagemRVF).filter(
-        ImagemRVF.imagem == _id).first()
+        ImagemRVF.imagem == _id).one_or_none()
+
+
+def get_imagemrvf_rvf_imagem_or_none(session, rvf_id: int, _id: str) -> RVF:
+    return session.query(ImagemRVF).filter(
+        ImagemRVF.rvf_id == rvf_id).filter(
+        ImagemRVF.imagem == _id).one_or_none()
 
 
 def get_imagemrvf_ordem_or_none(session, rvf_id: int, ordem: int):
@@ -331,8 +337,8 @@ def inclui_imagemrvf(mongodb, session, image, filename, dataModificacao, rvf_id:
     _id = bson_img.tomongo(fs)
     # print(rvf_id, filename)
     rvf = get_rvf(session, rvf_id)
-    imagem = get_imagemrvf_imagem_or_none(session, str(_id))
-    if imagem is None:
+    imagem = get_imagemrvf_rvf_imagem_or_none(session, rvf_id, str(_id))
+    if imagem is None: # Não existe, incluir
         imagem = ImagemRVF()
         imagem.rvf_id = rvf_id
         imagem.imagem = str(_id)
@@ -346,6 +352,8 @@ def inclui_imagemrvf(mongodb, session, image, filename, dataModificacao, rvf_id:
             session.rollback()
             logger.error(err, exc_info=True)
             raise err
+    return imagem
+
 
 
 def cadastra_imagemrvf(session, params=None):

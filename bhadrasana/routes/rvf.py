@@ -445,21 +445,17 @@ def rvf_app(app):
     def rvf_ordena_por_data_criacao():
         session = app.config.get('dbsession')
         rvf_id = request.args.get('rvf_id')
-        # oform = ImagemRVFForm()
-        sucesso = False
         try:
-            oform = ImagemRVFForm(request.form)
-            oform.validate()
-            for n in range(int(qttd_arq)):
-                imagem = get_imagemrvf_por_data(session, rvf_id,
-                                                datetime.strptime(datas[n].split('.')[0],
-                                                                  '%Y-%m-%dT%H:%M:%S'))
-                sucesso = inclui_nova_ordem_arquivo(session, imagem, n + 1)
+            rvf = get_rvf(session, rvf_id)
+            imagens = sorted(rvf.imagens, key=lambda x: x.get_data_modificacao)
+            for ind, imagem in enumerate(imagens):
+                imagem.ordem = ind
+                session.add(imagem)
+            session.commit()
         except Exception as err:
             logger.error(err, exc_info=True)
             return jsonify({'success': False, 'msg': str(err)}), 500
-
-        return jsonify({'success': sucesso}), 200
+        return jsonify({'success': True}), 200
 
     @app.route('/rvf_galeria_imagens', methods=['GET'])
     def rvf_galeria_imagens():
