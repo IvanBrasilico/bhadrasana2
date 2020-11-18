@@ -398,7 +398,7 @@ def delete_imagemrvf(mongodb, session, _id: str):
 def get_ids_anexos_ordenado(rvf):
     """Retorna lista de ids das imagens, ordenado pelo campo ordem"""
     imagens = [(imagem.imagem, imagem.ordem or 999) for imagem in rvf.imagens]
-    imagens = sorted(imagens, key=lambda x: x[1])
+    imagens = sorted(imagens, key=lambda x: x[1] if x[1] > 0 else float('inf'))
     anexos = [imagem[0] for imagem in imagens]
     return anexos
 
@@ -406,7 +406,7 @@ def get_ids_anexos_ordenado(rvf):
 def get_anexos_ordenado(rvf):
     """Retorna lista de imagemRVF, ordenado pelo campo ordem"""
     imagens = [(imagem, imagem.ordem or 999) for imagem in rvf.imagens]
-    imagens = sorted(imagens, key=lambda x: x[1])
+    imagens = sorted(imagens, key=lambda x: x[1] if x[1] > 0 else float('inf'))
     anexos = [item[0] for item in imagens]
     return anexos
 
