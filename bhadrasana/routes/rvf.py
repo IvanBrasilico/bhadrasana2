@@ -23,7 +23,7 @@ from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, \
     make_and_save_transformation, exclui_lacre_verificado, \
     inclui_lacre_verificado, get_imagemrvf, inclui_nova_ordem_arquivo, \
     get_anexos_ordenado, get_tiposapreensao_choice, gera_apreensao_rvf, \
-    exclui_apreensao_rvf, get_peso, get_imagemrvf_por_data
+    exclui_apreensao_rvf, get_peso, rvf_ordena_imagensrvf_por_data_criacao
 from bhadrasana.views import csrf, valid_file, get_user_save_path
 
 
@@ -446,12 +446,7 @@ def rvf_app(app):
         session = app.config.get('dbsession')
         rvf_id = request.args.get('rvf_id')
         try:
-            rvf = get_rvf(session, rvf_id)
-            imagens = sorted(rvf.imagens, key=lambda x: x.get_data_modificacao)
-            for ind, imagem in enumerate(imagens):
-                imagem.ordem = ind
-                session.add(imagem)
-            session.commit()
+            rvf_ordena_imagensrvf_por_data_criacao(session, rvf_id)
         except Exception as err:
             logger.error(err, exc_info=True)
             return jsonify({'success': False, 'msg': str(err)}), 500

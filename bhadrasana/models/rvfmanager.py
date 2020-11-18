@@ -338,7 +338,7 @@ def inclui_imagemrvf(mongodb, session, image, filename, dataModificacao, rvf_id:
     # print(rvf_id, filename)
     rvf = get_rvf(session, rvf_id)
     imagem = get_imagemrvf_rvf_imagem_or_none(session, rvf_id, str(_id))
-    if imagem is None: # Não existe, incluir
+    if imagem is None:  # Não existe, incluir
         imagem = ImagemRVF()
         imagem.rvf_id = rvf_id
         imagem.imagem = str(_id)
@@ -354,6 +354,19 @@ def inclui_imagemrvf(mongodb, session, image, filename, dataModificacao, rvf_id:
             raise err
     return imagem
 
+
+def rvf_ordena_imagensrvf_por_data_criacao(session, rvf_id):
+    rvf = get_rvf(session, rvf_id)
+    imagens = sorted(rvf.imagens, key=lambda x: x.get_data_modificacao)
+    for ind, imagem in enumerate(imagens):
+        imagem.ordem = ind
+        session.add(imagem)
+    try:
+        session.commit()
+    except Exception as err:
+        session.rollback()
+        logger.error(err, exc_info=True)
+        raise err
 
 
 def cadastra_imagemrvf(session, params=None):
