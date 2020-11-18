@@ -8,7 +8,14 @@
         {% set sats = infoce.sats %}
         {% endif %}
         {% if conhecimento %}
-        Número CE Mercante: <a href="/virasana/cemercante/{{ conhecimento.numeroCEmercante }}">{{ conhecimento.numeroCEmercante }}</a><br>
+        Número CE Mercante: <a href="/virasana/cemercante/{{ conhecimento.numeroCEmercante }}">{{
+        conhecimento.numeroCEmercante }}</a>
+        {% if ovr %}
+        <font size="+1"><b>&nbsp;&nbsp; - &nbsp;
+            <a href="programa_rvf_ajna?ovr_id={{ovr.id}}" target="_blank">
+                Ver imagens e mais informações / programar verificação física</a></b> </font>
+        {% endif %}
+        <br>
         Embarcador: {{ conhecimento.embarcador }}<br>
         Consignatário: {{ conhecimento.consignatario }} -
         {% if empresa %}{{ empresa.nome }} {% endif %}

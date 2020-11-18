@@ -132,7 +132,7 @@ def docx_replacein(document: Document, conteudo: dict, user_name: str):
 def gera_OVR(rvf: dict, user_name:str):
     conteudo = {'unidade': 'ALFSTS', **rvf}
     basepath = os.path.dirname(__file__)
-    document = Document(os.path.join(basepath, 'OVR.docx'))
+    document = Document(os.path.join(basepath, 'Termo de Verificação.docx'))
     docx_replacein(document, conteudo, user_name)
     return document
     # document.save('testes_docx/OVR_RVF{}.docx'.format(rvf.id))

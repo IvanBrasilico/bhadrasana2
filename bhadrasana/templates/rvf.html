@@ -267,6 +267,7 @@
 </div>
 
 {% endblock %} {% block scripts %} {{super()}}
+<script src="static/js/rvf.js"></script>
 
 <script type="text/javascript">
     $(document).ready(function(){
@@ -275,14 +276,7 @@
         $("#numerolote").inputmask("AAAA9999999", {removeMaskOnSubmit: true});
 
     });
-
-
-
-
-
-</script>
-<script>
-    function mostra_apreensoes(apreensoes){
+ function mostra_apreensoes(apreensoes){
     console.log(apreensoes);
     $('#div_apreensoes').empty();
     $.each(apreensoes, function(i, apreensao) {
@@ -409,5 +403,4 @@ $('input#marcas').bind('keydown', function(e) {
   }
 });
 </script>
-<script src="static/js/rvf.js"></script>
 {% endblock %}
