@@ -401,6 +401,7 @@ def get_ids_anexos_ordenado(rvf):
                for imagem in rvf.imagens]
     imagens = sorted(imagens, key=lambda x: x[1])
     anexos = [imagem[0] for imagem in imagens]
+    print(anexos)
     return anexos
 
 
