@@ -113,8 +113,8 @@ def paragraph_text_replace(paragraph: Paragraph, conteudo: dict, document: Docum
 
 
 def docx_replacein(document: Document, conteudo: dict, user_name: str):
-    agora = datetime.strftime(datetime.now(), '%m/%d/%Y %H:%M')
-    footer = f'Emitido pelo Usuário {user_name} em {agora} pelo Sistema Fichas - Ajna'
+    agora = datetime.strftime(datetime.now(), '%d/%m/%Y %H:%M')
+    footer = f'Emitido por {user_name} em {agora} pelo gerador de docx do sistema Ajna'
     section = document.sections[0]
     section.footer.paragraphs[0].text = footer
     for paragraph in document.paragraphs:
