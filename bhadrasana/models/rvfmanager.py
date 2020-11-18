@@ -293,7 +293,7 @@ def get_imagemrvf_data_modificacao(session, rvf_id: int, _id: str):
 
 def get_imagemrvf_imagem_or_none(session, _id: str) -> RVF:
     return session.query(ImagemRVF).filter(
-        ImagemRVF.imagem == _id).one_or_none()
+        ImagemRVF.imagem == _id).first()
 
 
 def get_imagemrvf_rvf_imagem_or_none(session, rvf_id: int, _id: str) -> RVF:
@@ -337,7 +337,8 @@ def inclui_imagemrvf(mongodb, session, image, filename, dataModificacao, rvf_id:
     _id = bson_img.tomongo(fs)
     # print(rvf_id, filename)
     rvf = get_rvf(session, rvf_id)
-    imagem = get_imagemrvf_rvf_imagem_or_none(session, rvf_id, str(_id))
+    # imagem = get_imagemrvf_rvf_imagem_or_none(session, rvf_id, str(_id))
+    imagem = get_imagemrvf_imagem_or_none(session, rvf_id, str(_id))
     if imagem is None:  # Não existe, incluir
         imagem = ImagemRVF()
         imagem.rvf_id = rvf_id
@@ -399,7 +400,7 @@ def get_ids_anexos_ordenado(rvf):
     imagens = [(imagem.imagem, imagem.ordem or 999) for imagem in rvf.imagens]
     imagens = sorted(imagens, key=lambda x: x[1])
     anexos = [imagem[0] for imagem in imagens]
-    return anexos
+    return set(anexos)
 
 
 def get_anexos_ordenado(rvf):
@@ -407,7 +408,7 @@ def get_anexos_ordenado(rvf):
     imagens = [(imagem, imagem.ordem or 999) for imagem in rvf.imagens]
     imagens = sorted(imagens, key=lambda x: x[1])
     anexos = [item[0] for item in imagens]
-    return anexos
+    return set(anexos)
 
 
 def get_ids_anexos_mongo(db, rvf):
