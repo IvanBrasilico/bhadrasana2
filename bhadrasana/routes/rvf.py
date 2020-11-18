@@ -176,13 +176,13 @@ def rvf_app(app):
             rvf_dump = rvf.dump()
             ovr = rvf.ovr
             if not ovr.responsavel:
-                raise ValueError('OVR não tem responsável definido')
+                raise ValueError('Ficha não tem responsável definido')
             rvf_dump['responsavel'] = ovr.responsavel.nome
             if not ovr.recinto:
-                raise ValueError('OVR não tem recinto definido')
+                raise ValueError('Ficha não tem recinto definido')
             rvf_dump['recinto'] = ovr.recinto.nome
             if not ovr.setor:
-                raise ValueError('OVR não tem setor definido')
+                raise ValueError('Ficha não tem setor definido')
             rvf_dump['setor'] = ovr.setor.nome
             if tipo == 'OVR':
                 document = gera_OVR(rvf_dump, current_user.name)
@@ -445,8 +445,6 @@ def rvf_app(app):
     def rvf_ordena_por_data_criacao():
         session = app.config.get('dbsession')
         rvf_id = request.args.get('rvf_id')
-        qttd_arq = request.args.get('qttd_arq')
-        datas = request.args.getlist('lista[]')
         # oform = ImagemRVFForm()
         sucesso = False
         try:
