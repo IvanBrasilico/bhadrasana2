@@ -400,6 +400,7 @@ def get_ids_anexos_ordenado(rvf):
     imagens = [(imagem.imagem, imagem.ordem if imagem.ordem is not None else 9999)
                for imagem in rvf.imagens]
     imagens = sorted(imagens, key=lambda x: x[1])
+    print(imagens)
     anexos = [imagem[0] for imagem in imagens]
     print(anexos)
     return anexos
