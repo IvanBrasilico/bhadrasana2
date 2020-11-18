@@ -111,6 +111,7 @@ class ImagemRVF(BaseRastreavel, BaseDumpable):
                 dumped['marca_descricao'] = self.marca.nome
         return dumped
 
+    @property
     def get_data_modificacao(self):
         if self.dataModificacao is None:
             return datetime.min
