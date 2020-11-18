@@ -400,7 +400,7 @@ def get_ids_anexos_ordenado(rvf):
     imagens = [(imagem.imagem, imagem.ordem or 999) for imagem in rvf.imagens]
     imagens = sorted(imagens, key=lambda x: x[1])
     anexos = [imagem[0] for imagem in imagens]
-    return set(anexos)
+    return anexos
 
 
 def get_anexos_ordenado(rvf):
@@ -408,7 +408,7 @@ def get_anexos_ordenado(rvf):
     imagens = [(imagem, imagem.ordem or 999) for imagem in rvf.imagens]
     imagens = sorted(imagens, key=lambda x: x[1])
     anexos = [item[0] for item in imagens]
-    return set(anexos)
+    return anexos
 
 
 def get_ids_anexos_mongo(db, rvf):
