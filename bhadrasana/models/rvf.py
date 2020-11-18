@@ -1,4 +1,5 @@
 import sys
+from datetime import datetime
 
 from ajna_commons.flask.conf import SQL_URI
 
@@ -109,6 +110,11 @@ class ImagemRVF(BaseRastreavel, BaseDumpable):
             if self.marca:
                 dumped['marca_descricao'] = self.marca.nome
         return dumped
+
+    def get_data_modificacao(self):
+        if self.dataModificacao is None:
+            return datetime.min
+        return self.dataModificacao
 
 
 class Infracao(Base):
