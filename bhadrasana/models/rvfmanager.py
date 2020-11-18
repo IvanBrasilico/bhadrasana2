@@ -338,7 +338,7 @@ def inclui_imagemrvf(mongodb, session, image, filename, dataModificacao, rvf_id:
     # print(rvf_id, filename)
     rvf = get_rvf(session, rvf_id)
     # imagem = get_imagemrvf_rvf_imagem_or_none(session, rvf_id, str(_id))
-    imagem = get_imagemrvf_imagem_or_none(session, rvf_id, str(_id))
+    imagem = get_imagemrvf_imagem_or_none(session, str(_id))
     if imagem is None:  # Não existe, incluir
         imagem = ImagemRVF()
         imagem.rvf_id = rvf_id
