@@ -70,7 +70,9 @@ class OVRDict():
         """Retorna um dicionário com conteúdo do RVF, inclusive imagens."""
         rvf = get_rvf_one(session, id)
         rvf_dump = rvf.dump(explode=explode, imagens=imagens)
-        ovr = rvf.ovr
+        usuario = get_usuario(session, ovr.cpfauditorresponsavel)
+        if usuario:
+            rvf_dump['nome_auditorresponsavel'] = usuario.nome
         rvf_dump['responsavel'] = ovr.responsavel.nome
         rvf_dump['recinto'] = ovr.recinto.nome
         rvf_dump['setor'] = ovr.setor.nome
