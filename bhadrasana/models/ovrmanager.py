@@ -242,6 +242,11 @@ def get_ovr_visao_usuario(session, datainicio: datetime,
     return q.all()
 
 
+def get_ovrs_conhecimento(session, numero: str):
+    ovrs_conhecimento = get_ovr_filtro(
+        session, {'numeroCEmercante': numero})
+    return set([ovr.id for ovr in ovrs_conhecimento])
+
 def get_ovr_filtro(session,
                    pfiltro: dict = None,
                    user_name: str = None,
