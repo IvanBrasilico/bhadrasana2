@@ -50,6 +50,7 @@ class OVRDict():
             usuario = get_usuario(session, ovr.cpfauditorresponsavel)
             if usuario:
                 ovr_dict['nome_auditorresponsavel'] = usuario.nome
+                ovr_dict['auditor_responsavel'] = usuario.nome
             ovr_dict['marcas'] = []
             for rvf_dict in rvfs_dicts:
                 ovr_dict['marcas'].extend(rvf_dict['marcasencontradas'])
@@ -70,12 +71,17 @@ class OVRDict():
         """Retorna um dicionário com conteúdo do RVF, inclusive imagens."""
         rvf = get_rvf_one(session, id)
         rvf_dump = rvf.dump(explode=explode, imagens=imagens)
-        usuario = get_usuario(session, ovr.cpfauditorresponsavel)
-        if usuario:
-            rvf_dump['nome_auditorresponsavel'] = usuario.nome
-        rvf_dump['responsavel'] = ovr.responsavel.nome
-        rvf_dump['recinto'] = ovr.recinto.nome
-        rvf_dump['setor'] = ovr.setor.nome
+        ovr = rvf.ovr
+        if ovr.cpfauditorresponsavel:
+            usuario = get_usuario(session, ovr.cpfauditorresponsavel)
+            if usuario:
+                rvf_dump['auditor_responsavel'] = usuario.nome
+        if ovr.responsavel:
+            rvf_dump['responsavel'] = ovr.responsavel.nome
+        if ovr.recinto:
+            rvf_dump['recinto'] = ovr.recinto.nome
+        if ovr.setor:
+            rvf_dump['setor'] = ovr.setor.nome
         return rvf_dump
 
     def monta_tgovr_dict(self, db, session, id: int) -> dict:
