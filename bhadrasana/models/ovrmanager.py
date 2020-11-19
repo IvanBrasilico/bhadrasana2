@@ -166,7 +166,6 @@ def cadastra_ovr(session, params: dict, user_name: str) -> OVR:
 def get_ovr(session, ovr_id: int = None) -> OVR:
     if ovr_id is None:
         ovr = OVR()
-        ovr.status = 1
         return ovr
     ovr = session.query(OVR).filter(OVR.id == ovr_id).one_or_none()
     if ovr is None:
