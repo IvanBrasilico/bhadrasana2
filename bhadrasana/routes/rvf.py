@@ -25,6 +25,7 @@ from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, \
     get_anexos_ordenado, get_tiposapreensao_choice, gera_apreensao_rvf, \
     exclui_apreensao_rvf, get_peso, rvf_ordena_imagensrvf_por_data_criacao
 from bhadrasana.views import csrf, valid_file, get_user_save_path
+from bhadrasana.models.ovr_dict_repr import OVRDict
 
 
 def rvf_app(app):
@@ -173,17 +174,7 @@ def rvf_app(app):
             OVR_out_filename = '{}_FCC{}-{}.docx'.format(
                 tipo, rvf_id,
                 datetime.strftime(datetime.now(), '%Y-%m%dT%H%M%S'))
-            rvf_dump = rvf.dump()
-            ovr = rvf.ovr
-            if not ovr.responsavel:
-                raise ValueError('Ficha não tem responsável definido')
-            rvf_dump['responsavel'] = ovr.responsavel.nome
-            if not ovr.recinto:
-                raise ValueError('Ficha não tem recinto definido')
-            rvf_dump['recinto'] = ovr.recinto.nome
-            if not ovr.setor:
-                raise ValueError('Ficha não tem setor definido')
-            rvf_dump['setor'] = ovr.setor.nome
+            rvf_dump = OVRDict(1).monta_rvf_dict(None, session, rvf_id)
             if tipo == 'OVR':
                 document = gera_OVR(rvf_dump, current_user.name)
             else:

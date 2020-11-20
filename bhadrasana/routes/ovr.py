@@ -42,7 +42,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     exclui_okrobjective, get_key_results_choice, gera_okrmeta, exclui_okrmeta, \
     get_usuarios_setores, get_setores_cpf, get_ovr_auditor, get_ovr_passagem, muda_setor_ovr, \
     monta_ovr_dict, get_docx, inclui_docx, get_docx_choices, get_recintos_dte, excluir_processo, \
-    excluir_evento, get_ovr_visao_usuario, get_setores_cpf_choice, get_processo
+    excluir_evento, get_ovr_visao_usuario, get_setores_cpf_choice, get_processo, get_ovrs_conhecimento
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects, consulta_ce_objects
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
@@ -104,17 +104,27 @@ def ovr_app(app):
                         ovr_form = OVRForm(**ovr.__dict__,
                                            tiposeventos=tiposeventos,
                                            recintos=recintos)
-                        try:
-                            conhecimento = get_conhecimento(session,
-                                                            ovr.numeroCEmercante)
-                            containers = get_containers_conhecimento(
-                                session,
-                                ovr.numeroCEmercante)
-                            ncms = get_ncms_conhecimento(session, ovr.numeroCEmercante)
-                        except Exception as err:
-                            logger.info(err)
-                            pass
-                        due = get_due(mongodb, ovr.numerodeclaracao)
+                        if ovr.numeroCEmercante:
+                            ovrs_conhecimento = get_ovrs_conhecimento(
+                                session, ovr.numeroCEmercante)
+                            ovrs_conhecimento = ovrs_conhecimento - set([ovr.id])
+                            ovrs_alerta = ['<a href="ovr?id={0}">{0}</a>'.format(oid)
+                                           for oid in ovrs_conhecimento]
+                            if len(ovrs_conhecimento) > 0:
+                                flash('Atenção!!! CE-Mercante já possui Fichas:' +
+                                      ' ,'.join(ovrs_alerta))
+                            try:
+                                conhecimento = get_conhecimento(session,
+                                                                ovr.numeroCEmercante)
+                                containers = get_containers_conhecimento(
+                                    session,
+                                    ovr.numeroCEmercante)
+                                ncms = get_ncms_conhecimento(session, ovr.numeroCEmercante)
+                            except Exception as err:
+                                logger.info(err)
+                                pass
+                        if ovr.numerodeclaracao:
+                            due = get_due(mongodb, ovr.numerodeclaracao)
                         # Extrai informacoes da OVR
                         # Registra Visualização
                         cadastra_visualizacao(session, ovr, current_user.id)
