@@ -12,4 +12,9 @@ class FiltroContainerForm(FlaskForm):
 
 class FiltroCEForm(FlaskForm):
     numeroCEmercante = StringField(u'Número do CE',
-                             default='')
+                                   default='')
+
+
+class FiltroDUEForm(FlaskForm):
+    numero = StringField(u'Número da DUE',
+                         default='')

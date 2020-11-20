@@ -2,11 +2,11 @@
 <div id="main" class="container-fluid">
     <div id="top" class="row col-sm-12">
         <div class="form-group">
-            <form method="POST" id="filtroce" action="consulta_ce">
+            <form method="POST" id="filtrodue" action="consulta_due">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="row">
                     <div class="col-sm-2">
-                        <label for="numeroCEmercante">Número do CE-Mercante</label>
+                        <label for="numero">Número da DUE</label>
                     </div>
                     <div class="col-sm-10">
                     </div>
@@ -14,7 +14,7 @@
                 <div class="row">
                     <div class="form-group">
                         <div class="col-sm-2">
-                            {{ oform.numeroCEmercante(class='form-control') }}
+                            {{ oform.numero(class='form-control') }}
                         </div>
                         <div class="col-sm-10">
                         </div>
@@ -37,10 +37,10 @@
         </div>
     </div>
     <div class="row">
-        <h2>Conhecimento de Carga</h2>
+        <h2>DUE</h2>
     </div>
     <div class="row col-sm-12">
-        {% include 'divconhecimento.html' %}
+        {% include 'didue.html' %}
     </div>
     <div class="row">
         &nbsp;<br>
@@ -68,9 +68,8 @@
         &nbsp;<br>
     </div>
     <div id="bottom" class="row col-sm-12">
-        AJNA - Receita Federal do Brasil 2017
+        AJNA - Redueita Federal do Brasil 2017
     </div>
 </div>
 {% endblock %} {% block scripts %} {{super()}}
-
 {% endblock %}

@@ -15,7 +15,7 @@ from ajna_commons.flask.log import logger
 from ajna_commons.utils.docx_utils import get_doc_generico_ovr
 from bhadrasana.analises.escaneamento_operador import sorteia_GMCIs
 from bhadrasana.forms.exibicao_ovr import ExibicaoOVR, TipoExibicao
-from bhadrasana.forms.filtro_container import FiltroContainerForm, FiltroCEForm
+from bhadrasana.forms.filtro_container import FiltroContainerForm, FiltroCEForm, FiltroDUEForm
 from bhadrasana.forms.filtro_empresa import FiltroEmpresaForm
 from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
     ProcessoOVRForm, ItemTGForm, ResponsavelOVRForm, TGOVRForm, FiltroRelatorioForm, \
@@ -42,18 +42,47 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     exclui_okrobjective, get_key_results_choice, gera_okrmeta, exclui_okrmeta, \
     get_usuarios_setores, get_setores_cpf, get_ovr_auditor, get_ovr_passagem, muda_setor_ovr, \
     monta_ovr_dict, get_docx, inclui_docx, get_docx_choices, get_recintos_dte, excluir_processo, \
-    excluir_evento, get_ovr_visao_usuario, get_setores_cpf_choice, get_processo, get_ovrs_conhecimento
+    excluir_evento, get_ovr_visao_usuario, get_setores_cpf_choice, get_processo, \
+    get_ovr_conhecimento, get_ovr_due
 from bhadrasana.models.ovrmanager import get_marcas_choice
-from bhadrasana.models.riscomanager import consulta_container_objects, consulta_ce_objects
+from bhadrasana.models.riscomanager import consulta_container_objects, consulta_ce_objects, \
+    consulta_due_objects
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
     get_infracoes_choice
 from bhadrasana.models.virasana_manager import get_conhecimento, \
     get_containers_conhecimento, get_ncms_conhecimento, get_imagens_dict_container_id, \
     get_imagens_container, get_dues_empresa, get_ces_empresa, \
-    get_due, get_detalhes_mercante, get_imagens_conhecimento
+    get_due, get_detalhes_mercante, get_imagens_conhecimento, get_imagens_due
 from bhadrasana.routes.plotly_graphs import bar_plotly, gauge_plotly, burndown_plotly
 from bhadrasana.scripts.gera_planilha_rilo import monta_planilha_rilo
 from bhadrasana.views import get_user_save_path, valid_file, csrf
+
+
+def do_flash(ovrs, descricao):
+    if len(ovrs) > 0:
+        ovrs_alerta = ['<a href="ovr?id={0}">{0}</a>'.format(oid)
+                       for oid in ovrs]
+        flash('Atenção!!! {} já possui Fichas: {}'.format(
+            descricao, ' ,'.join(ovrs_alerta)))
+
+
+def flash_alertas(session, ovr):
+    if ovr.numeroCEmercante and len(ovr.numeroCEmercante) == 15:
+        ovrs_conhecimento = get_ovr_conhecimento(session, ovr.numeroCEmercante)
+        ovrs_conhecimento = ovrs_conhecimento - {ovr.id}
+        do_flash(ovrs_conhecimento, 'CE-Mercante')
+    if ovr.numerodeclaracao and len(ovr.numerodeclaracao) > 10:
+        ovrs_due = get_ovr_due(session, ovr.numerodeclaracao)
+        ovrs_due = ovrs_due - {ovr.id}
+        do_flash(ovrs_due, 'DUE')
+    if ovr.cnpj_fiscalizado and len(ovr.cnpj_fiscalizado) > 8:
+        hoje = datetime.today()
+        ha90dias = hoje - timedelta(days=90)
+        ovrs_empresa = get_ovr_empresa(session, ovr.cnpj_fiscalizado, ha90dias, hoje)
+        ovrs_empresa = set([ovr.id for ovr in ovrs_empresa])
+        ovrs_empresa = ovrs_empresa - {ovr.id}
+        do_flash(ovrs_empresa,
+                 'Empresa (mostrando 90 dias, utilize pesquisa empresa para ver mais)')
 
 
 def ovr_app(app):
@@ -104,15 +133,12 @@ def ovr_app(app):
                         ovr_form = OVRForm(**ovr.__dict__,
                                            tiposeventos=tiposeventos,
                                            recintos=recintos)
+                        # Mostra alertas de provável Ficha duplicada
+                        flash_alertas(session, ovr)
+                        # Registra Visualização
+                        cadastra_visualizacao(session, ovr, current_user.id)
+                        # Extrai informacoes da OVR
                         if ovr.numeroCEmercante:
-                            ovrs_conhecimento = get_ovrs_conhecimento(
-                                session, ovr.numeroCEmercante)
-                            ovrs_conhecimento = ovrs_conhecimento - set([ovr.id])
-                            ovrs_alerta = ['<a href="ovr?id={0}">{0}</a>'.format(oid)
-                                           for oid in ovrs_conhecimento]
-                            if len(ovrs_conhecimento) > 0:
-                                flash('Atenção!!! CE-Mercante já possui Fichas:' +
-                                      ' ,'.join(ovrs_alerta))
                             try:
                                 conhecimento = get_conhecimento(session,
                                                                 ovr.numeroCEmercante)
@@ -125,9 +151,6 @@ def ovr_app(app):
                                 pass
                         if ovr.numerodeclaracao:
                             due = get_due(mongodb, ovr.numerodeclaracao)
-                        # Extrai informacoes da OVR
-                        # Registra Visualização
-                        cadastra_visualizacao(session, ovr, current_user.id)
                         ovr_form.id.data = ovr.id
                         listahistorico = ovr.historico
                         processos = ovr.processos
@@ -978,7 +1001,7 @@ def ovr_app(app):
     @app.route('/consulta_ce', methods=['GET', 'POST'])
     @login_required
     def consulta_ce():
-        """Tela para consulta única de número de contêiner
+        """Tela para consulta única de número de CE-Mercante
 
         Dentro do intervalo de datas, traz lista de ojetos do sistema que contenham
         alguma referência ao contêiner.
@@ -1008,6 +1031,40 @@ def ovr_app(app):
                                rvfs=rvfs,
                                ovrs=ovrs,
                                infoce=infoce,
+                               imagens=imagens)
+
+    @app.route('/consulta_due', methods=['GET', 'POST'])
+    @login_required
+    def consulta_due():
+        """Tela para consulta única de número de DUE
+
+        Dentro do intervalo de datas, traz lista de ojetos do sistema que contenham
+        alguma referência ao contêiner.
+        """
+        session = app.config.get('dbsession')
+        mongodb = app.config['mongodb']
+        ovrs = []
+        rvfs = []
+        infodue = {}
+        imagens = []
+        filtro_form = FiltroCEForm()
+        try:
+            if request.method == 'POST':
+                filtro_form = FiltroDUEForm(request.form)
+                filtro_form.validate()
+                rvfs, ovrs, infodue = \
+                    consulta_due_objects(filtro_form.numero.data, session, mongodb)
+                imagens = get_imagens_due(mongodb, filtro_form.numero.data)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return render_template('pesquisa_due.html',
+                               oform=filtro_form,
+                               rvfs=rvfs,
+                               ovrs=ovrs,
+                               infodue=infodue,
                                imagens=imagens)
 
     @app.route('/consulta_conteiner_text', methods=['POST'])

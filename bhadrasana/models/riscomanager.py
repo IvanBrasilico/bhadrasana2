@@ -24,7 +24,7 @@ from ajnaapi.recintosapi.models import AcessoVeiculo, ConteinerUld, PesagemVeicu
 from bhadrasana.models.ovrmanager import get_ovr_container, get_ovr_filtro
 from bhadrasana.models.rvfmanager import get_rvfs_filtro
 from bhadrasana.models.virasana_manager import get_dues_container, get_detalhes_mercante, \
-    get_detalhe_conhecimento
+    get_detalhe_conhecimento, get_due
 from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, \
     RiscoAtivo
 
@@ -361,6 +361,19 @@ def consulta_ce_objects(numero: str, session, mongodb):
     ovrs = get_ovr_filtro(session, {'numeroCEmercante': numero})
     logger.info('get detalhes CE Mercante')
     infoce = get_detalhe_conhecimento(session, numero)
+    return rvfs, ovrs, infoce
+
+
+def consulta_due_objects(due: str, session, mongodb):
+    if due is None or due == '' or len(due) < 14:
+        raise ValueError('get_imagens: Informe o número da DUE'
+                         ' com 14 dígitos (AABR9999999999)!')
+    logger.info('Consultando due %s' % due)
+    logger.info('get_rvfs_filtro')
+    rvfs = get_rvfs_filtro(session, {'numerodeclaracao': due})
+    ovrs = get_ovr_filtro(session, {'numerodeclaracao': due})
+    logger.info('get detalhes DUE')
+    infoce = get_due(session, due)
     return rvfs, ovrs, infoce
 
 
