@@ -12,7 +12,7 @@ sys.path.insert(0, '../ajna_api')
 from collections import OrderedDict, defaultdict
 from datetime import timedelta, datetime
 from enum import Enum
-from typing import List, Tuple
+from typing import List, Tuple, Set
 
 import numpy as np
 import pandas as pd
@@ -241,10 +241,19 @@ def get_ovr_visao_usuario(session, datainicio: datetime,
     return q.all()
 
 
-def get_ovrs_conhecimento(session, numero: str):
+def get_ovr_conhecimento(session, numero: str) -> Set[int]:
+    """Retorna ids unicos de ovrs onde CE mercante foi cadastrado."""
     ovrs_conhecimento = get_ovr_filtro(
         session, {'numeroCEmercante': numero})
     return set([ovr.id for ovr in ovrs_conhecimento])
+
+
+def get_ovr_due(session, numero: str) -> Set[int]:
+    """Retorna ids unicos de ovrs onde DUE for cadastrada."""
+    ovrs_due = get_ovr_filtro(
+        session, {'numerodeclaracao': numero})
+    return set([ovr.id for ovr in ovrs_due])
+
 
 def get_ovr_filtro(session,
                    pfiltro: dict = None,
