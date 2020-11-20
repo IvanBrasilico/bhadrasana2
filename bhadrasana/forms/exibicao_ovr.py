@@ -307,32 +307,35 @@ class ExibicaoOVR:
 
         return '<br>'.join(resumo)
 
-    def get_OVR_resumo(self, ovr, mercante=True,
+    def get_OVR_resumo(self, ovr, mostra_ovr=True, mercante=True,
                        fiscalizado=False, eventos=False,
                        responsaveis=False, trabalho=False,
                        responsabilidade=False) -> list:
         datahora = ovr.datahora.strftime('%d/%m/%Y') if ovr.datahora else ''
         resumo = [f'<h4><a href="ovr?id={ovr.id}" style="color: orange" target="_blank">' +
                   f'{ovr.id} - {datahora}</a></h4>{ovr.get_tipooperacao()}']
-        if ovr.observacoes:
-            resumo.append(ovr.observacoes)
-        if len(ovr.flags) > 0:
-            resumo.append(f'<b>Alertas</b>: {[str(flag) for flag in ovr.flags]}')
-        if fiscalizado:
-            fiscalizado = self.get_fiscalizado(ovr)
+        if mostra_ovr:
+            if ovr.setor:
+                resumo.append(f'<b>Setor</b>: {ovr.setor.nome}')
+            if ovr.observacoes:
+                resumo.append(ovr.observacoes)
+            if len(ovr.flags) > 0:
+                resumo.append(f'<b>Alertas</b>: {[str(flag) for flag in ovr.flags]}')
             if fiscalizado:
-                resumo.append(f'<b>Fiscalizado</b>: {fiscalizado}')
-        peso_apreensoes = self.get_peso_apreensoes(ovr)
-        if peso_apreensoes:
-            resumo.append(f'<b>Peso das Apreensões</b>: {peso_apreensoes}')
-        infracoes, marcas = self.get_infracoes_e_marcas(ovr)
-        if infracoes:
-            resumo.append(f'<b>Infrações</b>: {infracoes}')
-        if marcas:
-            resumo.append(f'<b>Marcas contrafeitas</b>: {marcas}')
-        valor_tgs = self.get_valor_tgs(ovr)
-        if valor_tgs:
-            resumo.append(f'<b>Valor dos TGs</b>: {valor_tgs}')
+                fiscalizado = self.get_fiscalizado(ovr)
+                if fiscalizado:
+                    resumo.append(f'<b>Fiscalizado</b>: {fiscalizado}')
+            peso_apreensoes = self.get_peso_apreensoes(ovr)
+            if peso_apreensoes:
+                resumo.append(f'<b>Peso das Apreensões</b>: {peso_apreensoes}')
+            infracoes, marcas = self.get_infracoes_e_marcas(ovr)
+            if infracoes:
+                resumo.append(f'<b>Infrações</b>: {infracoes}')
+            if marcas:
+                resumo.append(f'<b>Marcas contrafeitas</b>: {marcas}')
+            valor_tgs = self.get_valor_tgs(ovr)
+            if valor_tgs:
+                resumo.append(f'<b>Valor dos TGs</b>: {valor_tgs}')
         if responsaveis:
             resumo.extend(self.get_responsaveis_resumo(ovr))
         if responsabilidade:
@@ -360,12 +363,12 @@ class ExibicaoOVR:
         resumo = []
         if ovr.user_name:
             user_descricao = self.usuario_name(ovr.user_name)
-            resumo.append(f'<b>Criador:</b>{ovr.user_name} - {user_descricao}')
+            resumo.append(f'<b>Criador: </b>{ovr.user_name} - {user_descricao}')
         if ovr.responsavel:
-            resumo.append(f'<b>Atribuído a:</b>{ovr.responsavel}')
+            resumo.append(f'<b>Atribuído a: </b>{ovr.responsavel}')
         if ovr.cpfauditorresponsavel:
             auditor_descricao = self.usuario_name(ovr.cpfauditorresponsavel)
-            resumo.append(f'<b>Auditor:</b>{ovr.cpfauditorresponsavel} - {auditor_descricao}')
+            resumo.append(f'<b>Auditor: </b>{ovr.cpfauditorresponsavel} - {auditor_descricao}')
         return resumo
 
     def get_responsabilidade_resumo(self, ovr) -> list:
