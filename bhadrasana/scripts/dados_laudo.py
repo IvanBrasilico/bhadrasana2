@@ -69,7 +69,8 @@ def update(sql_uri, laudos_uri):
 
 
 if __name__ == '__main__':
-    print('Para rodar automático, crie arquivo com a linha abaixo em /etc/cron.daily/laudos_update.sh')
+    print('Para rodar automático, crie arquivo com a linha abaixo '
+          'em /etc/cron.daily/laudos_update.sh')
     print('/home/ivan/ajna/bhadrasana2/bhadrasana-venv/bin/'
           'python bhadrasana/scripts/dados_laudo.py '
           ' --sql_uri mysql+pymysql://<uri do banco SQL do Fichas> '

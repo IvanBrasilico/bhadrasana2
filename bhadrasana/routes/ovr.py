@@ -12,8 +12,8 @@ from gridfs import GridFS
 from werkzeug.utils import redirect
 
 from ajna_commons.flask.log import logger
+from ajna_commons.utils.docx_utils import get_doc_generico_ovr
 from bhadrasana.analises.escaneamento_operador import sorteia_GMCIs
-from bhadrasana.docx.docx_functions import get_doc_generico_ovr
 from bhadrasana.forms.exibicao_ovr import ExibicaoOVR, TipoExibicao
 from bhadrasana.forms.filtro_container import FiltroContainerForm, FiltroCEForm
 from bhadrasana.forms.filtro_empresa import FiltroEmpresaForm
