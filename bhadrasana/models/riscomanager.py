@@ -22,7 +22,7 @@ from ajna_commons.flask.log import logger
 from ajnaapi.recintosapi.models import AcessoVeiculo, ConteinerUld, PesagemVeiculo, \
     EventoBase, Semirreboque
 from bhadrasana.models.ovrmanager import get_ovr_container, get_ovr_filtro
-from bhadrasana.models.rvfmanager import get_rvfs_filtro
+from bhadrasana.models.rvfmanager import get_rvfs_filtro, lista_rvfovr
 from bhadrasana.models.virasana_manager import get_dues_container, get_detalhes_mercante, \
     get_detalhe_conhecimento, get_due
 from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, \
@@ -358,7 +358,9 @@ def consulta_ce_objects(numero: str, session, mongodb):
     logger.info('Consultando ce %s' % numero)
     logger.info('get_rvfs_filtro')
     rvfs = get_rvfs_filtro(session, {'numeroCEmercante': numero})
+    logger.info('get_ovrs_filtro')
     ovrs = get_ovr_filtro(session, {'numeroCEmercante': numero})
+    print('***********ZZZ%%%***', ovrs)
     logger.info('get detalhes CE Mercante')
     infoce = get_detalhe_conhecimento(session, numero)
     return rvfs, ovrs, infoce
@@ -369,11 +371,14 @@ def consulta_due_objects(due: str, session, mongodb):
         raise ValueError('get_imagens: Informe o número da DUE'
                          ' com 14 dígitos (AABR9999999999)!')
     logger.info('Consultando due %s' % due)
-    logger.info('get_rvfs_filtro')
-    rvfs = get_rvfs_filtro(session, {'numerodeclaracao': due})
+    logger.info('get_ovrs_filtro')
     ovrs = get_ovr_filtro(session, {'numerodeclaracao': due})
+    rvfs = []
+    for ovr in ovrs:
+        rvfs_ovr = lista_rvfovr(session, ovr.id)
+        rvfs.extend(rvfs_ovr)
     logger.info('get detalhes DUE')
-    infoce = get_due(session, due)
+    infoce = get_due(mongodb, due)
     return rvfs, ovrs, infoce
 
 

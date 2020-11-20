@@ -77,12 +77,12 @@ def flash_alertas(session, ovr):
         do_flash(ovrs_due, 'DUE')
     if ovr.cnpj_fiscalizado and len(ovr.cnpj_fiscalizado) > 8:
         hoje = datetime.today()
-        ha90dias = hoje - timedelta(days=90)
-        ovrs_empresa = get_ovr_empresa(session, ovr.cnpj_fiscalizado, ha90dias, hoje)
+        ha_seis_meses = hoje - timedelta(days=1230)
+        ovrs_empresa = get_ovr_empresa(session, ovr.cnpj_fiscalizado, ha_seis_meses, hoje)
         ovrs_empresa = set([ovr.id for ovr in ovrs_empresa])
         ovrs_empresa = ovrs_empresa - {ovr.id}
         do_flash(ovrs_empresa,
-                 'Empresa (mostrando 90 dias, utilize pesquisa empresa para ver mais)')
+                 'Empresa (mostrando 6 meses, utilize pesquisa empresa para ver mais)')
 
 
 def ovr_app(app):
@@ -1047,7 +1047,7 @@ def ovr_app(app):
         rvfs = []
         infodue = {}
         imagens = []
-        filtro_form = FiltroCEForm()
+        filtro_form = FiltroDUEForm()
         try:
             if request.method == 'POST':
                 filtro_form = FiltroDUEForm(request.form)
@@ -1634,6 +1634,7 @@ def ovr_app(app):
                     for ovr in listaficharesumo:
                         resumo = exibicao_ovr.get_OVR_resumo_html(ovr, mercante=False,
                                                                   fiscalizado=True,
+                                                                  responsaveis=True,
                                                                   responsabilidade=True,
                                                                   trabalho=True)
                         listasficharesumo[ovr.get_fase()].append({'id': ovr.id, 'resumo': resumo})
@@ -1668,8 +1669,7 @@ def ovr_app(app):
             exibicao_ovr = ExibicaoOVR(session, TipoExibicao.Resumo, current_user.id)
             ovr = get_ovr(session, oid)
             resumo_html = exibicao_ovr.get_OVR_resumo(ovr, mercante=True,
-                                                      fiscalizado=True, eventos=True,
-                                                      responsaveis=True)
+                                                      mostra_ovr=False, eventos=True)
             resumo_texto = '\n'.join(resumo_html)
             resumo_texto = re.sub(re.compile('<.*?>'), ' ', resumo_texto)
             return resumo_texto
