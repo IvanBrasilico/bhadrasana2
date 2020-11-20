@@ -150,9 +150,12 @@ class ExibicaoOVR:
         fiscalizado = ''
         if ovr.cnpj_fiscalizado:
             fiscalizado = ovr.cnpj_fiscalizado
-            empresa = get_empresa(self.session, ovr.cnpj_fiscalizado)
-            if empresa:
-                fiscalizado = fiscalizado + ' - ' + empresa.nome
+            try:
+                empresa = get_empresa(self.session, ovr.cnpj_fiscalizado)
+                if empresa:
+                    fiscalizado = fiscalizado + ' - ' + empresa.nome
+            except ValueError:
+                pass
         return fiscalizado
 
     def get_recinto_nome(self, ovr):
