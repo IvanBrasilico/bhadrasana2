@@ -1,36 +1,36 @@
-    <div id="list_ovr" class="row col-sm-12">
-        &nbsp;<br>
-        <div class="table">
-            <table class="inlineTable table table-bordered table-hover table-responsive"
-                   id="ovr_table">
-                <thead>
-                <tr>
-                    <th>Ficha Nº</th>
-                    <th>Tipo Operação</th>
-                    <th>Recinto</th>
-                    <th>Ano</th>
-                    <th>Número doc.</th>
-                    <th>CE Mercante</th>
-                    <th>Fiscalizado</th>
-                    <th>Data</th>
-                    <th>Último Evento</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for ovr in ovrs %}
-                <tr>
-                    <td><a href="ovr?id={{ ovr.id }}">{{ ovr.id }}</a></td>
-                    <td>{{ ovr.get_tipooperacao() }}</td>
-                    <td>{{ ovr.recinto.nome }}</td>
-                    <td>{{ ovr.get_ano() }}</td>
-                    <td>{{ ovr.numero }}</td>
-                    <td>{{ ovr.numeroCEmercante }}</td>
-                    <td>{{ ovr.cnpj_fiscalizado }}</td>
-                    <td>{{ ovr.datahora }}</td>
-                    <td>{{ ovr.tipoevento.nome }}</td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
+<div id="list_ovr" class="row col-sm-12">
+    &nbsp;<br>
+    <div class="table">
+        <table class="inlineTable table table-bordered table-hover table-responsive"
+               id="ovr_table">
+            <thead>
+            <tr>
+                <th>Ficha Nº</th>
+                <th>Tipo Operação</th>
+                <th>Recinto</th>
+                <th>Ano</th>
+                <th>Número doc.</th>
+                <th>CE Mercante</th>
+                <th>Fiscalizado</th>
+                <th>Data</th>
+                <th>Último Evento</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for ovr in ovrs %}
+            <tr>
+                <td><a href="ovr?id={{ ovr.id }}">{{ ovr.id }}</a></td>
+                <td>{{ ovr.get_tipooperacao() }}</td>
+                <td>{{ ovr.recinto.nome }}</td>
+                <td>{{ ovr.get_ano() }}</td>
+                <td>{{ ovr.numero }}</td>
+                <td>{{ ovr.numeroCEmercante }}</td>
+                <td>{{ ovr.cnpj_fiscalizado }}</td>
+                <td>{{ ovr.datahora }}</td>
+                <td>{{ ovr.tipoevento.nome }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
     </div>
+</div>
