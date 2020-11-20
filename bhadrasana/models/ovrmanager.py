@@ -166,7 +166,6 @@ def cadastra_ovr(session, params: dict, user_name: str) -> OVR:
 def get_ovr(session, ovr_id: int = None) -> OVR:
     if ovr_id is None:
         ovr = OVR()
-        ovr.status = 1
         return ovr
     ovr = session.query(OVR).filter(OVR.id == ovr_id).one_or_none()
     if ovr is None:
@@ -241,6 +240,11 @@ def get_ovr_visao_usuario(session, datainicio: datetime,
     logger.info('get_ovr_visao_usuario - query' + str(q))
     return q.all()
 
+
+def get_ovrs_conhecimento(session, numero: str):
+    ovrs_conhecimento = get_ovr_filtro(
+        session, {'numeroCEmercante': numero})
+    return set([ovr.id for ovr in ovrs_conhecimento])
 
 def get_ovr_filtro(session,
                    pfiltro: dict = None,
