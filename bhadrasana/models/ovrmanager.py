@@ -38,6 +38,11 @@ from bhadrasana.models.virasana_manager import get_conhecimento
 from virasana.integracao.mercante.mercantealchemy import Item
 
 
+def get_recintos_unidade(session, cod_unidade:str) -> List[Tuple[int, str]]:
+    recintos = session.query(Recinto).filter(Recinto.cod_unidade == cod_unidade).all()
+    recintos_list = [(recinto.id, f'{recinto.nome} ({recinto.cod_dte})') for recinto in recintos]
+    return sorted(recintos_list, key=lambda x: x[1])
+
 def get_recintos(session) -> List[Tuple[int, str]]:
     recintos = session.query(Recinto).all()
     recintos_list = [(recinto.id, f'{recinto.nome} ({recinto.cod_dte})') for recinto in recintos]

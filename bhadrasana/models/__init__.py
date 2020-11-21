@@ -116,6 +116,7 @@ class Setor(Base):
     __tablename__ = 'ovr_setores'
     id = Column(CHAR(15), primary_key=True)
     nome = Column(CHAR(50), index=True)
+    cod_unidade = Column(CHAR(10), index=True)
     pai_id = Column(CHAR(15), ForeignKey('ovr_setores.id'))
     pai = relationship('Setor')
 

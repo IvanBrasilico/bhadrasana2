@@ -43,7 +43,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_usuarios_setores, get_setores_cpf, get_ovr_auditor, get_ovr_passagem, muda_setor_ovr, \
     monta_ovr_dict, get_docx, inclui_docx, get_docx_choices, get_recintos_dte, excluir_processo, \
     excluir_evento, get_ovr_visao_usuario, get_setores_cpf_choice, get_processo, \
-    get_ovr_conhecimento, get_ovr_due
+    get_ovr_conhecimento, get_ovr_due, get_recintos_unidade
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects, consulta_ce_objects, \
     consulta_due_objects
@@ -92,8 +92,11 @@ def ovr_app(app):
         listahistorico = []
         processos = []
         tiposeventos = get_tipos_evento_comfase_choice(session)
-        recintos = get_recintos(session)
-        responsaveis = get_usuarios(session)
+        usuario = get_usuario(session, current_user.name)
+        recintos = get_recintos_unidade(session, usuario.setor.cod_unidade)
+        # TODO: TG-239
+        listasetores = get_setores_choice(session)
+        responsaveis = get_usuarios_setores(session, listasetores)
         ovr_form = OVRForm(tiposeventos=tiposeventos, recintos=recintos,
                            numeroCEmercante=request.args.get('numeroCEmercante'))
         tiposprocesso = get_tipos_processo(session)
@@ -104,7 +107,6 @@ def ovr_app(app):
         processo_form = ProcessoOVRForm(tiposprocesso=tiposprocesso)
         responsavel_form = ResponsavelOVRForm(responsaveis=responsaveis,
                                               responsavel=current_user.name)
-        listasetores = get_setores_choice(session)
         setor_ovr_form = SetorOVRForm(setores=listasetores)
         conhecimento = None
         ncms = []
