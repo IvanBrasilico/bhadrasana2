@@ -26,7 +26,7 @@ from ajna_commons.utils.images import mongo_image
 from bhadrasana.models import Usuario, Setor, EBloqueado, ESomenteUsuarioResponsavel, \
     usuario_tem_perfil_nome
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto, \
-    get_usuario_logado
+    get_usuario_validando
 from bhadrasana.models.laudo import get_empresa
 from bhadrasana.models.ovr import FonteDocx, Representacao, RepresentanteMarca
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
@@ -38,10 +38,11 @@ from bhadrasana.models.virasana_manager import get_conhecimento
 from virasana.integracao.mercante.mercantealchemy import Item
 
 
-def get_recintos_unidade(session, cod_unidade:str) -> List[Tuple[int, str]]:
+def get_recintos_unidade(session, cod_unidade: str) -> List[Tuple[int, str]]:
     recintos = session.query(Recinto).filter(Recinto.cod_unidade == cod_unidade).all()
     recintos_list = [(recinto.id, f'{recinto.nome} ({recinto.cod_dte})') for recinto in recintos]
     return sorted(recintos_list, key=lambda x: x[1])
+
 
 def get_recintos(session) -> List[Tuple[int, str]]:
     recintos = session.query(Recinto).all()
@@ -131,11 +132,9 @@ def executa_relatorio(session, relatorio: Relatorio,
 
 
 def cadastra_ovr(session, params: dict, user_name: str) -> OVR:
-    usuario = get_usuario_logado(session, user_name)
+    usuario = get_usuario_validando(session, user_name)
     ovr = get_ovr(session, params.get('id'))
-    if ovr.user_name and ovr.user_name != usuario.cpf \
-            and ovr.responsavel_cpf != usuario.cpf:
-        raise ESomenteMesmoUsuario()
+    valida_mesmo_responsavel_ovr_user_name(session, ovr, user_name)
     if not ovr.user_name:
         ovr.setor_id = usuario.setor_id
         ovr.user_name = usuario.cpf
@@ -184,9 +183,11 @@ def get_ovr_one(session, ovr_id: int = None) -> OVR:
 
 def get_ovr_responsavel(session, user_name: str) -> List[OVR]:
     """Pegar OVRs que estejam com Usuário como responsável ou sem responsável nos setores"""
-    return session.query(OVR).filter(
-        OVR.responsavel_cpf == user_name
-    ).all()
+    usuario = get_usuario_validando(session, user_name)
+    return session.query(OVR).filter(or_(
+        OVR.responsavel_cpf == user_name,
+        and_(OVR.responsavel_cpf.is_(None), OVR.setor_id == usuario.setor_id)
+    )).all()
 
 
 def get_ovr_responsavel_setores(session, user_name: str, setores: List[Setor]) -> List[OVR]:
@@ -223,11 +224,12 @@ def get_ovr_visao_usuario(session, datainicio: datetime,
 
     Se usuário for Supervisor, mostra todos do Setor escolhido também
     """
+    usuario = get_usuario_validando(session, usuario_cpf)
     datafim = datafim + timedelta(days=1)
     filtro = or_(OVR.user_name == usuario_cpf,
                  OVR.responsavel_cpf == usuario_cpf,
                  OVR.cpfauditorresponsavel == usuario_cpf,
-                 #             OVR.responsavel_cpf.is_(None)
+                 and_(OVR.responsavel_cpf.is_(None), OVR.setor_id == usuario.setor_id)
                  )
     if setor_id:
         if usuario_tem_perfil_nome(session, usuario_cpf, 'Supervisor'):
@@ -503,6 +505,7 @@ def muda_setor_ovr(session, ovr_id: int,
         evento = gera_eventoovr(session, evento_params, commit=False, user_name=user_name)
         ovr.setor_id = setor_id
         ovr.responsavel_cpf = None
+        ovr.fase = 0
         session.add(evento)
         session.add(ovr)
         session.commit()
@@ -573,10 +576,7 @@ def gera_eventoovr(session, params: dict, commit=True, user_name=None,
     return evento
 
 
-def valida_mesmo_responsavel_user_name(session, ovr_id: int, user_name: str):
-    ovr = session.query(OVR).filter(OVR.id == ovr_id).one_or_none()
-    if ovr is None:
-        raise Exception(f'OVR {ovr_id} inexistente.')
+def valida_mesmo_responsavel_ovr_user_name(session, ovr: OVR, user_name: str):
     # Se tiver algum responsável, deve ser o mesmo.
     # Se responsável for nulo, qualquer usuário pode agir
     print('********', ovr.responsavel_cpf, user_name, ovr.fase)
@@ -585,6 +585,13 @@ def valida_mesmo_responsavel_user_name(session, ovr_id: int, user_name: str):
             and ovr.responsavel_cpf != user_name:
         print('XXXXXXXX', ovr.responsavel_cpf, user_name, ovr.fase)
         raise ESomenteUsuarioResponsavel()
+
+
+def valida_mesmo_responsavel_user_name(session, ovr_id: int, user_name: str):
+    ovr = session.query(OVR).filter(OVR.id == ovr_id).one_or_none()
+    if ovr is None:
+        raise Exception(f'OVR {ovr_id} inexistente.')
+    valida_mesmo_responsavel_ovr_user_name(session, ovr, user_name)
 
 
 def valida_mesmo_responsavel(session, params):
@@ -665,7 +672,7 @@ def excluir_evento(session, evento_id, user_cpf):
 
 
 def cadastra_tgovr(session, params, user_name: str) -> TGOVR:
-    usuario = get_usuario_logado(session, user_name)
+    usuario = get_usuario_validando(session, user_name)
     tgovr = get_tgovr(session, params.get('id'))
     if tgovr.ovr_id is not None:
         ovr = get_ovr(session, tgovr.ovr_id)
@@ -879,6 +886,10 @@ def get_setores_filhos_recursivo_id(session, setor_id: str) -> List[Setor]:
 
 def get_setores_filhos_recursivo(session, setor: Setor) -> List[Setor]:
     return get_setores_filhos_recursivo_id(session, setor.id)
+
+
+def get_setores(session) -> List[Setor]:
+    return session.query(Setor).all()
 
 
 def get_setores_choice(session) -> List[Tuple[str, str]]:

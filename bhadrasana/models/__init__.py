@@ -180,7 +180,7 @@ def handle_datahora(params):
     return datetime.datetime.combine(data, hora)
 
 
-def get_usuario_logado(session, user_name: str) -> Usuario:
+def get_usuario_validando(session, user_name: str) -> Usuario:
     if user_name is None:
         raise KeyError('Usuário não foi informado!')
     usuario = session.query(Usuario).filter(

@@ -19,7 +19,7 @@ nav:
         - "Função 'novas/não vistas' - 7/Maio/2020": novidades/20200507b.md
         - "Melhorias em Minhas Fichas - 7/Maio/2020": novidades/20200507.md
         - "Programação de verificação física - 1/Maio/2020": novidades/20200501.md
-    - "Roteiro de uso da ficha de controle - fluxo de importação":
+    - "Exemplos de uso da ficha de controle - fluxo de importação":
         - "Introdução": exemplos/fluxo_importacao/inicio.md
         - "Cadastrando ficha e programando verificação - Equipe 221B": exemplos/fluxo_importacao/221ba.md
         - "Preenchendo a verificação física - Equipe 221B": exemplos/fluxo_importacao/221bb.md
@@ -56,6 +56,8 @@ nav:
     - "Painel de OKRs":
         - "Como configurar": exemplos/painel_de_okrs/OKRa.md
         - "Exemplos": exemplos/painel_de_okrs/OKRb.md
+    - "Roteiro de uso na exportação":
+        - "Roteiro geral": roteiro_exportacao/resumo.md
 
 
 
