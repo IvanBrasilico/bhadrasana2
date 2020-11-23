@@ -356,7 +356,7 @@ class ExibicaoOVR:
 
     def get_eventos_resumo(self, ovr) -> list:
         resumo = []
-        for evento in ovr.historico[:-3]:
+        for evento in ovr.historico:
             resumo.append('{} - {} - {} - {}'.format(
                 evento.tipoevento.nome, evento.user_name,
                 datetime.strftime(evento.create_date, '%d/%m/%Y %H:%M'), evento.motivo))
@@ -378,7 +378,7 @@ class ExibicaoOVR:
         linha = []
         if self.user_name == ovr.user_name:
             linha.append('<span class="badge badge-pill">Criador</span>')
-        if self.user_name == ovr.responsavel:
+        if self.user_name == ovr.responsavel_cpf:
             linha.append('<span class="badge badge-pill">Responsável atual</span>')
         if self.user_name == ovr.cpfauditorresponsavel:
             linha.append('<span class="badge badge-pill">Auditor responsável</span>')

@@ -11,7 +11,7 @@ from werkzeug.utils import redirect
 from bhadrasana.docx.docx_functions import gera_OVR, gera_taseda
 from bhadrasana.forms.filtro_rvf import FiltroRVFForm
 from bhadrasana.forms.rvf import RVFForm, ImagemRVFForm, ApreensaoRVFForm
-from bhadrasana.models import get_usuario_logado, get_usuario
+from bhadrasana.models import get_usuario_validando, get_usuario
 from bhadrasana.models.ovrmanager import get_marcas, get_marcas_choice
 from bhadrasana.models.rvf import RVF
 from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, \
@@ -64,7 +64,7 @@ def rvf_app(app):
     @login_required
     def rvf():
         session = app.config.get('dbsession')
-        get_usuario_logado(session, current_user.id)
+        get_usuario_validando(session, current_user.id)
         tiposapreensao = get_tiposapreensao_choice(session)
         apreensao_form = ApreensaoRVFForm(tiposapreensao=tiposapreensao)
         apreensoes_rvf = []
