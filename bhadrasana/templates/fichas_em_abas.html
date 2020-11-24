@@ -62,10 +62,10 @@
             <div class="panel-body panel-primary">
                 {% for ficharesumo in listasficharesumo[fase] %}
                 <div class="panel panel-heading panel-primary rounded-pill"
-                     {% if 'Responsável atual' in ficharesumo['resumo'] %}
+                     {% if 'Sou Responsável atual' in ficharesumo['resumo'] %}
                      style="border: 6px solid red"
                      {% endif %}
-                     {% if 'Auditor responsável' in ficharesumo['resumo'] %}
+                     {% if 'Sou Auditor responsável' in ficharesumo['resumo'] %}
                      style="border: 6px solid orange"
                      {% endif %}
                      {% if 'Criado por mim' in ficharesumo['resumo'] %}
