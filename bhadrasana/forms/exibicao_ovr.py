@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Tuple, List
 
-from bhadrasana.models import get_usuario, usuario_tem_perfil_nome
+from bhadrasana.models import get_usuario
 from bhadrasana.models.laudo import get_empresa
 from bhadrasana.models.ovr import OVR
 from bhadrasana.models.ovrmanager import get_visualizacoes, lista_tgovr
@@ -366,24 +366,25 @@ class ExibicaoOVR:
         resumo = []
         if ovr.user_name:
             user_descricao = self.usuario_name(ovr.user_name)
-            resumo.append(f'<b>Criador: </b>{ovr.user_name} - {user_descricao}')
+            resumo.append(f'<b>Cadastrador: </b>{ovr.user_name} - {user_descricao}')
         if ovr.responsavel:
-            resumo.append(f'<b>Atribuído a: </b>{ovr.responsavel}')
+            resumo.append(f'<b>Atribuído atualmente a: </b>{ovr.responsavel}')
         if ovr.cpfauditorresponsavel:
             auditor_descricao = self.usuario_name(ovr.cpfauditorresponsavel)
-            resumo.append(f'<b>Auditor: </b>{ovr.cpfauditorresponsavel} - {auditor_descricao}')
+            resumo.append('<b>Auditor responsável: </b>' +
+                          f'{ovr.cpfauditorresponsavel} - {auditor_descricao}')
         return resumo
 
     def get_responsabilidade_resumo(self, ovr) -> list:
         linha = []
         if self.user_name == ovr.user_name:
-            linha.append('<span class="badge badge-pill">Criador</span>')
+            linha.append('<span class="badge badge-pill">Criado por mim</span>')
         if self.user_name == ovr.responsavel_cpf:
-            linha.append('<span class="badge badge-pill">Responsável atual</span>')
+            linha.append('<span class="badge badge-pill">Sou Responsável atual</span>')
         if self.user_name == ovr.cpfauditorresponsavel:
-            linha.append('<span class="badge badge-pill">Auditor responsável</span>')
-        if usuario_tem_perfil_nome(self.session, self.user_name, 'Supervisor'):
-            linha.append('<span class="badge badge-pill">Supervisor</span>')
+            linha.append('<span class="badge badge-pill">Sou Auditor responsável</span>')
+        if len(linha) == 0:
+            linha.append('<span class="badge badge-pill">Está no meu Setor</span>')
         return [' '.join(linha)]
 
     def get_trabalho(self, ovr) -> list:

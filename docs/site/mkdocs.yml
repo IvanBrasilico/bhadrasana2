@@ -10,6 +10,21 @@ nav:
             - "Roteiros - \"Check-lists\"": admin/roteiros.md
             - "Gerenciamento de Usuários e Perfis": admin/usuarios.md
             - "Modelo de permissão": admin/permissoes.md
+          - "Pesquisando Fichas":
+            - "Fichas de Carga": pesquisas/pesquisa.md
+            - "Minhas Fichas": pesquisa/minhasfichas.md
+            - "Kanban": pesquisa/kanban.md
+            - "Pesquisas rápidas e integradas": pesquisa/rapida.md
+    - "Roteiro de uso da ficha de controle - mercadoria abandonada":
+        - "Verificação física, registro do TG e lavratura do Auto": exemplos/mercadoria_abandonada/MAa.md
+        - "Solicitando e recebendo a manifestação de órgão anuente": exemplos/mercadoria_abandonada/MAb.md
+        - "Direcionando a ficha após resposta do órgão anuente": exemplos/mercadoria_abandonada/MAc.md
+        - "Recebimento de pedido de retomada de despacho": exemplos/mercadoria_abandonada/MAd.md
+        - "Roteiro GMAB AJNA": exemplos/mercadoria_abandonada/MAe.md
+    - "Roteiro de uso na exportação":
+        - "Roteiro geral": roteiro_exportacao/resumo.md
+    - "Roteiro de uso na importação":
+        - "Roteiro geral": roteiro_importacao/resumo.md
     - "Novidades":
         - "Painel de OKRs - 25/09/2020": novidades/20200925.md
         - "Função 'Informar Apreensão sem Termo de Guarda' - 17/09/2020": novidades/20200917.md
@@ -19,7 +34,7 @@ nav:
         - "Função 'novas/não vistas' - 7/Maio/2020": novidades/20200507b.md
         - "Melhorias em Minhas Fichas - 7/Maio/2020": novidades/20200507.md
         - "Programação de verificação física - 1/Maio/2020": novidades/20200501.md
-    - "Exemplos de uso da ficha de controle - fluxo de importação":
+    - "Exemplos de uso - Scotland Yard":
         - "Introdução": exemplos/fluxo_importacao/inicio.md
         - "Cadastrando ficha e programando verificação - Equipe 221B": exemplos/fluxo_importacao/221ba.md
         - "Preenchendo a verificação física - Equipe 221B": exemplos/fluxo_importacao/221bb.md
@@ -33,12 +48,6 @@ nav:
         - "Auto, RFFP, check-list - Equipe SY": exemplos/fluxo_importacao/SYc.md
         - "Analise geral da Divisão": exemplos/fluxo_importacao/SYd.md
         - "Resumo do roteiro (parte 2 - SY)": exemplos/fluxo_importacao/roteiro2completo.md
-    - "Roteiro de uso da ficha de controle - mercadoria abandonada":
-        - "Verificação física, registro do TG e lavratura do Auto": exemplos/mercadoria_abandonada/MAa.md
-        - "Solicitando e recebendo a manifestação de órgão anuente": exemplos/mercadoria_abandonada/MAb.md
-        - "Direcionando a ficha após resposta do órgão anuente": exemplos/mercadoria_abandonada/MAc.md
-        - "Recebimento de pedido de retomada de despacho": exemplos/mercadoria_abandonada/MAd.md
-        - "Roteiro GMAB AJNA": exemplos/mercadoria_abandonada/MAe.md
     - "Roteiro de uso dos Relatórios Gerenciais":
         - "Relatórios Gerenciais - Introdução": exemplos/relatorios_gerenciais/RLa.md
         - "1 - Contagem de Eventos Especiais (Produtividade)": exemplos/relatorios_gerenciais/RLb.md
@@ -56,8 +65,6 @@ nav:
     - "Painel de OKRs":
         - "Como configurar": exemplos/painel_de_okrs/OKRa.md
         - "Exemplos": exemplos/painel_de_okrs/OKRb.md
-    - "Roteiro de uso na exportação":
-        - "Roteiro geral": roteiro_exportacao/resumo.md
 
 
 

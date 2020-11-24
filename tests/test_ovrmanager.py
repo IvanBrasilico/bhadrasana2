@@ -558,6 +558,8 @@ class OVRTestCase(BaseTestCase):
         assert isinstance(ovrs, list)
 
     def test_get_ovrs_visao_usuario(self):
+        self.create_usuario('user1', 'user1')
+        self.create_usuario('user2', 'user2')
         ovr1 = self.create_OVR_valido()
         ovr1.setor_id = '9001'
         ovr1.user_name = 'user1'
