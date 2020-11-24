@@ -12,7 +12,7 @@ sys.path.insert(0, '../ajna_api')
 from collections import OrderedDict, defaultdict
 from datetime import timedelta, datetime
 from enum import Enum
-from typing import List, Tuple, Set, Dict
+from typing import List, Tuple, Set
 
 import numpy as np
 import pandas as pd
@@ -249,10 +249,10 @@ def get_ovr_visao_usuario(session, datainicio: datetime,
     return q.all()
 
 
-def calcula_tempos_por_fase(listafichas: list[OVR]) -> Dict[int: int]:
+def calcula_tempos_por_fase(listafichas: List[OVR]) -> dict:
     """Recebe lista de OVRs, percorre calculando tempo de acordo com a fase.
 
-    Retorna dicionário fase: tempo médio em dias.
+    Retorna dicionário descrição da fase: tempo médio em dias.
 
     :param listafichas: lista de OVRs
     """
@@ -267,7 +267,7 @@ def calcula_tempos_por_fase(listafichas: list[OVR]) -> Dict[int: int]:
             totaldays[ovr.fase] += (ovr.historico[-1].create_date - ovr.datahora).days
             qtdeovrs[ovr.fase] += 1
     for fase, qtde in qtdeovrs.items():
-        result[fase] = totaldays[fase] // qtde
+        result[Enumerado.faseOVR(fase)] = totaldays[fase] // qtde
     return result
 
 
