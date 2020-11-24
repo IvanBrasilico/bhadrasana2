@@ -43,7 +43,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_usuarios_setores, get_setores_cpf, get_ovr_auditor, get_ovr_passagem, muda_setor_ovr, \
     monta_ovr_dict, get_docx, inclui_docx, get_docx_choices, get_recintos_dte, excluir_processo, \
     excluir_evento, get_ovr_visao_usuario, get_setores_cpf_choice, get_processo, \
-    get_ovr_conhecimento, get_ovr_due, get_recintos_unidade, get_setores
+    get_ovr_conhecimento, get_ovr_due, get_recintos_unidade, get_setores, calcula_tempos_por_fase
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects, consulta_ce_objects, \
     consulta_due_objects
@@ -1614,6 +1614,7 @@ def ovr_app(app):
         listasficharesumo = []
         filtroform = FiltroAbasForm()
         supervisor = False
+        temposmedios_por_fase = {}
         try:
             usuario = get_usuario(session, current_user.name)
             if usuario is None:
@@ -1642,6 +1643,7 @@ def ovr_app(app):
                                                              lista_flags=lista_flags,
                                                              lista_tipos=lista_tipos)
                     temposmedios_por_fase = calcula_tempos_por_fase(listaficharesumo)
+                    print(temposmedios_por_fase)
                     listasficharesumo = defaultdict(list)
                     exibicao_ovr = ExibicaoOVR(session, TipoExibicao.Resumo, current_user.id)
                     for ovr in listaficharesumo:

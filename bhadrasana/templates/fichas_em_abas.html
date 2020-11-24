@@ -56,7 +56,8 @@
         %}>
         <div class="panel rounded-pill panel-info">
             <div class="panel-heading">
-                <h3>{{ fase }} ({{ listasficharesumo[fase] | length }}) {{ temposmedios_por_fase.get(fase) }}</h3>
+                <h3>{{ fase }} ({{ listasficharesumo[fase] | length }})</h3>
+                {%if temposmedios_por_fase.get(fase) %}Tempo médio - {{ temposmedios_por_fase.get(fase) }} dias{% endif %}</h3>
             </div>
             <div class="panel-body panel-primary">
                 {% for ficharesumo in listasficharesumo[fase] %}
