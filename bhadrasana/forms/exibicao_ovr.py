@@ -34,6 +34,7 @@ class ExibicaoOVR:
              'Alertas',
              'Último Evento',
              'Evento Anterior',
+             'Responsável atual',
              'Auditor Responsável'],
         TipoExibicao.Descritivo:
             ['ID',
@@ -43,7 +44,7 @@ class ExibicaoOVR:
              'Declaração',
              'Fiscalizado',
              'Observações',
-             'Criador',
+             'Responsável atual',
              'Último Evento',
              'Usuário'],
         TipoExibicao.Ocorrencias:
@@ -53,6 +54,7 @@ class ExibicaoOVR:
              'Observações',
              'Infrações RVFs',
              'Marcas RVFs',
+             'Responsável atual',
              'Último Evento',
              'Evento Anterior'],
         TipoExibicao.Empresa:
@@ -62,6 +64,7 @@ class ExibicaoOVR:
              'CNPJ/Nome Fiscalizado',
              'Infrações RVFs',
              'Marcas RVFs',
+             'Responsável atual',
              'Último Evento',
              'Evento Anterior'],
         TipoExibicao.Resultado:
@@ -73,6 +76,7 @@ class ExibicaoOVR:
              'Marcas RVFs',
              'Peso apreensões',
              'Valor TG',
+             'Responsável atual',
              'Auditor Responsável'],
         TipoExibicao.Resumo:
             ['ID',
@@ -206,12 +210,12 @@ class ExibicaoOVR:
     def get_linha(self, ovr: OVR) -> Tuple[int, bool, List]:
         recinto_nome = self.get_recinto_nome(ovr)
         evento_user, tipo_evento_nome, data_evento, motivo = self.evento_campos(ovr)
-        campos_ultimo_evento = [tipo_evento_nome, evento_user,
+        campos_ultimo_evento = [f'<b>{tipo_evento_nome}</b>', evento_user,
                                 datetime.strftime(data_evento, '%d/%m/%Y %H:%M'),
                                 motivo]
         html_ultimo_evento = '<br>'.join(campos_ultimo_evento)
         evento_user2, tipo_evento_nome2, data_evento2, motivo2 = self.evento_campos(ovr, 2)
-        campos_penultimo_evento = [tipo_evento_nome2, evento_user2,
+        campos_penultimo_evento = [f'<b>{tipo_evento_nome2}</b>', evento_user2,
                                    datetime.strftime(data_evento2, '%d/%m/%Y %H:%M'),
                                    motivo2]
         html_penultimo_evento = '<br>'.join(campos_penultimo_evento)
@@ -219,6 +223,9 @@ class ExibicaoOVR:
         auditor_descricao = self.usuario_name(ovr.cpfauditorresponsavel)
         visualizado = self.get_visualizado_pelo_usuario(ovr, data_evento)
         fiscalizado = self.get_fiscalizado(ovr)
+        responsavel_descricao = 'Nenhum'
+        if ovr.responsavel:
+            responsavel_descricao = ovr.responsavel.nome
         if self.tipo == TipoExibicao.FMA:
             alertas = [flag.nome for flag in ovr.flags]
             return ovr.id, visualizado, [
@@ -231,6 +238,7 @@ class ExibicaoOVR:
                 ', '.join(alertas),
                 html_ultimo_evento,
                 html_penultimo_evento,
+                responsavel_descricao,
                 auditor_descricao]
         if self.tipo == TipoExibicao.Descritivo:
             return ovr.id, visualizado, [
@@ -240,7 +248,7 @@ class ExibicaoOVR:
                 ovr.numerodeclaracao,
                 fiscalizado,
                 ovr.observacoes,
-                user_descricao,
+                responsavel_descricao,
                 html_ultimo_evento,
                 html_penultimo_evento]
         if (self.tipo == TipoExibicao.Ocorrencias or
@@ -256,6 +264,7 @@ class ExibicaoOVR:
                 campo_comum,
                 ', '.join(infracoes),
                 ', '.join(marcas),
+                responsavel_descricao,
                 html_ultimo_evento,
                 html_penultimo_evento]
         if self.tipo == TipoExibicao.Resultado:
@@ -270,6 +279,7 @@ class ExibicaoOVR:
                 ', '.join(marcas),
                 '{:0.2f}'.format(peso_apreensoes),
                 '{:0.2f}'.format(valor_tgs),
+                responsavel_descricao,
                 auditor_descricao]
         if self.tipo == TipoExibicao.Resumo:
             resumo = self.get_OVR_resumo_html(ovr)

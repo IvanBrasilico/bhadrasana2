@@ -47,8 +47,11 @@
                 <div class="col-sm-4">
                     <label for="datainicio">Início e fim de período de pesquisa</label>
                 </div>
-                <div class="col-sm-4">
+                <div class="col-sm-2">
                     <label for="tipoexibicao">Campos a visualizar</label>
+                </div>
+                <div class="col-sm-2">
+                    <label for="orfãs">Exibir Fichas sem responsável</label>
                 </div>
             </div>
             <div class="row">
@@ -61,6 +64,9 @@
                     </div>
                     <div class="col-sm-2">
                         {{ oform.tipoexibicao(class='form-control') }}
+                    </div>
+                    <div class="col-sm-2">
+                        {{ oform.orfas(class='form-control') }}
                     </div>
                     <div class="col-sm-2">
                         <button class="btn btn-default btn-info form-control" onclick="submit">
