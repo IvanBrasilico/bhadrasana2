@@ -85,6 +85,8 @@ def flash_alertas(session, ovr):
                  'Empresa (mostrando 6 meses, utilize pesquisa empresa para ver mais)')
 
 
+
+
 def ovr_app(app):
     def trata_ovr(request, ovr_id):
         session = app.config.get('dbsession')
@@ -1604,6 +1606,7 @@ def ovr_app(app):
                                filtro_form=escaneamento_form,
                                gmcis=gmcis)
 
+    #kanban
     @app.route('/fichas_em_abas', methods=['GET', 'POST'])
     @login_required
     def fichas_em_abas():
@@ -1638,6 +1641,7 @@ def ovr_app(app):
                                                              setor_id=filtroform.setor_id.data,
                                                              lista_flags=lista_flags,
                                                              lista_tipos=lista_tipos)
+                    temposmedios_por_fase = calcula_tempos_por_fase(listaficharesumo)
                     listasficharesumo = defaultdict(list)
                     exibicao_ovr = ExibicaoOVR(session, TipoExibicao.Resumo, current_user.id)
                     for ovr in listaficharesumo:
@@ -1668,6 +1672,7 @@ def ovr_app(app):
                                oform=filtroform,
                                listafases=faseOVR,
                                listasficharesumo=listasficharesumo,
+                               temposmedios_por_fase=temposmedios_por_fase,
                                supervisor=supervisor)
 
     @app.route('/ficha/summary/<oid>', methods=['GET', 'POST'])

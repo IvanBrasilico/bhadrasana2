@@ -4,7 +4,14 @@
 
 ### Ficha de Controle de Carga - Manual de usuário
 
-Este roteiro utiliza a seguinte estrutura:
+
+1. Demandante cadastra Ficha de Operação e encaminha para Setor ou Atribui para Servidor
+2. Servidor consulta o ["Minhas Fichas"](exemplos/fluxo_importacao/221bb), o "Pesquisa Fichas" ou o "Kanban"
+
+
+Exemplo
+
+Este exemplo utiliza a seguinte estrutura:
 
 Setores demandantes:
 

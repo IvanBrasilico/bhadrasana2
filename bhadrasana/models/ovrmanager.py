@@ -12,7 +12,7 @@ sys.path.insert(0, '../ajna_api')
 from collections import OrderedDict, defaultdict
 from datetime import timedelta, datetime
 from enum import Enum
-from typing import List, Tuple, Set
+from typing import List, Tuple, Set, Dict
 
 import numpy as np
 import pandas as pd
@@ -232,8 +232,9 @@ def get_ovr_visao_usuario(session, datainicio: datetime,
                  and_(OVR.responsavel_cpf.is_(None), OVR.setor_id == usuario.setor_id)
                  )
     if setor_id:
-        if usuario_tem_perfil_nome(session, usuario_cpf, 'Supervisor'):
-            filtro = or_(filtro, OVR.setor_id == setor_id)
+        # Mudança: dar opção a qualquer Usuário visualizar o Setor
+        #  if usuario_tem_perfil_nome(session, usuario_cpf, 'Supervisor'):
+        filtro = or_(filtro, OVR.setor_id == setor_id)
     if lista_tipos:
         filtro = and_(filtro, OVR.tipooperacao.in_(lista_tipos))
     if lista_flags:
@@ -246,6 +247,28 @@ def get_ovr_visao_usuario(session, datainicio: datetime,
             .filter(OVR.datahora.between(datainicio, datafim))
     logger.info('get_ovr_visao_usuario - query' + str(q))
     return q.all()
+
+
+def calcula_tempos_por_fase(listafichas: list[OVR]) -> Dict[int: int]:
+    """Recebe lista de OVRs, percorre calculando tempo de acordo com a fase.
+
+    Retorna dicionário fase: tempo médio em dias.
+
+    :param listafichas: lista de OVRs
+    """
+    totaldays = defaultdict(int)
+    qtdeovrs = defaultdict(int)
+    result = {}
+    for ovr in listafichas:
+        if ovr.fase in (0, 1, 2):  # Ficha em adamento, calcular dias em aberto até hoje
+            totaldays[ovr.fase] += (datetime.today() - ovr.datahora).days
+            qtdeovrs[ovr.fase] += 1
+        else:  # Ficha fechada, calcula dias até o último evento
+            totaldays[ovr.fase] += (ovr.historico[-1].create_date - ovr.datahora).days
+            qtdeovrs[ovr.fase] += 1
+    for fase, qtde in qtdeovrs.items():
+        result[fase] = totaldays[fase] // qtde
+    return result
 
 
 def get_ovr_conhecimento(session, numero: str) -> Set[int]:
