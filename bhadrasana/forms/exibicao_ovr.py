@@ -219,7 +219,7 @@ class ExibicaoOVR:
                                    datetime.strftime(data_evento2, '%d/%m/%Y %H:%M'),
                                    motivo2]
         html_penultimo_evento = '<br>'.join(campos_penultimo_evento)
-        user_descricao = self.usuario_name(ovr.user_name)
+        # user_descricao = self.usuario_name(ovr.user_name)
         auditor_descricao = self.usuario_name(ovr.cpfauditorresponsavel)
         visualizado = self.get_visualizado_pelo_usuario(ovr, data_evento)
         fiscalizado = self.get_fiscalizado(ovr)

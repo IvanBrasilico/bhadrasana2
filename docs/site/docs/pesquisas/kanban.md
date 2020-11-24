@@ -37,5 +37,5 @@ sem resultado. Aqui se exibe o total de Fichas no período e o tempo médio deco
 a conclusão da operação.
 
  
-
+(kanban)[../images/kanban.png]
 
