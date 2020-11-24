@@ -242,6 +242,7 @@ class FiltroMinhasOVRsForm(FlaskForm):
     datainicio = DateField(u'Data inicial da pesquisa')
     datafim = DateField(u'Data final da pesquisa')
     tipoexibicao = SelectField('Campos a serem exibidos na tela', default=1)
+    orfas = BooleanField('Exibir Fichas órfãs (sem responsável)')
     activetab = StringField()
 
     def __init__(self, *args, **kwargs):
