@@ -85,8 +85,6 @@ def flash_alertas(session, ovr):
                  'Empresa (mostrando 6 meses, utilize pesquisa empresa para ver mais)')
 
 
-
-
 def ovr_app(app):
     def trata_ovr(request, ovr_id):
         session = app.config.get('dbsession')
@@ -355,7 +353,7 @@ def ovr_app(app):
         try:
             oform.validate()
             if active_tab == 'minhas_ovrs':
-                ovrs = get_ovr_responsavel(session, current_user.name, oform.orfas.data)  # , setores)
+                ovrs = get_ovr_responsavel(session, current_user.name, oform.orfas.data)
             elif active_tab == 'ovrs_meus_setores':
                 ovrs = get_ovr_filtro(session,
                                       dict(oform.data.items()),
@@ -1606,7 +1604,7 @@ def ovr_app(app):
                                filtro_form=escaneamento_form,
                                gmcis=gmcis)
 
-    #kanban
+    # kanban
     @app.route('/fichas_em_abas', methods=['GET', 'POST'])
     @login_required
     def fichas_em_abas():
