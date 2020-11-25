@@ -133,6 +133,8 @@ class Usuario(Base):
     setor_id = Column(CHAR(15), ForeignKey('ovr_setores.id'))
     setor = relationship('Setor')
     perfis = relationship('PerfilUsuario', back_populates='usuario')
+    # Cargo - 0 Auditor, 1 Analista, 2 ATA
+    cargo = Column(Integer)
 
     def __str__(self):
         return '{} - {}'.format(self.cpf, self.nome)
