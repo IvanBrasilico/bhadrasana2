@@ -361,9 +361,11 @@ def ovr_app(app):
             elif active_tab == 'ovrs_auditor':
                 ovrs = get_ovr_auditor(session, current_user.name)
             elif active_tab == 'ovrs_passagem':
-                ovrs = get_ovr_passagem(session, current_user.name)
+                ovrs = get_ovr_passagem(session, current_user.name,
+                                        oform.datainicio.data, oform.datafim.data)
             else:
-                ovrs = get_ovr_criadaspor(session, current_user.name)
+                ovrs = get_ovr_criadaspor(session, current_user.name,
+                                        oform.datainicio.data, oform.datafim.data)
             exibicao = ExibicaoOVR(session, int(oform.tipoexibicao.data), current_user.id)
             titulos_exibicao = exibicao.get_titulos()
             for ovr in ovrs:

@@ -205,18 +205,25 @@ def get_ovr_responsavel_setores(session, user_name: str, setores: List[Setor]) -
 
 
 def get_ovr_auditor(session, user_name: str) -> List[OVR]:
-    return session.query(OVR).filter(OVR.cpfauditorresponsavel == user_name).all()
+    return session.query(OVR).filter(OVR.cpfauditorresponsavel == user_name). \
+        filter(OVR.fase < 3).all()
 
 
-def get_ovr_passagem(session, user_name: str) -> List[OVR]:
+def get_ovr_passagem(session, user_name: str,
+                     datainicio: datetime, datafim: datetime) -> List[OVR]:
+    datafim = datafim + timedelta(days=1)
     eventos = session.query(EventoOVR).filter(
         EventoOVR.user_name == user_name).all()
     ids_ovrs = [evento.ovr_id for evento in eventos]
-    return session.query(OVR).filter(OVR.id.in_(ids_ovrs)).all()
+    return session.query(OVR).filter(OVR.id.in_(ids_ovrs)). \
+        filter(OVR.datahora.between(datainicio, datafim)).all()
 
 
-def get_ovr_criadaspor(session, user_name: str) -> List[OVR]:
-    return session.query(OVR).filter(OVR.user_name == user_name).all()
+def get_ovr_criadaspor(session, user_name: str,
+                       datainicio: datetime, datafim: datetime) -> List[OVR]:
+    datafim = datafim + timedelta(days=1)
+    return session.query(OVR).filter(OVR.user_name == user_name). \
+        filter(OVR.datahora.between(datainicio, datafim)).all()
 
 
 def get_ovr_visao_usuario(session, datainicio: datetime,

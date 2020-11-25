@@ -12,9 +12,9 @@ nav:
             - "Modelo de permissão": admin/permissoes.md
           - "Pesquisando Fichas":
             - "Fichas de Carga": pesquisas/pesquisa.md
-            - "Minhas Fichas": pesquisa/minhasfichas.md
-            - "Kanban": pesquisa/kanban.md
-            - "Pesquisas rápidas e integradas": pesquisa/rapida.md
+            - "Minhas Fichas": pesquisas/minhasfichas.md
+            - "Kanban": pesquisas/kanban.md
+            - "Pesquisas rápidas e integradas": pesquisas/rapida.md
     - "Roteiro de uso da ficha de controle - mercadoria abandonada":
         - "Verificação física, registro do TG e lavratura do Auto": exemplos/mercadoria_abandonada/MAa.md
         - "Solicitando e recebendo a manifestação de órgão anuente": exemplos/mercadoria_abandonada/MAb.md

@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html>
+  <head>
+<link href="/static/css/bootstrap.min.css" rel="stylesheet">
+<link href="/static/css/jquery-ui.min.css" rel="stylesheet">
+<style>
+    .table {
+        margin: auto;
+    }
+
+    th,
+    td {
+        text-align: center;
+        color: #333;
+    }
+
+    td:hover {
+        background-color: rgba(207, 207, 207, 0.692)
+    }
+
+    .modal {
+        text-align: center;
+        vertical-align: middle;
+        height: 100%;
+        width: 100%;
+    }
+
+    .modal-dialog {
+        display: inline-block;
+        text-align: left;
+        vertical-align: middle;
+    }
+
+    .modal-body-dif {
+        max-height: calc(50vh - 150px);
+        overflow-y: auto;
+    }
+
+    .row-clicked {
+        background-color: rgba(207, 207, 207, 0.692);
+    }
+
+    .modal-body-dif {
+        max-height: calc(80vh - 150px);
+        overflow-y: auto;
+    }
+
+    .body {
+        color: #E7E7E7;
+        background-color: #036;
+    }
+</style>
+
+  </head>
+  <body>
+     <nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button aria-controls="navbar" aria-expanded="false" class="navbar-toggle collapsed" data-target="#526795100363515a49afa31e1d4191cc61815499" data-toggle="collapse" type="button">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <span class="navbar-brand">
+        <img height="40" src="/static/material_logo.svg">
+      </span>
+    </div>
+    <div class="navbar-collapse collapse" id="526795100363515a49afa31e1d4191cc61815499">
+      <ul class="nav navbar-nav">
+        <li>
+          <a href="/" title="Home">Home</a>
+        </li>
+        <li>
+          <a href="/risco" title="Risco">Risco</a>
+        </li>
+        <li>
+          <a href="/edita_risco" title="Editar Riscos">Editar Riscos</a>
+        </li>
+        <li>
+          <a href="/pesquisa_ovr" title="Fichas de Carga">Fichas de Carga</a>
+        </li>
+        <li>
+          <a href="/minhas_ovrs" title="Minhas Fichas">Minhas Fichas</a>
+        </li>
+        <li class="dropdown">
+          <a aria-expanded="false" aria-haspopup="true" class="dropdown-toggle" data-toggle="dropdown" href="#" role="button">Pesquisas/relatórios
+            <span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a href="/consulta_container" title="Pesquisa Contêiner">Pesquisa Contêiner</a>
+            </li>
+            <li>
+              <a href="/consulta_empresa" title="Pesquisa Empresa">Pesquisa Empresa</a>
+            </li>
+            <li>
+              <a href="/pesquisa_rvf" title="Verificações físicas">Verificações físicas</a>
+            </li>
+            <li class="divider" role="separator"></li>
+            <li>
+              <a href="/relatorios" title="Relatórios">Relatórios</a>
+            </li>
+            <li>
+              <a href="/ver_okrs" title="Painel de OKRs">Painel de OKRs</a>
+            </li>
+            <li class="divider" role="separator"></li>
+            <li>
+              <a href="/fichas_em_abas" title="Fichas em Abas">Fichas em Abas</a>
+            </li>
+          </ul>
+        </li>
+        <li class="dropdown">
+          <a aria-expanded="false" aria-haspopup="true" class="dropdown-toggle" data-toggle="dropdown" href="#" role="button">Administração/exportações
+            <span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a href="/exporta_cen_rilo" title="Exporta Planilha CEN Rilo">Exporta Planilha CEN Rilo</a>
+            </li>
+            <li>
+              <a href="/gera_docx" title="Gerador de documentos docx">Gerador de documentos docx</a>
+            </li>
+            <li>
+              <a href="/escaneamento_operador" title="Lista para escaneamento no Operador">Lista para escaneamento no Operador</a>
+            </li>
+            <li class="divider" role="separator"></li>
+            <li>
+              <a href="/importa_planilha_recinto" title="Importa planilhas recintos">Importa planilhas recintos</a>
+            </li>
+            <li>
+              <a href="/admin/" title="Administração">Administração</a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <a href="/logout" title="Sair (adler)">Sair (adler)</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav> 
+      
+
+<div class="container">
+    
+    <div class="alert alert-warning">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        Erro! Detalhes no log da aplicação.
+    </div>
+    
+    <div class="alert alert-warning">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        &lt;class &#39;ValueError&#39;&gt;
+    </div>
+    
+    <div class="alert alert-warning">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        CNPJ deve ser informado com mínimo de 8 dígitos.
+    </div>
+     
+</div>
+
+<div id="main" class="container-fluid">
+    <form method="POST" id="formovr" action="ovr">
+        <input type="hidden" name="csrf_token" value="ImFiMjJjNWFhODgwZjI3MWYzZWI2OWUyMmEwYzExYTFkYmQzMjI0MjYi.X6ra-g.nW9CExfE1zxMibrnipcsmRF1dJ8"/>
+        <input type="hidden" name="id" value="1"/>
+        <div class="form-group">
+            <div class="row">
+                <div class="col-sm-1">
+                    <label for="id">ID</label>
+                    <div class="form-control">
+                        <span>1</span>
+                    </div>
+                </div>
+                <div class="col-sm-1">
+                    <label for="numero">Número doc</label>
+                    <input class="form-control" id="numero" name="numero" type="text" value="">
+                </div>
+                <div class="col-sm-2">
+                    <label for="tipooperacao">Tipo de Operação</label>
+                    <span id="btn_roteiro" data-toggle="modal" data-target="#roteiro">(?)</span>
+                    <select class="form-control" id="tipooperacao" name="tipooperacao"><option value="0">Mercadoria Abandonada</option><option value="1">Análise de risco na importação</option><option value="2">Operação / análise de risco na exportação</option><option value="3">Denúncia na importação</option><option value="4">Denúncia na exportação</option><option value="5">Demanda externa</option><option value="6">Registro de operação de outros órgãos/países</option><option value="7">Vigilância</option></select>
+                </div>
+                <div class="col-sm-3">
+                    <label>Recinto</label>
+                    <select class="form-control" id="recinto_id" name="recinto_id"><option selected value="1">Londres (None)</option></select>
+                </div>
+                <div class="col-sm-3">
+                    <label>Status</label>
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-control">
+                            <span class="text-primary">
+                                Ativa
+                            </span>
+                            </div>
+                        </div>
+                        <div class="col-sm-8">
+                            <div class="form-control">
+                            <span class="text-primary">
+                                Em verificação física
+                            </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-2">
+                    Cadastrador
+                    <div class="form-control">
+                        <span>holmes</span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-8">
+                    CE Mercante
+                    <input class="form-control" id="numeroCEmercante" name="numeroCEmercante" type="text" value="152005079623267">
+                </div>
+                <div class="col-sm-2">
+                    Auditor Responsável
+                    <div class="form-control">
+                        <span id="auditor_descricao"></span>
+                    </div>
+                </div>
+                <div class="col-sm-2">
+                    Setor
+                    <div class="form-control">
+                        <span>221b</span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+            &nbsp;
+            </div>
+            <div class="row col-sm-12">
+                <div class="panel panel-info rounded-pill">
+                    <div class="panel-heading rounded-pill">
+                        
+                        Embarcador: None
+                        <font size="+1"><b>&nbsp;&nbsp; - &nbsp;
+                            <a href="programa_rvf_ajna?ovr_id=1" target="_blank">
+                                Ver imagens e mais informações / programar verificação física</a></b> </font>
+                        <br>
+                        Consignatário: None
+                        <br>
+                        Data de emissão: None
+                        Porto de Origem: None
+                        Porto de destino final: None
+                        <br>
+                        Descrição Mercadoria:None
+                        <br>
+                        <!--Nº BL original: None -->
+                        Contêineres: 
+                        nº: 1 - 0.00kg
+                        
+                        nº: 2 - 0.00kg
+                        
+                        <br>
+                        Cubagem total: 0.00m³
+                        NCMs: 
+                        <br>
+                        
+                    </div>
+                </div>
+            </div>
+            <div class="row col-sm-12">
+                Declaração: DUE, DUIMP, etc
+                <input class="form-control" id="numerodeclaracao" name="numerodeclaracao" type="text" value="">
+            </div>
+            <div class="row col-sm-12">
+                <div class="panel panel-info rounded-pill">
+                    <div class="panel-heading rounded-pill">
+                        
+                    </div>
+                </div>
+            </div>
+            <div class="row col-sm-12">
+                CNPJ ou CPF Fiscalizado
+            </div>
+            <div class="row">
+                <div class="col-sm-3">
+                    <!--                    <input class="form-control" data-inputmask="&#34;mask&#34;: &#34;99.999.999/9999-99&#34;" id="cnpj_fiscalizado" name="cnpj_fiscalizado" type="text" value="">-->
+                    <input class="form-control" id="cnpj_fiscalizado" name="cnpj_fiscalizado" type="text" value="">
+                </div>
+                <div class="col-sm-9">
+                    
+                </div>
+            </div>
+            <div class="row col-sm-12">
+                Observações
+                <textarea class="form-control" cols="100" id="observacoes" maxlength="1000" name="observacoes" rows="3">
+</textarea>
+            </div>
+            <div class="row">
+                <div class="col-sm-2">
+                    <label for="adata">Data da Entrada da Carga</label>
+                    <input class="form-control" id="dataentrada" name="dataentrada" type="date" value="">
+                </div>
+                <div class="col-sm-2">
+                    <label for="adata">Data da Emissão</label>
+                    <input class="form-control" id="adata" name="adata" type="date" value="2020-11-10">
+                </div>
+                <div class="col-sm-2">
+                    <label for="responsavel">Responsável</label>
+                    <div class="form-control">
+                        <span id="responsavel_nome">adler</span>
+                    </div>
+                </div>
+                <div class="col-sm-2">
+                    &nbsp;
+                    
+                    <button id="btn_responsavel" type="button" class="btn btn-warning form-control"
+                            data-toggle="modal" data-target="#responsavel">
+                        Atribuir responsável
+                    </button>
+                    
+                </div>
+                <div class="col-sm-2">
+                    &nbsp;
+                    
+                    <button id="btn_auditorresponsavel" type="button" class="btn btn-warning form-control"
+                            data-toggle="modal" data-target="#auditorresponsavel">
+                        Definir Auditor
+                    </button>
+                    
+                </div>
+                <div class="col-sm-2">
+                    &nbsp;
+                    
+                    <button id="btn_mudarsetor" type="button" class="btn btn-warning form-control"
+                            data-toggle="modal" data-target="#mudarsetor">
+                        Transferir para outro Setor
+                    </button>
+                    
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-3">
+                    <h3>Alertas / Observações importantes</h3>
+                </div>
+                <div class="col-sm-9">
+                    <br>
+                    <div class="ui-widget">
+                        <input id="flags" class="form-control">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12" id="div_flags_ovr">
+                    
+                </div>
+            </div>
+            <div class="row">
+                &nbsp;<br>
+                <div class="col-sm-3">
+                    <button class="btn btn-default btn-primary form-control" onclick="submit">
+                        Salvar
+                    </button>
+                </div>
+                <div class="col-sm-3">
+                    
+                    <button id="btn_rvf" type="button" class="btn btn-primary btn-success form-control"
+                            onclick="window.open('lista_rvfovr?ovr_id=1')">
+                        Verificações físicas (1) (0)
+                    </button>
+                    
+                </div>
+                <div class="col-sm-3">
+                    
+                    <button id="btn_tg" type="button" class="btn btn-primary btn-success form-control"
+                            onclick="window.open('lista_tgovr?ovr_id=1')">
+                        Termos de Guarda
+                    </button>
+                    
+                </div>
+                <div class="col-sm-3">
+                    
+                    <button id="btn_auto" type="button" class="btn btn-primary btn-warning form-control"
+                            data-toggle="modal" data-target="#lavratura">
+                        Lavratura do Auto de Infração
+                    </button>
+                    
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="row col-sm-12">
+    &nbsp;<br>
+</div>
+
+<!--Histórico de eventos-->
+
+<div class="row col-sm-12">
+    <div class="col-sm-9">
+        <h4>Histórico de Eventos</h4>
+    </div>
+    <div class="col-sm-3">
+        <button id="btn_historico" type="button" class="btn btn-primary btn-warning form-control"
+                data-toggle="modal" data-target="#historico">Informar Evento
+        </button>
+    </div>
+
+    <div class="table-responsive table row col-sm-12">
+        <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive"
+               cellspacing="0"
+               cellpadding="0"
+               id="table_eventos">
+            <tr>
+                <th>Tipo de Evento</th>
+                <th>Usuário</th>
+                <th>Detalhes</th>
+                <th>Data</th>
+                <th>Anexo</th>
+                <th>Excluir</th>
+            </tr>
+            
+            <tr>
+                <td align="center">
+                    Atribuição de responsável
+                </td>
+                <td align="center">
+                    holmes -
+                    holmes
+                </td>
+                <td align="center">
+                    
+                        De: Nenhum Para: watson
+                    
+                </td>
+                <td align="center">
+                    2020-11-10 18:24:57
+                </td>
+                <td align="center">
+                    
+                </td>
+                <td>
+                    <a href="#" data-target="#modalDeletaEvento1" data-toggle="modal">&times;</a>
+                </td>
+
+            </tr>
+
+            <!--Modal deleta processo-->
+            <div class="modal fade" id="modalDeletaEvento1" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+            aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title" id="ModalLabel4">Excluir evento</h1>
+                        </div>
+                        <div class="modal-body">
+                            <p>Deseja realmente excluir o evento?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <a type="button" class="btn btn-danger" href="exclui_evento?evento_id=1&ovr_id=1">Excluir</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <tr>
+                <td align="center">
+                    Em verificação física
+                </td>
+                <td align="center">
+                    watson -
+                    watson
+                </td>
+                <td align="center">
+                    
+                        Teste b2
+                    
+                </td>
+                <td align="center">
+                    2020-11-10 18:24:57
+                </td>
+                <td align="center">
+                    
+                </td>
+                <td>
+                    <a href="#" data-target="#modalDeletaEvento2" data-toggle="modal">&times;</a>
+                </td>
+
+            </tr>
+
+            <!--Modal deleta processo-->
+            <div class="modal fade" id="modalDeletaEvento2" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+            aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title" id="ModalLabel4">Excluir evento</h1>
+                        </div>
+                        <div class="modal-body">
+                            <p>Deseja realmente excluir o evento?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <a type="button" class="btn btn-danger" href="exclui_evento?evento_id=2&ovr_id=1">Excluir</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <tr>
+                <td align="center">
+                    RVF incluída
+                </td>
+                <td align="center">
+                    watson -
+                    watson
+                </td>
+                <td align="center">
+                    
+                        RVF 1
+                    
+                </td>
+                <td align="center">
+                    2020-11-10 18:24:57
+                </td>
+                <td align="center">
+                    
+                </td>
+                <td>
+                    <a href="#" data-target="#modalDeletaEvento3" data-toggle="modal">&times;</a>
+                </td>
+
+            </tr>
+
+            <!--Modal deleta processo-->
+            <div class="modal fade" id="modalDeletaEvento3" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+            aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title" id="ModalLabel4">Excluir evento</h1>
+                        </div>
+                        <div class="modal-body">
+                            <p>Deseja realmente excluir o evento?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <a type="button" class="btn btn-danger" href="exclui_evento?evento_id=3&ovr_id=1">Excluir</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <tr>
+                <td align="center">
+                    Atribuição de responsável
+                </td>
+                <td align="center">
+                    watson -
+                    watson
+                </td>
+                <td align="center">
+                    
+                        De: watson Para: holmes
+                    
+                </td>
+                <td align="center">
+                    2020-11-10 18:24:58
+                </td>
+                <td align="center">
+                    
+                </td>
+                <td>
+                    <a href="#" data-target="#modalDeletaEvento4" data-toggle="modal">&times;</a>
+                </td>
+
+            </tr>
+
+            <!--Modal deleta processo-->
+            <div class="modal fade" id="modalDeletaEvento4" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+            aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title" id="ModalLabel4">Excluir evento</h1>
+                        </div>
+                        <div class="modal-body">
+                            <p>Deseja realmente excluir o evento?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <a type="button" class="btn btn-danger" href="exclui_evento?evento_id=4&ovr_id=1">Excluir</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <tr>
+                <td align="center">
+                    Atribuição de responsável
+                </td>
+                <td align="center">
+                    holmes -
+                    holmes
+                </td>
+                <td align="center">
+                    
+                        De: holmes Para: adler
+                    
+                </td>
+                <td align="center">
+                    2020-11-10 18:24:58
+                </td>
+                <td align="center">
+                    
+                </td>
+                <td>
+                    <a href="#" data-target="#modalDeletaEvento5" data-toggle="modal">&times;</a>
+                </td>
+
+            </tr>
+
+            <!--Modal deleta processo-->
+            <div class="modal fade" id="modalDeletaEvento5" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+            aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title" id="ModalLabel4">Excluir evento</h1>
+                        </div>
+                        <div class="modal-body">
+                            <p>Deseja realmente excluir o evento?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <a type="button" class="btn btn-danger" href="exclui_evento?evento_id=5&ovr_id=1">Excluir</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <tr>
+                <td align="center">
+                    Em verificação física
+                </td>
+                <td align="center">
+                    adler -
+                    adler
+                </td>
+                <td align="center">
+                    
+                        Solicitar Laudo das marcas encontradas!!
+                    
+                </td>
+                <td align="center">
+                    2020-11-10 18:24:58
+                </td>
+                <td align="center">
+                    
+                </td>
+                <td>
+                    <a href="#" data-target="#modalDeletaEvento6" data-toggle="modal">&times;</a>
+                </td>
+
+            </tr>
+
+            <!--Modal deleta processo-->
+            <div class="modal fade" id="modalDeletaEvento6" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+            aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title" id="ModalLabel4">Excluir evento</h1>
+                        </div>
+                        <div class="modal-body">
+                            <p>Deseja realmente excluir o evento?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <a type="button" class="btn btn-danger" href="exclui_evento?evento_id=6&ovr_id=1">Excluir</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            
+        </table>
+    </div>
+</div>
+<div class="row col-sm-12"></div>
+
+<!--Lista de processos-->
+<div class="row col-sm-12">
+    <div class="col-sm-9">
+        <h4>Lista de Processos</h4>
+    </div>
+    <div class="col-sm-3">
+        <button id="btn_processo" type="button" class="btn btn-primary btn-warning form-control"
+                data-toggle="modal" data-target="#processo">Informar processo
+        </button>
+    </div>
+    <div class="col-sm-3"></div>
+    <div class="table-responsive table row col-sm-12">
+        <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive"
+               cellspacing="0"
+               cellpadding="0"
+               id="table_processos">
+            <tr>
+                <th>Tipo de Processo</th>
+                <th>Número</th>
+                <th>Data</th>
+                <th>Excluir</th>
+            </tr>
+            
+            
+            <tr>
+                <td>Sem processos.</td>
+            </tr>
+            
+        </table>
+    </div>
+</div>
+
+</div>
+
+<!--Footer-->
+<div id="bottom" class="row col-sm-12">
+    Sistema AJNA - Receita Federal do Brasil
+</div>
+
+<!--Modais-->
+<div class="modal fade" id="responsavel" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title" id="ModalLabel0">Registra responsável pela ficha</h1>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="responsavelovr" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="ImFiMjJjNWFhODgwZjI3MWYzZWI2OWUyMmEwYzExYTFkYmQzMjI0MjYi.X6ra-g.nW9CExfE1zxMibrnipcsmRF1dJ8"/>
+                    <input type="hidden" name="ovr_id" value="1"/>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label for="tipoprocesso">Nome Responsável</label>
+                        </div>
+                        <div class="col-sm-9">
+                            <select class="form-control" id="responsavel" name="responsavel"><option selected value="adler">adler</option><option value="holmes">holmes</option><option value="ivan">ivan</option><option value="lestrade">lestrade</option><option value="macdonald">macdonald</option><option value="mycroft">mycroft</option><option value="watson">watson</option></select>
+                        </div>
+                    </div>
+                    <input class="btn btn-primary" type="submit" value="Atribuir"/>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="auditorresponsavel" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title" id="ModalLabel21">Auditor responsável pela fiscalização</h1>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="auditorresponsavelovr" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="ImFiMjJjNWFhODgwZjI3MWYzZWI2OWUyMmEwYzExYTFkYmQzMjI0MjYi.X6ra-g.nW9CExfE1zxMibrnipcsmRF1dJ8"/>
+                    <input type="hidden" name="ovr_id" value="1"/>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label for="tipoprocesso">Nome Auditor</label>
+                        </div>
+                        <div class="col-sm-9">
+                            <select class="form-control" id="responsavel" name="responsavel"><option selected value="adler">adler</option><option value="holmes">holmes</option><option value="ivan">ivan</option><option value="lestrade">lestrade</option><option value="macdonald">macdonald</option><option value="mycroft">mycroft</option><option value="watson">watson</option></select>
+                        </div>
+                    </div>
+                    <input class="btn btn-primary" type="submit" value="Atribuir"/>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="mudarsetor" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title" id="ModalLabel23">Transfere ficha para outro Setor</h1>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="mudasetorficha" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="ImFiMjJjNWFhODgwZjI3MWYzZWI2OWUyMmEwYzExYTFkYmQzMjI0MjYi.X6ra-g.nW9CExfE1zxMibrnipcsmRF1dJ8"/>
+                    <input type="hidden" name="ovr_id" value="1"/>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label for="setores">Nome novo Setor</label>
+                        </div>
+                        <div class="col-sm-9">
+                            <select class="form-control" id="setor" name="setor"><option value="2">221b</option><option value="1">God Save the Queen</option><option value="3">SY</option></select>
+                        </div>
+                    </div>
+                    <input class="btn btn-primary" type="submit" value="Transferir"/>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="lavratura" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title" id="ModalLabel1">Registra lavratura de Auto de Infração</h1>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="informalavraturaauto" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="ImFiMjJjNWFhODgwZjI3MWYzZWI2OWUyMmEwYzExYTFkYmQzMjI0MjYi.X6ra-g.nW9CExfE1zxMibrnipcsmRF1dJ8"/>
+                    <input type="hidden" name="ovr_id" value="1"/>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label for="tipoprocesso">Nome Responsável</label>
+                        </div>
+                        <div class="col-sm-9">
+                            <select class="form-control" id="responsavel" name="responsavel"><option selected value="adler">adler</option><option value="holmes">holmes</option><option value="ivan">ivan</option><option value="lestrade">lestrade</option><option value="macdonald">macdonald</option><option value="mycroft">mycroft</option><option value="watson">watson</option></select>
+                        </div>
+                    </div>
+                    <input class="btn btn-primary" type="submit" value="Informar lavratura"/>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="historico" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title" id="ModalLabel">Registra evento da OVR</h1>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="eventoovr" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="ImFiMjJjNWFhODgwZjI3MWYzZWI2OWUyMmEwYzExYTFkYmQzMjI0MjYi.X6ra-g.nW9CExfE1zxMibrnipcsmRF1dJ8"/>
+                    <input type="hidden" name="ovr_id" value="1"/>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label for="tipoevento">Status Atual</label>
+                        </div>
+                        <div class="col-sm-5">
+                            <div class="form-control">Em verificação física</div>
+                        </div>
+                        <div class="col-sm-1">
+                            <label for="tipoevento">Fase</label>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="form-control">Ativa</div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label for="tipoevento">Novo Status</label>
+                        </div>
+                        <div class="col-sm-9">
+                            <select class="form-control" id="tipoevento_id" name="tipoevento_id"><option value="5">Aguardando Laudo Técnico - Suspensa</option><option value="6">Aguardando Laudo de Marcas - Suspensa</option><option value="3">Aguardando Medida Judicial - Suspensa</option><option value="4">Aguardando Providência de Outro Setor - Suspensa</option><option value="7">Aguardando Saneamento - Suspensa</option><option value="1">Aguardando distribuicão - Iniciada</option><option value="12">Arquivamento - Concluída</option><option value="2">Em verificação física - Ativa</option><option value="10">Intimação Não Respondida - Ativa</option><option value="9">Intimação/Notificação - Suspensa</option><option value="8">Recebimento de Saneamento - Ativa</option><option value="11">Retificação do Termo de Guarda - Suspensa</option></select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label for="motivo">Motivo</label>
+                        </div>
+                        <div class="col-sm-9">
+                            <input class="form-control" cols="200" id="motivo" maxlength="200" name="motivo" rows="1" type="text" value="">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            Usuário
+                        </div>
+                        <div class="col-sm-9">
+                            <select class="form-control" id="user_name" name="user_name"><option selected value="adler">adler</option><option value="holmes">holmes</option><option value="ivan">ivan</option><option value="lestrade">lestrade</option><option value="macdonald">macdonald</option><option value="mycroft">mycroft</option><option value="watson">watson</option></select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label for="meramente_informativo">Meramente Informativo</label>
+                        </div>
+                        <div class="col-sm-9">
+                            <input id="meramente_informativo" name="meramente_informativo" type="checkbox" value="y"> <span>Sim</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <label class="btn btn-default btn-choose" for="anexo">
+                            <input id="anexo" name="anexo" type="file" style="display:none"
+                                   onchange="change_anexo(this)"> Informe arquivo a anexar
+                        </label>
+                        <big>
+                            <span class='label label-success' id="upload-file-info"></span>
+                        </big>
+                    </div>
+                    <input class="btn btn-primary" type="submit" value="Informar"/>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="processo" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title" id="ModalLabel2">Registra processo relativo à Ficha</h1>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="processoovr" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="ImFiMjJjNWFhODgwZjI3MWYzZWI2OWUyMmEwYzExYTFkYmQzMjI0MjYi.X6ra-g.nW9CExfE1zxMibrnipcsmRF1dJ8"/>
+                    <input type="hidden" name="ovr_id" value="1"/>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label for="tipoprocesso">Tipo</label>
+                        </div>
+                        <div class="col-sm-9">
+                            <select class="form-control" id="tipoprocesso_id" name="tipoprocesso_id"><option value="1">Dossiê</option><option value="2">Auto de infração</option><option value="3">RFPFP</option></select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label for="motivo">Número</label>
+                        </div>
+                        <div class="col-sm-9">
+                            <input class="form-control" id="numero_processo" name="numero_processo" type="text" value="">
+                        </div>
+                    </div>
+                    <input class="btn btn-primary" type="submit" value="Registrar"/>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="modal fade" id="roteiro" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+     
+<script src="/static/js/jquery.min.js"></script>
+<script src="/static/js/jquery-ui.min.js"></script>
+<script src="/static/js/bootstrap.min.js"> </script>
+<script src="/static/js/jquery.inputmask.js"></script>
+
+
+<script>
+    function change_anexo(ev){
+        console.log(ev.files[0]);
+        if (ev.files[0].size > 6*5120000) {
+            alert('Arquivos devem ser menores que 12MB!!');
+            ev.preventDefault();
+        } else {
+            $('#upload-file-info').html(ev.files[0].name);
+        }
+    }
+
+
+    function mostra_flags(flags_ovr){
+        $('#div_flags_ovr').empty();
+        $.each(flags_ovr, function(i, flag) {
+            $('<button type="button" class="btn btn-primary">').text(flag.nome+ ' ').append(
+            $('<span class="badge" onclick="exclui_flag_ovr(1, ' + flag.id + ')">').text('X')
+            ).appendTo('#div_flags_ovr');
+        });
+    }
+    function exclui_flag_ovr(ovr_id, flag_id){
+        $.getJSON('exclui_flag_ovr', {
+          ovr_id: ovr_id, flag_id: flag_id
+        }, function(flags_ovr) {
+          mostra_flags(flags_ovr);
+        }).fail(function() { alert("Somente o usuário responsável pode executar essa tarefa"); });
+    }
+    function inclui_flag_ovr(ovr_id, flag_nome){
+        $.getJSON('inclui_flag_ovr', {
+          ovr_id: ovr_id, flag_nome: flag_nome
+        }, function(flags_ovr) {
+          mostra_flags(flags_ovr);
+        }).fail(function() { alert("Somente o usuário responsável pode executar essa tarefa"); });
+    }
+    $( function() {
+        var flags = [
+        
+        "Perecível",
+        
+        "Alto valor agregado",
+        
+        "Importação proibida",
+        
+        ];
+        $( "#flags" ).autocomplete({
+          source: flags, minLength: 0
+        }).focus(function () {
+           $(this).autocomplete("search");
+        });
+    } );
+    $('input#flags').bind('keydown', function(e) {
+      if (e.keyCode == 13) {
+        inclui_flag_ovr(1, $('input#flags').val());
+        $(this).val("");
+        event.preventDefault();
+      }
+    });
+
+    $(document).ready(function(){
+        $("#cnpj_fiscalizado").inputmask({
+            mask: ["999.999.999-99","99.999.999/9999-99"],
+            keepStatic: true,
+            removeMaskOnSubmit: true
+        });
+        $("#numeroCEmercante").inputmask("999999999999999", {removeMaskOnSubmit: true});
+        $("#numerodeclaracao").inputmask("99AA9999999999", {removeMaskOnSubmit: true});
+        $("#numero_processo").inputmask({
+            mask: ["99/9999999-9","99999.999999/9999-99"],
+            keepStatic: true,
+            removeMaskOnSubmit: false
+        });
+    });
+
+
+
+
+</script> 
+  </body>
+</html>
