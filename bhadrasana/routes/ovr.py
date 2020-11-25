@@ -365,7 +365,7 @@ def ovr_app(app):
                                         oform.datainicio.data, oform.datafim.data)
             else:
                 ovrs = get_ovr_criadaspor(session, current_user.name,
-                                        oform.datainicio.data, oform.datafim.data)
+                                          oform.datainicio.data, oform.datafim.data)
             exibicao = ExibicaoOVR(session, int(oform.tipoexibicao.data), current_user.id)
             titulos_exibicao = exibicao.get_titulos()
             for ovr in ovrs:
@@ -1029,7 +1029,7 @@ def ovr_app(app):
                 filtro_form = FiltroCEForm(request.form)
                 filtro_form.validate()
                 rvfs, ovrs, infoce = \
-                    consulta_ce_objects(filtro_form.numeroCEmercante.data, session, mongodb)
+                    consulta_ce_objects(filtro_form.numeroCEmercante.data, session)
                 imagens = get_imagens_conhecimento(mongodb,
                                                    filtro_form.numeroCEmercante.data)
         except Exception as err:
