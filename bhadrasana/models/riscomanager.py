@@ -351,7 +351,7 @@ def consulta_container_objects(values: dict, session, mongodb, limit=40):
     return rvfs, ovrs, infoces, dues, eventos
 
 
-def consulta_ce_objects(numero: str, session, mongodb):
+def consulta_ce_objects(numero: str, session):
     if numero is None or len(numero) < 15:
         raise ValueError(' Dados inválidos passados nos parâmetros.'
                          ' Parâmetros numero: 999999999999999 (15 dígitos)')
