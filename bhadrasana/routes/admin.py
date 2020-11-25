@@ -71,8 +71,8 @@ class SetorModel(SupervisorModelView):
     # column_hide_backrefs = False
     column_searchable_list = ['nome']
     # column_filters = ['pai']
-    column_list = ('id', 'nome', 'pai_id')
-    form_columns = ('id', 'nome', 'pai_id')
+    column_list = ('id', 'nome', 'pai_id', 'cod_unidade')
+    form_columns = ('id', 'nome', 'pai_id', 'cod_unidade')
     # inline_models = ['', ]
 
 
