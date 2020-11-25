@@ -43,9 +43,9 @@ acesso, pode também acompanhar pelo Kanban do Setor específico
 Este exemplo utiliza a estrutura descrita a seguir e tem por objetivo mostrar como é possível
 diversos Setores interagirem com todos podendo manter o rastreamento das ações.
 
-Setores demandantes:  NUPEI - ALFSTS - ALFTS/SERAD - ALFTS/EQREXP - ALFTS/COV
+Setores demandantes:  NUPEI-ALFSTS - ALFTS/SERAD - ALFTS/EQREXP
 
-Setores Executores: NUPEI - ALFSTS - ALFTS/SERAD - ALFTS/EQREXP - ALFTS/COV
+Setores Executores: ALFTS/EQREXP - ALFTS/COV
 
 Ver video explicativo: [parte1](parte1.mp4)  [parte2](parte2.mp4)  [parte3](parte3.mp4)
 
@@ -54,6 +54,7 @@ Ver video explicativo: [parte1](parte1.mp4)  [parte2](parte2.mp4)  [parte3](part
 3. Servidor do COV visualiza entrada de fichas/operações (pelo Minhas Fichas ou pelo Kanban)
 4. Servidor do SERAD seleciona CE 002 e encaminha para análise de imagem
 5. Servidor do NUPEI seleciona CE 003 e encaminha para verificação física diretamente
-6. Mostrar visão de Supervisores da DIREP, EQREXP e COV
-7. Servidor do COV analisa imagens. Devolve 001 e encaminha 002 para EQREXP
-8. Mostrar visão de Supervisores da DIREP, EQREXP, COV, NUPEI e ESPEI
+6. Supervisor do EQREXP seleciona CE 004 e encaminha para verificação do COV
+7. Mostrar visão de Supervisores da DIREP, EQREXP e COV
+8. Servidor do COV analisa imagens. Devolve 001 e encaminha 002 para EQREXP
+9. Mostrar visão de Supervisores da DIREP, EQREXP, COV, NUPEI e ESPEI
