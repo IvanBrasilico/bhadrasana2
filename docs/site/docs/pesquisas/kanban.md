@@ -2,14 +2,15 @@
 
 ## Visão computacional aplicada - Aduana Brasileira
 
-### Ficha de Controle de Carga - Manual de usuário
+### Ficha de Controle de Carga - KANBAN
 
 
 A tela Kanban utiliza a metodologia de mesmo nome para exibir rapidamente várias Fichas de interesse, 
 facilitando o acompanhamento das operações de uma Unidade/Divisão/Setor por um gestor, dos casos em
 andamento por um Auditor, ou o acompanhamento das tarefas pessoais. Além disso é possível obter rapidamente
 diversos indicadores: "WIP", "Cycle time médio", etc. Também é uma forma rápida e visual de estimar a carga
-de trabalho atual.
+de trabalho atual. Além de todas as informações exibidas nos cartões, passar com o mouse por cima do cartão
+mostra mais detalhes, incluindo Eventos, dispensando a necessidade de navegar em várias telas.
 
 Pode ser filtrado os intervalos de data (Data de emissão da Ficha de Operação). Há que se tomar cuidado, se houverem 
 operações antigas em qualquer fase, será necessário colocar a data antiga para visualizá-las. 
@@ -37,5 +38,5 @@ sem resultado. Aqui se exibe o total de Fichas no período e o tempo médio deco
 a conclusão da operação.
 
  
-(kanban)[../images/kanban.png]
+![kanban](../images/kanban.png)
 
