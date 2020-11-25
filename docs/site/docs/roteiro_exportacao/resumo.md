@@ -47,7 +47,7 @@ Setores demandantes:  NUPEI - ALFSTS - ALFTS/SERAD - ALFTS/EQREXP - ALFTS/COV
 
 Setores Executores: NUPEI - ALFSTS - ALFTS/SERAD - ALFTS/EQREXP - ALFTS/COV
 
-Ver video explicativo: (video)[video]
+Ver video explicativo: [parte1](parte1.mp4)  [parte2](parte2.mp4)  [parte3](parte3.mp4)
 
 1. Servidor do NUPEI seleciona CE 001 e encaminha para análise de imagem
 2. Servidor do SERAD seleciona CE 001, vê que já tem Operação iniciada e aborta
