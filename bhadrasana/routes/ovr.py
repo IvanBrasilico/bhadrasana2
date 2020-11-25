@@ -33,17 +33,18 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_tiposmercadoria_choice, \
     inclui_flag_ovr, exclui_flag_ovr, get_flags, informa_lavratura_auto, \
     get_relatorios_choice, \
-    executa_relatorio, get_relatorio, get_afrfb, get_itens_roteiro_checked, \
+    executa_relatorio, get_relatorio, get_itens_roteiro_checked, \
     get_flags_choice, cadastra_visualizacao, get_tipos_evento_comfase_choice, \
     get_ovr_criadaspor, get_ovr_empresa, get_tipos_evento_todos, \
     get_delta_date, exporta_planilha_tg, TipoPlanilha, \
     exclui_item_tg, get_setores_choice, get_objectives_setor, \
     executa_okr_results, gera_okrobjective, \
     exclui_okrobjective, get_key_results_choice, gera_okrmeta, exclui_okrmeta, \
-    get_usuarios_setores, get_setores_cpf, get_ovr_auditor, get_ovr_passagem, muda_setor_ovr, \
+    get_usuarios_setores_choice, get_setores_cpf, get_ovr_auditor, get_ovr_passagem, muda_setor_ovr, \
     monta_ovr_dict, get_docx, inclui_docx, get_docx_choices, get_recintos_dte, excluir_processo, \
     excluir_evento, get_ovr_visao_usuario, get_setores_cpf_choice, get_processo, \
-    get_ovr_conhecimento, get_ovr_due, get_recintos_unidade, get_setores, calcula_tempos_por_fase
+    get_ovr_conhecimento, get_ovr_due, get_recintos_unidade, calcula_tempos_por_fase, \
+    get_setores_unidade_choice, get_afrfb_choice
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects, consulta_ce_objects, \
     consulta_due_objects
@@ -110,10 +111,8 @@ def ovr_app(app):
             tiposeventos = get_tipos_evento_comfase_choice(session)
             usuario = get_usuario(session, current_user.name)
             recintos = get_recintos_unidade(session, usuario.setor.cod_unidade)
-            # TODO: TG-239
-            setores = get_setores(session)
-            listasetores = get_setores_choice(session)
-            responsaveis = get_usuarios_setores(session, setores)
+            listasetores = get_setores_unidade_choice(session, usuario.setor.cod_unidade)
+            responsaveis = get_usuarios_setores_choice(session, [usuario.setor_id])
             ovr_form = OVRForm(tiposeventos=tiposeventos, recintos=recintos,
                                numeroCEmercante=request.args.get('numeroCEmercante'))
             tiposprocesso = get_tipos_processo(session)
@@ -190,6 +189,9 @@ def ovr_app(app):
                                 ovr_form.nome_fiscalizado.data = fiscalizado.nome
                         except ValueError as err:
                             flash(err)
+                        if ovr.fase > 3:
+                            historico_form.meramente_informativo.data = True
+                            historico_form.meramente_informativo.render_kw = {'read_only': ''}
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
@@ -345,7 +347,7 @@ def ovr_app(app):
         responsavel_form = ResponsavelOVRForm(responsaveis=responsaveis,
                                               responsavel=current_user.name)
         setores = get_setores_cpf(session, current_user.name)
-        responsaveis_setor = get_usuarios_setores(session, setores)
+        responsaveis_setor = get_usuarios_setores_choice(session, setores)
         responsavel_form_setor = ResponsavelOVRForm(responsaveis=responsaveis_setor,
                                                     responsavel=current_user.name)
         historico_ovr_form = HistoricoOVRForm(
@@ -591,7 +593,7 @@ def ovr_app(app):
         historico_ovr_form = HistoricoOVRForm(request.form)
         user_name = current_user.name
         try:
-            print(historico_ovr_form.data.items(), user_name)
+            # print(historico_ovr_form.data.items(), user_name)
             evento = gera_eventoovr(session, dict(historico_ovr_form.data.items()),
                                     user_name=user_name)
             # TODO: Mover para ação específica ou para gera_eventoovr
@@ -681,7 +683,8 @@ def ovr_app(app):
             listatgovr = lista_tgovr(session, ovr_id)
             marcas = get_marcas_choice(session)
             tipos = get_tiposmercadoria_choice(session)
-            lista_afrfb = get_afrfb(session)
+            usuario = get_usuario(session, current_user.name)
+            lista_afrfb = get_afrfb_choice(session, usuario.setor.cod_unidade)
             if item_id:
                 tgovr = get_tgovr(session, item_id)
                 oform = TGOVRForm(**tgovr.__dict__, marcas=marcas,

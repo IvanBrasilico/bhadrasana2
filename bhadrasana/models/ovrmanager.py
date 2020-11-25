@@ -555,9 +555,9 @@ def informa_lavratura_auto(session, ovr_id: int,
     """Atualiza campo responsável na OVR. Gera evento correspondente.
 
     :param session: Conexão com banco SQLAlchemy
-    :param ovr_id: ID da OVR a atribuir responsável
-    :param responsavel: CPF do novo responsável
-    :param user_name: CPF do responsável atual
+    :param ovr_id: ID da OVR a informar lavratura
+    :param responsavel: CPF do responsável pela lavratura
+    :param user_name: CPF do usuário que está informando
     :return: OVR modificado
     """
     try:
@@ -568,11 +568,12 @@ def informa_lavratura_auto(session, ovr_id: int,
             raise Exception('Não há evento de lavratura cadastrado na Base!!')
         evento_params = {'tipoevento_id': tipoevento.id,
                          'motivo': 'Ficha encerrada, auto lavrado',
-                         'user_name': responsavel,  # Novo Responsável
+                         'user_name': responsavel,  # Responsável pela lavratura
                          'ovr_id': ovr.id,
                          }
         evento = gera_eventoovr(session, evento_params, commit=False, user_name=user_name)
-        ovr.responsavel_cpf = responsavel  # Novo responsavel
+        # Deixa Ficha na carga do Auditor que lavrou o Auto, para controle deste
+        ovr.responsavel_cpf = responsavel
         session.add(evento)
         session.add(ovr)
         session.commit()
@@ -863,7 +864,7 @@ def get_usuarios(session) -> List[Tuple[str, str]]:
     return sorted(usuarios_list, key=lambda x: x[1])
 
 
-def get_usuarios_setores(session, setores: list) -> List[Tuple[str, str]]:
+def get_usuarios_setores_choice(session, setores: list) -> List[Tuple[str, str]]:
     if not setores or not isinstance(setores, list) or len(setores) == 0:
         raise ValueError('get_usuarios_setores precisa de uma lista!!')
     if isinstance(setores[0], Setor):
@@ -878,9 +879,17 @@ def get_usuarios_setores(session, setores: list) -> List[Tuple[str, str]]:
     return sorted(usuarios_list, key=lambda x: x[1])
 
 
-def get_afrfb(session) -> Usuario:
-    # TODO: Filtrar Usuários do Setor/ Unidade / AFRFB ???
-    return get_usuarios(session)
+def get_afrfb(session, cod_unidade: str) -> List[Usuario]:
+    setores = get_setores_unidade(session, cod_unidade)
+    ids_setores = [setor.id for setor in setores]
+    return session.query(Usuario).filter(Usuario.cargo == 0). \
+        filter(Usuario.setor_id.in_(ids_setores)).all()
+
+
+def get_afrfb_choice(session, cod_unidade: str) -> List[Tuple[str, str]]:
+    usuarios = get_afrfb(session, cod_unidade)
+    usuarios_list = [(usuario.cpf, usuario.nome) for usuario in usuarios]
+    return sorted(usuarios_list, key=lambda x: x[1])
 
 
 def usuario_index(usuarios: list, pcpf: str) -> int:
@@ -927,8 +936,18 @@ def get_setores(session) -> List[Setor]:
     return session.query(Setor).all()
 
 
+def get_setores_unidade(session, cod_unidade: str) -> List[Setor]:
+    return session.query(Setor).filter(Setor.cod_unidade == cod_unidade).all()
+
+
 def get_setores_choice(session) -> List[Tuple[str, str]]:
     setores = session.query(Setor).all()
+    setores_list = [(setor.id, setor.nome) for setor in setores]
+    return sorted(setores_list, key=lambda x: x[1])
+
+
+def get_setores_unidade_choice(session, cod_unidade: str) -> List[Setor]:
+    setores = get_setores_unidade(session, cod_unidade)
     setores_list = [(setor.id, setor.nome) for setor in setores]
     return sorted(setores_list, key=lambda x: x[1])
 
