@@ -30,7 +30,7 @@ o ["Minhas Fichas"](../pesquisas/minhasfichas.md),
 6. Encaminhar OVR e Taseda para assinatura, no canal específico
     * A recomendação é imprimir antes ou na hora o Taseda pelo Sistema, e preencher em papel, pegando as assinaturas.
     * Já o OVR, gerar depois, já com todas as informações no Sistema, e mandar pelo e-Assina para o Recinto
-7. Se houver necessidade, utilizar gera docx para gerar formulários extras ou personalizados [Gerador de .docx](../exemplos/gera_docx.md)
+7. Se houver necessidade, utilizar gera docx para gerar formulários extras ou personalizados [Gerador de .docx](../../exemplos/gera_docx/)
 8. Anexar formulários assinados em Eventos para registro 
 9. Encaminhar Ficha para o Supervisor
 10. Supervisor consulta sua caixa com frequência, acompanha ações, devolve para revisão ou complementação se necessário.

@@ -26,6 +26,7 @@ nav:
     - "Roteiro de uso na importação":
         - "Roteiro geral": roteiro_importacao/resumo.md
     - "Novidades":
+        - "Gerador de documentos": exemplos/gera_docx.md
         - "Painel de OKRs - 25/09/2020": novidades/20200925.md
         - "Função 'Informar Apreensão sem Termo de Guarda' - 17/09/2020": novidades/20200917.md
         - "Interface Telegram - 16/Junho/2020": novidades/20200616.md
