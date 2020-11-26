@@ -21,6 +21,7 @@ import os
 import sys
 
 from pymongo import MongoClient
+
 sys.path.append('../ajna_api')
 from ajna_commons.flask.conf import DATABASE, MONGODB_URI
 from ajna_commons.flask.log import logger

@@ -253,10 +253,10 @@ def get_ovr_visao_usuario(session, datainicio: datetime,
         q = session.query(OVR).join(
             flags_table).filter(flags_table.c.flag_id.in_(lista_flags)). \
             filter(filtro).filter(OVR.datahora.between(datainicio, datafim)). \
-            orderby(OVR.datahora)
+            order_by(OVR.datahora)
     else:
         q = session.query(OVR).filter(filtro) \
-            .filter(OVR.datahora.between(datainicio, datafim))
+            .filter(OVR.datahora.between(datainicio, datafim)).order_by(OVR.datahora)
     logger.info('get_ovr_visao_usuario - query' + str(q))
     return q.all()
 
