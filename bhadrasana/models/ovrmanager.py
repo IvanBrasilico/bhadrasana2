@@ -438,9 +438,7 @@ def inclui_flag_ovr(session, ovr_id, flag_nome, user_name) -> List[Flag]:
         Flag.nome == flag_nome).one_or_none()
     # logger.info(flag, flag_nome)
     if flag:
-        return gerencia_flag_ovr(session, ovr_id,
-                                 flag.id,
-                                 inclui=True)
+        return gerencia_flag_ovr(session, ovr_id, flag.id, inclui=True)
     return []
 
 
