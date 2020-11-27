@@ -2,12 +2,14 @@ import io
 from typing import List, Union
 
 from ajna_commons.utils.images import mongo_image
+from bhadrasana.forms.exibicao_ovr import ExibicaoOVR
 from bhadrasana.models import get_usuario
 from bhadrasana.models.laudo import get_empresa
 from bhadrasana.models.ovr import FonteDocx
 from bhadrasana.models.ovrmanager import get_ovr_one, MarcaManager, get_tgovr_one
 from bhadrasana.models.rvf import RVF
 from bhadrasana.models.rvfmanager import get_rvf_one
+from bhadrasana.models.virasana_manager import get_due
 
 
 def not_implemented():
@@ -31,7 +33,8 @@ class OVRDict():
 
     def get_dict(self, **kwargs):
         method = self.formatos[self.formato]
-        return method(**kwargs)
+        result = method(**kwargs)
+        return result
 
     def monta_ovr_dict(self, db, session, id: int,
                        explode=True, rvfs=True, imagens=True) -> dict:
@@ -57,7 +60,9 @@ class OVRDict():
             if imagens:
                 lista_imagens = []
                 for rvf_dict in rvfs_dicts:
-                    for imagem_dict in rvf_dict['imagens']:
+                    # Garantir que as imagens sigam a ordem definida pelo usuário na exbibição
+                    imagens_rvf = sorted(rvf_dict['imagens'], key=lambda x: x['ordem'])
+                    for imagem_dict in imagens_rvf:
                         image = mongo_image(db, imagem_dict['imagem'])
                         imagem_dict['content'] = io.BytesIO(image)
                         lista_imagens.append(imagem_dict)
@@ -82,6 +87,11 @@ class OVRDict():
             rvf_dump['recinto'] = ovr.recinto.nome
         if ovr.setor:
             rvf_dump['setor'] = ovr.setor.nome
+        exibicao = ExibicaoOVR(session, 1, '')
+        if ovr.numerodeclaracao:
+            rvf_dump['resumo_due'] = get_due(db, ovr.numerodeclaracao)
+        if ovr.numeroCEmercante:
+            rvf_dump['resumo_mercante'] = exibicao.get_mercante_resumo(ovr)
         return rvf_dump
 
     def monta_tgovr_dict(self, db, session, id: int) -> dict:

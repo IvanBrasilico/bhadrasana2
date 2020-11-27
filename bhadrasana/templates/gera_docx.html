@@ -122,6 +122,16 @@
                     </div>
                 </div>
                 <div class="row">
+                    <div class="col-sm-2">
+                        <label for="fonte_docx_id">ID do objeto para preenchimento (opcional - para teste rápido)</label>
+                    </div>
+                    <div class="col-sm-4">
+                        {{ modeloform.oid(class='form-control') }}
+                    </div>
+                    <div class="col-sm-4">
+                    </div>
+                </div>
+                <div class="row">
                     <div class="col-sm-12">
                         <label class="btn btn-default btn-choose" for="documento">
                             <input id="documento" name="documento" type="file" style="display:none"
@@ -134,8 +144,13 @@
                 </div>
                 <div class="row">
                     &nbsp;<br>
-                    <div class="col-sm-12">
-                        <input class="btn btn-primary" type="submit" value="Fazer Upload de novo modelo"/>
+                    <div class="col-sm-3">
+                        <input class="btn btn-primary" type="submit" name="incluir"
+                               value="Fazer Upload de novo modelo"/>
+                    </div>
+                    <div class="col-sm-3">
+                        <input class="btn btn-primary" type="submit" name="testerapido"
+                               value="Teste rápido (não salvar)"/>
                     </div>
                 </div>
             </form>

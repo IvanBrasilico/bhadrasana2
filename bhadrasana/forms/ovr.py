@@ -290,6 +290,7 @@ class ModeloDocxForm(FlaskForm):
     id = IntegerField()
     filename = StringField()
     fonte_docx_id = SelectField('Tipo de fonte', default=-1)
+    oid = IntegerField('ID do objeto que será fonte para preenchimento do docx')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

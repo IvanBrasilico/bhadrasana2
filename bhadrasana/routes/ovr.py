@@ -9,6 +9,7 @@ import pandas as pd
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
 from gridfs import GridFS
+from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.utils import redirect
 
 from ajna_commons.flask.log import logger
@@ -23,7 +24,7 @@ from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
     ModeloDocxForm, EscaneamentoOperadorForm, FiltroAbasForm
 from bhadrasana.models import delete_objeto, get_usuario, usuario_tem_perfil_nome
 from bhadrasana.models.laudo import get_empresa, get_empresas_nome, get_sats_cnpj
-from bhadrasana.models.ovr import OVR, OKRObjective, faseOVR
+from bhadrasana.models.ovr import OVR, OKRObjective, faseOVR, FonteDocx
 from bhadrasana.models.ovr_dict_repr import OVRDict
 from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_ovr_filtro, gera_eventoovr, gera_processoovr, get_tipos_processo, lista_itemtg, \
@@ -112,7 +113,8 @@ def ovr_app(app):
             usuario = get_usuario(session, current_user.name)
             recintos = get_recintos_unidade(session, usuario.setor.cod_unidade)
             listasetores = get_setores_unidade_choice(session, usuario.setor.cod_unidade)
-            responsaveis = get_usuarios_setores_choice(session, [usuario.setor_id])
+            ids_setores_usuario = [setor.id for setor in get_setores_cpf(session, usuario.cpf)]
+            responsaveis = get_usuarios_setores_choice(session, ids_setores_usuario)
             ovr_form = OVRForm(tiposeventos=tiposeventos, recintos=recintos,
                                numeroCEmercante=request.args.get('numeroCEmercante'))
             tiposprocesso = get_tipos_processo(session)
@@ -1473,6 +1475,38 @@ def ovr_app(app):
             flash(str(err))
         return render_template('gera_docx.html')
 
+    def gerar_arquivos_docx(db, session, documento, filename, fonte_docx_id, oid):
+        out_filename = '{}_{}_{}.docx'.format(
+            filename,
+            oid,
+            datetime.strftime(datetime.now(), '%Y-%m-%dT%H-%M-%S')
+        )
+        try:
+            ovr_dict = OVRDict(fonte_docx_id).get_dict(
+                db=db, session=session, id=oid)
+        except NoResultFound:
+            raise NoResultFound('{} {} não encontrado!'.format(
+                FonteDocx(fonte_docx_id), oid))
+        print(ovr_dict)
+        if isinstance(ovr_dict, list):
+            if len(ovr_dict) == 0:
+                raise NoResultFound(f'Marcas não encontradas na ovr {oid}.')
+            logger.info('Gerando marcas')
+            arquivos = []
+            for odict in ovr_dict:
+                document = get_doc_generico_ovr(odict, documento,
+                                                current_user.name)
+                nome_arquivo = '%s_%s.docx' % (out_filename[:-4], odict.get('nome'))
+                arquivos.append(nome_arquivo)
+                document.save(os.path.join(
+                    get_user_save_path(), nome_arquivo))
+        else:
+            document = get_doc_generico_ovr(ovr_dict, documento,
+                                            current_user.name)
+            document.save(os.path.join(get_user_save_path(), out_filename))
+            arquivos = [out_filename]
+        return arquivos
+
     @app.route('/gera_docx', methods=['GET', 'POST'])
     @login_required
     def gera_docx():
@@ -1494,31 +1528,12 @@ def ovr_app(app):
                     return redirect(url_for('gera_docx'))
                 elif request.form.get('preencher'):
                     documento = docx.get_documento(db)
-                    out_filename = '{}_{}_{}.docx'.format(
-                        docx.filename,
-                        formdocx.oid.data,
-                        datetime.strftime(datetime.now(), '%Y-%m-%dT%H-%M-%S')
-                    )
-                    ovr_dict = OVRDict(docx.fonte_docx_id).get_dict(
-                        db=db, session=session, id=formdocx.oid.data)
-                    # print(ovr_dict)
-                    if isinstance(ovr_dict, list):
-                        arquivos = []
-                        for odict in ovr_dict:
-                            document = get_doc_generico_ovr(odict, documento,
-                                                            current_user.name)
-                            nome_arquivo = '%s_%s.docx' % (out_filename[:-4], odict.get('nome'))
-                            arquivos.append(nome_arquivo)
-                            document.save(os.path.join(
-                                get_user_save_path(), nome_arquivo))
-                        return render_template('gera_docx.html',
-                                               formdocx=formdocx,
-                                               modeloform=modeloform,
-                                               arquivos=arquivos)
-                    else:
-                        document = get_doc_generico_ovr(ovr_dict, documento,
-                                                        current_user.name)
-                        document.save(os.path.join(get_user_save_path(), out_filename))
+                    arquivos = gerar_arquivos_docx(db, session, documento, docx.filename,
+                                                   docx.fonte_docx_id, formdocx.oid.data)
+                    return render_template('gera_docx.html',
+                                           formdocx=formdocx,
+                                           modeloform=modeloform,
+                                           arquivos=arquivos)
                 elif request.form.get('visualizar'):
                     ovr_dict = OVRDict(docx.fonte_docx_id).get_dict(
                         db=db, session=session, id=formdocx.oid.data)
@@ -1531,7 +1546,7 @@ def ovr_app(app):
                         #    rvf.pop('imagens', None)
                     return render_template('gera_docx.html', formdocx=formdocx,
                                            modeloform=modeloform, ovr_dict=ovr_dict)
-                else:
+                else:  # Baixar modelo
                     documento = docx.get_documento(db)
                     out_filename = '{}_{}.docx'.format(
                         docx.filename,
@@ -1539,7 +1554,7 @@ def ovr_app(app):
                     )
                     with open(os.path.join(get_user_save_path(), out_filename), 'wb') as out:
                         out.write(documento.read())
-                return redirect('static/%s/%s' % (current_user.name, out_filename))
+                    return redirect('static/%s/%s' % (current_user.name, out_filename))
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
@@ -1560,10 +1575,21 @@ def ovr_app(app):
                 validfile, mensagem = \
                     valid_file(file, extensions=['docx'])
                 if validfile:
-                    inclui_docx(db, session,
-                                modeloform.filename.data,
-                                modeloform.fonte_docx_id.data,
-                                file)
+                    if request.form.get('incluir'):  # Inclui docx no mongo
+                        inclui_docx(db, session,
+                                    modeloform.filename.data,
+                                    modeloform.fonte_docx_id.data,
+                                    file)
+                    else:  # Apenas preenche para teste rápido
+                        arquivos = gerar_arquivos_docx(db, session, file,
+                                                       modeloform.filename.data,
+                                                       modeloform.fonte_docx_id.data,
+                                                       modeloform.oid.data)
+                        formdocx = FiltroDocxForm()
+                        return render_template('gera_docx.html',
+                                               formdocx=formdocx,
+                                               modeloform=modeloform,
+                                               arquivos=arquivos)
                 else:
                     flash(mensagem)
         except Exception as err:
