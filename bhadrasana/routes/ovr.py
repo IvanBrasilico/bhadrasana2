@@ -9,23 +9,20 @@ import pandas as pd
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
 from gridfs import GridFS
-from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.utils import redirect
 
 from ajna_commons.flask.log import logger
-from ajna_commons.utils.docx_utils import get_doc_generico_ovr
 from bhadrasana.analises.escaneamento_operador import sorteia_GMCIs
 from bhadrasana.forms.exibicao_ovr import ExibicaoOVR, TipoExibicao
 from bhadrasana.forms.filtro_container import FiltroContainerForm, FiltroCEForm, FiltroDUEForm
 from bhadrasana.forms.filtro_empresa import FiltroEmpresaForm
 from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
     ProcessoOVRForm, ItemTGForm, ResponsavelOVRForm, TGOVRForm, FiltroRelatorioForm, \
-    FiltroMinhasOVRsForm, OKRObjectiveForm, OKRMetaForm, SetorOVRForm, FiltroDocxForm, \
-    ModeloDocxForm, EscaneamentoOperadorForm, FiltroAbasForm
+    FiltroMinhasOVRsForm, OKRObjectiveForm, OKRMetaForm, SetorOVRForm, EscaneamentoOperadorForm,\
+    FiltroAbasForm
 from bhadrasana.models import delete_objeto, get_usuario, usuario_tem_perfil_nome
 from bhadrasana.models.laudo import get_empresa, get_empresas_nome, get_sats_cnpj
-from bhadrasana.models.ovr import OVR, OKRObjective, faseOVR, FonteDocx
-from bhadrasana.models.ovr_dict_repr import OVRDict
+from bhadrasana.models.ovr import OVR, OKRObjective, faseOVR
 from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_ovr_filtro, gera_eventoovr, gera_processoovr, get_tipos_processo, lista_itemtg, \
     get_itemtg, get_recintos, \
@@ -42,7 +39,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     executa_okr_results, gera_okrobjective, \
     exclui_okrobjective, get_key_results_choice, gera_okrmeta, exclui_okrmeta, \
     get_usuarios_setores_choice, get_setores_cpf, get_ovr_auditor, get_ovr_passagem, \
-    muda_setor_ovr, monta_ovr_dict, get_docx, inclui_docx, get_docx_choices, get_recintos_dte, \
+    muda_setor_ovr, get_recintos_dte, \
     excluir_processo, excluir_evento, get_ovr_visao_usuario, get_setores_cpf_choice, \
     get_processo, get_ovr_conhecimento, get_ovr_due, get_recintos_unidade, \
     calcula_tempos_por_fase, get_setores_unidade_choice, get_afrfb_choice
@@ -1454,150 +1451,6 @@ def ovr_app(app):
             flash(str(type(err)))
             flash(str(err))
         return render_template('cen_rilo.html', oform=filtro_form)
-
-    @app.route('/exporta_docx', methods=['GET'])
-    @login_required
-    def exporta_docx():
-        """Preenche um docx com dados da OVR"""
-        session = app.config['dbsession']
-        db = app.config['mongo_risco']
-        try:
-            ovr_id = request.values['ovr_id']
-            out_filename = 'relatorio%s.docx' % ovr_id
-            ovr_dict = monta_ovr_dict(db, session, int(ovr_id))
-            document = get_doc_generico_ovr(ovr_dict, 'relatorio.docx')
-            document.save(os.path.join(get_user_save_path(), out_filename))
-            return redirect('static/%s/%s' % (current_user.name, out_filename))
-        except Exception as err:
-            logger.error(err, exc_info=True)
-            flash('Erro! Detalhes no log da aplicação.')
-            flash(str(type(err)))
-            flash(str(err))
-        return render_template('gera_docx.html')
-
-    def gerar_arquivos_docx(db, session, documento, filename, fonte_docx_id, oid):
-        out_filename = '{}_{}_{}.docx'.format(
-            filename,
-            oid,
-            datetime.strftime(datetime.now(), '%Y-%m-%dT%H-%M-%S')
-        )
-        try:
-            ovr_dict = OVRDict(fonte_docx_id).get_dict(
-                db=db, session=session, id=oid)
-        except NoResultFound:
-            raise NoResultFound('{} {} não encontrado!'.format(
-                FonteDocx(fonte_docx_id), oid))
-        print(ovr_dict)
-        if isinstance(ovr_dict, list):
-            if len(ovr_dict) == 0:
-                raise NoResultFound(f'Marcas não encontradas na ovr {oid}.')
-            logger.info('Gerando marcas')
-            arquivos = []
-            for odict in ovr_dict:
-                document = get_doc_generico_ovr(odict, documento,
-                                                current_user.name)
-                nome_arquivo = '%s_%s.docx' % (out_filename[:-4], odict.get('nome'))
-                arquivos.append(nome_arquivo)
-                document.save(os.path.join(
-                    get_user_save_path(), nome_arquivo))
-        else:
-            document = get_doc_generico_ovr(ovr_dict, documento,
-                                            current_user.name)
-            document.save(os.path.join(get_user_save_path(), out_filename))
-            arquivos = [out_filename]
-        return arquivos
-
-    @app.route('/gera_docx', methods=['GET', 'POST'])
-    @login_required
-    def gera_docx():
-        """Preenche um docx com dados da Fonte especicada (OVR, RVF, etc)"""
-        session = app.config['dbsession']
-        db = app.config['mongo_risco']
-        formdocx = FiltroDocxForm()
-        modeloform = ModeloDocxForm()
-        try:
-            lista_docx = get_docx_choices(session)
-            formdocx = FiltroDocxForm(lista_docx=lista_docx)
-            if request.method == 'POST':
-                formdocx = FiltroDocxForm(request.form, lista_docx=lista_docx)
-                formdocx.validate()
-                docx = get_docx(session, formdocx.docx_id.data)
-                if request.form.get('excluir'):
-                    session.delete(docx)
-                    session.commit()
-                    return redirect(url_for('gera_docx'))
-                elif request.form.get('preencher'):
-                    documento = docx.get_documento(db)
-                    arquivos = gerar_arquivos_docx(db, session, documento, docx.filename,
-                                                   docx.fonte_docx_id, formdocx.oid.data)
-                    return render_template('gera_docx.html',
-                                           formdocx=formdocx,
-                                           modeloform=modeloform,
-                                           arquivos=arquivos)
-                elif request.form.get('visualizar'):
-                    ovr_dict = OVRDict(docx.fonte_docx_id).get_dict(
-                        db=db, session=session, id=formdocx.oid.data)
-                    if isinstance(ovr_dict, list):
-                        ovr_dict = ovr_dict[0]
-                    if isinstance(ovr_dict, dict):
-                        ovr_dict.pop('historico', None)
-                        # ovr_dict.pop('tgs', None)
-                        # for rvf in ovr_dict.get('rvfs', []):
-                        #    rvf.pop('imagens', None)
-                    return render_template('gera_docx.html', formdocx=formdocx,
-                                           modeloform=modeloform, ovr_dict=ovr_dict)
-                else:  # Baixar modelo
-                    documento = docx.get_documento(db)
-                    out_filename = '{}_{}.docx'.format(
-                        docx.filename,
-                        datetime.strftime(datetime.now(), '%Y-%m-%dT%H-%M-%S')
-                    )
-                    with open(os.path.join(get_user_save_path(), out_filename), 'wb') as out:
-                        out.write(documento.read())
-                    return redirect('static/%s/%s' % (current_user.name, out_filename))
-        except Exception as err:
-            logger.error(err, exc_info=True)
-            flash('Erro! Detalhes no log da aplicação.')
-            flash(str(type(err)))
-            flash(str(err))
-        return render_template('gera_docx.html', formdocx=formdocx, modeloform=modeloform)
-
-    @app.route('/novo_docx', methods=['POST'])
-    @login_required
-    def novo_docx():
-        """Cadastro um novo modelo docx"""
-        session = app.config['dbsession']
-        db = app.config['mongo_risco']
-        try:
-            modeloform = ModeloDocxForm(request.form)
-            file = request.files.get('documento')
-            if file:
-                validfile, mensagem = \
-                    valid_file(file, extensions=['docx'])
-                if validfile:
-                    if request.form.get('incluir'):  # Inclui docx no mongo
-                        inclui_docx(db, session,
-                                    modeloform.filename.data,
-                                    modeloform.fonte_docx_id.data,
-                                    file)
-                    else:  # Apenas preenche para teste rápido
-                        arquivos = gerar_arquivos_docx(db, session, file,
-                                                       modeloform.filename.data,
-                                                       modeloform.fonte_docx_id.data,
-                                                       modeloform.oid.data)
-                        formdocx = FiltroDocxForm()
-                        return render_template('gera_docx.html',
-                                               formdocx=formdocx,
-                                               modeloform=modeloform,
-                                               arquivos=arquivos)
-                else:
-                    flash(mensagem)
-        except Exception as err:
-            logger.error(err, exc_info=True)
-            flash('Erro! Detalhes no log da aplicação.')
-            flash(str(type(err)))
-            flash(str(err))
-        return redirect(url_for('gera_docx'))
 
     @app.route('/escaneamento_operador', methods=['GET', 'POST'])
     @login_required

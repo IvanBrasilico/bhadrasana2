@@ -28,6 +28,7 @@ from ajna_commons.flask.log import logger
 from bhadrasana.models import db_session
 from bhadrasana.routes.admin import admin_app
 from bhadrasana.routes.ovr import ovr_app
+from bhadrasana.routes.ovr2 import ovr2_app
 from bhadrasana.routes.risco import risco_app
 from bhadrasana.routes.rvf import rvf_app
 from bhadrasana.views import configure_app
@@ -45,6 +46,7 @@ if os.environ.get('SESSION_COOKIE'):
 risco_app(app)
 rvf_app(app)
 ovr_app(app)
+ovr2_app(app)
 admin_app(app, db_session)
 
 

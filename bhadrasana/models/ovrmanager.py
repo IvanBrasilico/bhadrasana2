@@ -261,6 +261,17 @@ def get_ovr_visao_usuario(session, datainicio: datetime,
     return q.all()
 
 
+def get_ovrs_abertas_flags(session, usuario_cpf: str, lista_flags: list) -> List[OVR]:
+    """Traz ovrs nas primeiras fases com flags e responsabilidade do usuário."""
+    filtro = or_(OVR.responsavel_cpf == usuario_cpf,
+                 OVR.cpfauditorresponsavel == usuario_cpf)
+    q = session.query(OVR).join(
+        flags_table).filter(flags_table.c.flag_id.in_(lista_flags)). \
+        filter(filtro).order_by(OVR.datahora)
+    logger.info('get_ovrs_abertas_flags - query' + str(q))
+    return q.all()
+
+
 def calcula_tempos_por_fase(listafichas: List[OVR]) -> dict:
     """Recebe lista de OVRs, percorre calculando tempo de acordo com a fase.
 
