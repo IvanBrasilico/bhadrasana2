@@ -175,7 +175,6 @@ def ovr2_app(app):
             usuario = get_usuario(session, current_user.name)
             if usuario is None:
                 raise Exception('Erro: Usuário não encontrado!')
-            setores = get_setores_cpf(session, current_user.id)
             flags = get_flags(session)
             flags = [flag.id for flag in flags if 'contraf' in flag.nome.lower()]
             supervisor = usuario_tem_perfil_nome(session, current_user.name, 'Supervisor')

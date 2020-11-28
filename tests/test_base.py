@@ -29,6 +29,17 @@ class BaseTestCase(unittest.TestCase):
         assert isinstance(umtipoevento[0], int)
         assert isinstance(umtipoevento[1], str)
 
+    def create_setor(self, oid: str, nome: str):
+        setor = self.session.query(Setor).filter(Setor.id == oid).one_or_none()
+        if setor:
+            return setor
+        setor = Setor()
+        setor.id = oid
+        setor.nome = nome
+        self.session.add(setor)
+        self.session.commit()
+        return setor
+
     def create_usuario(self, cpf, nome, setor: Setor = None):
         usuario = self.session.query(Usuario).filter(Usuario.cpf == cpf).one_or_none()
         if usuario:

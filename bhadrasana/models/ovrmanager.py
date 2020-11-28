@@ -489,9 +489,16 @@ def atribui_responsavel_ovr(session, ovr_id: int,
     """
     try:
         ovr = get_ovr(session, ovr_id)
-        # Se Usuário for Supervisor, pode atribuir à vontade.
+        # Se Usuário for Supervisor E está nos seus Setores, pode atribuir à vontade.
         # Senão, precisa ser responsável atual
-        if not usuario_tem_perfil_nome(session, user_name, 'Supervisor'):
+        checar = True
+        if usuario_tem_perfil_nome(session, user_name, 'Supervisor'):
+            setores = get_setores_cpf(session, user_name)
+            for setor in setores:
+                if ovr.setor_id == setor.id:
+                    print('Checagem de setor OK:', ovr.setor_id, setor)
+                    checar = False
+        if checar:
             valida_mesmo_responsavel_user_name(session, ovr_id, user_name)
         if auditor:
             tipoevento = session.query(TipoEventoOVR).filter(

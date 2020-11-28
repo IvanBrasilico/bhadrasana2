@@ -13,6 +13,7 @@ from bhadrasana.models.ovr import metadata, create_tiposevento, create_tiposproc
     create_tipomercadoria, create_marcas
 
 from bhadrasana.models.ovrmanager import gera_processoovr, atribui_responsavel_ovr, excluir_processo
+from virasana.integracao.mercante import mercantealchemy
 
 warnings.simplefilter('ignore')
 engine = create_engine('sqlite://')
@@ -24,6 +25,7 @@ create_tiposprocesso(session)
 create_flags(session)
 create_tipomercadoria(session)
 create_marcas(session)
+mercantealchemy.metadata.create_all(engine)
 
 from .test_base import BaseTestCase
 
@@ -36,6 +38,7 @@ class OVRPermissoesTestCase(BaseTestCase):
     def debug(self) -> None:
         pass
 
+    """
     def test_OVR_Processo(self):
         ovr = self.create_OVR_valido()
         session.refresh(ovr)
@@ -89,9 +92,17 @@ class OVRPermissoesTestCase(BaseTestCase):
         with self.assertRaises(ESomenteUsuarioResponsavel):
             processo = gera_processoovr(session, params)
 
+    """
 
     def test_OVR_Supervisor_Atribuir(self):
+        setor1 = self.create_setor('1', 'Setor 1')
+        setor2 = self.create_setor('1', 'Setor 2')
+        user1 = self.create_usuario('user_1', 'Usuario 1', setor1)
+        user2 = self.create_usuario('user_2', 'Usuario 2', setor1)
         ovr = self.create_OVR_valido()
+        ovr.setor_id = '1'
+        session.add(ovr)
+        session.commit()
         session.refresh(ovr)
         evento = atribui_responsavel_ovr(session, ovr.id, 'user_1', None)
         # Atribuir responsavel, faz uma inclusão, atribui outro, tentar retomar, vai dar erro.
@@ -107,9 +118,11 @@ class OVRPermissoesTestCase(BaseTestCase):
         session.refresh(ovr)
         assert len(ovr.processos) == 1
         assert ovr.responsavel_cpf == 'user_1'
+        print('Atribuição 1')
         evento = atribui_responsavel_ovr(session, ovr.id, 'user_2', 'user_1')
         session.refresh(ovr)
         assert ovr.responsavel_cpf == 'user_2'
+        print('Atribuição 2')
         with self.assertRaises(ESomenteUsuarioResponsavel):
             evento = atribui_responsavel_ovr(session, ovr.id, 'user_1', 'user_1')
         perfilusuario = PerfilUsuario()
@@ -117,8 +130,18 @@ class OVRPermissoesTestCase(BaseTestCase):
         perfilusuario.perfil = Enumerado.get_id(perfilAcesso, 'Supervisor')
         session.add(perfilusuario)
         session.commit()
+        print('Atribuição 3 - já é Supervisor')
         evento = atribui_responsavel_ovr(session, ovr.id, 'user_1', 'user_1')
         assert ovr.responsavel_cpf == 'user_1'
+        ### Se ovr estiver em Setor diferente com outra pessoa, deve falhar novamente!!!!
+        ovr.setor_id = '2'
+        ovr.responsavel_cpf = 'chapolin'
+        session.add(ovr)
+        session.commit()
+        print('Atribuição 4 - é Supervisor mas ovr em outro Setor')
+        with self.assertRaises(ESomenteUsuarioResponsavel):
+            evento = atribui_responsavel_ovr(session, ovr.id, 'user_1', 'user_1')
+
 
 
 if __name__ == '__main__':
