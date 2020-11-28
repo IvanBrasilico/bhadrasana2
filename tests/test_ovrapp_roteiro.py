@@ -1,6 +1,5 @@
 import sys
 
-
 sys.path.append('.')
 sys.path.insert(0, '../ajna_api')
 import unittest
@@ -17,6 +16,7 @@ from bhadrasana.models.ovrmanager import get_ovr
 from bhadrasana.models.rvf import create_infracoes
 from bhadrasana.routes.admin import admin_app
 from bhadrasana.routes.ovr import ovr_app
+from bhadrasana.routes.ovr2 import ovr2_app
 from bhadrasana.routes.risco import risco_app
 from bhadrasana.routes.rvf import rvf_app
 
@@ -129,6 +129,7 @@ configure_app(app, session, mongodb)
 risco_app(app)
 rvf_app(app)
 ovr_app(app)
+ovr2_app(app)
 admin_app(app, session)
 
 create_setores(session)
