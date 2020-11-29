@@ -9,13 +9,14 @@ from werkzeug.utils import redirect
 
 from ajna_commons.flask.log import logger
 from ajna_commons.utils.docx_utils import get_doc_generico_ovr
-from bhadrasana.forms.exibicao_ovr import ExibicaoOVR
+from bhadrasana.forms.exibicao_ovr import ExibicaoOVR, TipoExibicao
 from bhadrasana.forms.ovr import FiltroDocxForm, ModeloDocxForm
 from bhadrasana.models import get_usuario, usuario_tem_perfil_nome
 from bhadrasana.models.ovr import FonteDocx
 from bhadrasana.models.ovr_dict_repr import OVRDict
 from bhadrasana.models.ovrmanager import monta_ovr_dict, get_docx_choices, get_docx, inclui_docx, \
-    get_setores_cpf, get_flags, get_ovrs_abertas_flags
+    get_flags, get_ovrs_abertas_flags, get_ovr, MarcaManager
+from bhadrasana.models.rvfmanager import lista_rvfovr
 from bhadrasana.views import get_user_save_path, valid_file
 
 
@@ -168,9 +169,14 @@ def ovr2_app(app):
     @login_required
     def autos_contrafacao():
         session = app.config['dbsession']
+        # db = app.config['mongo_risco']
         listafichasresumo = []
+        ovr = None
+        rvfs = []
+        marcas_dict = {}
         supervisor = False
-        exibicao_ovr = ExibicaoOVR(session, 1, current_user.name)
+        exibicao_ovr = ExibicaoOVR(session, TipoExibicao.Descritivo, current_user.name)
+        titulos = exibicao_ovr.get_titulos()
         try:
             usuario = get_usuario(session, current_user.name)
             if usuario is None:
@@ -179,16 +185,27 @@ def ovr2_app(app):
             flags = [flag.id for flag in flags if 'contraf' in flag.nome.lower()]
             supervisor = usuario_tem_perfil_nome(session, current_user.name, 'Supervisor')
             listafichas = get_ovrs_abertas_flags(session, current_user.name, flags)
-            for ovr in listafichas:
-                resumo = exibicao_ovr.get_OVR_resumo_html(ovr, fiscalizado=True)
+            print('*************************', len(listafichas))
+            for ovr_linha in listafichas:
+                resumo = exibicao_ovr.get_linha(ovr_linha)
                 listafichasresumo.append(resumo)
-            if request.method == 'POST':
-                pass
+            ovr_id = request.args.get('ovr_id')
+            if ovr_id:
+                ovr = get_ovr(session, ovr_id)
+                rvfs = lista_rvfovr(session, ovr_id)
+                marca_manager = MarcaManager(session)
+                for rvf in rvfs:
+                    marca_dict = marca_manager.get_marcas_rvf_por_representante(rvf.id)
+                    marcas_dict.update(marca_dict)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
             flash(str(type(err)))
             flash(str(err))
         return render_template('autos_contrafeitos.html',
-                               listaficharesumo=listafichasresumo,
+                               titulos=titulos,
+                               listaovrs=listafichasresumo,
+                               marcas_dict=marcas_dict,
+                               ovr=ovr,
+                               rvfs=rvfs,
                                supervisor=supervisor)

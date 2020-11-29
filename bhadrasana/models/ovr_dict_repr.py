@@ -109,18 +109,22 @@ class OVRDict():
         ovr_dict['datatg'] = tgovr.create_date
         return ovr_dict
 
-    def monta_marcas_dict(self, db, session, id: int) -> List[dict]:
-        """Monta vários dicts com dados da RVF, com marcas separados por representante.
+    def monta_marcas_dict(self, db, session, ovr_id: int) -> List[dict]:
+        """Monta vários dicts com dados da Ficha, com marcas separados por representante.
 
         Útil para preenchimento de retirada de amostras
         """
-        rvf_dump = self.monta_rvf_dict(db, session, id, imagens=False)
-        marcas_por_representante = MarcaManager(session).get_marcas_rvf_por_representante(id)
-        rvf_dicts = []
-        for representante, marcas in marcas_por_representante.items():
-            rvf_dict = rvf_dump.copy()
-            rvf_dict.update(representante.dump())
-            print(representante.dump())
-            rvf_dict['marcas'] = ', '.join([marca.nome for marca in marcas])
-            rvf_dicts.append(rvf_dict)
-        return rvf_dicts
+        ovr_dump = self.monta_ovr_dict(db, session, ovr_id, imagens=False)
+        marca_manager = MarcaManager(session)
+        marcas_dict = {}
+        for rvf in ovr_dump['rvfs']:
+            marca_dict = marca_manager.get_marcas_rvf_por_representante(rvf['id'])
+            marcas_dict.update(marca_dict)
+        ovr_dicts = []
+        for representante, marcas in marcas_dict.items():
+            ovr_dict = ovr_dump.copy()
+            if representante:
+                ovr_dict['representante'] = representante.dump()
+            ovr_dict['marcas'] = ', '.join([marca.nome for marca in marcas])
+            ovr_dicts.append(ovr_dict)
+        return ovr_dicts

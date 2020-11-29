@@ -1,0 +1,131 @@
+{% extends "layout.html" %} {% block content %} {{super()}}
+<div id="main" class="container-fluid">
+    <div id="list" class="row col-sm-12">
+        &nbsp;<br>
+        <div class="table">
+            <table class="inlineTable table table-bordered table-hover table-responsive"
+                   id="minhas_ovrs_table">
+                <thead>
+                <tr>
+                    {% for col in titulos %}
+                    <th>{{ col }}</th>
+                    {% endfor %}
+                </tr>
+                </thead>
+                <tbody>
+                {% for ovr_lista in listaovrs %}
+                <tr class="{% if ovr_lista[0] == ovr.id %}warning{% else %}default{% endif %} clickable-row"
+                    data-href="autos_contrafacao?ovr_id={{ovr_lista[0]}}"
+                    onmouseover="showMsg(this, '{{ ovr_lista[0] }}')" onmouseout="clearMsg(this)">
+                    <td>{{ ovr[0] }}</td>
+                    {% for col in ovr_lista[2] %}
+                    <td style="text-align:left">{{ col | safe }}</td>
+                    {% endfor %}
+                </tr>
+                </a>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- Tratamento de marcas -->
+    {% if ovr %}
+    <div id="marcas" class="row col-sm-12">
+        <div class="col-xl-12">
+            <div class="panel rounded-pill panel-info">
+                <div class="panel-heading">
+                    <h3>Relação de marcas e representantes</h3>
+                    Operação {{ ovr.id }} - CE {{ ovr.numeroCEmercante }} - DUE {{ ovr.numerodeclaracao }} - Fiscalizado
+                    {{
+                    ovr.cnpj_fiscalizado }}<br>
+                    Verificações:
+                    {% for rvf in rvfs %}
+                    {{ rvf.id }} - {{ rvf.descricao }}<br>
+                    {% endfor %}
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <button id="btn_autocontrafacao" type="button"
+                                    class="btn btn-primary btn-success form-control"
+                                    onclick="window.open('auto_contrafacao?ovr_id={{ovr.id}}')">
+                                Emitir esqueleto do Auto
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% for representante, marcas in marcas_dict.items() %}
+                <div class="panel-body panel-primary">
+                    <div id="{{ representante.nome }}" class="panel panel-heading panel-primary rounded-pill">
+                        Representante:<br>
+                        {% if representante %}
+                        {{ representante.cnpj }} - {{ representante.nome }}<br>
+                        {% else %}
+                        SEM REPRESENTANTE CADASTRADO!!!<br>
+                        {% endif %}
+                        Marcas:<br>
+                        {% for marca in marcas %}
+                        {{ marca.nome }}
+                        {% endfor %}
+                        {% if representante %}
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <button id="btn_comunicado" type="button"
+                                        class="btn btn-primary btn-success form-control"
+                                        onclick="window.open('comunicado_contrafacao?ovr_id={{ovr.id}}&representante={{representante.id}}')">
+                                    Emitir comunicado
+                                </button>
+                            </div>
+                            <div class="col-sm-3">
+                                <button id="btn_termo" type="button" class="btn btn-primary btn-success form-control"
+                                        onclick="window.open('termo_contrafacao?ovr_id={{ovr.id}}&representante={{representante.id}}')">
+                                    Emitir termo de retirada
+                                </button>
+                            </div>
+                            <div class="col-sm-3">
+                                <button id="btn_auto" type="button" class="btn btn-primary btn-warning form-control"
+                                        data-toggle="modal" data-target="#lavratura">
+                                    Informar Evento
+                                </button>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+<!--Footer-->
+<div id="bottom" class="row col-sm-12">
+    AJNA - Receita Federal do Brasil 2017
+</div>
+</div>
+{% endblock %} {% block scripts %} {{super()}}
+<script>
+jQuery(document).ready(function($) {
+    $(".clickable-row").click(function() {
+        window.location = $(this).data("href");
+    });
+});
+   function showMsg(adiv, oid) {
+        xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4) {
+                if (this.status == 200) {
+                    adiv.title = this.responseText;
+                }
+            }
+        }
+        xhttp.open("GET", "/bhadrasana2/ficha/summary/" + oid, true);
+        xhttp.send();
+    }
+    function clearMsg(adiv) {
+        adiv.title = "";
+    }
+
+
+
+
+</script>
+{% endblock %}
