@@ -268,7 +268,7 @@ def get_ovrs_abertas_flags(session, usuario_cpf: str, lista_flags: list) -> List
     q = session.query(OVR).join(
         flags_table).filter(flags_table.c.flag_id.in_(lista_flags)). \
         filter(filtro).order_by(OVR.datahora)
-    logger.info('get_ovrs_abertas_flags - query' + str(q))
+    logger.info(f'get_ovrs_abertas_flags - query: {str(q)} params: {usuario_cpf}, {lista_flags}')
     return q.all()
 
 
@@ -1425,8 +1425,11 @@ class MarcaManager(Manager):
         result = defaultdict(list)
         rvf = self.session.query(RVF).filter(RVF.id == rvf_id).one_or_none()
         if rvf is not None:
+            marcas_representadas = set()
             for marca in rvf.marcasencontradas:
                 representantes = self.get_representantes_ativos_marca(marca.id)
                 for representante in representantes:
                     result[representante].append(marca)
+                    marcas_representadas.add(marca)
+            result[None] = set(rvf.marcasencontradas) - marcas_representadas
         return result
