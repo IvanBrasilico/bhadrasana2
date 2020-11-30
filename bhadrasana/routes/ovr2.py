@@ -9,6 +9,7 @@ from werkzeug.utils import redirect
 
 from ajna_commons.flask.log import logger
 from ajna_commons.utils.docx_utils import get_doc_generico_ovr
+from bhadrasana.docx.docx_functions import gera_comunicado_contrafacao
 from bhadrasana.forms.exibicao_ovr import ExibicaoOVR, TipoExibicao
 from bhadrasana.forms.ovr import FiltroDocxForm, ModeloDocxForm
 from bhadrasana.models import get_usuario, usuario_tem_perfil_nome
@@ -18,7 +19,6 @@ from bhadrasana.models.ovrmanager import monta_ovr_dict, get_docx_choices, get_d
     get_flags, get_ovrs_abertas_flags, get_ovr, MarcaManager
 from bhadrasana.models.rvfmanager import lista_rvfovr
 from bhadrasana.views import get_user_save_path, valid_file
-from bhadrasana.docx.docx_functions import gera_comunicado_contrafacao
 
 
 def ovr2_app(app):
@@ -237,7 +237,8 @@ def ovr2_app(app):
                     representante = ovr_dict.get('representante')
                     print(representante, representante_id)
                     if representante:
-                        print(representante['id'], representante_id, type(representante['id']), type(representante_id))
+                        print(representante['id'], representante_id,
+                              type(representante['id']), type(representante_id))
                     if representante and (str(representante['id']) == representante_id):
                         document = gera_comunicado_contrafacao(ovr_dict, current_user.name)
                         break
@@ -256,4 +257,4 @@ def ovr2_app(app):
             flash('Erro! Detalhes no log da aplicação.')
             flash(str(type(err)))
             flash(str(err))
-        return redirect(url_for('autos_contrafacao', ovr_id= ovr_id))
+        return redirect(url_for('autos_contrafacao', ovr_id=ovr_id))
