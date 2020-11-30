@@ -18,6 +18,7 @@ from bhadrasana.models.ovrmanager import monta_ovr_dict, get_docx_choices, get_d
     get_flags, get_ovrs_abertas_flags, get_ovr, MarcaManager
 from bhadrasana.models.rvfmanager import lista_rvfovr
 from bhadrasana.views import get_user_save_path, valid_file
+from bhadrasana.docx.docx_functions import gera_comunicado_contrafacao
 
 
 def ovr2_app(app):
@@ -209,3 +210,45 @@ def ovr2_app(app):
                                ovr=ovr,
                                rvfs=rvfs,
                                supervisor=supervisor)
+
+    @app.route('/comunicado_contrafacao', methods=['POST'])
+    @login_required
+    def autos_contrafacao():
+        session = app.config['dbsession']
+        db = app.config['mongo_risco']
+        ovr_id = request.args.get('ovr_id')
+        representante_id = request.args.get('ovr_id')
+        try:
+            usuario = get_usuario(session, current_user.name)
+            if usuario is None:
+                raise Exception('Erro: Usuário não encontrado!')
+            if ovr_id:
+                out_filename = '{}_{}_{}_{}.docx'.format(
+                    'Comunicação de Contrafação',
+                    ovr_id,
+                    representante_id,
+                    datetime.strftime(datetime.now(), '%Y-%m-%dT%H-%M-%S')
+                )
+                try:
+                    ovr_dicts = OVRDict(FonteDocx.Marcas).get_dict(
+                        db=db, session=session, id=ovr_id)
+                except NoResultFound:
+                    raise NoResultFound(f'Marcas não encontradas para Ficha {ovr_id}.')
+                if len(ovr_dicts) == 0:
+                    raise NoResultFound(f'Marcas não encontradas na ovr {ovr_id}.')
+                logger.info('Gerando marcas')
+                document = None
+                for ovr_dict in ovr_dicts:
+                    representante = ovr_dict['representante']
+                    if representante.id == representante_id:
+                        document = gera_comunicado_contrafacao(ovr_dict, current_user.name)
+                if document:
+                    document.save(os.path.join(
+                        get_user_save_path(), out_filename))
+                return redirect('static/%s/%s' % (current_user.name, out_filename))
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return redirect('autos_contrafeitos.html?ovr_id=%s' % ovr_id)
