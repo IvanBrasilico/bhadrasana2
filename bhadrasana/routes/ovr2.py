@@ -211,24 +211,18 @@ def ovr2_app(app):
                                rvfs=rvfs,
                                supervisor=supervisor)
 
-    @app.route('/comunicado_contrafacao', methods=['POST'])
+    @app.route('/comunicado_contrafacao', methods=['GET'])
     @login_required
-    def autos_contrafacao():
+    def comunicado_contrafacao():
         session = app.config['dbsession']
         db = app.config['mongo_risco']
         ovr_id = request.args.get('ovr_id')
-        representante_id = request.args.get('ovr_id')
+        representante_id = request.args.get('representante_id')
         try:
             usuario = get_usuario(session, current_user.name)
             if usuario is None:
                 raise Exception('Erro: Usuário não encontrado!')
             if ovr_id:
-                out_filename = '{}_{}_{}_{}.docx'.format(
-                    'Comunicação de Contrafação',
-                    ovr_id,
-                    representante_id,
-                    datetime.strftime(datetime.now(), '%Y-%m-%dT%H-%M-%S')
-                )
                 try:
                     ovr_dicts = OVRDict(FonteDocx.Marcas).get_dict(
                         db=db, session=session, id=ovr_id)
@@ -238,17 +232,28 @@ def ovr2_app(app):
                     raise NoResultFound(f'Marcas não encontradas na ovr {ovr_id}.')
                 logger.info('Gerando marcas')
                 document = None
+                representante = None
                 for ovr_dict in ovr_dicts:
-                    representante = ovr_dict['representante']
-                    if representante.id == representante_id:
+                    representante = ovr_dict.get('representante')
+                    print(representante, representante_id)
+                    if representante:
+                        print(representante['id'], representante_id, type(representante['id']), type(representante_id))
+                    if representante and (str(representante['id']) == representante_id):
                         document = gera_comunicado_contrafacao(ovr_dict, current_user.name)
-                if document:
+                        break
+                if representante and document:
+                    out_filename = '{}_{}_{}_{}.docx'.format(
+                        'Comunicado_de_Contrafacao',
+                        ovr_id,
+                        representante['nome'],
+                        datetime.strftime(datetime.now(), '%Y-%m-%dT%H-%M-%S')
+                    )
                     document.save(os.path.join(
                         get_user_save_path(), out_filename))
-                return redirect('static/%s/%s' % (current_user.name, out_filename))
+                    return redirect('static/%s/%s' % (current_user.name, out_filename))
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
             flash(str(type(err)))
             flash(str(err))
-        return redirect('autos_contrafeitos.html?ovr_id=%s' % ovr_id)
+        return redirect(url_for('autos_contrafacao', ovr_id= ovr_id))

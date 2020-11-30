@@ -109,12 +109,12 @@ class OVRDict():
         ovr_dict['datatg'] = tgovr.create_date
         return ovr_dict
 
-    def monta_marcas_dict(self, db, session, ovr_id: int) -> List[dict]:
+    def monta_marcas_dict(self, db, session, id: int) -> List[dict]:
         """Monta vários dicts com dados da Ficha, com marcas separados por representante.
 
         Útil para preenchimento de retirada de amostras
         """
-        ovr_dump = self.monta_ovr_dict(db, session, ovr_id, imagens=False)
+        ovr_dump = self.monta_ovr_dict(db, session, id, imagens=False)
         marca_manager = MarcaManager(session)
         marcas_dict = {}
         for rvf in ovr_dump['rvfs']:
