@@ -46,7 +46,7 @@
                         <div class="col-sm-3">
                             <button id="btn_autocontrafacao" type="button"
                                     class="btn btn-primary btn-success form-control"
-                                    onclick="window.open('auto_contrafacao?ovr_id={{ovr.id}}')">
+                                    onclick="location.href='auto_contrafacao?ovr_id={{ovr.id}}'">
                                 Emitir esqueleto do Auto
                             </button>
                         </div>
@@ -70,13 +70,13 @@
                             <div class="col-sm-3">
                                 <button id="btn_comunicado" type="button"
                                         class="btn btn-primary btn-success form-control"
-                                        onclick="window.open('comunicado_contrafacao?ovr_id={{ovr.id}}&representante={{representante.id}}')">
+                                        onclick="location.href='comunicado_contrafacao?ovr_id={{ovr.id}}&representante_id={{representante.id}}'">
                                     Emitir comunicado
                                 </button>
                             </div>
                             <div class="col-sm-3">
                                 <button id="btn_termo" type="button" class="btn btn-primary btn-success form-control"
-                                        onclick="window.open('termo_contrafacao?ovr_id={{ovr.id}}&representante={{representante.id}}')">
+                                        onclick="window.open('termo_contrafacao?ovr_id={{ovr.id}}&representante_id={{representante.id}}')">
                                     Emitir termo de retirada
                                 </button>
                             </div>
@@ -123,9 +123,5 @@ jQuery(document).ready(function($) {
     function clearMsg(adiv) {
         adiv.title = "";
     }
-
-
-
-
 </script>
 {% endblock %}
