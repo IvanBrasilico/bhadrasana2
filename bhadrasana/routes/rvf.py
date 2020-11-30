@@ -164,6 +164,7 @@ def rvf_app(app):
     @login_required
     def rvf_OVR():
         session = app.config.get('dbsession')
+        mongodb = app.config.get('mongo_risco')
         rvf_id = request.args.get('rvf_id')
         tipo = request.args.get('tipo', 'OVR')
         try:
@@ -174,7 +175,7 @@ def rvf_app(app):
             OVR_out_filename = '{}_FCC{}-{}.docx'.format(
                 tipo, rvf_id,
                 datetime.strftime(datetime.now(), '%Y-%m%dT%H%M%S'))
-            rvf_dump = OVRDict(1).monta_rvf_dict(None, session, rvf_id)
+            rvf_dump = OVRDict(1).monta_rvf_dict(mongodb, session, rvf_id)
             if tipo == 'OVR':
                 document = gera_OVR(rvf_dump, current_user.name)
             else:
