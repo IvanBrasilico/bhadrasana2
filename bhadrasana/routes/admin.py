@@ -10,7 +10,7 @@ from bhadrasana.models import Enumerado as ModelEnumerado, usuario_tem_perfil, \
     perfilAcesso
 from bhadrasana.models import Setor, Usuario, PerfilUsuario
 from bhadrasana.models.ovr import Marca, RoteiroOperacaoOVR, TipoEventoOVR, \
-    Enumerado, Recinto, RepresentanteMarca, Representacao
+    Enumerado, Recinto, RepresentanteMarca, Representacao, Assistente, TiposEventoAssistente
 
 
 class ProtectedModelView(ModelView):
@@ -132,6 +132,11 @@ class TipoEventoModel(SupervisorModelView):
         form.fase.data = str(form.fase.data)
     """
 
+class TiposEventoAssistenteModel(CadastradorModelView):
+    column_hide_backrefs = False
+    column_list = ('assistente', 'tipoevento')
+    form_choices = {'assistente': [(item.value, item.name) for item in Assistente]}
+
 
 class LogoutMenuLink(MenuLink):
     def is_accessible(self):
@@ -157,6 +162,7 @@ def admin_app(app, session):
     admin.add_view(RepresentacaoModel(Representacao, session, category='Marca'))
     admin.add_view(TipoEventoModel(TipoEventoOVR, session, category='Eventos'))
     admin.add_view(RoteirosModel(RoteiroOperacaoOVR, session, category='Eventos'))
+    admin.add_view(TiposEventoAssistenteModel(TiposEventoAssistente, session, category='Eventos'))
     admin.add_view(RecintosModel(Recinto, session))
 
     admin.add_link(LogoutMenuLink(name='Janela principal',

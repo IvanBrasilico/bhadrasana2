@@ -101,6 +101,8 @@ class FonteDocx(Enum):
     Marcas = 3
     TG_Ficha = 4
 
+class Assistente(Enum):
+    Marcas = 1
 
 class Enumerado(myEnum):
 
@@ -594,6 +596,20 @@ class ModeloDocx(BaseRastreavel):
         return fs.get(ObjectId(self._id))
 
 
+class TiposEventoAssistente(Base):
+    """Classe para filtrar tipos de evento por tipo de assistente."""
+    __tablename__ = 'ovr_tiposeventoassistente'
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
+    assistente = Column(Integer(), index=True, default=0)
+    tipoevento_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
+                           ForeignKey('ovr_tiposevento.id'))
+    tipoevento = relationship('TipoEventoOVR')
+
+    @property
+    def descricao_assistente(self):
+        return Assistente(self.tipooperacao)
+
+
 def create_marcas(session):
     """Cria testes para classe Marcas"""
     for nome in ('Adidas',
@@ -695,9 +711,7 @@ if __name__ == '__main__':  # pragma: no-cover
         # sys.exit(0)
         metadata.create_all(engine,
                             [
-                                metadata.tables['ovr_docx'],
-                                metadata.tables['ovr_representantes_marcas'],
-                                metadata.tables['ovr_representacoes']
+                                metadata.tables['ovr_tiposeventoassistente'],
                             ])
         sys.exit(0)
         metadata.drop_all(engine,
