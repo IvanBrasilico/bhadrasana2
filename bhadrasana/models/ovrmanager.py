@@ -401,7 +401,7 @@ def get_ovr_container(session, numerolote: str,
     if datafim:
         datafim = datafim + timedelta(days=1)
         filtro_data_ces = and_(Item.dataAtualizacao <= datafim, filtro_data_ces)
-    filtro = and_(filtro_data_ces, Item.codigoConteiner.ilike(numerolote.strip()))
+    filtro = and_(filtro_data_ces, Item.codigoConteiner.like(numerolote.strip().upper()))
     itens = session.query(Item).filter(filtro). \
         order_by(Item.dataAtualizacao.desc()).limit(limit).all()
     listaCE = [item.numeroCEmercante for item in itens]
