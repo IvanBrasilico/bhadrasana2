@@ -45,7 +45,7 @@ def get_infracoes_choice(session):
 def get_rvfs_filtro(session, pfiltro) -> List[RVF]:
     filtro = and_()
     if pfiltro.get('numeroCEmercante'):
-        filtro = and_(RVF.numeroCEmercante.ilike(
+        filtro = and_(RVF.numeroCEmercante.like(
             pfiltro.get('numeroCEmercante').strip() + '%'), filtro)
     if pfiltro.get('numerolote'):
         filtro = and_(RVF.numerolote.ilike(
