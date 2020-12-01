@@ -279,6 +279,7 @@ def mynavbar():
                  View('Relatórios', 'ver_relatorios'),
                  View('Painel de OKRs', 'ver_okrs'),
                  Separator(),
+                 View('Assistente de Contrafação', 'autos_contrafacao'),
              ),
              Subgroup(
                  'Administração/exportações',
