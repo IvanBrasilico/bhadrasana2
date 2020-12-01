@@ -101,8 +101,10 @@ class FonteDocx(Enum):
     Marcas = 3
     TG_Ficha = 4
 
+
 class Assistente(Enum):
     Marcas = 1
+
 
 class Enumerado(myEnum):
 

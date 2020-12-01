@@ -95,21 +95,25 @@ class BaseTestCase(unittest.TestCase):
         ovr = cadastra_ovr(self.session, params, user_name)
         return ovr
 
-    def create_OVRs_test_ovrs_container(self) -> OVR:
+    def create_OVRs_test_ovrs_container(self, dataatualizacao: datetime) -> OVR:
         ovr1 = self.create_OVR_valido('1234')
         ovr2 = self.create_OVR_valido('12345')
         item1 = mercante.Item()
         item1.numeroCEmercante = '1234'
-        item1.codigoConteiner = '1'
+        item1.codigoConteiner = 'A1'
+        item1.dataAtualizacao = dataatualizacao
         item2 = mercante.Item()
         item2.numeroCEmercante = '1234'
-        item2.codigoConteiner = '2'
+        item2.codigoConteiner = 'A2'
+        item2.dataAtualizacao = dataatualizacao
         item3 = mercante.Item()
         item3.numeroCEmercante = '12345'
-        item3.codigoConteiner = '3'
+        item3.codigoConteiner = 'A3'
+        item3.dataAtualizacao = dataatualizacao
         item4 = mercante.Item()
         item4.numeroCEmercante = 'non_ecsiste_ovr'
-        item4.codigoConteiner = '4'
+        item4.codigoConteiner = 'A4'
+        item4.dataAtualizacao = dataatualizacao
         self.session.add(item1)
         self.session.add(item2)
         self.session.add(item3)
