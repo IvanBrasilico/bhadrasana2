@@ -353,19 +353,25 @@ class OVRTestCase(BaseTestCase):
         assert isinstance(flags[0], Flag)
 
     def test_get_ovrs_container(self):
-        ovr1, ovr2 = self.create_OVRs_test_ovrs_container()
         datainicio = datetime(2020, 1, 1, 0, 0)
+        ovr1, ovr2 = self.create_OVRs_test_ovrs_container(datainicio)
         datafim = datetime(2020, 7, 3, 0, 0)
-        ces, ovrs = get_ovr_container(session, '1')
+        ces, ovrs = get_ovr_container(session, 'A1')
         assert len(ovrs) == 1
         assert ovr1 in ovrs
-        ces, ovrs = get_ovr_container(session, '2', datainicio, datafim)
+        ces, ovrs = get_ovr_container(session, 'A2', datainicio, datafim)
         assert len(ovrs) == 1
         assert ovr1 in ovrs
-        ces, ovrs = get_ovr_container(session, '3', datainicio, datafim)
+        ces, ovrs = get_ovr_container(session, 'a2', datainicio)
+        assert len(ovrs) == 1
+        assert ovr1 in ovrs
+        ces, ovrs = get_ovr_container(session, 'a3')
         assert len(ovrs) == 1
         assert ovr2 in ovrs
-        ces, ovrs = get_ovr_container(session, '4', datainicio, datafim)
+        ces, ovrs = get_ovr_container(session, 'A3', datainicio, datafim)
+        assert len(ovrs) == 1
+        assert ovr2 in ovrs
+        ces, ovrs = get_ovr_container(session, 'A4', datainicio, datafim)
         assert len(ovrs) == 0
 
     def test_get_flags(self):

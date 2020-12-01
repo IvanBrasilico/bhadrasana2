@@ -132,6 +132,7 @@ class TipoEventoModel(SupervisorModelView):
         form.fase.data = str(form.fase.data)
     """
 
+
 class TiposEventoAssistenteModel(CadastradorModelView):
     column_hide_backrefs = False
     column_list = ('assistente', 'tipoevento')

@@ -388,30 +388,42 @@ def get_ovr_container(session, numerolote: str,
                       datafim: datetime = None,
                       lista_numeroDUEs=[],
                       limit=40) -> Tuple[List[str], List[OVR]]:
+    numerolote = numerolote.strip().upper()
+    # Lista CEs
+    if datafim:
+        datafim = datafim + timedelta(days=1)
+    if datainicio:
+        datainicio = datainicio - timedelta(seconds=1)
+    if datainicio and datafim:
+        filtro_ces = and_(Item.dataAtualizacao.between(datainicio, datafim),
+                          Item.codigoConteiner.like(numerolote))
+    elif datafim:
+        filtro_ces = and_(Item.dataAtualizacao <= datafim,
+                          Item.codigoConteiner.like(numerolote))
+    elif datainicio:
+        filtro_ces = and_(Item.dataAtualizacao >= datainicio,
+                          Item.codigoConteiner.like(numerolote))
+    else:
+        filtro_ces = and_(Item.codigoConteiner.like(numerolote))
+    q = session.query(Item).filter(filtro_ces). \
+        order_by(Item.dataAtualizacao.desc()).limit(limit)
+    logger.info(f'{str(q)} - {datainicio} - {datafim} - {numerolote}')
+    itens = q.all()
+    listaCE = [item.numeroCEmercante for item in itens]
+    # Filtra OVRs
     filtro_data = and_()
     if datainicio:
         filtro_data = and_(OVR.datahora >= datainicio, filtro_data)
     if datafim:
-        datafim = datafim + timedelta(days=1)
         filtro_data = and_(OVR.datahora <= datafim, filtro_data)
-    # Lista CEs
-    filtro_data_ces = and_()
-    if datainicio:
-        filtro_data_ces = and_(Item.dataAtualizacao >= datainicio, filtro_data_ces)
-    if datafim:
-        datafim = datafim + timedelta(days=1)
-        filtro_data_ces = and_(Item.dataAtualizacao <= datafim, filtro_data_ces)
-    filtro = and_(filtro_data_ces, Item.codigoConteiner.like(numerolote.strip().upper()))
-    itens = session.query(Item).filter(filtro). \
-        order_by(Item.dataAtualizacao.desc()).limit(limit).all()
-    listaCE = [item.numeroCEmercante for item in itens]
-    # Filtra OVRs
     filtro = and_(filtro_data,
                   or_(
                       OVR.numeroCEmercante.in_(listaCE),
                       OVR.numerodeclaracao.in_(lista_numeroDUEs)
                   ))
-    ovrs = session.query(OVR).filter(filtro).all()
+    q = session.query(OVR).filter(filtro)
+    logger.info(f'{str(q)} - {datainicio} - {datafim} - {listaCE} - {lista_numeroDUEs}')
+    ovrs = q.all()
     return listaCE, [ovr for ovr in ovrs]
 
 

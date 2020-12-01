@@ -192,20 +192,24 @@ class OVRAppTestCase(BaseTestCase):
         return str(rv.data), rv.status_code
 
     def test_consulta_conteiner(self):
-        ovr1, ovr2 = self.create_OVRs_test_ovrs_container()
         datainicio = datetime(2020, 1, 1, 0, 0)
+        ovr1, ovr2 = self.create_OVRs_test_ovrs_container(datainicio)
         datafim = datetime(2020, 7, 3, 0, 0)
         self.login('ivan', 'ivan')
-        text, status_code = self.get_consulta_container('1', datainicio, datafim)
+        text, status_code = self.get_consulta_container('A1', datainicio, datafim)
         assert status_code == 200
         assert '1234' in text
-        text, status_code = self.get_consulta_container('2', datainicio, datafim)
+        text, status_code = self.get_consulta_container('A2', datainicio, datafim)
         assert status_code == 200
         assert '1234' in text
-        text, status_code = self.get_consulta_container('3', datainicio, datafim)
+        text, status_code = self.get_consulta_container('A3', datainicio, datafim)
         assert status_code == 200
         assert '12345' in text
-        text, status_code = self.get_consulta_container('4', datainicio, datafim)
+        # Case insensitive
+        text, status_code = self.get_consulta_container('a3', datainicio, datafim)
+        assert status_code == 200
+        assert '12345' in text
+        text, status_code = self.get_consulta_container('A4', datainicio, datafim)
         assert status_code == 200
         assert '1234' not in text
 
@@ -215,23 +219,24 @@ class OVRAppTestCase(BaseTestCase):
         return str(rv.data), rv.status_code
 
     def test_consulta_conteiner_text(self):
-        ovr1, ovr2 = self.create_OVRs_test_ovrs_container()
-        ovr1.datahora = datetime.today() - timedelta(days=1)
-        ovr2.datahora = ovr1.datahora
+        datainicio = datetime.today() - timedelta(days=1)
+        ovr1, ovr2 = self.create_OVRs_test_ovrs_container(datainicio)
+        ovr1.datahora = datainicio
+        ovr2.datahora = datainicio
         self.session.add(ovr1)
         self.session.add(ovr2)
         self.session.commit()
         self.login('ivan', 'ivan')
-        text, status_code = self.get_consulta_container_text('1')
+        text, status_code = self.get_consulta_container_text('A1')
         assert status_code == 200
         assert '1234' in text
-        text, status_code = self.get_consulta_container_text('2')
+        text, status_code = self.get_consulta_container_text('A2')
         assert status_code == 200
         assert '1234' in text
-        text, status_code = self.get_consulta_container_text('3')
+        text, status_code = self.get_consulta_container_text('A3')
         assert status_code == 200
         assert '12345' in text
-        text, status_code = self.get_consulta_container_text('4')
+        text, status_code = self.get_consulta_container_text('A4')
         assert status_code == 200
         assert '1234' not in text
 
