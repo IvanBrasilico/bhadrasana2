@@ -45,10 +45,10 @@ def get_infracoes_choice(session):
 def get_rvfs_filtro(session, pfiltro) -> List[RVF]:
     filtro = and_()
     if pfiltro.get('numeroCEmercante'):
-        filtro = and_(RVF.numeroCEmercante.like(
+        filtro = and_(RVF.numeroCEmercante.ilike(
             pfiltro.get('numeroCEmercante').strip() + '%'), filtro)
     if pfiltro.get('numerolote'):
-        filtro = and_(RVF.numerolote.like(
+        filtro = and_(RVF.numerolote.ilike(
             pfiltro.get('numerolote').strip() + '%'), filtro)
     if pfiltro.get('datainicio'):
         filtro = and_(RVF.datahora >= pfiltro.get('datainicio'), filtro)

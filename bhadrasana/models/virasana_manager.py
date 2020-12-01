@@ -5,6 +5,8 @@ import pymongo
 import requests
 
 from ajna_commons.flask.log import logger
+from ajna_commons.utils.sanitiza import mongo_sanitizar
+
 from bhadrasana.models.laudo import get_empresa, get_sats_cnpj
 from virasana.integracao.mercante.mercantealchemy import Item, Conhecimento, NCMItem
 
@@ -35,7 +37,7 @@ def get_imagens_json(conhecimento: str) -> dict:
 def get_imagens_container(mongodb, numero: str) -> list:
     if numero is None or numero == '':
         raise ValueError('get_imagens: Informe o número do contêiner!')
-    query = {'metadata.numeroinformado': numero.strip(),
+    query = {'metadata.numeroinformado': mongo_sanitizar(numero.strip()).upper(),
              'metadata.contentType': 'image/jpeg'
              }
     projection = {'metadata.numeroinformado': 1,
@@ -66,7 +68,7 @@ def get_dues_container(mongodb, numero: str,
                        ) -> List[dict]:
     if numero is None or numero == '':
         raise ValueError('get_dues: Informe o número do contêiner!')
-    query = {'metadata.numeroinformado': numero.strip(),
+    query = {'metadata.numeroinformado': mongo_sanitizar(numero.strip()).upper(),
              'metadata.dataescaneamento': {'$gte': datainicio, '$lte': datafim},
              'metadata.contentType': 'image/jpeg'
              }
