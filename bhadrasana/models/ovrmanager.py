@@ -24,7 +24,7 @@ from ajna_commons.models.bsonimage import BsonImage
 from ajna_commons.flask.log import logger
 from ajna_commons.utils.images import mongo_image
 from bhadrasana.models import Usuario, Setor, EBloqueado, ESomenteUsuarioResponsavel, \
-    usuario_tem_perfil_nome
+    usuario_tem_perfil_nome, ENaoAutorizado
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto, \
     get_usuario_validando
 from bhadrasana.models.laudo import get_empresa
@@ -614,6 +614,11 @@ def gera_eventoovr(session, params: dict, commit=True, user_name=None,
     evento.fase = tipoevento.fase
     try:
         ovr = get_ovr(session, evento.ovr_id)
+        # Nao e permitido evento comum nestas fases, pois mudaria status
+        if ovr.fase >= 3:  # Concluida, arquivada
+            if not evento.meramente_informativo:
+                raise ENaoAutorizado('Ficha arquivada. Para informar Evento comum, '
+                                     'é necessário que Supervisor atribua primeiro.')
         if not evento.meramente_informativo:
             ovr.fase = evento.fase
             ovr.tipoevento_id = evento.tipoevento_id
