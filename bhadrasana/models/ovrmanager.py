@@ -765,23 +765,24 @@ def excluir_evento(session, evento_id, user_cpf):
     if evento.tipoevento.eventoespecial is not None:
         raise Exception('Este Evento não pode ser desfeito!!')
     ovr = evento.ovr
-    if ovr.responsavel_cpf != user_cpf:
+    if not evento.meramente_informativo and ovr.responsavel_cpf != user_cpf:
         raise ESomenteUsuarioResponsavel()
     if evento.user_name != user_cpf:
         raise ESomenteMesmoUsuario()
     # evento.excluido = True
     session.delete(evento)
-    ultimo_evento = ovr.historico[-1]
-    if ultimo_evento.id == evento.id:
-        if len(ovr.historico) > 1:
-            penultimo_evento = ovr.historico[-2]
-            ovr.fase = penultimo_evento.fase
-            ovr.tipoevento_id = penultimo_evento.tipoevento_id
-            session.add(ovr)
-        else:
-            ovr.fase = 0
-            ovr.tipoevento_id = None
-            session.add(ovr)
+    if not evento.meramente_informativo:
+        ultimo_evento = ovr.historico[-1]
+        if ultimo_evento.id == evento.id:
+            if len(ovr.historico) > 1:
+                penultimo_evento = ovr.historico[-2]
+                ovr.fase = penultimo_evento.fase
+                ovr.tipoevento_id = penultimo_evento.tipoevento_id
+                session.add(ovr)
+            else:
+                ovr.fase = 0
+                ovr.tipoevento_id = None
+                session.add(ovr)
     try:
         session.commit()
     except Exception as err:
