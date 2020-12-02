@@ -7,7 +7,7 @@ from flask_login import current_user
 from werkzeug.utils import redirect
 
 from bhadrasana.models import Enumerado as ModelEnumerado, usuario_tem_perfil, \
-    perfilAcesso
+    perfilAcesso, Cargo
 from bhadrasana.models import Setor, Usuario, PerfilUsuario
 from bhadrasana.models.ovr import Marca, RoteiroOperacaoOVR, TipoEventoOVR, \
     Enumerado, Recinto, RepresentanteMarca, Representacao, Assistente, TiposEventoAssistente
@@ -41,10 +41,11 @@ class SupervisorModelView(ProtectedModelView):
 class UsuarioModel(CadastradorModelView):
     can_delete = False
     column_hide_backrefs = False
-    column_searchable_list = ['nome', 'cpf']
+    column_searchable_list = ['nome', 'cpf', 'cargo']
     column_filters = ['setor']
-    column_list = ('cpf', 'nome', 'telegram', 'setor', 'perfis')
-    form_columns = ('cpf', 'nome', 'telegram', 'setor', 'password')
+    column_list = ('cpf', 'nome', 'telegram', 'setor', 'cargo', 'perfis')
+    form_columns = ('cpf', 'nome', 'telegram', 'setor', 'cargo', 'password')
+    form_choices = {'cargo': [(item.value, item.name) for item in Cargo]}
 
 
 class PerfilUsuarioModel(CadastradorModelView):
@@ -54,6 +55,7 @@ class PerfilUsuarioModel(CadastradorModelView):
     column_list = ('cpf', 'perfil', 'perfil_descricao')
     form_choices = {'perfil': ModelEnumerado.perfilAcesso()}
 
+    """
     def validate_form(self, form):
         try:
             form.perfil.data = int(form.perfil.data)
@@ -63,14 +65,14 @@ class PerfilUsuarioModel(CadastradorModelView):
 
     def on_form_prefill(self, form, id):
         form.perfil.data = str(form.perfil.data)
-
+    """
 
 class SetorModel(SupervisorModelView):
     can_delete = False
     column_display_pk = True
     # column_hide_backrefs = False
     column_searchable_list = ['nome']
-    # column_filters = ['pai']
+    column_filters = ['pai_id', 'cod_unidade']
     column_list = ('id', 'nome', 'pai_id', 'cod_unidade')
     form_columns = ('id', 'nome', 'pai_id', 'cod_unidade')
     # inline_models = ['', ]

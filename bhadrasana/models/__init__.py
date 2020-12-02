@@ -1,4 +1,6 @@
 import sys
+from enum import Enum
+from typing import Tuple, List
 
 sys.path.append('.')
 sys.path.insert(0, '../ajna_docs/commons')
@@ -71,7 +73,7 @@ perfilAcesso = (
 class myEnum:
 
     @classmethod
-    def get_tipo(cls, listatipo: list, id: int = None):
+    def get_tipo(cls, listatipo: list, id: int = None) -> List[Tuple[int, str]]:
         if (id is not None) and isinstance(id, int):
             try:
                 return listatipo[id]
@@ -124,6 +126,11 @@ class Setor(Base):
         return '{} - {}'.format(self.id, self.nome)
 
 
+class Cargo(Enum):
+    Auditor = 0
+    Analista = 1
+    Adm = 2
+
 class Usuario(Base):
     __tablename__ = 'ovr_usuarios'
     cpf = Column(CHAR(15), primary_key=True)
@@ -133,7 +140,6 @@ class Usuario(Base):
     setor_id = Column(CHAR(15), ForeignKey('ovr_setores.id'))
     setor = relationship('Setor')
     perfis = relationship('PerfilUsuario', back_populates='usuario')
-    # Cargo - 0 Auditor, 1 Analista, 2 ATA
     cargo = Column(Integer)
 
     def __str__(self):
