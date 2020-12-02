@@ -12,8 +12,12 @@ caráter meramente informativo
 e deve ser arquivada/concluída novamente depois
 - Usuário só pode atribuir no próprio Setor
 - Usuário com a Ficha pode repassá-la para outro Setor. A Ficha "entra" no novo Setor com fase "Iniciada" e sem 
-responsável atribuído. 
-- Ficha na fase 0 e "liberada" pode ser atribuída por qualquer um do Setor 
+responsável atribuído.
+- Ficha na fase 0 e "liberada" pode ser atribuída por qualquer um do Setor
+- Eventos informados pelo Usuário ou por ações (inclusão de TG, RVF, lavratura de Auto, etc) mudam a Fase da Ficha
+- Existe um tipo de Evento "Meramente informativo" para incluir anotações que não devem alterar a Fase ou
+para incluir anotações em Fichas concluídas. Este Evento pode ser anotado mesmo que o Usuário não esteja como responsável
+na Ficha 
  
 ###Perfis
 

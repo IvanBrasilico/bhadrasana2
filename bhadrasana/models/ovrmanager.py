@@ -561,6 +561,9 @@ def muda_setor_ovr(session, ovr_id: int,
                    setor_id: str, user_name: str) -> OVR:
     """Atualiza campo setor na OVR. Gera evento correspondente.
 
+    Regras: somente responsável ou Supervisor pode chamar,
+    ovr "liberada" - fase 0 ou sem responsável não possuem restrição
+
     :param session: Conexão com banco SQLAlchemy
     :param ovr_id: ID da OVR a atribuir responsável
     :param setor_id: ID do novo setor
@@ -592,6 +595,9 @@ def muda_setor_ovr(session, ovr_id: int,
 def libera_ovr(session, ovr_id: int, user_name: str) -> OVR:
     """Atualiza campo responsavel na OVR. Gera evento correspondente.
 
+    Regras: somente responsável ou Supervisor pode liberar,
+    ovr "liberada" - fase 0 ou sem responsável não possuem restrição
+
     :param session: Conexão com banco SQLAlchemy
     :param ovr_id: ID da OVR a atribuir responsável
     :return: OVR modificado
@@ -609,7 +615,6 @@ def libera_ovr(session, ovr_id: int, user_name: str) -> OVR:
         # Validar se é responsável ou Supervisor ANTES de mudar, pois
         # quando mudar não será mais validado
         valida_mesmo_responsavel_ovr_user_name(session, ovr, user_name)
-        ovr.fase = 0
         ovr.tipoevento_id = tipoevento.id
         ovr.responsavel_cpf = None
         evento = gera_eventoovr(session, evento_params, commit=False, user_name=user_name)
@@ -660,7 +665,7 @@ def gera_eventoovr(session, params: dict, commit=True, user_name=None,
     evento = EventoOVR()
     for key, value in params.items():
         setattr(evento, key, value)
-    if valida_usuario:
+    if valida_usuario and not evento.meramente_informativo:
         valida_mesmo_responsavel_user_name(session, evento.ovr_id, user_name)
     if user_name:
         evento.user_name = user_name
