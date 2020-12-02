@@ -11,12 +11,13 @@ from ajna_commons.flask.log import logger
 from ajna_commons.utils.docx_utils import get_doc_generico_ovr
 from bhadrasana.docx.docx_functions import gera_comunicado_contrafacao
 from bhadrasana.forms.exibicao_ovr import ExibicaoOVR, TipoExibicao
-from bhadrasana.forms.ovr import FiltroDocxForm, ModeloDocxForm
+from bhadrasana.forms.ovr import FiltroDocxForm, ModeloDocxForm, HistoricoOVRForm
 from bhadrasana.models import get_usuario, usuario_tem_perfil_nome
-from bhadrasana.models.ovr import FonteDocx
+from bhadrasana.models.ovr import FonteDocx, Assistente
 from bhadrasana.models.ovr_dict_repr import OVRDict
 from bhadrasana.models.ovrmanager import monta_ovr_dict, get_docx_choices, get_docx, inclui_docx, \
-    get_flags, get_ovrs_abertas_flags, get_ovr, MarcaManager
+    get_ovrs_abertas_flags, get_ovr, MarcaManager, get_tiposevento_assistente, get_ids_flags_contrafacao, \
+    get_tiposevento_assistente_choice, gera_eventoovr
 from bhadrasana.models.rvfmanager import lista_rvfovr
 from bhadrasana.views import get_user_save_path, valid_file
 
@@ -178,12 +179,12 @@ def ovr2_app(app):
         supervisor = False
         exibicao_ovr = ExibicaoOVR(session, TipoExibicao.Descritivo, current_user.name)
         titulos = exibicao_ovr.get_titulos()
+        evento_form = HistoricoOVRForm()
         try:
             usuario = get_usuario(session, current_user.name)
             if usuario is None:
                 raise Exception('Erro: Usuário não encontrado!')
-            flags = get_flags(session)
-            flags = [flag.id for flag in flags if 'contraf' in flag.nome.lower()]
+            flags = get_ids_flags_contrafacao(session)
             supervisor = usuario_tem_perfil_nome(session, current_user.name, 'Supervisor')
             listafichas = get_ovrs_abertas_flags(session, current_user.name, flags)
             print('*************************', len(listafichas))
@@ -193,6 +194,9 @@ def ovr2_app(app):
             ovr_id = request.args.get('ovr_id')
             if ovr_id:
                 ovr = get_ovr(session, ovr_id)
+                tiposevento = get_tiposevento_assistente_choice(session, Assistente.Marcas)
+                evento_form = HistoricoOVRForm(ovr_id=ovr_id,
+                                               tiposeventos=tiposevento, responsaveis=[usuario.cpf])
                 rvfs = lista_rvfovr(session, ovr_id)
                 marca_manager = MarcaManager(session)
                 for rvf in rvfs:
@@ -209,11 +213,14 @@ def ovr2_app(app):
                                marcas_dict=marcas_dict,
                                ovr=ovr,
                                rvfs=rvfs,
-                               supervisor=supervisor)
+                               supervisor=supervisor,
+                               evento_form=evento_form)
 
     @app.route('/comunicado_contrafacao', methods=['GET'])
+    @app.route('/termo_contrafacao', methods=['GET'])
     @login_required
     def comunicado_contrafacao():
+        print(request.url)
         session = app.config['dbsession']
         db = app.config['mongo_risco']
         ovr_id = request.args.get('ovr_id')
@@ -240,11 +247,15 @@ def ovr2_app(app):
                         print(representante['id'], representante_id,
                               type(representante['id']), type(representante_id))
                     if representante and (str(representante['id']) == representante_id):
-                        document = gera_comunicado_contrafacao(ovr_dict, current_user.name)
+                        document = gera_comunicado_contrafacao(ovr_dict, current_user.name,
+                                                               'termo' in request.url)
                         break
                 if representante and document:
+                    nome = 'Comunicado_de_Contrafacao'
+                    if 'termo' in request.url:
+                        nome = 'Termo de retirada de amostras'
                     out_filename = '{}_{}_{}_{}.docx'.format(
-                        'Comunicado_de_Contrafacao',
+                        nome,
                         ovr_id,
                         representante['nome'],
                         datetime.strftime(datetime.now(), '%Y-%m-%dT%H-%M-%S')
@@ -252,6 +263,60 @@ def ovr2_app(app):
                     document.save(os.path.join(
                         get_user_save_path(), out_filename))
                     return redirect('static/%s/%s' % (current_user.name, out_filename))
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return redirect(url_for('autos_contrafacao', ovr_id=ovr_id))
+
+
+
+    @app.route('/emite_auto_contrafacao', methods=['GET'])
+    @login_required
+    def auto_contrafacao():
+        session = app.config['dbsession']
+        db = app.config['mongo_risco']
+        ovr_id = request.args.get('ovr_id')
+        try:
+            usuario = get_usuario(session, current_user.name)
+            if usuario is None:
+                raise Exception('Erro: Usuário não encontrado!')
+            if ovr_id:
+                try:
+                    ovr_dict = OVRDict(FonteDocx.OVR).get_dict(
+                        db=db, session=session, id=ovr_id)
+                except NoResultFound:
+                    raise NoResultFound(f'Dados não encontrados para Ficha {ovr_id}.')
+                if ovr_dict:
+                    document = gera_auto_contrafacao(ovr_dict, current_user.name)
+                    nome = 'Auto de Infração'
+                    out_filename = '{}_{}_{}.docx'.format(
+                        nome,
+                        ovr_id,
+                        datetime.strftime(datetime.now(), '%Y-%m-%dT%H-%M-%S')
+                    )
+                    document.save(os.path.join(
+                        get_user_save_path(), out_filename))
+                    return redirect('static/%s/%s' % (current_user.name, out_filename))
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return redirect(url_for('autos_contrafacao', ovr_id=ovr_id))
+
+    @app.route('/eventoovr_assistente', methods=['POST'])
+    @login_required
+    def eventoovr_assistente():
+        session = app.config.get('dbsession')
+        ovr_id = None
+        try:
+            evento_form = HistoricoOVRForm(request.form)
+            user_name = current_user.name
+            evento = gera_eventoovr(session, dict(evento_form.data.items()),
+                                    user_name=user_name)
+            ovr_id = evento.ovr_id
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
