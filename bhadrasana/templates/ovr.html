@@ -51,9 +51,15 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-sm-8">
+                <div class="col-sm-6">
                     CE Mercante
                     {{ oform.numeroCEmercante(class='form-control')}}
+                </div>
+                 <div class="col-sm-2">
+                    <label for="responsavel">Responsável</label>
+                    <div class="form-control">
+                        <span id="responsavel_nome">{{ ovr.responsavel.nome }}</span>
+                    </div>
                 </div>
                 <div class="col-sm-2">
                     Auditor Responsável
@@ -107,12 +113,6 @@
                     {{ oform.adata(class='form-control') }}
                 </div>
                 <div class="col-sm-2">
-                    <label for="responsavel">Responsável</label>
-                    <div class="form-control">
-                        <span id="responsavel_nome">{{ ovr.responsavel.nome }}</span>
-                    </div>
-                </div>
-                <div class="col-sm-2">
                     &nbsp;
                     {% if oform.id.data %}
                     <button id="btn_responsavel" type="button" class="btn btn-warning form-control"
@@ -136,6 +136,15 @@
                     <button id="btn_mudarsetor" type="button" class="btn btn-warning form-control"
                             data-toggle="modal" data-target="#mudarsetor">
                         Transferir para outro Setor
+                    </button>
+                    {% endif %}
+                </div>
+                <div class="col-sm-2">
+                    &nbsp;
+                    {% if oform.id.data %}
+                    <button id="btn_" type="button" class="btn btn-default form-control"
+                            onclick="location.href='libera_ficha?ovr_id={{ oform.id.data }}'">
+                        Liberar OVR
                     </button>
                     {% endif %}
                 </div>

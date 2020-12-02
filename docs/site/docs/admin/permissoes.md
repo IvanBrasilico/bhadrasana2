@@ -5,6 +5,7 @@ Implementado com o cadastro de Perfis para o  Usuário.
 
 #####Regras gerais
 - As Fichas e verificações físicas só podem ser editadas pelo responsável atual
+- Única exceção é o Supervisor, que pode atribuir ou liberar qualquer ficha
 - Se a Ficha está concluída ou arquivada, não pode mais ser editada. Podem ser adicionados Eventos, que terão
 caráter meramente informativo
 - Supervisor do Setor pode atribuir Ficha concluída ou arquivada, caso em que ela poderá ser editada novamente 
@@ -12,6 +13,7 @@ e deve ser arquivada/concluída novamente depois
 - Usuário só pode atribuir no próprio Setor
 - Usuário com a Ficha pode repassá-la para outro Setor. A Ficha "entra" no novo Setor com fase "Iniciada" e sem 
 responsável atribuído. 
+- Ficha na fase 0 e "liberada" pode ser atribuída por qualquer um do Setor 
  
 ###Perfis
 

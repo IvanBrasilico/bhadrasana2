@@ -3,6 +3,7 @@ import sys
 from sqlite3 import OperationalError
 
 from gridfs import GridFS
+from sqlalchemy.orm.exc import NoResultFound
 
 sys.path.append('.')
 sys.path.append('../ajna_docs/commons')
@@ -179,7 +180,10 @@ def get_ovr(session, ovr_id: int = None) -> OVR:
 
 
 def get_ovr_one(session, ovr_id: int = None) -> OVR:
-    return session.query(OVR).filter(OVR.id == ovr_id).one()
+    try:
+        return session.query(OVR).filter(OVR.id == ovr_id).one()
+    except NoResultFound:
+        raise NoResultFound(f'OVR {ovr_id} não encontrada.')
 
 
 def get_ovr_responsavel(session, user_name: str, orfas=True) -> List[OVR]:
@@ -552,7 +556,6 @@ def atribui_responsavel_ovr(session, ovr_id: int,
         raise err
     return ovr
 
-
 def muda_setor_ovr(session, ovr_id: int,
                    setor_id: str, user_name: str) -> OVR:
     """Atualiza campo setor na OVR. Gera evento correspondente.
@@ -572,9 +575,43 @@ def muda_setor_ovr(session, ovr_id: int,
                          'ovr_id': ovr.id,
                          }
         evento = gera_eventoovr(session, evento_params, commit=False, user_name=user_name)
+        ovr.tipoevento_id = tipoevento.id
         ovr.setor_id = setor_id
         ovr.responsavel_cpf = None
         ovr.fase = 0
+        session.add(evento)
+        session.add(ovr)
+        session.commit()
+    except Exception as err:
+        session.rollback()
+        raise err
+    return ovr
+
+
+def libera_ovr(session, ovr_id: int, user_name: str) -> OVR:
+    """Atualiza campo responsavel na OVR. Gera evento correspondente.
+
+    :param session: Conexão com banco SQLAlchemy
+    :param ovr_id: ID da OVR a atribuir responsável
+    :return: OVR modificado
+    """
+    try:
+        ovr = get_ovr(session, ovr_id)
+        tipoevento = session.query(TipoEventoOVR).filter(
+            TipoEventoOVR.eventoespecial == EventoEspecial.Responsavel.value).first()
+        evento_params = {'tipoevento_id': tipoevento.id,
+                         'motivo': f'Liberada por {ovr.responsavel_cpf}',
+                         'user_name': user_name,  # Responsável pela mudança
+                         'meramente_informativo': True,
+                         'ovr_id': ovr.id,
+                         }
+        # Validar se é responsável ou Supervisor ANTES de mudar, pois
+        # quando mudar não será mais validado
+        valida_mesmo_responsavel_ovr_user_name(session, ovr, user_name)
+        ovr.fase = 0
+        ovr.tipoevento_id = tipoevento.id
+        ovr.responsavel_cpf = None
+        evento = gera_eventoovr(session, evento_params, commit=False, user_name=user_name)
         session.add(evento)
         session.add(ovr)
         session.commit()
