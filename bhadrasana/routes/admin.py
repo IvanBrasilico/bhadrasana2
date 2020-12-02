@@ -67,6 +67,7 @@ class PerfilUsuarioModel(CadastradorModelView):
         form.perfil.data = str(form.perfil.data)
     """
 
+
 class SetorModel(SupervisorModelView):
     can_delete = False
     column_display_pk = True
