@@ -18,7 +18,7 @@ from bhadrasana.forms.filtro_container import FiltroContainerForm, FiltroCEForm,
 from bhadrasana.forms.filtro_empresa import FiltroEmpresaForm
 from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
     ProcessoOVRForm, ItemTGForm, ResponsavelOVRForm, TGOVRForm, FiltroRelatorioForm, \
-    FiltroMinhasOVRsForm, OKRObjectiveForm, OKRMetaForm, SetorOVRForm, EscaneamentoOperadorForm,\
+    FiltroMinhasOVRsForm, OKRObjectiveForm, OKRMetaForm, SetorOVRForm, EscaneamentoOperadorForm, \
     FiltroAbasForm
 from bhadrasana.models import delete_objeto, get_usuario, usuario_tem_perfil_nome
 from bhadrasana.models.laudo import get_empresa, get_empresas_nome, get_sats_cnpj
@@ -42,7 +42,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     muda_setor_ovr, get_recintos_dte, \
     excluir_processo, excluir_evento, get_ovr_visao_usuario, get_setores_cpf_choice, \
     get_processo, get_ovr_conhecimento, get_ovr_due, get_recintos_unidade, \
-    calcula_tempos_por_fase, get_setores_unidade_choice, get_afrfb_choice
+    calcula_tempos_por_fase, get_setores_unidade_choice, get_afrfb_choice, get_ovr_one, libera_ovr
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects, consulta_ce_objects, \
     consulta_due_objects
@@ -516,7 +516,21 @@ def ovr_app(app):
                            setor_id=setor_ovr_form.setor.data,
                            user_name=current_user.name
                            )
-            return redirect(url_for('ovr', id=ovr_id))
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return redirect(url_for('ovr', id=ovr_id))
+
+    @app.route('/libera_ficha', methods=['GET'])
+    @login_required
+    def libera_ficha():
+        session = app.config.get('dbsession')
+        ovr_id = request.args.get('ovr_id')
+        try:
+            ovr = get_ovr_one(session, ovr_id)
+            libera_ovr(session, ovr_id=ovr.id, user_name=current_user.name)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
