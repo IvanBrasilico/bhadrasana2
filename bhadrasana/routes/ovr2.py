@@ -9,14 +9,14 @@ from werkzeug.utils import redirect
 
 from ajna_commons.flask.log import logger
 from ajna_commons.utils.docx_utils import get_doc_generico_ovr
-from bhadrasana.docx.docx_functions import gera_comunicado_contrafacao
+from bhadrasana.docx.docx_functions import gera_comunicado_contrafacao, gera_auto_contrafacao
 from bhadrasana.forms.exibicao_ovr import ExibicaoOVR, TipoExibicao
 from bhadrasana.forms.ovr import FiltroDocxForm, ModeloDocxForm, HistoricoOVRForm
 from bhadrasana.models import get_usuario, usuario_tem_perfil_nome
 from bhadrasana.models.ovr import FonteDocx, Assistente
 from bhadrasana.models.ovr_dict_repr import OVRDict
 from bhadrasana.models.ovrmanager import monta_ovr_dict, get_docx_choices, get_docx, inclui_docx, \
-    get_ovrs_abertas_flags, get_ovr, MarcaManager, get_tiposevento_assistente, get_ids_flags_contrafacao, \
+    get_ovrs_abertas_flags, get_ovr, MarcaManager, get_ids_flags_contrafacao, \
     get_tiposevento_assistente_choice, gera_eventoovr
 from bhadrasana.models.rvfmanager import lista_rvfovr
 from bhadrasana.views import get_user_save_path, valid_file
@@ -196,7 +196,8 @@ def ovr2_app(app):
                 ovr = get_ovr(session, ovr_id)
                 tiposevento = get_tiposevento_assistente_choice(session, Assistente.Marcas)
                 evento_form = HistoricoOVRForm(ovr_id=ovr_id,
-                                               tiposeventos=tiposevento, responsaveis=[usuario.cpf])
+                                               tiposeventos=tiposevento,
+                                               responsaveis=[usuario.cpf])
                 rvfs = lista_rvfovr(session, ovr_id)
                 marca_manager = MarcaManager(session)
                 for rvf in rvfs:
@@ -269,8 +270,6 @@ def ovr2_app(app):
             flash(str(type(err)))
             flash(str(err))
         return redirect(url_for('autos_contrafacao', ovr_id=ovr_id))
-
-
 
     @app.route('/emite_auto_contrafacao', methods=['GET'])
     @login_required
