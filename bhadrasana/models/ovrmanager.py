@@ -28,7 +28,8 @@ from bhadrasana.models import Usuario, Setor, EBloqueado, ESomenteUsuarioRespons
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto, \
     get_usuario_validando
 from bhadrasana.models.laudo import get_empresa
-from bhadrasana.models.ovr import FonteDocx, Representacao, RepresentanteMarca
+from bhadrasana.models.ovr import FonteDocx, Representacao, RepresentanteMarca, Assistente,\
+    TiposEventoAssistente
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
     TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria, \
     EventoEspecial, Flag, Relatorio, RoteiroOperacaoOVR, flags_table, VisualizacaoOVR, \
@@ -453,6 +454,11 @@ def get_flags(session) -> List[Flag]:
 def get_flags_choice(session) -> List[Tuple[int, str]]:
     flags = session.query(Flag).all()
     return [(flag.id, flag.nome) for flag in flags]
+
+
+def get_ids_flags_contrafacao(session) -> List[int]:
+    flags = get_flags(session)
+    return [flag.id for flag in flags if 'contraf' in flag.nome.lower()]
 
 
 def inclui_flag_ovr(session, ovr_id, flag_nome, user_name) -> List[Flag]:
@@ -1450,3 +1456,13 @@ class MarcaManager(Manager):
                     marcas_representadas.add(marca)
             result[None] = set(rvf.marcasencontradas) - marcas_representadas
         return result
+
+
+def get_tiposevento_assistente(session, assistente: Assistente) -> List[TipoEventoOVR]:
+    return session.query(TipoEventoOVR).join(TiposEventoAssistente).\
+        filter(TiposEventoAssistente.assistente == assistente.value).all()
+
+
+def get_tiposevento_assistente_choice(session, assistente: Assistente) -> List[Tuple[int, str]]:
+    tipos = get_tiposevento_assistente(session, assistente)
+    return [(tipo.id, tipo.nome) for tipo in tipos]

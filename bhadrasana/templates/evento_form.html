@@ -1,0 +1,52 @@
+<div class="modal fade" id="evento" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title" id="ModalLabel">Registra evento da OVR</h1>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="eventoovr_assistente" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <input type="hidden" name="ovr_id" value="{{ evento_form.ovr_id.data }}"/>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label for="tipoevento">Novo Status</label>
+                        </div>
+                        <div class="col-sm-9">
+                            {{ evento_form.tipoevento_id(class='form-control') }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label for="motivo">Motivo / comentários</label>
+                        </div>
+                        <div class="col-sm-9">
+                            {{ evento_form.motivo(class='form-control') }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            Usuário
+                        </div>
+                        <div class="col-sm-9">
+                            {{ evento_form.user_name(class='form-control') }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label for="meramente_informativo">Meramente Informativo</label>
+                        </div>
+                        <div class="col-sm-9">
+                            {{ evento_form.meramente_informativo }} <span>Sim</span>
+                        </div>
+                    </div>
+                    <input class="btn btn-primary" type="submit" value="Informar"/>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

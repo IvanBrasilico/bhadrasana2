@@ -21,9 +21,20 @@ def gera_taseda(rvf: dict, user_name: str):
     return document
 
 
-def gera_comunicado_contrafacao(ovr: dict, user_name: str):
+def gera_auto_contrafacao(ovr: dict, user_name: str):
     conteudo = {'unidade': 'ALFSTS', **ovr}
     basepath = os.path.dirname(__file__)
-    document = docx.Document(os.path.join(basepath, 'comunicado_contrafacao.docx'))
+    document = docx.Document(os.path.join(basepath, 'auto_contrafacao.docx'))
+    docx_replacein(document, conteudo, user_name)
+    return document
+
+
+def gera_comunicado_contrafacao(ovr: dict, user_name: str, termo=False):
+    conteudo = {'unidade': 'ALFSTS', **ovr}
+    basepath = os.path.dirname(__file__)
+    if termo:
+        document = docx.Document(os.path.join(basepath, 'termo_contrafacao.docx'))
+    else:
+        document = docx.Document(os.path.join(basepath, 'comunicado_contrafacao.docx'))
     docx_replacein(document, conteudo, user_name)
     return document

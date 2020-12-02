@@ -7,8 +7,9 @@ from sqlalchemy.orm import sessionmaker
 
 sys.path.append('.')
 
-from bhadrasana.models.ovr import metadata, create_marcas, RepresentanteMarca, Marca, Representacao
-from bhadrasana.models.ovrmanager import MarcaManager
+from bhadrasana.models.ovr import metadata, create_marcas, RepresentanteMarca, Marca, Representacao, TipoEventoOVR, \
+    TiposEventoAssistente, Assistente
+from bhadrasana.models.ovrmanager import MarcaManager, get_tiposevento_assistente, get_tiposevento_assistente_choice
 from bhadrasana.models.rvf import RVF
 
 engine = create_engine('sqlite://')
@@ -52,6 +53,8 @@ def create_representacoes(session):
 create_representacoes(session)
 
 from tests.test_base import BaseTestCase
+
+
 
 
 class OVRTestCase(BaseTestCase):
@@ -136,6 +139,35 @@ class OVRTestCase(BaseTestCase):
         assert 'Burberry' not in marcas_nome
         assert 'Apple' in marcas_nome
         assert 'Disney' not in marcas_nome
+
+
+    def test_tiposeventos_marcas(self):
+        manager = MarcaManager(self.session)
+        tipoevento1 = TipoEventoOVR()
+        tipoevento1.nome = 'Pedir Laudo de Marca'
+        tipoevento2 = TipoEventoOVR()
+        tipoevento2.nome = 'Laudo de Marca recebido'
+        self.session.add(tipoevento1, tipoevento2)
+        self.session.commit()
+        tiposeventos_assistente = get_tiposevento_assistente(self.session, Assistente.Marcas)
+        assert len(tiposeventos_assistente) == 0
+        tea1 = TiposEventoAssistente()
+        tea1.assistente = Assistente.Marcas.value
+        tea1.tipoevento = tipoevento1
+        self.session.add(tea1)
+        self.session.commit()
+        tiposeventos_assistente = get_tiposevento_assistente(self.session, Assistente.Marcas)
+        assert len(tiposeventos_assistente) == 1
+        tea2 = TiposEventoAssistente()
+        tea2.assistente = Assistente.Marcas.value
+        tea2.tipoevento = tipoevento2
+        self.session.add(tea2)
+        self.session.commit()
+        tiposeventos_assistente = get_tiposevento_assistente_choice(self.session, Assistente.Marcas)
+        assert len(tiposeventos_assistente) == 2
+
+
+
 
 
 if __name__ == '__main__':

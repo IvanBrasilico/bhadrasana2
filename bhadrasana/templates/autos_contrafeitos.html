@@ -33,7 +33,7 @@
     <div id="marcas" class="row col-sm-12">
         <div class="col-xl-12">
             <div class="panel rounded-pill panel-info">
-                <div class="panel-heading">
+                <div class="panel-heading" onmouseover="showMsg(this, '{{ ovr.id }}')" onmouseout="clearMsg(this)">
                     <h3>Relação de marcas e representantes</h3>
                     Operação {{ ovr.id }} - CE {{ ovr.numeroCEmercante }} - DUE {{ ovr.numerodeclaracao }} - Fiscalizado
                     {{
@@ -82,7 +82,7 @@
                             </div>
                             <div class="col-sm-3">
                                 <button id="btn_auto" type="button" class="btn btn-primary btn-warning form-control"
-                                        data-toggle="modal" data-target="#lavratura">
+                                        data-toggle="modal" data-target="#evento">
                                     Informar Evento
                                 </button>
                             </div>
@@ -100,6 +100,8 @@
 <div id="bottom" class="row col-sm-12">
     AJNA - Receita Federal do Brasil 2017
 </div>
+<!-- Form EventoOVR -->
+{% include 'evento_form.html' %}
 </div>
 {% endblock %} {% block scripts %} {{super()}}
 <script>
