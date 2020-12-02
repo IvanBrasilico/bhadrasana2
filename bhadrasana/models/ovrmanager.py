@@ -29,7 +29,7 @@ from bhadrasana.models import Usuario, Setor, EBloqueado, ESomenteUsuarioRespons
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto, \
     get_usuario_validando
 from bhadrasana.models.laudo import get_empresa
-from bhadrasana.models.ovr import FonteDocx, Representacao, RepresentanteMarca, Assistente,\
+from bhadrasana.models.ovr import FonteDocx, Representacao, RepresentanteMarca, Assistente, \
     TiposEventoAssistente
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
     TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria, \
@@ -555,6 +555,7 @@ def atribui_responsavel_ovr(session, ovr_id: int,
         session.rollback()
         raise err
     return ovr
+
 
 def muda_setor_ovr(session, ovr_id: int,
                    setor_id: str, user_name: str) -> OVR:
@@ -1496,7 +1497,7 @@ class MarcaManager(Manager):
 
 
 def get_tiposevento_assistente(session, assistente: Assistente) -> List[TipoEventoOVR]:
-    return session.query(TipoEventoOVR).join(TiposEventoAssistente).\
+    return session.query(TipoEventoOVR).join(TiposEventoAssistente). \
         filter(TiposEventoAssistente.assistente == assistente.value).all()
 
 

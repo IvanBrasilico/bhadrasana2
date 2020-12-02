@@ -131,6 +131,7 @@ class Cargo(Enum):
     Analista = 1
     Adm = 2
 
+
 class Usuario(Base):
     __tablename__ = 'ovr_usuarios'
     cpf = Column(CHAR(15), primary_key=True)
