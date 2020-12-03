@@ -2,6 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Tuple, List
 
+from ajna_commons.flask.log import logger
 from bhadrasana.models import get_usuario
 from bhadrasana.models.laudo import get_empresa
 from bhadrasana.models.ovr import OVR
@@ -119,7 +120,7 @@ class ExibicaoOVR:
 
         if len(ovr.historico) >= ind:
             while ovr.historico[len(ovr.historico) - ind].meramente_informativo:
-                print(f'meramente informativo: '
+                logger.info(f'meramente informativo: '
                       f'{ovr.historico[len(ovr.historico) - ind].meramente_informativo}')
                 ind += 1
             if ind >= len(ovr.historico):
@@ -134,7 +135,7 @@ class ExibicaoOVR:
             tipo_evento_nome = evento_atual.tipoevento.nome
             data_evento = evento_atual.create_date
             motivo = evento_atual.motivo
-            print(f'tipo_evento_nome: {tipo_evento_nome}, ind: {ind}')
+            logger.info(f'tipo_evento_nome: {tipo_evento_nome}, ind: {ind}')
         return evento_user_descricao, tipo_evento_nome, data_evento, motivo, ind
 
     def usuario_name(self, user_name):
