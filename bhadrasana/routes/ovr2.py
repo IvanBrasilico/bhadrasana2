@@ -17,7 +17,7 @@ from bhadrasana.models.ovr import FonteDocx, Assistente
 from bhadrasana.models.ovr_dict_repr import OVRDict
 from bhadrasana.models.ovrmanager import monta_ovr_dict, get_docx_choices, get_docx, inclui_docx, \
     get_ovrs_abertas_flags, get_ovr, MarcaManager, get_ids_flags_contrafacao, \
-    get_tiposevento_assistente_choice, gera_eventoovr
+    get_tiposevento_assistente_choice, gera_eventoovr, get_tgovr_one
 from bhadrasana.models.rvfmanager import lista_rvfovr
 from bhadrasana.views import get_user_save_path, valid_file
 
@@ -273,17 +273,17 @@ def ovr2_app(app):
     def auto_contrafacao():
         session = app.config['dbsession']
         db = app.config['mongo_risco']
-        ovr_id = request.args.get('ovr_id')
+        ovr_id = None
+        tg_id = request.args.get('tg_id')
         try:
             usuario = get_usuario(session, current_user.name)
             if usuario is None:
                 raise Exception('Erro: Usuário não encontrado!')
-            if ovr_id:
-                try:
-                    ovr_dict = OVRDict(FonteDocx.OVR).get_dict(
-                        db=db, session=session, id=ovr_id)
-                except NoResultFound:
-                    raise NoResultFound(f'Dados não encontrados para Ficha {ovr_id}.')
+            if tg_id:
+                tg = get_tgovr_one(session, tg_id)
+                ovr_id = tg.ovr_id
+                ovr_dict = OVRDict(FonteDocx.TG_Ficha).get_dict(
+                    db=db, session=session, id=tg.id)
                 if ovr_dict:
                     document = gera_auto_contrafacao(ovr_dict, current_user.name)
                     nome = 'Auto de Infração'
