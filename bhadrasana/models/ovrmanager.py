@@ -615,7 +615,7 @@ def libera_ovr(session, ovr_id: int, user_name: str) -> OVR:
         # Validar se é responsável ou Supervisor ANTES de mudar, pois
         # quando mudar não será mais validado
         valida_mesmo_responsavel_ovr_user_name(session, ovr, user_name)
-        ovr.tipoevento_id = tipoevento.id
+        # ovr.tipoevento_id = tipoevento.id
         ovr.responsavel_cpf = None
         evento = gera_eventoovr(session, evento_params, commit=False, user_name=user_name)
         session.add(evento)
