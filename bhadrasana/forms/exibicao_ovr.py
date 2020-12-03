@@ -121,7 +121,7 @@ class ExibicaoOVR:
             while ovr.historico[len(ovr.historico) - ind].meramente_informativo:
                 ind += 1
             if ind >= len(ovr.historico):
-                 ind = ind_aux
+                ind = ind_aux
             evento_atual = ovr.historico[len(ovr.historico) - ind]
             if evento_atual.user_name:
                 usuario_evento = get_usuario(self.session, evento_atual.user_name)
@@ -221,7 +221,8 @@ class ExibicaoOVR:
                                 datetime.strftime(data_evento, '%d/%m/%Y %H:%M'),
                                 motivo]
         html_ultimo_evento = '<br>'.join(campos_ultimo_evento)
-        evento_user2, tipo_evento_nome2, data_evento2, motivo2, ind2 = self.evento_campos(ovr, ind+1)
+        evento_user2, tipo_evento_nome2, data_evento2, motivo2, ind2 = \
+            self.evento_campos(ovr, ind + 1)
         campos_penultimo_evento = [f'<b>{tipo_evento_nome2}</b>', evento_user2,
                                    datetime.strftime(data_evento2, '%d/%m/%Y %H:%M'),
                                    motivo2]
