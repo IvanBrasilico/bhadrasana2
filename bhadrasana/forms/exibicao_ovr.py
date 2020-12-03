@@ -115,7 +115,13 @@ class ExibicaoOVR:
         data_evento = ovr.create_date
         evento_user_descricao = ''
         motivo = ''
+        ind_aux = ind
+
         if len(ovr.historico) >= ind:
+            while ovr.historico[len(ovr.historico) - ind].meramente_informativo:
+                ind += 1
+            if ind >= len(ovr.historico):
+                 ind = ind_aux
             evento_atual = ovr.historico[len(ovr.historico) - ind]
             if evento_atual.user_name:
                 usuario_evento = get_usuario(self.session, evento_atual.user_name)
@@ -126,7 +132,7 @@ class ExibicaoOVR:
             tipo_evento_nome = evento_atual.tipoevento.nome
             data_evento = evento_atual.create_date
             motivo = evento_atual.motivo
-        return evento_user_descricao, tipo_evento_nome, data_evento, motivo
+        return evento_user_descricao, tipo_evento_nome, data_evento, motivo, ind
 
     def usuario_name(self, user_name):
         user_descricao = ''
@@ -210,12 +216,12 @@ class ExibicaoOVR:
 
     def get_linha(self, ovr: OVR) -> Tuple[int, bool, List]:
         recinto_nome = self.get_recinto_nome(ovr)
-        evento_user, tipo_evento_nome, data_evento, motivo = self.evento_campos(ovr)
+        evento_user, tipo_evento_nome, data_evento, motivo, ind = self.evento_campos(ovr)
         campos_ultimo_evento = [f'<b>{tipo_evento_nome}</b>', evento_user,
                                 datetime.strftime(data_evento, '%d/%m/%Y %H:%M'),
                                 motivo]
         html_ultimo_evento = '<br>'.join(campos_ultimo_evento)
-        evento_user2, tipo_evento_nome2, data_evento2, motivo2 = self.evento_campos(ovr, 2)
+        evento_user2, tipo_evento_nome2, data_evento2, motivo2, ind2 = self.evento_campos(ovr, ind+1)
         campos_penultimo_evento = [f'<b>{tipo_evento_nome2}</b>', evento_user2,
                                    datetime.strftime(data_evento2, '%d/%m/%Y %H:%M'),
                                    motivo2]
