@@ -12,7 +12,7 @@ sys.path.append('.')
 from bhadrasana.models.ovr import metadata, create_tiposevento, create_tiposprocesso, create_flags, \
     create_tipomercadoria, create_marcas
 
-from bhadrasana.models.ovrmanager import gera_processoovr, atribui_responsavel_ovr, excluir_processo
+from bhadrasana.models.ovrmanager import gera_processoovr, atribui_responsavel_ovr, excluir_processo, libera_ovr
 from virasana.integracao.mercante import mercantealchemy
 
 warnings.simplefilter('ignore')
@@ -38,7 +38,12 @@ class OVRPermissoesTestCase(BaseTestCase):
     def debug(self) -> None:
         pass
 
-    """
+    def generate_setores_usuarios(self):
+        setor1 = self.create_setor('1', 'Setor 1')
+        setor2 = self.create_setor('1', 'Setor 2')
+        user1 = self.create_usuario('user_1', 'Usuario 1', setor1)
+        user2 = self.create_usuario('user_2', 'Usuario 2', setor1)
+
     def test_OVR_Processo(self):
         ovr = self.create_OVR_valido()
         session.refresh(ovr)
@@ -92,8 +97,6 @@ class OVRPermissoesTestCase(BaseTestCase):
         with self.assertRaises(ESomenteUsuarioResponsavel):
             processo = gera_processoovr(session, params)
 
-    """
-
     def test_OVR_Supervisor_Atribuir(self):
         setor1 = self.create_setor('1', 'Setor 1')
         setor2 = self.create_setor('1', 'Setor 2')
@@ -142,6 +145,52 @@ class OVRPermissoesTestCase(BaseTestCase):
         with self.assertRaises(ESomenteUsuarioResponsavel):
             evento = atribui_responsavel_ovr(session, ovr.id, 'user_1', 'user_1')
 
+    def test_OVR_Supervisor_Atribuir(self):
+        setor1 = self.create_setor('1', 'Setor 1')
+        setor2 = self.create_setor('1', 'Setor 2')
+        user1 = self.create_usuario('user_1', 'Usuario 1', setor1)
+        user2 = self.create_usuario('user_2', 'Usuario 2', setor1)
+        ovr = self.create_OVR_valido()
+        ovr.setor_id = '1'
+        session.add(ovr)
+        session.commit()
+        session.refresh(ovr)
+        evento = atribui_responsavel_ovr(session, ovr.id, 'user_1', None)
+        # Atribuir responsavel, faz uma inclusão, atribui outro, tentar retomar, vai dar erro.
+        # Colocar perfil Supervisor e auto-atribuir -
+        params = {
+            'numero': '1234',
+            'tipoprocesso_id': 0,
+            'ovr_id': ovr.id,
+            'user_name': 'user_1'
+        }
+        processo = gera_processoovr(session, params)
+        session.refresh(processo)
+        session.refresh(ovr)
+        assert len(ovr.processos) == 1
+        assert ovr.responsavel_cpf == 'user_1'
+        print('Atribuição 1')
+        evento = atribui_responsavel_ovr(session, ovr.id, 'user_2', 'user_1')
+        session.refresh(ovr)
+        assert ovr.responsavel_cpf == 'user_2'
+        print('Atribuição 2')
+        with self.assertRaises(ESomenteUsuarioResponsavel):
+            evento = atribui_responsavel_ovr(session, ovr.id, 'user_1', 'user_1')
+
+    def test_OVR_libera(self):
+        self.generate_setores_usuarios()
+        ovr = self.create_OVR_valido()
+        ovr.setor_id = '1'
+        session.add(ovr)
+        session.commit()
+        session.refresh(ovr)
+        evento = atribui_responsavel_ovr(session, ovr.id, 'user_1', None)
+        with self.assertRaises(ESomenteUsuarioResponsavel):
+            evento = libera_ovr(session, ovr.id, 'user_2')
+        with self.assertRaises(ESomenteUsuarioResponsavel):
+            evento = atribui_responsavel_ovr(session, ovr.id, 'user_2', None)
+        evento = libera_ovr(session, ovr.id, 'user_1')
+        evento = atribui_responsavel_ovr(session, ovr.id, 'user_2', None)
 
 
 if __name__ == '__main__':

@@ -561,6 +561,9 @@ def muda_setor_ovr(session, ovr_id: int,
                    setor_id: str, user_name: str) -> OVR:
     """Atualiza campo setor na OVR. Gera evento correspondente.
 
+    Regras: somente responsável ou Supervisor pode chamar,
+    ovr "liberada" - fase 0 ou sem responsável não possuem restrição
+
     :param session: Conexão com banco SQLAlchemy
     :param ovr_id: ID da OVR a atribuir responsável
     :param setor_id: ID do novo setor
@@ -592,6 +595,9 @@ def muda_setor_ovr(session, ovr_id: int,
 def libera_ovr(session, ovr_id: int, user_name: str) -> OVR:
     """Atualiza campo responsavel na OVR. Gera evento correspondente.
 
+    Regras: somente responsável ou Supervisor pode liberar,
+    ovr "liberada" - fase 0 ou sem responsável não possuem restrição
+
     :param session: Conexão com banco SQLAlchemy
     :param ovr_id: ID da OVR a atribuir responsável
     :return: OVR modificado
@@ -609,7 +615,6 @@ def libera_ovr(session, ovr_id: int, user_name: str) -> OVR:
         # Validar se é responsável ou Supervisor ANTES de mudar, pois
         # quando mudar não será mais validado
         valida_mesmo_responsavel_ovr_user_name(session, ovr, user_name)
-        ovr.fase = 0
         ovr.tipoevento_id = tipoevento.id
         ovr.responsavel_cpf = None
         evento = gera_eventoovr(session, evento_params, commit=False, user_name=user_name)
@@ -660,7 +665,7 @@ def gera_eventoovr(session, params: dict, commit=True, user_name=None,
     evento = EventoOVR()
     for key, value in params.items():
         setattr(evento, key, value)
-    if valida_usuario:
+    if valida_usuario and not evento.meramente_informativo:
         valida_mesmo_responsavel_user_name(session, evento.ovr_id, user_name)
     if user_name:
         evento.user_name = user_name
@@ -760,23 +765,24 @@ def excluir_evento(session, evento_id, user_cpf):
     if evento.tipoevento.eventoespecial is not None:
         raise Exception('Este Evento não pode ser desfeito!!')
     ovr = evento.ovr
-    if ovr.responsavel_cpf != user_cpf:
+    if not evento.meramente_informativo and ovr.responsavel_cpf != user_cpf:
         raise ESomenteUsuarioResponsavel()
     if evento.user_name != user_cpf:
         raise ESomenteMesmoUsuario()
     # evento.excluido = True
     session.delete(evento)
-    ultimo_evento = ovr.historico[-1]
-    if ultimo_evento.id == evento.id:
-        if len(ovr.historico) > 1:
-            penultimo_evento = ovr.historico[-2]
-            ovr.fase = penultimo_evento.fase
-            ovr.tipoevento_id = penultimo_evento.tipoevento_id
-            session.add(ovr)
-        else:
-            ovr.fase = 0
-            ovr.tipoevento_id = None
-            session.add(ovr)
+    if not evento.meramente_informativo:
+        ultimo_evento = ovr.historico[-1]
+        if ultimo_evento.id == evento.id:
+            if len(ovr.historico) > 1:
+                penultimo_evento = ovr.historico[-2]
+                ovr.fase = penultimo_evento.fase
+                ovr.tipoevento_id = penultimo_evento.tipoevento_id
+                session.add(ovr)
+            else:
+                ovr.fase = 0
+                ovr.tipoevento_id = None
+                session.add(ovr)
     try:
         session.commit()
     except Exception as err:
