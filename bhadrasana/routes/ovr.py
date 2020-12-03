@@ -1092,7 +1092,7 @@ def ovr_app(app):
                                oform=filtro_form,
                                rvfs=rvfs,
                                ovrs=ovrs,
-                               infodue=infodue,
+                               due=infodue,
                                imagens=imagens)
 
     @app.route('/consulta_conteiner_text', methods=['POST'])
