@@ -1048,6 +1048,7 @@ def ovr_app(app):
                     consulta_ce_objects(filtro_form.numeroCEmercante.data, session)
                 imagens = get_imagens_conhecimento(mongodb,
                                                    filtro_form.numeroCEmercante.data)
+                logger.info(imagens)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
