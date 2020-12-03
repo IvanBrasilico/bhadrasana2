@@ -189,7 +189,7 @@
                     {% if oform.id.data %}
                     <button id="btn_tg" type="button" class="btn btn-primary btn-success form-control"
                             onclick="window.open('lista_tgovr?ovr_id={{oform.id.data}}')">
-                        Termos de Guarda
+                        Termos de Guarda {% if ovr %}({{ ovr.tgs | length }}){% endif %}
                     </button>
                     {% endif %}
                 </div>

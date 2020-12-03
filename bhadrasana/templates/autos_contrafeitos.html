@@ -34,31 +34,39 @@
         <div class="col-xl-12">
             <div class="panel rounded-pill panel-info">
                 <div class="panel-heading" onmouseover="showMsg(this, '{{ ovr.id }}')" onmouseout="clearMsg(this)">
-                    <h3>Relação de marcas e representantes</h3>
-                    <h3>
-                    <a href="ovr?id={{ ovr.id }}" target="_blank">Operação {{ ovr.id }}</a>
-                    - CE{{ ovr.numeroCEmercante}} - DUE {{ovr.numerodeclaracao}} - Fiscalizado {{ovr.cnpj_fiscalizado}}
-                    </h3>
-                    Verificações:
-                    {% for rvf in rvfs %}
-                    {{ rvf.id }} - {{ rvf.descricao }}<br>
-                    {% endfor %}
                     <div class="row">
                         <div class="col-sm-3">
-                            <button id="btn_autocontrafacao" type="button"
-                                    class="btn btn-primary btn-success form-control"
-                                    onclick="location.href='auto_contrafacao?ovr_id={{ovr.id}}'">
-                                Emitir esqueleto do Auto
-                            </button>
-                        </div>
-                        <div class="col-sm-3">
-                            <button id="btn_abrificha" type="button"
-                                    class="btn btn-primary btn-success form-control"
+                            <button id="btn_abrirficha" type="button"
+                                    class="btn btn-primary btn-warning form-control"
                                     onclick="window.open('ovr?id={{ovr.id}}')">
                                 Abrir Ficha
                             </button>
                         </div>
                     </div>
+                    <h3>
+                        Operação {{ ovr.id }}
+                        - CE{{ ovr.numeroCEmercante}} - DUE {{ovr.numerodeclaracao}} - Fiscalizado
+                        {{ovr.cnpj_fiscalizado}}
+                    </h3>
+                    <div class="row col-sm-12">
+                        Verificações:
+                        {% for rvf in rvfs %}
+                        {{ rvf.id }} - {{ rvf.descricao }}<br>
+                        {% endfor %}
+                    </div>
+                    <div class="row col-sm-12">
+                        {% for tg in ovr.tgs %}
+                        <div class="col-sm-3">
+                            <button id="btn_autocontrafacao" type="button"
+                                    class="btn btn-primary btn-success form-control"
+                                    onclick="location.href='emite_auto_contrafacao?tg_id={{tg.id}}'">
+                                Emitir esqueleto do Auto - TG no. {{ tg.numerotg }} ({{tg.valor}})
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    &nbsp;<br>
+                    <h3>Relação de marcas e representantes</h3>
                 </div>
                 {% for representante, marcas in marcas_dict.items() %}
                 <div class="panel-body panel-primary">
@@ -103,6 +111,7 @@
         </div>
     </div>
 </div>
+</div>
 {% endif %}
 <!--Footer-->
 <div id="bottom" class="row col-sm-12">
@@ -133,6 +142,9 @@ jQuery(document).ready(function($) {
     function clearMsg(adiv) {
         adiv.title = "";
     }
+
+
+
 
 </script>
 {% endblock %}

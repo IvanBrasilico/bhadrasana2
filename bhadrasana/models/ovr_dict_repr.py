@@ -56,8 +56,13 @@ class OVRDict():
                 ovr_dict['nome_auditorresponsavel'] = usuario.nome
                 ovr_dict['auditor_responsavel'] = usuario.nome
             ovr_dict['marcas'] = []
+            descricoes = []
             for rvf_dict in rvfs_dicts:
                 ovr_dict['marcas'].extend(rvf_dict['marcasencontradas'])
+                if rvf_dict['descricao']:
+                    descricoes.append(rvf_dict['descricao'])
+            ovr_dict['descricao_mercadoria'] = ' '.join(descricoes)
+            ovr_dict['marcas'] = ', '.join(ovr_dict['marcas'])
             if imagens:
                 lista_imagens = []
                 for rvf_dict in rvfs_dicts:

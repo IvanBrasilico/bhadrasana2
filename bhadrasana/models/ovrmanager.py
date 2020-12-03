@@ -840,7 +840,10 @@ def atualiza_valortotal_tg(session, tg_id: int):
 
 
 def get_tgovr_one(session, tg_id: int) -> TGOVR:
-    return session.query(TGOVR).filter(TGOVR.id == tg_id).one()
+    try:
+        return session.query(TGOVR).filter(TGOVR.id == tg_id).one()
+    except NoResultFound:
+        raise NoResultFound(f'TG {tg_id} não encontrada.')
 
 
 def get_tgovr(session, tg_id: int = None) -> TGOVR:
