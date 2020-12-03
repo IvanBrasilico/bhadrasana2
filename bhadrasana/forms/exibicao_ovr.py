@@ -183,7 +183,8 @@ class ExibicaoOVR:
         conteineres = set()
         rvfs = lista_rvfovr(self.session, ovr.id)
         for rvf in rvfs:
-            conteineres.add(rvf.numerolote)
+            if rvf.numerolote:
+                conteineres.add(rvf.numerolote)
         return conteineres
 
     def get_peso_apreensoes(self, ovr):
@@ -299,7 +300,8 @@ class ExibicaoOVR:
             resumo.append(f'<b>BL</b>: {conhecimento.numConhecimento}')
             conteineres = self.get_conteineres(ovr)
             if conteineres:
-                resumo.append(f'<b>Contêineres</b>: {conteineres}')
+                lista_conteiner = ', '.join(conteineres)
+                resumo.append(f'<b>Contêineres</b>: {lista_conteiner}')
             resumo.append(f'<b>Porto de Origem</b>: {conhecimento.portoOrigemCarga}')
             resumo.append(f'<b>Porto de Destino Final</b>: {conhecimento.portoDestFinal}')
             resumo.append(f'<b>Mercadoria</b>: {conhecimento.descricao}')

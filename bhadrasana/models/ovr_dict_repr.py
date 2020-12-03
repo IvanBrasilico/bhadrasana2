@@ -1,4 +1,5 @@
 import io
+import re
 from typing import List, Union
 
 from ajna_commons.utils.images import mongo_image
@@ -89,9 +90,16 @@ class OVRDict():
             rvf_dump['setor'] = ovr.setor.nome
         exibicao = ExibicaoOVR(session, 1, '')
         if ovr.numerodeclaracao:
-            rvf_dump['resumo_due'] = get_due(db, ovr.numerodeclaracao)
+            due = get_due(db, ovr.numerodeclaracao)
+            due_str = ''
+            for k, v in due.items():
+                due_str = f'{k}: {v}\n'
+            rvf_dump['resumo_due'] = due_str
         if ovr.numeroCEmercante:
-            rvf_dump['resumo_mercante'] = exibicao.get_mercante_resumo(ovr)
+            resumo_mercante = exibicao.get_mercante_resumo(ovr)
+            resumo_mercante = '\n'.join(resumo_mercante)
+            resumo_mercante = re.sub(re.compile('<.*?>'), ' ', resumo_mercante)
+            rvf_dump['resumo_mercante'] = resumo_mercante
         return rvf_dump
 
     def monta_tgovr_dict(self, db, session, id: int) -> dict:
@@ -124,7 +132,9 @@ class OVRDict():
         for representante, marcas in marcas_dict.items():
             ovr_dict = ovr_dump.copy()
             if representante:
-                ovr_dict['representante'] = representante.dump()
+                for k, v in representante.dump().items():
+                    ovr_dict[f'representante_{k}'] = v
             ovr_dict['marcas'] = ', '.join([marca.nome for marca in marcas])
+
             ovr_dicts.append(ovr_dict)
         return ovr_dicts
