@@ -47,18 +47,20 @@ def get_imagens_container(mongodb, numero: str) -> list:
 
 
 def get_due(mongodb, numerodeclaracao: str) -> dict:
-    due = {}
+    result = {}
     if numerodeclaracao:
         cursor = mongodb.fs.files.find(
             {'metadata.due.numero': numerodeclaracao},
-            {'metadata.due': 1})
+            {'metadata.due': 1, '_id': 0})
         due = list(cursor)
+        print('*****', due)
         if due and len(due) > 0:
             due = due[len(due) - 1]
             due = due.get('metadata')
+            print('*****', due)
             if due:
-                due = due.get('due')[0]
-    return due
+                result = due.get('due')[0]
+    return result
 
 
 def get_dues_container(mongodb, numero: str,

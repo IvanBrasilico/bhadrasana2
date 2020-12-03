@@ -1,8 +1,6 @@
 {% extends "layout.html" %} {% block content %} {{super()}}
 <div id="main" class="container-fluid">
     <div id="top" class="form-group">
-        <form method="POST" id="filtroformovr" action="pesquisa_ovr">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div class="row col-sm-12">
                 <div class="col-sm-4">
                     <button class="btn btn-primary btn-warning form-control" onclick="window.open('ovr')">
@@ -23,6 +21,8 @@
             <div class="row col-sm-12">
                 <hr>
             </div>
+        <form method="POST" id="filtroformovr" action="pesquisa_ovr">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div class="row col-sm-12">
                 <div class="col-sm-2">
                     <label for="numeroCEmercante">Número CE-Mercante</label>
@@ -270,6 +270,11 @@ function abre_ovr_numero(){
         window.open("ovr?id=" + numero);
     }
 }
+$("#abre_ovr_id").on('keyup', function (e) {
+    if (e.key === 'Enter' || e.keyCode === 13) {
+        abre_ovr_numero()
+    }
+});
 
 
     function submit_many(pinput){

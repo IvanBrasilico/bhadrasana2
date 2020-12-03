@@ -369,6 +369,7 @@ class RepresentanteMarca(BaseDumpable):
     endereco = Column(VARCHAR(200), index=True)
     cep = Column(VARCHAR(10), index=True)
     telefone = Column(VARCHAR(20), index=True)
+    email = Column(VARCHAR(100), index=True)
     representacoes = relationship('Representacao', back_populates='representante')
 
     def __str__(self):

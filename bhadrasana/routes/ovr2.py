@@ -240,25 +240,22 @@ def ovr2_app(app):
                     raise NoResultFound(f'Marcas não encontradas na ovr {ovr_id}.')
                 logger.info('Gerando marcas')
                 document = None
-                representante = None
+                representante_id2 = None
                 for ovr_dict in ovr_dicts:
-                    representante = ovr_dict.get('representante')
-                    print(representante, representante_id)
-                    if representante:
-                        print(representante['id'], representante_id,
-                              type(representante['id']), type(representante_id))
-                    if representante and (str(representante['id']) == representante_id):
+                    representante_id2 = ovr_dict.get('representante_id')
+                    representante_nome = ovr_dict.get('representante_nome')
+                    if representante_id2 and (str(representante_id2) == representante_id):
                         document = gera_comunicado_contrafacao(ovr_dict, current_user.name,
                                                                'termo' in request.url)
                         break
-                if representante and document:
+                if representante_id2 and document:
                     nome = 'Comunicado_de_Contrafacao'
                     if 'termo' in request.url:
                         nome = 'Termo de retirada de amostras'
                     out_filename = '{}_{}_{}_{}.docx'.format(
                         nome,
                         ovr_id,
-                        representante['nome'],
+                        representante_nome,
                         datetime.strftime(datetime.now(), '%Y-%m-%dT%H-%M-%S')
                     )
                     document.save(os.path.join(
