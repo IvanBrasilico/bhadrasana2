@@ -6,12 +6,12 @@ from decimal import Decimal
 from typing import Tuple
 
 import pandas as pd
+from ajna_commons.flask.log import logger
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
 from gridfs import GridFS
 from werkzeug.utils import redirect
 
-from ajna_commons.flask.log import logger
 from bhadrasana.analises.escaneamento_operador import sorteia_GMCIs
 from bhadrasana.forms.exibicao_ovr import ExibicaoOVR, TipoExibicao
 from bhadrasana.forms.filtro_container import FiltroContainerForm, FiltroCEForm, FiltroDUEForm
@@ -1541,7 +1541,10 @@ def ovr_app(app):
                                                              lista_tipos=lista_tipos)
                     temposmedios_por_fase = calcula_tempos_por_fase(listaficharesumo)
                     print(temposmedios_por_fase)
-                    listasficharesumo = defaultdict(list)
+                    listasficharesumo = {}
+                    print(faseOVR, type(faseOVR))
+                    for fase in faseOVR:
+                        listasficharesumo[fase] = defaultdict(list)
                     exibicao_ovr = ExibicaoOVR(session, TipoExibicao.Resumo, current_user.id)
                     for ovr in listaficharesumo:
                         resumo = exibicao_ovr.get_OVR_resumo_html(ovr, mercante=False,
@@ -1549,7 +1552,17 @@ def ovr_app(app):
                                                                   responsaveis=True,
                                                                   responsabilidade=True,
                                                                   trabalho=True)
-                        listasficharesumo[ovr.get_fase()].append({'id': ovr.id, 'resumo': resumo})
+                        listasficharesumo[ovr.get_fase()][ovr.responsavel_cpf]. \
+                            append({'id': ovr.id, 'resumo': resumo})
+                    # Ordenar por usuário
+                    listasordenadas = {}
+                    for fase in faseOVR:
+                        if listasficharesumo.get(fase):
+                            _ordenado = [(k, v) for k, v in listasficharesumo[fase].items()]
+                            _ordenado = sorted(_ordenado, key=lambda x: x[0])
+                            if _ordenado[0][0] == None:
+                                _ordenado[0][0] = 'Nenhum'
+                            listaficharesumo[fase] = _ordenado
                 else:
                     flash(filtroform.errors)
             else:

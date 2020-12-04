@@ -33,7 +33,7 @@ def gera_comunicado_contrafacao(ovr: dict, user_name: str, termo=False):
     conteudo = {'unidade': 'ALFSTS', **ovr}
     basepath = os.path.dirname(__file__)
     if termo:
-        document = docx.Document(os.path.join(basepath, 'termo_contrafacao.docx'))
+        document = docx.Document(os.path.join(basepath, 'termo_retirada_amostras_marca.docx'))
     else:
         document = docx.Document(os.path.join(basepath, 'comunicado_contrafacao.docx'))
     docx_replacein(document, conteudo, user_name)

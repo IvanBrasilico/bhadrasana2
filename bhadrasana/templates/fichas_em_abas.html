@@ -60,7 +60,10 @@
                 {%if temposmedios_por_fase.get(fase) %}Tempo médio - {{ temposmedios_por_fase.get(fase) }} dias{% endif %}</h3>
             </div>
             <div class="panel-body panel-primary">
-                {% for ficharesumo in listasficharesumo[fase] %}
+                {% if listasficharesumo[fase] %}
+                {% for usuario, fichasresumo in listasficharesumo[fase].items() %}
+                <h4>{{usuario}} ({{fichasresumo | length}})</h4>
+                {% for ficharesumo in fichasresumo %}
                 <div class="panel panel-heading panel-primary rounded-pill"
                      {% if 'Sou Responsável atual' in ficharesumo['resumo'] %}
                      style="border: 6px solid red"
@@ -75,6 +78,8 @@
                     {{ ficharesumo['resumo'] | safe }}
                 </div>
                 {% endfor %}
+                {% endfor %}
+                {% endif %}
             </div>
         </div>
     </div>
