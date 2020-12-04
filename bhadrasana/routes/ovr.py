@@ -1516,14 +1516,14 @@ def ovr_app(app):
             usuario = get_usuario(session, current_user.name)
             if usuario is None:
                 raise Exception('Erro: Usuário não encontrado!')
+            # Setores do Usuário???
             setores = get_setores_cpf_choice(session, current_user.id)
-            # Apenas para visualizar do GMAB na reunião Gabin
+            # Ou permitir visualizar todos os Setores
             setores = get_setores_choice(session)
             flags = get_flags_choice(session)
             supervisor = usuario_tem_perfil_nome(session, current_user.name, 'Supervisor')
-            print(supervisor)
             if request.method == 'POST':
-                print(request.form)
+                # print(request.form)
                 filtroform = FiltroAbasForm(request.form, setores=setores, flags=flags)
                 if filtroform.validate():
                     lista_flags = filtroform.flags_id.data
@@ -1542,7 +1542,6 @@ def ovr_app(app):
                     temposmedios_por_fase = calcula_tempos_por_fase(listaficharesumo)
                     print(temposmedios_por_fase)
                     listasficharesumo = {}
-                    print(faseOVR, type(faseOVR))
                     for fase in faseOVR:
                         listasficharesumo[fase] = defaultdict(list)
                     exibicao_ovr = ExibicaoOVR(session, TipoExibicao.Resumo, current_user.id)
@@ -1552,17 +1551,16 @@ def ovr_app(app):
                                                                   responsaveis=True,
                                                                   responsabilidade=True,
                                                                   trabalho=True)
-                        listasficharesumo[ovr.get_fase()][ovr.responsavel_cpf]. \
+                        responsavel_cpf = ovr.responsavel_cpf if ovr.responsavel_cpf \
+                            else ' Nenhum'
+                        listasficharesumo[ovr.get_fase()][responsavel_cpf]. \
                             append({'id': ovr.id, 'resumo': resumo})
                     # Ordenar por usuário
-                    listasordenadas = {}
                     for fase in faseOVR:
                         if listasficharesumo.get(fase):
-                            _ordenado = [(k, v) for k, v in listasficharesumo[fase].items()]
+                            _ordenado = [[k, v] for k, v in listasficharesumo[fase].items()]
                             _ordenado = sorted(_ordenado, key=lambda x: x[0])
-                            if _ordenado[0][0] == None:
-                                _ordenado[0][0] = 'Nenhum'
-                            listaficharesumo[fase] = _ordenado
+                            listasficharesumo[fase] = dict(_ordenado)
                 else:
                     flash(filtroform.errors)
             else:
@@ -1574,7 +1572,7 @@ def ovr_app(app):
                                             setores=setores,
                                             flags=flags,
                                             supervisor=supervisor)
-                filtroform.setor_id.data = usuario.setor_id
+                # filtroform.setor_id.data = usuario.setor_id
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
