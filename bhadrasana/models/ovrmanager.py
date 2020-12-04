@@ -243,15 +243,18 @@ def get_ovr_visao_usuario(session, datainicio: datetime,
     """
     usuario = get_usuario_validando(session, usuario_cpf)
     datafim = datafim + timedelta(days=1)
-    filtro = or_(OVR.user_name == usuario_cpf,
-                 OVR.responsavel_cpf == usuario_cpf,
-                 OVR.cpfauditorresponsavel == usuario_cpf,
-                 and_(OVR.responsavel_cpf.is_(None), OVR.setor_id == usuario.setor_id)
-                 )
-    if setor_id:
+    if setor_id is None or setor_id == 'None':
+        print('Usuario')
+        filtro = or_(OVR.user_name == usuario_cpf,
+                     OVR.responsavel_cpf == usuario_cpf,
+                     OVR.cpfauditorresponsavel == usuario_cpf,
+                     and_(OVR.responsavel_cpf.is_(None), OVR.setor_id == usuario.setor_id)
+                     )
+    else:
+        print('Setor')
         # Mudança: dar opção a qualquer Usuário visualizar o Setor
         #  if usuario_tem_perfil_nome(session, usuario_cpf, 'Supervisor'):
-        filtro = or_(filtro, OVR.setor_id == setor_id)
+        filtro = or_(OVR.setor_id == setor_id)
     if lista_tipos:
         filtro = and_(filtro, OVR.tipooperacao.in_(lista_tipos))
     if lista_flags:
@@ -262,7 +265,8 @@ def get_ovr_visao_usuario(session, datainicio: datetime,
     else:
         q = session.query(OVR).filter(filtro) \
             .filter(OVR.datahora.between(datainicio, datafim)).order_by(OVR.datahora)
-    logger.info('get_ovr_visao_usuario - query' + str(q))
+    logger.info('get_ovr_visao_usuario - query' + str(q) + ' params: ' +
+                f' user {usuario_cpf} Setor {setor_id} De {datainicio} a {datafim}')
     return q.all()
 
 
@@ -280,7 +284,7 @@ def get_ovrs_abertas_flags(session, usuario_cpf: str, lista_flags: list) -> List
 def calcula_tempos_por_fase(listafichas: List[OVR]) -> dict:
     """Recebe lista de OVRs, percorre calculando tempo de acordo com a fase.
 
-    Retorna dicionário descrição da fase: tempo médio em dias.
+    Retorna dicionário descrição da fase: tempo total em dias e quantidade de fichas
 
     :param listafichas: lista de OVRs
     """
@@ -295,7 +299,7 @@ def calcula_tempos_por_fase(listafichas: List[OVR]) -> dict:
             totaldays[ovr.fase] += (ovr.historico[-1].create_date - ovr.datahora).days
             qtdeovrs[ovr.fase] += 1
     for fase, qtde in qtdeovrs.items():
-        result[Enumerado.faseOVR(fase)] = totaldays[fase] // qtde
+        result[Enumerado.faseOVR(fase)] = totaldays[fase], qtde
     return result
 
 

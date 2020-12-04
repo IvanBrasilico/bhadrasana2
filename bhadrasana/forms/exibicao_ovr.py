@@ -2,7 +2,6 @@ from datetime import datetime
 from enum import Enum
 from typing import Tuple, List
 
-from ajna_commons.flask.log import logger
 from bhadrasana.models import get_usuario
 from bhadrasana.models.laudo import get_empresa
 from bhadrasana.models.ovr import OVR

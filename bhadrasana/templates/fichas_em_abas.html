@@ -14,9 +14,9 @@
                     <label for="setor_id">Com alertas</label>
                 </div>
                 <div class="col-sm-2">
-                    {% if supervisor %}
+                    <!--{% if supervisor %} -->
                     <label for="setor_id">Setor a filtrar</label>
-                    {% endif %}
+                    <!--{% endif %}-->
                 </div>
                 <div class="col-sm-2">
                 </div>
@@ -38,9 +38,9 @@
                         {{ oform.flags_id(class='form-control') }}
                     </div>
                     <div class="col-sm-2">
-                        {% if supervisor %}
+                        <!--{% if supervisor %}-->
                         {{ oform.setor_id(class='form-control') }}
-                        {% endif %}
+                        <!--{% endif %}-->
                     </div>
                     <div class="col-sm-2">
                         <button class="btn btn-default btn-info form-control" onclick="submit">
@@ -58,8 +58,13 @@
         %}>
         <div class="panel rounded-pill panel-info">
             <div class="panel-heading">
-                <h3>{{ fase }} ({{ listasficharesumo[fase] | length }})</h3>
-                {%if temposmedios_por_fase.get(fase) %}Tempo médio - {{ temposmedios_por_fase.get(fase) }} dias{% endif %}</h3>
+                <h3>{{ fase }}</h3>
+                {%if temposmedios_por_fase.get(fase) %}
+                <h4>
+                Total: {{ temposmedios_por_fase.get(fase)[1] }}
+                Tempo médio: {{ temposmedios_por_fase.get(fase)[0] // temposmedios_por_fase.get(fase)[1] }} dias
+                </h4>
+                {% endif %}
             </div>
             <div class="panel-body panel-primary">
                 {% if listasficharesumo[fase] %}
