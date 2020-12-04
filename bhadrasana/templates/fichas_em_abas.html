@@ -25,6 +25,8 @@
                 <div class="form-group">
                     <div class="col-sm-2">
                         {{ oform.datainicio(class='form-control') }}
+                        &nbsp;<br>
+                        <button id="btnToggle" type="button" onclick="toggle_div_width()">Expandir >></button>
                     </div>
                     <div class="col-sm-2">
                         {{ oform.datafim(class='form-control') }}
@@ -49,7 +51,7 @@
             </div>
         </form>
     </div>
-    <div id="list" class="row col-xl-12">
+    <div id="kanban" class="row col-xl-12" style=" width: 100%; overflow-x: auto;">
         {% for fase in listafases %}
         <div class={% if fase==
         'Ativa' or fase == 'Suspensa' %}"col-lg-3"{% elif fase == 'Arquivada' %}"col-lg-2"{% else %}"col-lg-2"{% endif
@@ -101,6 +103,19 @@
     }
     function clearMsg(adiv) {
         adiv.title = "";
+    }
+    function toggle_div_width(ev){
+        kanban_div = document.getElementById("kanban");
+        toggle_button = document.getElementById("btnToggle");
+        if (kanban.style.width == "100%") {
+            console.log("Expande");
+            kanban.style.width = "150%";
+            btnToggle.innerText = "Reduzir <<";
+        } else {
+            console.log("Reduz");
+            kanban.style.width = "100%";
+            btnToggle.innerText = "Expandir >>";
+        }
     }
 
 </script>
