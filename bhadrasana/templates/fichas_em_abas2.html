@@ -52,7 +52,13 @@
         </form>
     </div>
     <div id="kanban" class="row col-xl-12" style=" width: 100%; overflow-x: auto;">
+        {% if tipos_presentes | length > 6 %}
+        <h3>Atenção: temos mais de 6 Tipos de Evento neste quadro, foi preciso quebrar em duas linhas. Role para baixo para ver.</h3>
+        {% endif %}
         {% for fase in tipos_presentes %}
+        {% if loop.index % 6 == 0 %}
+        <div class="row">
+        {% endif %}
         <div class="col-lg-2">
         <div class="panel rounded-pill panel-info">
             <div class="panel-heading">
@@ -81,6 +87,9 @@
                 {% endif %}
             </div>
         </div>
+        {% if loop.index % 6 == 0 %}
+        </div>
+        {% endif %}
     </div>
     {% endfor %}
 </div>
