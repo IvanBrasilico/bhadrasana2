@@ -52,19 +52,11 @@
         </form>
     </div>
     <div id="kanban" class="row col-xl-12" style=" width: 100%; overflow-x: auto;">
-        {% for fase in listafases %}
-        <div class={% if fase==
-        'Ativa' or fase == 'Suspensa' %}"col-lg-3"{% elif fase == 'Arquivada' %}"col-lg-2"{% else %}"col-lg-2"{% endif
-        %}>
+        {% for fase in tipos_presentes %}
+        <div class="col-lg-2">
         <div class="panel rounded-pill panel-info">
             <div class="panel-heading">
                 <h3>{{ fase }}</h3>
-                {%if temposmedios_por_fase.get(fase) %}
-                <h4>
-                Total: {{ temposmedios_por_fase.get(fase)[1] }}
-                Tempo médio: {{ temposmedios_por_fase.get(fase)[0] // temposmedios_por_fase.get(fase)[1] }} dias
-                </h4>
-                {% endif %}
             </div>
             <div class="panel-body panel-primary">
                 {% if listasficharesumo[fase] %}
