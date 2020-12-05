@@ -245,6 +245,7 @@ class TipoEventoOVR(BaseDumpable):
     create_date = Column(TIMESTAMP, index=True,
                          server_default=func.current_timestamp())
     eventoespecial = Column(Integer(), index=True)
+    ordem = Column(Integer())
 
     def __str__(self):
         return '{} - {}'.format(self.id, self.nome)
