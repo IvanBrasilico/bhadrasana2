@@ -74,6 +74,9 @@ class FiltroOVRForm(FlaskForm):
     numeroprocesso = StringField(u'Número de processo informado na Ficha',
                                  default='')
     setor_id = SelectField('Setores')
+    responsavel_cpf = SelectField(u'CPF do Responsável Atual', default='')
+    cpfauditorresponsavel = SelectField(u'CPF do Auditor designado', default='')
+    teveevento = SelectField('tipoevento', default=-1)
     tipoexibicao = SelectField('Campos a serem exibidos na tela', default=1)
 
     def __init__(self, *args, **kwargs):
@@ -83,9 +86,10 @@ class FiltroOVRForm(FlaskForm):
         # self.fase.choices = Enumerado.faseOVR()
         self.fase.choices = [(None, 'Selecione'), *Enumerado.faseOVR()]
         self.tipoevento_id.choices = [(None, 'Selecione')]
+        self.teveevento.choices = [(None, 'Selecione')]
         if kwargs.get('tiposeventos'):
-            self.tipoevento_id.choices = [(None, 'Selecione'),
-                                          *kwargs.get('tiposeventos')]
+            self.tipoevento_id.choices = [(None, 'Selecione'), *kwargs.get('tiposeventos')]
+            self.teveevento.choices = [(None, 'Selecione'), *kwargs.get('tiposeventos')]
         self.recinto_id.choices = [(None, 'Selecione')]
         if kwargs.get('recintos'):
             self.recinto_id.choices.extend(kwargs.get('recintos'))
@@ -98,6 +102,12 @@ class FiltroOVRForm(FlaskForm):
         self.setor_id.choices = [(None, 'Selecione')]
         if kwargs.get('setores'):
             self.setor_id.choices.extend(kwargs.get('setores'))
+        self.responsavel_cpf.choices = [(None, 'Selecione')]
+        if kwargs.get('responsaveis'):
+            self.responsavel_cpf.choices.extend(kwargs.get('responsaveis'))
+        self.cpfauditorresponsavel.choices = [(None, 'Selecione')]
+        if kwargs.get('auditores'):
+            self.cpfauditorresponsavel.choices.extend(kwargs.get('auditores'))
         self.tipoexibicao.choices = [(tipo.value, tipo.name) for tipo in TipoExibicao]
 
 

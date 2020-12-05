@@ -94,9 +94,16 @@
                     <label for="numeroprocesso">Número do processo</label>
                 </div>
                 <div class="col-sm-2">
-                    <label for="numeroprocesso">Campos a exibir</label>
+                    <label for="numeroprocesso">Responsável atual</label>
                 </div>
-                <div class="col-sm-6">
+                <div class="col-sm-2">
+                    <label for="numeroprocesso">Auditor Responsável</label>
+                </div>
+                <div class="col-sm-2">
+                    <label for="numeroprocesso">Teve evento</label>
+                </div>
+                <div class="col-sm-2">
+                    <label for="numeroprocesso">Campos a exibir</label>
                 </div>
             </div>
             <div class="row col-sm-12">
@@ -107,9 +114,16 @@
                     {{ oform.numeroprocesso(class='form-control') }}
                 </div>
                 <div class="col-sm-2">
-                    {{ oform.tipoexibicao(class='form-control') }}
+                    {{ oform.responsavel_cpf(class='form-control') }}
                 </div>
-                <div class="col-sm-6">
+                <div class="col-sm-2">
+                    {{ oform.cpfauditorresponsavel(class='form-control') }}
+                </div>
+                <div class="col-sm-2">
+                    {{ oform.teveevento(class='form-control') }}
+                </div>
+                <div class="col-sm-2">
+                    {{ oform.tipoexibicao(class='form-control') }}
                 </div>
             </div>
             <div class="row col-sm-12">&nbsp;</div>
