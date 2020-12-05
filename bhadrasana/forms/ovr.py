@@ -76,7 +76,7 @@ class FiltroOVRForm(FlaskForm):
     setor_id = SelectField('Setores')
     responsavel_cpf = SelectField(u'CPF do Responsável Atual', default='')
     cpfauditorresponsavel = SelectField(u'CPF do Auditor designado', default='')
-    teveevento = SelectField('tipoevento', default=-1)
+    teveevento = SelectField('tipoevento', default='')
     tipoexibicao = SelectField('Campos a serem exibidos na tela', default=1)
 
     def __init__(self, *args, **kwargs):

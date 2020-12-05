@@ -362,11 +362,12 @@ def get_ovr_filtro(session,
             eventos = session.query(EventoOVR).filter(
                 EventoOVR.tipoevento_id == int(pfiltro.get('teveevento'))).all()
             ids_ovrs = [evento.ovr_id for evento in eventos]
-            filtro = and_(OVR.id.in_(ids_ovrs) , filtro)
+            filtro = and_(OVR.id.in_(ids_ovrs), filtro)
         if pfiltro.get('responsavel_cpf') and pfiltro.get('responsavel_cpf') != 'None':
             filtro = and_(OVR.responsavel_cpf == pfiltro.get('responsavel_cpf'), filtro)
-        if pfiltro.get('cpfauditorresponsavel') and pfiltro.get('cpfauditorresponsavel') != 'None':
-            filtro = and_(OVR.cpfauditorresponsavel == pfiltro.get('cpfauditorresponsavel'), filtro)
+        cpfauditorresponsavel = pfiltro.get('cpfauditorresponsavel')
+        if cpfauditorresponsavel and cpfauditorresponsavel != 'None':
+            filtro = and_(OVR.cpfauditorresponsavel == cpfauditorresponsavel, filtro)
         if pfiltro.get('recinto_id') and pfiltro.get('recinto_id') != 'None':
             filtro = and_(OVR.recinto_id == int(pfiltro.get('recinto_id')), filtro)
         if pfiltro.get('flag_id') and pfiltro.get('flag_id') != 'None':

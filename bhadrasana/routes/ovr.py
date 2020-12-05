@@ -6,12 +6,12 @@ from decimal import Decimal
 from typing import Tuple
 
 import pandas as pd
-from ajna_commons.flask.log import logger
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
 from gridfs import GridFS
 from werkzeug.utils import redirect
 
+from ajna_commons.flask.log import logger
 from bhadrasana.analises.escaneamento_operador import sorteia_GMCIs
 from bhadrasana.forms.exibicao_ovr import ExibicaoOVR, TipoExibicao
 from bhadrasana.forms.filtro_container import FiltroContainerForm, FiltroCEForm, FiltroDUEForm
@@ -1588,6 +1588,88 @@ def ovr_app(app):
             flash(str(type(err)))
             flash(str(err))
         return render_template('fichas_em_abas.html',
+                               oform=filtroform,
+                               listafases=faseOVR,
+                               listasficharesumo=listasficharesumo,
+                               temposmedios_por_fase=temposmedios_por_fase,
+                               supervisor=supervisor)
+
+    # kanban
+    @app.route('/fichas_em_abas2', methods=['GET', 'POST'])
+    @login_required
+    def fichas_em_abas2():
+        session = app.config['dbsession']
+        listasficharesumo = []
+        filtroform = FiltroAbasForm()
+        supervisor = False
+        temposmedios_por_fase = {}
+        try:
+            usuario = get_usuario(session, current_user.name)
+            if usuario is None:
+                raise Exception('Erro: Usuário não encontrado!')
+            # Setores do Usuário???
+            setores = get_setores_cpf_choice(session, current_user.id)
+            # Ou permitir visualizar todos os Setores
+            setores = get_setores_choice(session)
+            flags = get_flags_choice(session)
+            supervisor = usuario_tem_perfil_nome(session, current_user.name, 'Supervisor')
+            if request.method == 'POST':
+                # print(request.form)
+                filtroform = FiltroAbasForm(request.form, setores=setores, flags=flags)
+                if filtroform.validate():
+                    lista_flags = filtroform.flags_id.data
+                    if 99 in lista_flags:
+                        lista_flags = None
+                    lista_tipos = filtroform.tipooperacao_id.data
+                    if 99 in lista_tipos:
+                        lista_tipos = None
+                    listaficharesumo = get_ovr_visao_usuario(session,
+                                                             filtroform.datainicio.data,
+                                                             filtroform.datafim.data,
+                                                             current_user.id,
+                                                             setor_id=filtroform.setor_id.data,
+                                                             lista_flags=lista_flags,
+                                                             lista_tipos=lista_tipos)
+                    # temposmedios_por_fase = calcula_tempos_por_fase(listaficharesumo)
+                    listasficharesumo = {}
+                    tipos_presentes = [ovr.tipoevento.nome for ovr in listaficharesumo]
+                    for tipoevento_nome in tipos_presentes:
+                        listasficharesumo[tipoevento_nome] = defaultdict(list)
+                    exibicao_ovr = ExibicaoOVR(session, TipoExibicao.Resumo, current_user.id)
+                    for ovr in listaficharesumo:
+                        resumo = exibicao_ovr.get_OVR_resumo_html(ovr, mercante=False,
+                                                                  fiscalizado=True,
+                                                                  responsaveis=True,
+                                                                  responsabilidade=True,
+                                                                  trabalho=True)
+                        responsavel_cpf = ovr.responsavel_cpf if ovr.responsavel_cpf \
+                            else ' Nenhum'
+                        listasficharesumo[ovr.tipoevento.nome][responsavel_cpf]. \
+                            append({'id': ovr.id, 'resumo': resumo})
+                    # Ordenar por usuário
+                    for fase in faseOVR:
+                        if listasficharesumo.get(fase):
+                            _ordenado = [[k, v] for k, v in listasficharesumo[fase].items()]
+                            _ordenado = sorted(_ordenado, key=lambda x: x[0])
+                            listasficharesumo[fase] = dict(_ordenado)
+                else:
+                    flash(filtroform.errors)
+            else:
+                today = date.today()
+                start = today - timedelta(days=62)
+                inicio = date(year=start.year, month=start.month, day=1)
+                filtroform = FiltroAbasForm(datainicio=inicio,
+                                            datafim=today,
+                                            setores=setores,
+                                            flags=flags,
+                                            supervisor=supervisor)
+                # filtroform.setor_id.data = usuario.setor_id
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return render_template('fichas_em_abas2.html',
                                oform=filtroform,
                                listafases=faseOVR,
                                listasficharesumo=listasficharesumo,

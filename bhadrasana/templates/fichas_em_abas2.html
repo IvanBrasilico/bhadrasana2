@@ -1,0 +1,132 @@
+{% extends "layout.html" %} {% block content %} {{super()}}
+<div id="main" class="container-fluid">
+    <div class="form-group">
+        <form method="POST" id="filtrofichaabas" action="fichas_em_abas2">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <div class="row">
+                <div class="col-sm-4">
+                    <label for="datainicio">Início e fim de período de pesquisa</label>
+                </div>
+                <div class="col-sm-2">
+                    <label for="setor_id">Tipo de Operação</label>
+                </div>
+                <div class="col-sm-2">
+                    <label for="setor_id">Com alertas</label>
+                </div>
+                <div class="col-sm-2">
+                    <!--{% if supervisor %} -->
+                    <label for="setor_id">Setor a filtrar</label>
+                    <!--{% endif %}-->
+                </div>
+                <div class="col-sm-2">
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <div class="col-sm-2">
+                        {{ oform.datainicio(class='form-control') }}
+                        &nbsp;<br>
+                        <button id="btnToggle" type="button" onclick="toggle_div_width()">Expandir >></button>
+                    </div>
+                    <div class="col-sm-2">
+                        {{ oform.datafim(class='form-control') }}
+                    </div>
+                    <div class="col-sm-2">
+                        {{ oform.tipooperacao_id(class='form-control') }}
+                    </div>
+                    <div class="col-sm-2">
+                        {{ oform.flags_id(class='form-control') }}
+                    </div>
+                    <div class="col-sm-2">
+                        <!--{% if supervisor %}-->
+                        {{ oform.setor_id(class='form-control') }}
+                        <!--{% endif %}-->
+                    </div>
+                    <div class="col-sm-2">
+                        <button class="btn btn-default btn-info form-control" onclick="submit">
+                            Pesquisar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div id="kanban" class="row col-xl-12" style=" width: 100%; overflow-x: auto;">
+        {% for fase in listafases %}
+        <div class={% if fase==
+        'Ativa' or fase == 'Suspensa' %}"col-lg-3"{% elif fase == 'Arquivada' %}"col-lg-2"{% else %}"col-lg-2"{% endif
+        %}>
+        <div class="panel rounded-pill panel-info">
+            <div class="panel-heading">
+                <h3>{{ fase }}</h3>
+                {%if temposmedios_por_fase.get(fase) %}
+                <h4>
+                Total: {{ temposmedios_por_fase.get(fase)[1] }}
+                Tempo médio: {{ temposmedios_por_fase.get(fase)[0] // temposmedios_por_fase.get(fase)[1] }} dias
+                </h4>
+                {% endif %}
+            </div>
+            <div class="panel-body panel-primary">
+                {% if listasficharesumo[fase] %}
+                {% for usuario, fichasresumo in listasficharesumo[fase].items() %}
+                <h4>{{usuario}} ({{fichasresumo | length}})</h4>
+                {% for ficharesumo in fichasresumo %}
+                <div class="panel panel-heading panel-primary rounded-pill"
+                     {% if 'Sou Responsável atual' in ficharesumo['resumo'] %}
+                     style="border: 6px solid red"
+                     {% endif %}
+                     {% if 'Sou Auditor responsável' in ficharesumo['resumo'] %}
+                     style="border: 6px solid orange"
+                     {% endif %}
+                     {% if 'Criado por mim' in ficharesumo['resumo'] %}
+                     style="border: 6px solid pink"
+                     {% endif %}
+                     onmouseover="showMsg(this, '{{ ficharesumo['id'] }}')" onmouseout="clearMsg(this)">
+                    {{ ficharesumo['resumo'] | safe }}
+                </div>
+                {% endfor %}
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+<!--Footer-->
+<div id="bottom" class="row col-sm-12">
+    AJNA - Receita Federal do Brasil 2017
+</div>
+</div>
+{% endblock %} {% block scripts %} {{super()}}
+<script>
+   function showMsg(adiv, oid) {
+        xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4) {
+                if (this.status == 200) {
+                    adiv.title = this.responseText;
+                }
+            }
+        }
+        xhttp.open("GET", "/bhadrasana2/ficha/summary/" + oid, true);
+        xhttp.send();
+    }
+    function clearMsg(adiv) {
+        adiv.title = "";
+    }
+    function toggle_div_width(ev){
+        kanban_div = document.getElementById("kanban");
+        toggle_button = document.getElementById("btnToggle");
+        if (kanban.style.width == "100%") {
+            console.log("Expande");
+            kanban.style.width = "150%";
+            btnToggle.innerText = "Reduzir <<";
+        } else {
+            console.log("Reduz");
+            kanban.style.width = "100%";
+            btnToggle.innerText = "Expandir >>";
+        }
+    }
+
+</script>
+{% endblock %}
