@@ -339,8 +339,8 @@ class OVRAppTestCase(BaseTestCase):
         table = soup.find('table', {'id': 'pesquisa_ovr_table'})
         rows = [str(row) for row in table.findAll("tr")]
         # print(rows)
-        assert len(rows) == 2
         assert '152005079623267' in ''.join(rows)
+        assert len(rows) == 2
         table_text = ''.join(rows)
         ovr_id_pos = table_text.find('"ovr?id=')
         ovr_id = table_text[ovr_id_pos + 8: ovr_id_pos + 9]
