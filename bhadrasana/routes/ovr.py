@@ -42,7 +42,8 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     muda_setor_ovr, get_recintos_dte, \
     excluir_processo, excluir_evento, get_ovr_visao_usuario, get_setores_cpf_choice, \
     get_processo, get_ovr_conhecimento, get_ovr_due, get_recintos_unidade, \
-    calcula_tempos_por_fase, get_setores_unidade_choice, get_afrfb_choice, get_ovr_one, libera_ovr
+    calcula_tempos_por_fase, get_setores_unidade_choice, get_afrfb_choice, get_ovr_one, \
+    libera_ovr, get_afrfb_setores_choice, get_setores_unidade
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects, consulta_ce_objects, \
     consulta_due_objects
@@ -265,7 +266,12 @@ def ovr_app(app):
         recintos = get_recintos(session)
         flags = get_flags_choice(session)
         infracoes = get_infracoes_choice(session)
-        lista_setores = get_setores_choice(session)
+        usuario = get_usuario(session, current_user.name)
+        lista_setores = get_setores_unidade_choice(session, usuario.setor.cod_unidade)
+        setores = get_setores_unidade(session, usuario.setor.cod_unidade)
+        print(setores)
+        usuarios = get_usuarios_setores_choice(session, setores)
+        auditores = get_afrfb_setores_choice(session, setores)
         filtro_form = FiltroOVRForm(
             datainicio=date.today() - timedelta(days=10),
             datafim=date.today(),
@@ -273,7 +279,9 @@ def ovr_app(app):
             recintos=recintos,
             flags=flags,
             infracoes=infracoes,
-            setores=lista_setores
+            setores=lista_setores,
+            responsaveis=usuarios,
+            auditores=auditores
         )
         responsaveis = get_usuarios(session)
         responsavel_form = ResponsavelOVRForm(responsaveis=responsaveis,
@@ -289,7 +297,8 @@ def ovr_app(app):
                 logger.info('Consulta de Ficha: ' + str(dict(request.form.items())))
                 filtro_form = FiltroOVRForm(request.form, tiposeventos=tiposeventos,
                                             recintos=recintos, flags=flags,
-                                            infracoes=infracoes, setores=lista_setores)
+                                            infracoes=infracoes, setores=lista_setores,
+                                            responsaveis=usuarios, auditores=auditores)
                 filtro_form.validate()
                 logger.info('filtro_form data: ' + str(dict(filtro_form.data.items())))
                 ovrs = get_ovr_filtro(session,

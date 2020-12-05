@@ -358,8 +358,15 @@ def get_ovr_filtro(session,
             filtro = and_(OVR.fase == int(pfiltro.get('fase')), filtro)
         if pfiltro.get('tipoevento_id') and pfiltro.get('tipoevento_id') != 'None':
             filtro = and_(OVR.tipoevento_id == int(pfiltro.get('tipoevento_id')), filtro)
-        if pfiltro.get('responsavel') and pfiltro.get('responsavel') != 'None':
-            filtro = and_(OVR.responsavel_cpf == pfiltro.get('responsavel'), filtro)
+        if pfiltro.get('teveevento') and pfiltro.get('teveevento') != 'None':
+            eventos = session.query(EventoOVR).filter(
+                EventoOVR.tipoevento_id == int(pfiltro.get('teveevento'))).all()
+            ids_ovrs = [evento.ovr_id for evento in eventos]
+            filtro = and_(OVR.id.in_(ids_ovrs) , filtro)
+        if pfiltro.get('responsavel_cpf') and pfiltro.get('responsavel_cpf') != 'None':
+            filtro = and_(OVR.responsavel_cpf == pfiltro.get('responsavel_cpf'), filtro)
+        if pfiltro.get('cpfauditorresponsavel') and pfiltro.get('cpfauditorresponsavel') != 'None':
+            filtro = and_(OVR.cpfauditorresponsavel == pfiltro.get('cpfauditorresponsavel'), filtro)
         if pfiltro.get('recinto_id') and pfiltro.get('recinto_id') != 'None':
             filtro = and_(OVR.recinto_id == int(pfiltro.get('recinto_id')), filtro)
         if pfiltro.get('flag_id') and pfiltro.get('flag_id') != 'None':
@@ -954,7 +961,8 @@ def get_usuarios(session) -> List[Tuple[str, str]]:
     return sorted(usuarios_list, key=lambda x: x[1])
 
 
-def get_usuarios_setores_choice(session, setores: list) -> List[Tuple[str, str]]:
+def valida_lista_setores(setores: list):
+    """Trata lista tanto de Setor quando de id. Dá exceção em outro caso"""
     if not setores or not isinstance(setores, list) or len(setores) == 0:
         raise ValueError('get_usuarios_setores precisa de uma lista!!')
     if isinstance(setores[0], Setor):
@@ -964,20 +972,35 @@ def get_usuarios_setores_choice(session, setores: list) -> List[Tuple[str, str]]
     else:
         raise NotImplementedError('get_usuarios_setores recebeu uma lista de setores'
                                   'que não consegue entender!!')
+    return ids_setores
+
+
+def get_usuarios_setores_choice(session, setores: list) -> List[Tuple[str, str]]:
+    ids_setores = valida_lista_setores(setores)
     usuarios = session.query(Usuario).filter(Usuario.setor_id.in_(ids_setores)).all()
     usuarios_list = [(usuario.cpf, usuario.nome) for usuario in usuarios]
     return sorted(usuarios_list, key=lambda x: x[1])
 
 
-def get_afrfb(session, cod_unidade: str) -> List[Usuario]:
-    setores = get_setores_unidade(session, cod_unidade)
-    ids_setores = [setor.id for setor in setores]
+def get_afrfb_setores(session, setores: list) -> List[Usuario]:
+    ids_setores = valida_lista_setores(setores)
     return session.query(Usuario).filter(Usuario.cargo == 0). \
         filter(Usuario.setor_id.in_(ids_setores)).all()
 
 
+def get_afrfb(session, cod_unidade: str) -> List[Usuario]:
+    setores = get_setores_unidade(session, cod_unidade)
+    return get_afrfb_setores(session, setores)
+
+
 def get_afrfb_choice(session, cod_unidade: str) -> List[Tuple[str, str]]:
     usuarios = get_afrfb(session, cod_unidade)
+    usuarios_list = [(usuario.cpf, usuario.nome) for usuario in usuarios]
+    return sorted(usuarios_list, key=lambda x: x[1])
+
+
+def get_afrfb_setores_choice(session, setores: list) -> List[Tuple[str, str]]:
+    usuarios = get_afrfb_setores(session, setores)
     usuarios_list = [(usuario.cpf, usuario.nome) for usuario in usuarios]
     return sorted(usuarios_list, key=lambda x: x[1])
 
