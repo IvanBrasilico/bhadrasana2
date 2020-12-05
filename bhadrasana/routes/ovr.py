@@ -1634,7 +1634,7 @@ def ovr_app(app):
                     listaficharesumo = [ovr for ovr in listaficharesumo if ovr.fase in (1, 2)]
                     listasficharesumo = {}
                     tipos_presentes = set([ovr.tipoevento for ovr in listaficharesumo])
-                    tipos_presentes = sorted(tipos_presentes, key = lambda x: x.ordem)
+                    tipos_presentes = sorted(tipos_presentes, key=lambda x: x.ordem)
                     tipos_presentes = [tipo.nome for tipo in tipos_presentes]
                     for tipoevento_nome in tipos_presentes:
                         listasficharesumo[tipoevento_nome] = defaultdict(list)
