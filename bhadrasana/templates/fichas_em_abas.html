@@ -1,7 +1,7 @@
 {% extends "layout.html" %} {% block content %} {{super()}}
 <div id="main" class="container-fluid">
     <div class="form-group">
-        <form method="POST" id="filtrofichaabas" action="fichas_em_abas">
+        <form method="POST" id="frmFichaEmAbas" action="fichas_em_abas">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div class="row">
                 <div class="col-sm-4">
@@ -27,7 +27,7 @@
                         {{ oform.datainicio(class='form-control') }}
                         &nbsp;<br>
                         <button id="btnToggle" type="button" onclick="toggle_div_width()">Expandir >></button>
-                        <button id="btnFase" type="button" onclick="location.href='fichas_em_abas2'">Por Eventos</button>
+                        <button id="btnEvento" type="button" onclick="load_tipoeventos()">Por Eventos</button>
                     </div>
                     <div class="col-sm-2">
                         {{ oform.datafim(class='form-control') }}
@@ -62,8 +62,8 @@
                 <h3>{{ fase }}</h3>
                 {%if temposmedios_por_fase.get(fase) %}
                 <h4>
-                Total: {{ temposmedios_por_fase.get(fase)[1] }}
-                Tempo médio: {{ temposmedios_por_fase.get(fase)[0] // temposmedios_por_fase.get(fase)[1] }} dias
+                Total de Fichas: {{ temposmedios_por_fase.get(fase)[1] }}<br>
+                Tempo médio até aqui: {{ temposmedios_por_fase.get(fase)[0] // temposmedios_por_fase.get(fase)[1] }} dias
                 </h4>
                 {% endif %}
             </div>
@@ -120,13 +120,18 @@
         toggle_button = document.getElementById("btnToggle");
         if (kanban.style.width == "100%") {
             console.log("Expande");
-            kanban.style.width = "150%";
-            btnToggle.innerText = "Reduzir <<";
+            kanban.style.width = "180%";
+            btnToggle.innerText = " Reduzir <<";
         } else {
             console.log("Reduz");
             kanban.style.width = "100%";
             btnToggle.innerText = "Expandir >>";
         }
+    }
+    function load_tipoeventos(){
+        form = document.getElementById("frmFichaEmAbas");
+        form.action = "fichas_em_abas2";
+        form.submit();
     }
 
 </script>

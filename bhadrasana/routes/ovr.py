@@ -43,7 +43,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     excluir_processo, excluir_evento, get_ovr_visao_usuario, get_setores_cpf_choice, \
     get_processo, get_ovr_conhecimento, get_ovr_due, get_recintos_unidade, \
     calcula_tempos_por_fase, get_setores_unidade_choice, get_afrfb_choice, get_ovr_one, \
-    libera_ovr, get_afrfb_setores_choice, get_setores_unidade
+    libera_ovr, get_afrfb_setores_choice, get_setores_unidade, calcula_tempos_por_tipoevento
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects, consulta_ce_objects, \
     consulta_due_objects
@@ -1632,12 +1632,13 @@ def ovr_app(app):
                                                              lista_flags=lista_flags,
                                                              lista_tipos=lista_tipos)
                     listaficharesumo = [ovr for ovr in listaficharesumo if ovr.fase in (1, 2)]
+                    temposmedios_por_fase = calcula_tempos_por_tipoevento(listaficharesumo)
                     listasficharesumo = {}
                     tipos_presentes = set([ovr.tipoevento for ovr in listaficharesumo])
                     tipos_presentes = sorted(tipos_presentes, key=lambda x: x.ordem)
-                    tipos_presentes = [tipo.nome for tipo in tipos_presentes]
-                    for tipoevento_nome in tipos_presentes:
-                        listasficharesumo[tipoevento_nome] = defaultdict(list)
+                    tipos_presentes = [tipo for tipo in tipos_presentes]
+                    for tipoevento in tipos_presentes:
+                        listasficharesumo[tipoevento] = defaultdict(list)
                     exibicao_ovr = ExibicaoOVR(session, TipoExibicao.Resumo, current_user.id)
                     for ovr in listaficharesumo:
                         resumo = exibicao_ovr.get_OVR_resumo_html(ovr, mercante=False,
@@ -1647,15 +1648,14 @@ def ovr_app(app):
                                                                   trabalho=True)
                         responsavel_cpf = ovr.responsavel_cpf if ovr.responsavel_cpf \
                             else ' Nenhum'
-                        listasficharesumo[ovr.tipoevento.nome][responsavel_cpf]. \
+                        listasficharesumo[ovr.tipoevento][responsavel_cpf]. \
                             append({'id': ovr.id, 'resumo': resumo})
                     # Ordenar por usuário
-                    for fase in tipos_presentes:
-                        if listasficharesumo.get(fase):
-                            _ordenado = [[k, v] for k, v in listasficharesumo[fase].items()]
+                    for tipoevento in tipos_presentes:
+                        if listasficharesumo.get(tipoevento):
+                            _ordenado = [[k, v] for k, v in listasficharesumo[tipoevento].items()]
                             _ordenado = sorted(_ordenado, key=lambda x: x[0])
-                            listasficharesumo[fase] = dict(_ordenado)
-                    print(listasficharesumo)
+                            listasficharesumo[tipoevento] = dict(_ordenado)
                 else:
                     flash(filtroform.errors)
             else:
