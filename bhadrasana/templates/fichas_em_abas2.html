@@ -1,7 +1,7 @@
 {% extends "layout.html" %} {% block content %} {{super()}}
 <div id="main" class="container-fluid">
     <div class="form-group">
-        <form method="POST" id="filtrofichaabas" action="fichas_em_abas2">
+        <form method="POST" id="frmFichaEmAbas" action="fichas_em_abas2">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div class="row">
                 <div class="col-sm-4">
@@ -27,7 +27,7 @@
                         {{ oform.datainicio(class='form-control') }}
                         &nbsp;<br>
                         <button id="btnToggle" type="button" onclick="toggle_div_width()">Expandir >></button>
-                        <button id="btnFase" type="button" onclick="location.href='fichas_em_abas'">Por Fases</button>
+                        <button id="btnFase" type="button" onclick="load_fases()">Por Fases</button>
                     </div>
                     <div class="col-sm-2">
                         {{ oform.datafim(class='form-control') }}
@@ -54,31 +54,41 @@
     </div>
     <div id="kanban" class="row col-xl-12" style=" width: 100%; overflow-x: auto;">
         {% if tipos_presentes | length > 6 %}
-        <h3>Atenção: temos mais de 6 Tipos de Evento neste quadro, foi preciso quebrar em duas linhas. Role para baixo para ver.</h3>
+        <div class="col-sm-12">
+        <h4><font color="silver">
+            Mais de 6 Tipos de Evento neste quadro, necessário quebrar em várias linhas. Role para baixo para visualizar.
+        </font></h4>
+        </div>
         {% endif %}
-        {% for fase in tipos_presentes %}
+        {% for tipoevento in tipos_presentes %}
         {% if loop.index % 6 == 0 %}
         <div class="row">
         {% endif %}
         <div class="col-lg-2">
-        <div class="panel rounded-pill panel-info">
+        <div class="panel rounded-pill panel-info" {% if tipoevento.fase == 2 %} style="border: 6px solid purple" {% endif %}>
             <div class="panel-heading">
-                <h3>{{ fase }}</h3>
+                <h3>{{ tipoevento.nome }}</h3>
+                {%if temposmedios_por_fase.get(tipoevento.nome) %}
+                <h4>
+                Total de Fichas: {{ temposmedios_por_fase.get(tipoevento.nome)[1] }}<br>
+                tempo médio no Evento: {{ temposmedios_por_fase.get(tipoevento.nome)[0] // temposmedios_por_fase.get(tipoevento.nome)[1] }} dias
+                </h4>
+                {% endif %}
             </div>
             <div class="panel-body panel-primary">
-                {% if listasficharesumo[fase] %}
-                {% for usuario, fichasresumo in listasficharesumo[fase].items() %}
+                {% if listasficharesumo[tipoevento] %}
+                {% for usuario, fichasresumo in listasficharesumo[tipoevento].items() %}
                 <h4>{{usuario}} ({{fichasresumo | length}})</h4>
                 {% for ficharesumo in fichasresumo %}
                 <div class="panel panel-heading panel-primary rounded-pill"
                      {% if 'Sou Responsável atual' in ficharesumo['resumo'] %}
-                     style="border: 6px solid red"
+                     style="border: 4px solid red"
                      {% endif %}
                      {% if 'Sou Auditor responsável' in ficharesumo['resumo'] %}
-                     style="border: 6px solid orange"
+                     style="border: 4px solid orange"
                      {% endif %}
                      {% if 'Criado por mim' in ficharesumo['resumo'] %}
-                     style="border: 6px solid pink"
+                     style="border: 4px solid pink"
                      {% endif %}
                      onmouseover="showMsg(this, '{{ ficharesumo['id'] }}')" onmouseout="clearMsg(this)">
                     {{ ficharesumo['resumo'] | safe }}
@@ -121,14 +131,18 @@
         toggle_button = document.getElementById("btnToggle");
         if (kanban.style.width == "100%") {
             console.log("Expande");
-            kanban.style.width = "150%";
-            btnToggle.innerText = "Reduzir <<";
+            kanban.style.width = "180%";
+            btnToggle.innerText = " Reduzir <<";
         } else {
             console.log("Reduz");
             kanban.style.width = "100%";
             btnToggle.innerText = "Expandir >>";
         }
     }
-
+    function load_fases(){
+        form = document.getElementById("frmFichaEmAbas");
+        form.action = "fichas_em_abas";
+        form.submit();
+    }
 </script>
 {% endblock %}

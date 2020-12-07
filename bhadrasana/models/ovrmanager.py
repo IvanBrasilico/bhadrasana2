@@ -291,15 +291,36 @@ def calcula_tempos_por_fase(listafichas: List[OVR]) -> dict:
     totaldays = defaultdict(int)
     qtdeovrs = defaultdict(int)
     result = {}
+
     for ovr in listafichas:
         if ovr.fase in (0, 1, 2):  # Ficha em adamento, calcular dias em aberto até hoje
             totaldays[ovr.fase] += (datetime.today() - ovr.datahora).days
             qtdeovrs[ovr.fase] += 1
         else:  # Ficha fechada, calcula dias até o último evento
-            totaldays[ovr.fase] += (ovr.historico[-1].create_date - ovr.datahora).days
-            qtdeovrs[ovr.fase] += 1
+            if len(ovr.historico) > 0:
+                totaldays[ovr.fase] += (ovr.historico[-1].create_date - ovr.datahora).days
+                qtdeovrs[ovr.fase] += 1
     for fase, qtde in qtdeovrs.items():
         result[Enumerado.faseOVR(fase)] = totaldays[fase], qtde
+    return result
+
+
+def calcula_tempos_por_tipoevento(listafichas: List[OVR]) -> dict:
+    """Recebe lista de OVRs, percorre calculando tempo de acordo com a fase.
+
+    Retorna dicionário descrição da fase: tempo total em dias e quantidade de fichas
+
+    :param listafichas: lista de OVRs
+    """
+    totaldays = defaultdict(int)
+    qtdeovrs = defaultdict(int)
+    result = {}
+    for ovr in listafichas:
+        if len(ovr.historico) > 1:
+            totaldays[ovr.tipoevento.nome] += (datetime.today() - ovr.historico[-1].create_date).days
+            qtdeovrs[ovr.tipoevento.nome] += 1
+    for tipoevento_nome, qtde in qtdeovrs.items():
+        result[tipoevento_nome] = totaldays[tipoevento_nome], qtde
     return result
 
 
