@@ -317,7 +317,8 @@ def calcula_tempos_por_tipoevento(listafichas: List[OVR]) -> dict:
     result = {}
     for ovr in listafichas:
         if len(ovr.historico) > 1:
-            totaldays[ovr.tipoevento.nome] += (datetime.today() - ovr.historico[-1].create_date).days
+            totaldays[ovr.tipoevento.nome] += \
+                (datetime.today() - ovr.historico[-1].create_date).days
             qtdeovrs[ovr.tipoevento.nome] += 1
     for tipoevento_nome, qtde in qtdeovrs.items():
         result[tipoevento_nome] = totaldays[tipoevento_nome], qtde
