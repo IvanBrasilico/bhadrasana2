@@ -19,7 +19,7 @@ class RVFForm(RastreavelForm):
     volume = DecimalField('Volume efetivo da carga verificada em m3', places=2)
     adata = DateField(u'Data')
     ahora = TimeField(u'Horário')
-    inspecaonaoinvasiva = BooleanField('Apenas inspeção não invasiva', default=0)
+    inspecaonaoinvasiva = BooleanField('Apenas inspeção não invasiva', default=False)
 
 
 class ImagemRVFForm(RastreavelForm):
