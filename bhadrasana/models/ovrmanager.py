@@ -381,8 +381,11 @@ def get_ovr_filtro(session,
         if pfiltro.get('tipoevento_id') and pfiltro.get('tipoevento_id') != 'None':
             filtro = and_(OVR.tipoevento_id == int(pfiltro.get('tipoevento_id')), filtro)
         if pfiltro.get('teveevento') and pfiltro.get('teveevento') != 'None':
-            eventos = session.query(EventoOVR).filter(
-                EventoOVR.tipoevento_id == int(pfiltro.get('teveevento'))).all()
+            q = session.query(EventoOVR).filter(
+                EventoOVR.tipoevento_id == int(pfiltro.get('teveevento')))
+            if pfiltro.get('usuarioevento') and pfiltro.get('usuarioevento') != 'None':
+                q = q.filter(EventoOVR.user_name == pfiltro.get('usuarioevento'))
+            eventos = q.all()
             ids_ovrs = [evento.ovr_id for evento in eventos]
             filtro = and_(OVR.id.in_(ids_ovrs), filtro)
         if pfiltro.get('responsavel_cpf') and pfiltro.get('responsavel_cpf') != 'None':
@@ -395,7 +398,7 @@ def get_ovr_filtro(session,
         if pfiltro.get('flag_id') and pfiltro.get('flag_id') != 'None':
             filtro = and_(Flag.id == int(pfiltro.get('flag_id')), filtro)
             tables.extend([flags_table, Flag])
-        # TODO: E se selecionar flags e infracoes????
+        # TODO: E se selecionar flags E infracoes????
         if pfiltro.get('infracao_id') and pfiltro.get('infracao_id') != 'None':
             filtro = and_(Infracao.id == int(pfiltro.get('infracao_id')), filtro)
             tables.extend([RVF, infracoesencontradas_table, Infracao])

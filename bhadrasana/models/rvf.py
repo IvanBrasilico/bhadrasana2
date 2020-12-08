@@ -9,7 +9,7 @@ sys.path.insert(0, '../virasana')
 sys.path.insert(0, '../ajna_api')
 
 from sqlalchemy import BigInteger, Column, DateTime, func, VARCHAR, Table, \
-    Numeric, Integer, create_engine
+    Numeric, Integer, create_engine, Boolean
 from sqlalchemy import ForeignKey
 from sqlalchemy.dialects.mysql import TIMESTAMP
 from sqlalchemy.orm import relationship, sessionmaker
@@ -67,6 +67,7 @@ class RVF(BaseRastreavel, BaseDumpable):
     datahora = Column(TIMESTAMP, index=True)
     last_modified = Column(DateTime, index=True,
                            onupdate=func.current_timestamp())
+    inspecaonaoinvasiva = Column(Boolean, default=False)
 
     def dump(self, exclude=None, explode=True, imagens=True):
         dumped = super().dump(exclude)
