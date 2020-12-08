@@ -40,7 +40,7 @@ class OVRPermissoesTestCase(BaseTestCase):
 
     def generate_setores_usuarios(self):
         setor1 = self.create_setor('1', 'Setor 1')
-        setor2 = self.create_setor('1', 'Setor 2')
+        setor2 = self.create_setor('2', 'Setor 2')
         user1 = self.create_usuario('user_1', 'Usuario 1', setor1)
         user2 = self.create_usuario('user_2', 'Usuario 2', setor1)
 
@@ -83,6 +83,27 @@ class OVRPermissoesTestCase(BaseTestCase):
         session.refresh(ovr)
         assert len(ovr.processos) == 1
 
+    def test_OVR_Processo_Sem_Responsavel(self):
+        ovr = self.create_OVR_valido()
+        session.refresh(ovr)
+        # user_1 cria novo processo em uma ficha sem responsável atribuído
+        # sistema não deixa ele excluir sem se autoatribuir
+        params = {
+            'numero': '1234',
+            'tipoprocesso_id': 0,
+            'ovr_id': ovr.id,
+            'user_name': 'user_1'
+        }
+        processo = gera_processoovr(session, params)
+        session.refresh(processo)
+        session.refresh(ovr)
+        assert len(ovr.processos) == 1
+        with self.assertRaises(ESomenteUsuarioResponsavel):
+            excluir_processo(session, processo, 'user_1')
+        session.refresh(ovr)
+        assert len(ovr.processos) == 1
+
+
     def test_OVR_Processo_Incluir(self):
         ovr = self.create_OVR_valido()
         session.refresh(ovr)
@@ -99,7 +120,8 @@ class OVRPermissoesTestCase(BaseTestCase):
 
     def test_OVR_Supervisor_Atribuir(self):
         setor1 = self.create_setor('1', 'Setor 1')
-        setor2 = self.create_setor('1', 'Setor 2')
+        setor2 = self.create_setor('2', 'Setor 2')
+        setor3 = self.create_setor('3', 'Setor 3', '1')
         user1 = self.create_usuario('user_1', 'Usuario 1', setor1)
         user2 = self.create_usuario('user_2', 'Usuario 2', setor1)
         ovr = self.create_OVR_valido()
@@ -144,10 +166,18 @@ class OVRPermissoesTestCase(BaseTestCase):
         print('Atribuição 4 - é Supervisor mas ovr em outro Setor')
         with self.assertRaises(ESomenteUsuarioResponsavel):
             evento = atribui_responsavel_ovr(session, ovr.id, 'user_1', 'user_1')
+        ### Continua falhando quando o setor da ficha seja filho do setor do usuário supervisor
+        ovr.setor_id = '3'
+        ovr.responsavel_cpf = 'chaves'
+        session.add(ovr)
+        session.commit()
+        print('Atribuição 5 - é Supervisor mas ovr em outro Setor filho')
+        with self.assertRaises(ESomenteUsuarioResponsavel):
+            evento = atribui_responsavel_ovr(session, ovr.id, 'user_1', 'user_1')
 
     def test_OVR_Supervisor_Atribuir(self):
         setor1 = self.create_setor('1', 'Setor 1')
-        setor2 = self.create_setor('1', 'Setor 2')
+        setor2 = self.create_setor('2', 'Setor 2')
         user1 = self.create_usuario('user_1', 'Usuario 1', setor1)
         user2 = self.create_usuario('user_2', 'Usuario 2', setor1)
         ovr = self.create_OVR_valido()
@@ -185,12 +215,24 @@ class OVRPermissoesTestCase(BaseTestCase):
         session.commit()
         session.refresh(ovr)
         evento = atribui_responsavel_ovr(session, ovr.id, 'user_1', None)
+        # Falha quando user_2 tenta liberar a OVR
         with self.assertRaises(ESomenteUsuarioResponsavel):
             evento = libera_ovr(session, ovr.id, 'user_2')
+        # Falha quando user_2 tenta se autoatribuir a OVR
         with self.assertRaises(ESomenteUsuarioResponsavel):
             evento = atribui_responsavel_ovr(session, ovr.id, 'user_2', None)
+        # user_1 libera a OVR
         evento = libera_ovr(session, ovr.id, 'user_1')
+        assert ovr.responsavel_cpf is None
         evento = atribui_responsavel_ovr(session, ovr.id, 'user_2', None)
+        assert ovr.responsavel_cpf == 'user_2'
+
+    # TODO: testes de:
+    #  Definir Auditor (atribui_responsavel_ovr),
+    #  Transferir para outro Setor (muda_setor_ovr),
+    #  Lavratura do AI (informa_lavratura_auto),
+    #  Informar Evento (gera_eventoovr),
+    #  TG e Verificações físicas
 
 
 if __name__ == '__main__':
