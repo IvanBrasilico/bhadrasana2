@@ -27,6 +27,7 @@ class EventoEspecial(Enum):
     Autuacao = 4
     AuditorResponsavel = 5
     MudancaSetor = 6
+    InspecaoNaoInvasiva = 7
 
 
 tipoStatusOVREspecial = [

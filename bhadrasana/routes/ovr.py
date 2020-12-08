@@ -13,7 +13,7 @@ from werkzeug.utils import redirect
 
 from ajna_commons.flask.log import logger
 from bhadrasana.analises.escaneamento_operador import sorteia_GMCIs
-from bhadrasana.forms.exibicao_ovr import ExibicaoOVR, TipoExibicao
+from bhadrasana.forms.exibicao_ovr import ExibicaoOVR, TipoExibicao, agrupa_ovrs
 from bhadrasana.forms.filtro_container import FiltroContainerForm, FiltroCEForm, FiltroDUEForm
 from bhadrasana.forms.filtro_empresa import FiltroEmpresaForm
 from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
@@ -83,7 +83,6 @@ def flash_alertas(session, ovr):
         ovrs_empresa = ovrs_empresa - {ovr.id}
         do_flash(ovrs_empresa,
                  'Empresa (mostrando 6 meses, utilize pesquisa empresa para ver mais)')
-
 
 def ovr_app(app):
     def trata_ovr(request, ovr_id):
@@ -262,6 +261,7 @@ def ovr_app(app):
         LIMIT = 200
         titulos_exibicao = []
         listaovrs = []
+        listaagrupada = {}
         tiposeventos = get_tipos_evento_todos(session)
         recintos = get_recintos(session)
         flags = get_flags_choice(session)
@@ -309,6 +309,7 @@ def ovr_app(app):
                 exibicao = ExibicaoOVR(session, tipoexibicao, current_user.id)
                 titulos_exibicao = exibicao.get_titulos()
                 listaovrs = [exibicao.get_linha(ovr) for ovr in ovrs]
+                listaagrupada = agrupa_ovrs(ovrs, listaovrs, filtro_form.agruparpor.data)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
@@ -319,6 +320,7 @@ def ovr_app(app):
                                limit=LIMIT,
                                titulos=titulos_exibicao,
                                listaovrs=listaovrs,
+                               listaagrupada=listaagrupada,
                                responsavel_form=responsavel_form,
                                historico_form=historico_ovr_form)
 

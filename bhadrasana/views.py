@@ -265,7 +265,7 @@ def mynavbar():
     items = [View('Home', 'index'),
              View('Risco', 'risco'),
              View('Editar Riscos', 'edita_risco'),
-             View('Fichas de Carga', 'pesquisa_ovr'),
+             View('Pesquisa Fichas', 'pesquisa_ovr'),
              View('Minhas Fichas', 'minhas_ovrs'),
              View('Kanban', 'fichas_em_abas'),
              Subgroup(
