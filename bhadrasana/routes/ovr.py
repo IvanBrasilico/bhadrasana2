@@ -84,6 +84,7 @@ def flash_alertas(session, ovr):
         do_flash(ovrs_empresa,
                  'Empresa (mostrando 6 meses, utilize pesquisa empresa para ver mais)')
 
+
 def ovr_app(app):
     def trata_ovr(request, ovr_id):
         session = app.config.get('dbsession')
