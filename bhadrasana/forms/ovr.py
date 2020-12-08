@@ -81,7 +81,6 @@ class FiltroOVRForm(FlaskForm):
     tipoexibicao = SelectField('Campos a serem exibidos na tela', default=1)
     agruparpor = SelectField('tipoevento', default=None)
 
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.tipooperacao.choices = [(None, 'Selecione'),

@@ -1,19 +1,19 @@
 from datetime import timedelta
 from typing import Callable, List, Tuple, Optional
 
-from ajna_commons.flask.log import logger
-from ajna_commons.models.bsonimage import BsonImage
 from bson import ObjectId
 from gridfs import GridFS, NoFile
 from sqlalchemy import and_
-from virasana.integracao.mercante.mercantealchemy import Item
 
+from ajna_commons.flask.log import logger
+from ajna_commons.models.bsonimage import BsonImage
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, \
     get_usuario_validando, gera_objeto, EBloqueado
 from bhadrasana.models.ovr import Marca, TipoEventoOVR, EventoEspecial, OVR, EventoOVR
 from bhadrasana.models.ovrmanager import get_ovr, gera_eventoovr
 from bhadrasana.models.rvf import RVF, Infracao, ImagemRVF, Lacre, \
     TipoApreensao, ApreensaoRVF
+from virasana.integracao.mercante.mercantealchemy import Item
 
 
 def get_peso(session, numeroCE, conteiner) -> float:
@@ -78,7 +78,7 @@ def lista_rvfovr(session, ovr_id: int) -> Optional[List[RVF]]:
     return session.query(RVF).filter(RVF.ovr_id == ovr_id).all()
 
 
-def gera_evento_rvf(session, rvf, user_name)-> Optional[EventoOVR]:
+def gera_evento_rvf(session, rvf, user_name) -> Optional[EventoOVR]:
     """Gera Evento de RVF.
 
     Regras:
@@ -102,8 +102,8 @@ def gera_evento_rvf(session, rvf, user_name)-> Optional[EventoOVR]:
         return None
     if (not rvf.inspecaonaoinvasiva) and (len(rvf.imagens) < 3):
         return None
-    evento = session.query(EventoOVR).filter(EventoOVR.ovr_id == rvf.ovr_id).\
-        filter(EventoOVR.motivo == 'RVF %s' % rvf.id).\
+    evento = session.query(EventoOVR).filter(EventoOVR.ovr_id == rvf.ovr_id). \
+        filter(EventoOVR.motivo == 'RVF %s' % rvf.id). \
         filter(EventoOVR.tipoevento_id == tipoevento.id).one_or_none()
     if not evento:
         params = {'tipoevento_id': tipoevento.id,

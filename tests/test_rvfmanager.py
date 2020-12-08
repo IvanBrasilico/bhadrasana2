@@ -12,7 +12,7 @@ from .test_base import BaseTestCase
 
 sys.path.append('.')
 
-from bhadrasana.models.rvf import metadata, RVF
+from bhadrasana.models.rvf import metadata, RVF, ImagemRVF
 
 engine = create_engine('sqlite://')
 Session = sessionmaker(bind=engine)
@@ -114,7 +114,7 @@ class RVFTestCase(BaseTestCase):
         rvfs = get_rvfs_filtro(session, filtro)
         assert len(rvfs) == 0
 
-    def test_evento_RVF(self):
+    def test_evento_InspecaoNaoInvasiva(self):
         aovr = ovr.OVR()
         aovr.numeroCEmercante = '123'
         user_name = 'teste3'
@@ -123,7 +123,7 @@ class RVFTestCase(BaseTestCase):
         session.refresh(aovr)
         with self.assertRaises(ENaoAutorizado):
             rvf = cadastra_rvf(session, user_name, {}, aovr.id)
-        rvf = cadastra_rvf(session, 'teste', {}, aovr.id)
+        rvf = cadastra_rvf(session, 'teste', {'inspecaonaoinvasiva': True}, aovr.id)
         assert rvf.ovr_id == aovr.id
         assert rvf.numeroCEmercante == aovr.numeroCEmercante
         evento = rvf.ovr.historico[0]
@@ -135,6 +135,43 @@ class RVFTestCase(BaseTestCase):
         rvf = cadastra_rvf(session, 'teste', {'id': rvf.id,
                                               'numerolote': '1'})
         assert rvf.numerolote == '1'
+
+    def test_evento_RVF(self):
+        aovr = ovr.OVR()
+        aovr.numeroCEmercante = '1234'
+        aovr.responsavel_cpf = 'teste'
+        session.add(aovr)
+        session.commit()
+        session.refresh(aovr)
+        # Não gera evento, mas gera rvf nova para a OVR
+        rvf = cadastra_rvf(session, 'teste', {}, aovr.id)
+        assert len(rvf.ovr.historico) == 0
+        # Gera evento InspecaoNaoInvasiva
+        rvf = cadastra_rvf(session, 'teste', {'id': rvf.id,
+                                              'numerolote': '1',
+                                              'inspecaonaoinvasiva': True})
+        assert len(rvf.ovr.historico) == 1
+        # Não gera evento
+        rvf = cadastra_rvf(session, 'teste', {'id': rvf.id,
+                                              'numerolote': '1',
+                                              'inspecaonaoinvasiva': True})
+        assert len(rvf.ovr.historico) == 1
+        rvf = cadastra_rvf(session, 'teste', {'id': rvf.id,
+                                              'numerolote': '1',
+                                              'inspecaonaoinvasiva': False})
+        assert len(rvf.ovr.historico) == 1
+        # Gera evento RVF (mais de 3 imagens e inspecaonaoinvasiva False
+        for i in range(5):
+            imagem_rvf = ImagemRVF()
+            imagem_rvf.rvf_id = rvf.id
+            session.add(imagem_rvf)
+        session.commit()
+        session.refresh(rvf)
+        rvf = cadastra_rvf(session, 'teste', {'id': rvf.id,
+                                              'numerolote': '1',
+                                              'inspecaonaoinvasiva': False})
+        assert len(rvf.ovr.historico) == 2
+
 
     def test_programa_RVF(self):
         aovr = ovr.OVR()
@@ -153,7 +190,8 @@ class RVFTestCase(BaseTestCase):
         assert rvf.user_name is None
         assert len(rvf.ovr.historico) == 0
         rvf = cadastra_rvf(session, 'teste', {'id': rvf.id,
-                                              'numerolote': '1'})
+                                              'numerolote': '1',
+                                              'inspecaonaoinvasiva': True})
         assert rvf.numerolote == '1'
         assert rvf.user_name == 'teste'
         assert rvf.descricao is None

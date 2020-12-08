@@ -36,7 +36,8 @@ tipoStatusOVREspecial = [
     ('TG incluído', EventoEspecial.TG.value, 1),
     ('Emissão de Auto de Infração', EventoEspecial.Autuacao.value, 3),
     ('Definição de Auditor Responsável', EventoEspecial.AuditorResponsavel.value, 1),
-    ('Atribuição para outro Setor', EventoEspecial.MudancaSetor.value, 0)
+    ('Atribuição para outro Setor', EventoEspecial.MudancaSetor.value, 0),
+    ('Inspeção não invasiva', EventoEspecial.InspecaoNaoInvasiva.value, 1),
 ]
 
 tipoStatusOVR = [
