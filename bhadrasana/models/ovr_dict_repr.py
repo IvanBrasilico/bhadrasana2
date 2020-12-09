@@ -48,7 +48,8 @@ class OVRDict():
             ovr_dict['rvfs'] = rvfs_dicts
             try:
                 empresa = get_empresa(session, ovr.cnpj_fiscalizado)
-                ovr_dict['nome_fiscalizado'] = empresa.nome
+                if empresa:
+                    ovr_dict['nome_fiscalizado'] = empresa.nome
             except ValueError:
                 ovr_dict['nome_fiscalizado'] = ''
             usuario = get_usuario(session, ovr.cpfauditorresponsavel)
@@ -83,6 +84,7 @@ class OVRDict():
         rvf = get_rvf_one(session, id)
         rvf_dump = rvf.dump(explode=explode, imagens=imagens)
         ovr = rvf.ovr
+        rvf_dump['rvf_id'] = id
         if ovr.cpfauditorresponsavel:
             usuario = get_usuario(session, ovr.cpfauditorresponsavel)
             if usuario:
