@@ -715,7 +715,8 @@ def gera_eventoovr(session, params: dict, commit=True, user_name=None,
         ovr = get_ovr(session, evento.ovr_id)
         # Nao e permitido evento comum nestas fases, pois mudaria status
         if ovr.fase >= 3:  # Concluida, arquivada
-            if not evento.meramente_informativo:
+            if not evento.tipoevento.eventoespecial == EventoEspecial.Responsavel.value and \
+                    not evento.meramente_informativo:
                 raise ENaoAutorizado('Ficha arquivada. Para informar Evento comum, '
                                      'é necessário que Supervisor atribua primeiro.')
         if not evento.meramente_informativo:
