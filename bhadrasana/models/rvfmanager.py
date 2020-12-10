@@ -7,10 +7,10 @@ from sqlalchemy import and_
 
 from ajna_commons.flask.log import logger
 from ajna_commons.models.bsonimage import BsonImage
-from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, \
-    get_usuario_validando, gera_objeto, EBloqueado
+from bhadrasana.models import handle_datahora, get_usuario_validando, EBloqueado, gera_objeto
 from bhadrasana.models.ovr import Marca, TipoEventoOVR, EventoEspecial, OVR, EventoOVR
-from bhadrasana.models.ovrmanager import get_ovr, gera_eventoovr
+from bhadrasana.models.ovrmanager import get_ovr, gera_eventoovr, \
+    valida_mesmo_responsavel_ovr_user_name
 from bhadrasana.models.rvf import RVF, Infracao, ImagemRVF, Lacre, \
     TipoApreensao, ApreensaoRVF
 from virasana.integracao.mercante.mercantealchemy import Item
@@ -115,6 +115,13 @@ def gera_evento_rvf(session, rvf, user_name) -> Optional[EventoOVR]:
     return evento
 
 
+def verifica_permissao_rvf(session, ovr, user_name):
+    if ovr and ovr.fase > 2:
+        raise EBloqueado()
+    get_usuario_validando(session, user_name)
+    valida_mesmo_responsavel_ovr_user_name(session, ovr, user_name)
+
+
 def cadastra_rvf(session,
                  user_name: str,
                  params: dict = None,
@@ -131,16 +138,12 @@ def cadastra_rvf(session,
         rvf = cadastra_rvf(session, user_name, params)
     elif params:
         rvf = get_rvf(session, params.get('id'))
-        if rvf.ovr and rvf.ovr.fase > 2:
-            raise EBloqueado()
-        usuario = get_usuario_validando(session, user_name)
-        if rvf.user_name and rvf.user_name != usuario.cpf:
-            ovr = get_ovr(session, rvf.ovr_id)
-            if ovr.responsavel_cpf != usuario.cpf:
-                raise ESomenteMesmoUsuario()
+        ovr_id = rvf.ovr_id if rvf.ovr_id else params.get('ovr_id')
+        ovr = get_ovr(session, ovr_id)
+        verifica_permissao_rvf(session, ovr, user_name)
         for key, value in params.items():
             setattr(rvf, key, value)
-        rvf.user_name = usuario.cpf
+        rvf.user_name = user_name
         rvf.datahora = handle_datahora(params)
     if rvf is not None:
         try:
