@@ -77,7 +77,9 @@ class FiltroOVRForm(FlaskForm):
     responsavel_cpf = SelectField(u'CPF do Responsável Atual', default='')
     cpfauditorresponsavel = SelectField(u'CPF do Auditor designado', default='')
     teveevento = SelectField('tipoevento', default='')
+    usuarioevento = SelectField('tipoevento', default=None)
     tipoexibicao = SelectField('Campos a serem exibidos na tela', default=1)
+    agruparpor = SelectField('tipoevento', default=None)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -103,12 +105,17 @@ class FiltroOVRForm(FlaskForm):
         if kwargs.get('setores'):
             self.setor_id.choices.extend(kwargs.get('setores'))
         self.responsavel_cpf.choices = [(None, 'Selecione')]
+        self.usuarioevento.choices = [(None, 'Selecione')]
         if kwargs.get('responsaveis'):
             self.responsavel_cpf.choices.extend(kwargs.get('responsaveis'))
+            self.usuarioevento.choices.extend(kwargs.get('responsaveis'))
         self.cpfauditorresponsavel.choices = [(None, 'Selecione')]
         if kwargs.get('auditores'):
             self.cpfauditorresponsavel.choices.extend(kwargs.get('auditores'))
         self.tipoexibicao.choices = [(tipo.value, tipo.name) for tipo in TipoExibicao]
+        self.agruparpor.choices = ((None, 'Nenhum'), ('fase', 'Fase'),
+                                   ('responsavel_cpf', 'Responsável atual'),
+                                   ('cpfauditorresponsavel', 'Auditor Responsável'),)
 
 
 class FiltroRelatorioForm(FlaskForm):

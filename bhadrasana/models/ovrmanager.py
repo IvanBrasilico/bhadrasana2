@@ -291,15 +291,37 @@ def calcula_tempos_por_fase(listafichas: List[OVR]) -> dict:
     totaldays = defaultdict(int)
     qtdeovrs = defaultdict(int)
     result = {}
+
     for ovr in listafichas:
         if ovr.fase in (0, 1, 2):  # Ficha em adamento, calcular dias em aberto até hoje
             totaldays[ovr.fase] += (datetime.today() - ovr.datahora).days
             qtdeovrs[ovr.fase] += 1
         else:  # Ficha fechada, calcula dias até o último evento
-            totaldays[ovr.fase] += (ovr.historico[-1].create_date - ovr.datahora).days
-            qtdeovrs[ovr.fase] += 1
+            if len(ovr.historico) > 0:
+                totaldays[ovr.fase] += (ovr.historico[-1].create_date - ovr.datahora).days
+                qtdeovrs[ovr.fase] += 1
     for fase, qtde in qtdeovrs.items():
         result[Enumerado.faseOVR(fase)] = totaldays[fase], qtde
+    return result
+
+
+def calcula_tempos_por_tipoevento(listafichas: List[OVR]) -> dict:
+    """Recebe lista de OVRs, percorre calculando tempo de acordo com a fase.
+
+    Retorna dicionário descrição da fase: tempo total em dias e quantidade de fichas
+
+    :param listafichas: lista de OVRs
+    """
+    totaldays = defaultdict(int)
+    qtdeovrs = defaultdict(int)
+    result = {}
+    for ovr in listafichas:
+        if len(ovr.historico) > 1:
+            totaldays[ovr.tipoevento.nome] += \
+                (datetime.today() - ovr.historico[-1].create_date).days
+            qtdeovrs[ovr.tipoevento.nome] += 1
+    for tipoevento_nome, qtde in qtdeovrs.items():
+        result[tipoevento_nome] = totaldays[tipoevento_nome], qtde
     return result
 
 
@@ -359,8 +381,11 @@ def get_ovr_filtro(session,
         if pfiltro.get('tipoevento_id') and pfiltro.get('tipoevento_id') != 'None':
             filtro = and_(OVR.tipoevento_id == int(pfiltro.get('tipoevento_id')), filtro)
         if pfiltro.get('teveevento') and pfiltro.get('teveevento') != 'None':
-            eventos = session.query(EventoOVR).filter(
-                EventoOVR.tipoevento_id == int(pfiltro.get('teveevento'))).all()
+            q = session.query(EventoOVR).filter(
+                EventoOVR.tipoevento_id == int(pfiltro.get('teveevento')))
+            if pfiltro.get('usuarioevento') and pfiltro.get('usuarioevento') != 'None':
+                q = q.filter(EventoOVR.user_name == pfiltro.get('usuarioevento'))
+            eventos = q.all()
             ids_ovrs = [evento.ovr_id for evento in eventos]
             filtro = and_(OVR.id.in_(ids_ovrs), filtro)
         if pfiltro.get('responsavel_cpf') and pfiltro.get('responsavel_cpf') != 'None':
@@ -373,7 +398,7 @@ def get_ovr_filtro(session,
         if pfiltro.get('flag_id') and pfiltro.get('flag_id') != 'None':
             filtro = and_(Flag.id == int(pfiltro.get('flag_id')), filtro)
             tables.extend([flags_table, Flag])
-        # TODO: E se selecionar flags e infracoes????
+        # TODO: E se selecionar flags E infracoes????
         if pfiltro.get('infracao_id') and pfiltro.get('infracao_id') != 'None':
             filtro = and_(Infracao.id == int(pfiltro.get('infracao_id')), filtro)
             tables.extend([RVF, infracoesencontradas_table, Infracao])

@@ -1,19 +1,19 @@
 from datetime import timedelta
 from typing import Callable, List, Tuple, Optional
 
-from ajna_commons.flask.log import logger
-from ajna_commons.models.bsonimage import BsonImage
 from bson import ObjectId
 from gridfs import GridFS, NoFile
 from sqlalchemy import and_
-from virasana.integracao.mercante.mercantealchemy import Item
 
+from ajna_commons.flask.log import logger
+from ajna_commons.models.bsonimage import BsonImage
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, \
     get_usuario_validando, gera_objeto, EBloqueado
-from bhadrasana.models.ovr import Marca, TipoEventoOVR, EventoEspecial, OVR
+from bhadrasana.models.ovr import Marca, TipoEventoOVR, EventoEspecial, OVR, EventoOVR
 from bhadrasana.models.ovrmanager import get_ovr, gera_eventoovr
 from bhadrasana.models.rvf import RVF, Infracao, ImagemRVF, Lacre, \
     TipoApreensao, ApreensaoRVF
+from virasana.integracao.mercante.mercantealchemy import Item
 
 
 def get_peso(session, numeroCE, conteiner) -> float:
@@ -78,16 +78,40 @@ def lista_rvfovr(session, ovr_id: int) -> Optional[List[RVF]]:
     return session.query(RVF).filter(RVF.ovr_id == ovr_id).all()
 
 
-def gera_evento_rvf(session, rvf, user_name):
-    tipoevento = session.query(TipoEventoOVR).filter(
-        TipoEventoOVR.eventoespecial == EventoEspecial.RVF.value).first()
-    params = {'tipoevento_id': tipoevento.id,
-              'motivo': 'RVF %s' % rvf.id,
-              'user_name': rvf.user_name,
-              'ovr_id': rvf.ovr_id
-              }
-    evento = gera_eventoovr(session, params, commit=False, user_name=user_name)
-    session.add(evento)
+def gera_evento_rvf(session, rvf, user_name) -> Optional[EventoOVR]:
+    """Gera Evento de RVF.
+
+    Regras:
+        - Se já existe EventoEspecial.RVF para o RVF, não cria mais
+        - Somente cria se RVF tiver ao menos 3 imagens
+        - Pode ser uma RVF marcada como inspecaonaoinvasiva. Neste caso é criado, caso não
+        exista, o EventoEspecial.InspecaoNaoInvasiva, se não existir, mesmo sem imagens anexadas
+    """
+    print(rvf.inspecaonaoinvasiva)
+    if rvf.inspecaonaoinvasiva:
+        tipoevento = session.query(TipoEventoOVR).filter(
+            TipoEventoOVR.eventoespecial == EventoEspecial.InspecaoNaoInvasiva.value).first()
+    else:
+        tipoevento = session.query(TipoEventoOVR).filter(
+            TipoEventoOVR.eventoespecial == EventoEspecial.RVF.value).first()
+    if not tipoevento:
+        if rvf.inspecaonaoinvasiva:
+            logger.error('Tipo Evento InspecaoNaoInvasiva não cadastrado!!!')
+        else:
+            logger.error('Tipo Evento RVF não cadastrado!!!')
+        return None
+    if (not rvf.inspecaonaoinvasiva) and (len(rvf.imagens) < 3):
+        return None
+    evento = session.query(EventoOVR).filter(EventoOVR.ovr_id == rvf.ovr_id). \
+        filter(EventoOVR.motivo == 'RVF %s' % rvf.id). \
+        filter(EventoOVR.tipoevento_id == tipoevento.id).one_or_none()
+    if not evento:
+        params = {'tipoevento_id': tipoevento.id,
+                  'motivo': 'RVF %s' % rvf.id,
+                  'user_name': rvf.user_name,
+                  'ovr_id': rvf.ovr_id
+                  }
+        evento = gera_eventoovr(session, params, user_name=user_name)
     return evento
 
 
@@ -96,7 +120,6 @@ def cadastra_rvf(session,
                  params: dict = None,
                  ovr_id: int = None) -> Optional[RVF]:
     rvf = None
-    geraevento = False
     if ovr_id:
         ovr = get_ovr(session, ovr_id)
         if not ovr:
@@ -106,7 +129,6 @@ def cadastra_rvf(session,
         params['ovr_id'] = ovr.id
         params['numeroCEmercante'] = ovr.numeroCEmercante
         rvf = cadastra_rvf(session, user_name, params)
-        geraevento = True
     elif params:
         rvf = get_rvf(session, params.get('id'))
         if rvf.ovr and rvf.ovr.fase > 2:
@@ -116,19 +138,16 @@ def cadastra_rvf(session,
             ovr = get_ovr(session, rvf.ovr_id)
             if ovr.responsavel_cpf != usuario.cpf:
                 raise ESomenteMesmoUsuario()
-        if not rvf.user_name:  # RVF criada agora ou programada por outro usuário
-            rvf.user_name = usuario.cpf
-            geraevento = True
         for key, value in params.items():
             setattr(rvf, key, value)
+        rvf.user_name = usuario.cpf
         rvf.datahora = handle_datahora(params)
     if rvf is not None:
         try:
             session.add(rvf)
             session.commit()
-            if geraevento:
-                session.refresh(rvf)
-                gera_evento_rvf(session, rvf, user_name)
+            session.refresh(rvf)
+            gera_evento_rvf(session, rvf, user_name)
         except Exception as err:
             session.rollback()
             logger.error(err, exc_info=True)
