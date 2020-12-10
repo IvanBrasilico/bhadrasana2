@@ -5,7 +5,7 @@ from datetime import datetime
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from bhadrasana.models import ENaoAutorizado, Usuario, ESomenteMesmoUsuario
+from bhadrasana.models import ENaoAutorizado, Usuario, ESomenteMesmoUsuario, ESomenteUsuarioResponsavel
 from bhadrasana.models import ovr
 from bhadrasana.models.rvfmanager import get_rvfs_filtro, cadastra_rvf, programa_rvf_container
 from .test_base import BaseTestCase
@@ -117,6 +117,8 @@ class RVFTestCase(BaseTestCase):
     def test_evento_InspecaoNaoInvasiva(self):
         aovr = ovr.OVR()
         aovr.numeroCEmercante = '123'
+        aovr.fase = 1
+        aovr.responsavel_cpf = 'teste'
         user_name = 'teste3'
         session.add(aovr)
         session.commit()
@@ -129,7 +131,7 @@ class RVFTestCase(BaseTestCase):
         evento = rvf.ovr.historico[0]
         assert evento.ovr_id == aovr.id
         assert rvf.numerolote is None
-        with self.assertRaises(ESomenteMesmoUsuario):
+        with self.assertRaises(ESomenteUsuarioResponsavel):
             rvf = cadastra_rvf(session, 'teste2', {'id': rvf.id,
                                                    'numerolote': '1'})
         rvf = cadastra_rvf(session, 'teste', {'id': rvf.id,
