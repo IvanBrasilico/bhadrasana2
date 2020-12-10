@@ -557,6 +557,7 @@ def atribui_responsavel_ovr(session, ovr_id: int,
                 if ovr.setor_id == setor.id:
                     print('Checagem de setor OK:', ovr.setor_id, setor)
                     checar = False
+                    break
         if checar:
             valida_mesmo_responsavel_user_name(session, ovr_id, user_name)
         if auditor:
