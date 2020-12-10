@@ -101,6 +101,7 @@ def rvf_app(app):
             rvf_id = request.args.get('id')
             if rvf_id is not None:
                 arvf = get_rvf(session, rvf_id)
+                print('arvf.inspecaonaoinvasiva', arvf.inspecaonaoinvasiva)
             if arvf is not None:
                 rvf_form = RVFForm(**arvf.__dict__)
                 if arvf.datahora:

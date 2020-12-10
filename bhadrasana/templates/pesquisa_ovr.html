@@ -1,26 +1,26 @@
 {% extends "layout.html" %} {% block content %} {{super()}}
 <div id="main" class="container-fluid">
     <div id="top" class="form-group">
-            <div class="row col-sm-12">
-                <div class="col-sm-4">
-                    <button class="btn btn-primary btn-warning form-control" onclick="window.open('ovr')">
-                        Nova Ficha
-                    </button>
-                </div>
-                <div class="col-sm-2">
-                </div>
-                <div class="col-sm-2">
-                    <input type="text" class="form-control" name="abre_ovr_id" id="abre_ovr_id">
-                </div>
-                <div class="col-sm-4">
-                    <button class="btn btn-primary btn-warning form-control" onclick="abre_ovr_numero()">
-                        Abrir Ficha número
-                    </button>
-                </div>
+        <div class="row col-sm-12">
+            <div class="col-sm-4">
+                <button class="btn btn-primary btn-warning form-control" onclick="window.open('ovr')">
+                    Nova Ficha
+                </button>
             </div>
-            <div class="row col-sm-12">
-                <hr>
+            <div class="col-sm-2">
             </div>
+            <div class="col-sm-2">
+                <input type="text" class="form-control" name="abre_ovr_id" id="abre_ovr_id">
+            </div>
+            <div class="col-sm-4">
+                <button class="btn btn-primary btn-warning form-control" onclick="abre_ovr_numero()">
+                    Abrir Ficha número
+                </button>
+            </div>
+        </div>
+        <div class="row col-sm-12">
+            <hr>
+        </div>
         <form method="POST" id="filtroformovr" action="pesquisa_ovr">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div class="row col-sm-12">
@@ -94,16 +94,16 @@
                     <label for="numeroprocesso">Número do processo</label>
                 </div>
                 <div class="col-sm-2">
-                    <label for="numeroprocesso">Responsável atual</label>
+                    <label for="responsavel_cpf">Responsável atual</label>
                 </div>
                 <div class="col-sm-2">
-                    <label for="numeroprocesso">Auditor Responsável</label>
+                    <label for="cpfauditoresponsavel">Auditor Responsável</label>
                 </div>
                 <div class="col-sm-2">
-                    <label for="numeroprocesso">Teve evento</label>
+                    <label for="teveevento">Teve evento</label>
                 </div>
                 <div class="col-sm-2">
-                    <label for="numeroprocesso">Campos a exibir</label>
+                    <label for="usuarioevento">Usuário do Evento</label>
                 </div>
             </div>
             <div class="row col-sm-12">
@@ -123,7 +123,23 @@
                     {{ oform.teveevento(class='form-control') }}
                 </div>
                 <div class="col-sm-2">
+                    {{ oform.usuarioevento(class='form-control') }}
+                </div>
+            </div>
+            <div class="row col-sm-12">
+                <div class="col-sm-2">
+                    <label for="tipoexibicao">Campos a exibir</label>
+                </div>
+                <div class="col-sm-2">
+                    <label for="agruparpor">Agrupar por</label>
+                </div>
+            </div>
+            <div class="row col-sm-12">
+                <div class="col-sm-2">
                     {{ oform.tipoexibicao(class='form-control') }}
+                </div>
+                <div class="col-sm-2">
+                    {{ oform.agruparpor(class='form-control') }}
                 </div>
             </div>
             <div class="row col-sm-12">&nbsp;</div>
@@ -162,8 +178,10 @@
     </div>
     <div id="list" class="row col-sm-12">
         &nbsp;<br>
+        <h4><u>Clique nos títulos da tabela para ordenar</u></h4>
+        {% for grupo, sub_listaovrs in listaagrupada.items() %}
+        <h3>{{ grupo }}</h3>
         <div class="table">
-            <h4><u>Clique nos títulos da tabela para ordenar</u></h4>
             <table class="inlineTable table table-bordered table-hover table-responsive"
                    id="pesquisa_ovr_table">
                 <thead>
@@ -175,7 +193,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                {% for ovr in listaovrs %}
+                {% for ovr in sub_listaovrs %}
                 <tr class="{% if ovr[1] %}default{% else %}warning{% endif %}">
                     <td><input type="checkbox" name="rowid" class="action-checkbox" value="{{ovr[0]}}"
                                title="Selecionar linha"></td>
@@ -188,6 +206,7 @@
                 </tbody>
             </table>
         </div>
+        {% endfor %}
     </div>
     <div id="bottom" class="row col-sm-12">
         AJNA - Receita Federal do Brasil 2017
@@ -332,6 +351,7 @@ $('#selectAll').click(function (e) {
         }
     }
     function getCellValue(row, index){ return $(row).children('td').eq(index).text() }
+
 
 
 

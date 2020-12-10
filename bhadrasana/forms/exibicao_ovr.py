@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import datetime
 from enum import Enum
 from typing import Tuple, List
@@ -17,6 +18,16 @@ class TipoExibicao(Enum):
     Empresa = 4
     Resultado = 5
     Resumo = 6
+
+
+def agrupa_ovrs(ovrs, listaovrs, campo):
+    listaagrupada = defaultdict(list)
+    if campo and campo != 'None':
+        for ovr, exibicao_linha in zip(ovrs, listaovrs):
+            listaagrupada[getattr(ovr, campo)].append(exibicao_linha)
+    else:
+        listaagrupada['Sem grupos'] = listaovrs
+    return listaagrupada
 
 
 class ExibicaoOVR:

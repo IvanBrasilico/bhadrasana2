@@ -1,4 +1,4 @@
-from wtforms import StringField, IntegerField, TextAreaField, SelectField
+from wtforms import StringField, IntegerField, TextAreaField, SelectField, BooleanField
 from wtforms.fields.html5 import DateField, TimeField, DecimalField
 
 from bhadrasana.forms import RastreavelForm
@@ -19,6 +19,7 @@ class RVFForm(RastreavelForm):
     volume = DecimalField('Volume efetivo da carga verificada em m3', places=2)
     adata = DateField(u'Data')
     ahora = TimeField(u'Horário')
+    inspecaonaoinvasiva = BooleanField('Apenas inspeção não invasiva', default=False)
 
 
 class ImagemRVFForm(RastreavelForm):
