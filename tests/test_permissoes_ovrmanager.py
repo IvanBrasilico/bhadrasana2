@@ -104,7 +104,6 @@ class OVRPermissoesTestCase(BaseTestCase):
         session.refresh(ovr)
         assert len(ovr.processos) == 1
 
-
     def test_OVR_Processo_Incluir(self):
         ovr = self.create_OVR_valido()
         session.refresh(ovr)
@@ -119,7 +118,7 @@ class OVRPermissoesTestCase(BaseTestCase):
         with self.assertRaises(ESomenteUsuarioResponsavel):
             processo = gera_processoovr(session, params)
 
-    def test_OVR_Supervisor_Atribuir(self):
+    def test_OVR_Supervisor_Varias_Atribuicoes(self):
         setor1 = self.create_setor('1', 'Setor 1')
         setor2 = self.create_setor('2', 'Setor 2')
         setor3 = self.create_setor('3', 'Setor 3', '1')
@@ -173,9 +172,10 @@ class OVRPermissoesTestCase(BaseTestCase):
         session.add(ovr)
         session.commit()
         print('Atribuição 5 - é Supervisor mas ovr em outro Setor filho')
-        #with self.assertRaises(ESomenteUsuarioResponsavel):
-        #    evento = atribui_responsavel_ovr(session, ovr.id, 'user_1', 'chaves')
-        evento = atribui_responsavel_ovr(session, ovr.id, 'user_1', 'user_1')
+        # with self.assertRaises(ESomenteUsuarioResponsavel):
+        evento = atribui_responsavel_ovr(session, ovr.id, 'user_1', 'chaves')
+        with self.assertRaises(ESomenteUsuarioResponsavel):
+            evento = atribui_responsavel_ovr(session, ovr.id, 'user_1', 'chaves')
         assert ovr.responsavel_cpf == 'user_1'
 
     def test_OVR_Supervisor_Atribuir(self):
@@ -251,7 +251,6 @@ class OVRPermissoesTestCase(BaseTestCase):
         rvf = cadastra_rvf(session, 'user_1', {}, ovr.id)
         assert rvf.user_name == 'user_1'
 
-
     def test_cadastra_RVF_outro_user(self):
         setor1 = self.create_setor('1', 'Setor 1')
         setor2 = self.create_setor('2', 'Setor 2')
@@ -266,8 +265,12 @@ class OVRPermissoesTestCase(BaseTestCase):
         evento = atribui_responsavel_ovr(session, ovr.id, 'user_2', None)
         assert ovr.responsavel_cpf == 'user_2'
         # user_1 tenta cadastrar RVF
-        rvf = cadastra_rvf(session, 'user_1', {}, ovr.id)
-        assert rvf.user_name == 'user_1'
+        with self.assertRaises(ESomenteUsuarioResponsavel):
+            rvf = cadastra_rvf(session, 'user_1', {}, ovr.id)
+        # user_2 cadastra RVF
+        rvf = cadastra_rvf(session, 'user_2', {}, ovr.id)
+        assert rvf.user_name == 'user_2'
+
 
 if __name__ == '__main__':
     unittest.main()
