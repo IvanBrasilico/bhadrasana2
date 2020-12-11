@@ -5,6 +5,7 @@ import warnings
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from bhadrasana.forms.ovr import TGOVRForm
 from bhadrasana.models import ESomenteUsuarioResponsavel, PerfilUsuario, Enumerado, perfilAcesso
 from bhadrasana.models.rvfmanager import cadastra_rvf
 
@@ -13,7 +14,8 @@ sys.path.append('.')
 from bhadrasana.models.ovr import metadata, create_tiposevento, create_tiposprocesso, create_flags, \
     create_tipomercadoria, create_marcas
 
-from bhadrasana.models.ovrmanager import gera_processoovr, atribui_responsavel_ovr, excluir_processo, libera_ovr
+from bhadrasana.models.ovrmanager import gera_processoovr, atribui_responsavel_ovr, excluir_processo, libera_ovr, \
+    lista_tgovr, cadastra_tgovr
 from virasana.integracao.mercante import mercantealchemy
 
 warnings.simplefilter('ignore')
@@ -235,9 +237,8 @@ class OVRPermissoesTestCase(BaseTestCase):
     #  Transferir para outro Setor (muda_setor_ovr),
     #  Lavratura do AI (informa_lavratura_auto),
     #  Informar Evento (gera_eventoovr),
-    #  TG e Verificações físicas
 
-    # RVF - TG > cadastra_rvf
+    # RVF > cadastra_rvf
     def test_cadastra_RVF(self):
         setor1 = self.create_setor('1', 'Setor 1')
         setor2 = self.create_setor('2', 'Setor 2')
@@ -270,6 +271,34 @@ class OVRPermissoesTestCase(BaseTestCase):
         # user_2 cadastra RVF
         rvf = cadastra_rvf(session, 'user_2', {}, ovr.id)
         assert rvf.user_name == 'user_2'
+
+    # TGOVR - rota: /tgovr
+    def test_cadastra_TG(self):
+        setor1 = self.create_setor('1', 'Setor 1')
+        setor2 = self.create_setor('2', 'Setor 2')
+        user1 = self.create_usuario('user_1', 'Usuario 1', setor1)
+        user2 = self.create_usuario('user_2', 'Usuario 2', setor1)
+        ovr = self.create_OVR_valido()
+        ovr.setor_id = '1'
+        session.add(ovr)
+        session.commit()
+        session.refresh(ovr)
+        lista_tgs = lista_tgovr(session, ovr.id)
+        assert len(lista_tgs) == 0
+        # user_1 cadastra TGOVR
+        params = {
+            'ovr_id': ovr.id,
+            'tiposmercadoria': ['1', '2'],
+            'lista_afrfb': ['user_1', 'user_2'],
+            'marcas': [],
+            'unidadedemedida': 'KG',
+        }
+        # tgovr_form = TGOVRForm(params)
+        # tg = cadastra_tgovr(session, dict(tgovr_form.data.items()), 'user_1')
+        # tg = cadastra_tgovr(session, params, 'user_1')
+        # assert tg.user_name == 'user_1'
+        # assert tg.unidadedemedida == 'KG'
+
 
 
 if __name__ == '__main__':
