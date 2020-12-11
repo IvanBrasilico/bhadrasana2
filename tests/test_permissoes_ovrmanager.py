@@ -288,14 +288,13 @@ class OVRPermissoesTestCase(BaseTestCase):
         # user_1 cadastra TGOVR
         params = {
             'ovr_id': ovr.id,
-            'tiposmercadoria': ['1', '2'],
-            'lista_afrfb': ['user_1', 'user_2'],
-            'marcas': [],
-            'unidadedemedida': 'KG',
+            'unidadedemedida': 1,
+            'numerolote': 'teste',
+            'descricao': 'teste_desc',
         }
         # tgovr_form = TGOVRForm(params)
         # tg = cadastra_tgovr(session, dict(tgovr_form.data.items()), 'user_1')
-        # tg = cadastra_tgovr(session, params, 'user_1')
+        tg = cadastra_tgovr(session, params, 'user_1')
         # assert tg.user_name == 'user_1'
         # assert tg.unidadedemedida == 'KG'
 
