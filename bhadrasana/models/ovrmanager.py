@@ -838,6 +838,8 @@ def cadastra_tgovr(session, params, user_name: str) -> TGOVR:
         ovr = get_ovr(session, params.get('ovr_id'))
     if ovr and ovr.fase > 2:
         raise EBloqueado()
+    get_usuario_validando(session, user_name)
+    valida_mesmo_responsavel_ovr_user_name(session, ovr, user_name)
     if not tgovr.user_name:
         tgovr.user_name = usuario.cpf
     if tgovr.id is None and params.get('ovr_id') is not None:
