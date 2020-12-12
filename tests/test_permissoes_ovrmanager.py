@@ -237,6 +237,7 @@ class OVRPermissoesTestCase(BaseTestCase):
     #  Transferir para outro Setor (muda_setor_ovr),
     #  Lavratura do AI (informa_lavratura_auto),
     #  Informar Evento (gera_eventoovr),
+    #  ItensTG,
 
     # RVF > cadastra_rvf
     def test_cadastra_RVF(self):
@@ -283,6 +284,10 @@ class OVRPermissoesTestCase(BaseTestCase):
         session.add(ovr)
         session.commit()
         session.refresh(ovr)
+        # Atribui OVR ao user_1
+        evento = atribui_responsavel_ovr(session, ovr.id, 'user_1', None)
+        assert ovr.responsavel_cpf == 'user_1'
+        # lista TGs dessa OVR
         lista_tgs = lista_tgovr(session, ovr.id)
         assert len(lista_tgs) == 0
         # user_1 cadastra TGOVR
@@ -292,11 +297,42 @@ class OVRPermissoesTestCase(BaseTestCase):
             'numerolote': 'teste',
             'descricao': 'teste_desc',
         }
-        # tgovr_form = TGOVRForm(params)
-        # tg = cadastra_tgovr(session, dict(tgovr_form.data.items()), 'user_1')
         tg = cadastra_tgovr(session, params, 'user_1')
-        # assert tg.user_name == 'user_1'
-        # assert tg.unidadedemedida == 'KG'
+        assert tg.user_name == 'user_1'
+        assert tg.unidadedemedida == 1
+        # lista TGs dessa OVR
+        lista_tgs = lista_tgovr(session, ovr.id)
+        assert len(lista_tgs) == 1
+        # Atribui OVR ao user_2
+        evento = atribui_responsavel_ovr(session, ovr.id, 'user_2', 'user_1')
+        assert ovr.responsavel_cpf == 'user_2'
+        # user_2 cadastra TGOVR
+        params = {
+            'ovr_id': ovr.id,
+            'unidadedemedida': 1,
+            'numerolote': 'teste user 2',
+            'descricao': 'teste_desc user 2',
+        }
+        tg = cadastra_tgovr(session, params, 'user_2')
+        assert tg.user_name == 'user_2'
+        assert tg.unidadedemedida == 1
+        # lista TGs dessa OVR
+        lista_tgs = lista_tgovr(session, ovr.id)
+        assert len(lista_tgs) == 2
+        # user_1 tenta cadastrar TGOVR
+        params = {
+            'ovr_id': ovr.id,
+            'unidadedemedida': 1,
+            'numerolote': 'teste user 1',
+            'descricao': 'teste_desc user 1 falhou',
+        }
+        with self.assertRaises(ESomenteUsuarioResponsavel):
+            tg = cadastra_tgovr(session, params, 'user_1')
+        assert tg.user_name == 'user_2'
+        assert tg.unidadedemedida == 1
+        # lista TGs dessa OVR
+        lista_tgs = lista_tgovr(session, ovr.id)
+        assert len(lista_tgs) == 2
 
 
 
