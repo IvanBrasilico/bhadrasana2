@@ -1,0 +1,58 @@
+perfilAcesso = ('Consulta', 'Operador', 'Supervisor', 'Cadastrador')
+
+tipoStatusOVREspecial = [
+    ('Atribuição de responsável', EventoEspecial.Responsavel.value, 1),
+    ('RVF incluída', EventoEspecial.RVF.value, 1),
+    ('TG incluído', EventoEspecial.TG.value, 1),
+    ('Emissão de Auto de Infração', EventoEspecial.Autuacao.value, 3),
+    ('Definição de Auditor Responsável', EventoEspecial.AuditorResponsavel.value, 1),
+    ('Atribuição para outro Setor', EventoEspecial.MudancaSetor.value, 0)
+]
+
+tipoStatusOVR
+   tipoevento_id 1 = 'Aguardando distribuicão',
+   tipoevento_id 2 =  'Em verificação física',
+   tipoevento_id 3 =  'Aguardando Medida Judicial',
+   tipoevento_id 4 =  'Aguardando Providência de Outro Setor',
+   tipoevento_id 5 =  'Aguardando Laudo Técnico',
+   tipoevento_id 6 =  'Aguardando Laudo de Marcas',
+   tipoevento_id 7 =  'Aguardando Saneamento',
+   tipoevento_id 8 =  'Recebimento de Saneamento',
+   tipoevento_id 9 = 'Intimação/Notificação',
+   tipoevento_id 10 =  'Intimação Não Respondida',
+   tipoevento_id 11 =  'Retificação do Termo de Guarda',
+   tipoevento_id 12 =  'Arquivamento',
+]
+
+tipoOperacao = [
+    'Mercadoria Abandonada',
+    'Análise de risco na importação',
+    'Operação / análise de risco na exportação',
+    'Denúncia na importação',
+    'Denúncia na exportação',
+    'Demanda externa',
+    'Registro de operação de outros órgãos/países',
+    'Vigilância'
+]
+
+faseOVR = [
+    0 = 'Iniciada',
+    1 = 'Ativa',
+    2 = 'Suspensa',
+    3 = 'Concluída',
+    4 = 'Arquivada'
+]
+
+tipoProcesso = [
+    'Perdimento',
+    'Crédito',
+    'Sanção',
+    'RFFP',
+    'Dossiê',
+    'Radar'
+]
+
+unidadeMedida = [
+    'UN',
+    'KG'
+]
