@@ -633,53 +633,40 @@ class OVRTestCase(BaseTestCase):
         assert usuarios is not None
 
     def test54_valida_lista_setores(self):
-        session.query(ovr_setores).delete()
-        setor1 = gera_objeto(Setor(), session=session, params=self.params_setor)
+        setor1 = Setor(id='1', nome='Setor 1', cod_unidade='1', pai_id='1')
         setores = [setor1]
         lista_setores = valida_lista_setores(setores)
         assert len(lista_setores) == 1
-        session.delete(setor1)
-        session.commit()
 
     def test55_get_usuarios_setores_choice(self):
-        setor1 = gera_objeto(Setor(), session=session, params=self.params_setor)
+        setor1 = Setor(id='1', nome='Setor 1', cod_unidade='1', pai_id='1')
         setores = [setor1]
         usuarios_setores = get_usuarios_setores_choice(session=session, setores=setores)
         assert len(usuarios_setores) == 1
-        session.delete(setor1)
-        session.commit()
 
     def test56_get_afrfb_setores(self):
-        setor1 = gera_objeto(Setor(), session=session, params=self.params_setor)
+        setor1 = Setor(id='1', nome='Setor 1', cod_unidade='1', pai_id='1')
         setores = [setor1]
         afrfb_setores = get_afrfb_setores(session=session, setores=setores)
         assert len(afrfb_setores) == 1
-        session.delete(setor1)
-        session.commit()
 
     def test57_get_afrfb(self):
-        setor1 = gera_objeto(Setor(), session=session, params=self.params_setor)
+        setor1 = Setor(id='1', nome='Setor 1', cod_unidade='1', pai_id='1')
         setores = [setor1]
         afrfb = get_afrfb(session=session, cod_unidade=setor1.cod_unidade)
         assert len(afrfb) == 1
-        session.delete(setor1)
-        session.commit()
 
     def test58_get_afrfb_choice(self):
-        setor1 = gera_objeto(Setor(), session=session, params=self.params_setor)
+        setor1 = Setor(id='1', nome='Setor 1', cod_unidade='1', pai_id='1')
         setores = [setor1]
         afrfb = get_afrfb_choice(session=session, cod_unidade=setor1.cod_unidade)
         assert len(afrfb) == 1
-        session.delete(setor1)
-        session.commit()
 
     def test59_get_afrfb_setores_choice(self):
-        setor1 = gera_objeto(Setor(), session=session, params=self.params_setor)
+        setor1 = Setor(id='1', nome='Setor 1', cod_unidade='1', pai_id='1')
         setores = [setor1]
         afrfb = get_afrfb_choice(session=session, cod_unidade=setor1.cod_unidade)
         assert len(afrfb) == 1
-        session.delete(setor1)
-        session.commit()
 
     def test60_usuario_index(self):
         usuarios = [self.new_usuario]
@@ -687,24 +674,22 @@ class OVRTestCase(BaseTestCase):
         assert index_usuario == 0
 
     def test61_get_setores_filhos_id(self):
-        setor1 = gera_objeto(Setor(), session=session, params=self.params_setor)
+        setor1 = Setor(id='1', nome='Setor 1', cod_unidade='1', pai_id='1')
         setores_filhos_id = get_setores_filhos_id(session=session, setor_id=setor1.pai_id)
         assert len(setores_filhos_id) == 1
-        session.delete(setor1)
-        session.commit()
 
     def test62_get_setores_filhos(self):
-        setor1 = gera_objeto(Setor(), session=session, params=self.params_setor)
+        setor1 = Setor(id='1', nome='Setor Filho', cod_unidade='ALF/STS', pai_id='2')
         setor2 = Setor(id='2', nome='Setor Pai', cod_unidade='SRRF08', pai_id='')
-        setores_filhos = get_setores_filhos(session=session, setor=setor2)
+        setores_filhos = get_setores_filhos(session=session, setor=setor1)
         assert len(setores_filhos) == 1
-        session.delete(setor1)
-        session.commit()
 
     def test63_get_setores_filhos_recursivo_id(self):
         setor_avo = Setor(id='1', nome='Setor Avô', cod_unidade='SRRF08', pai_id='')
         setor_pai = Setor(id='2', nome='Setor Pai', cod_unidade='ALF/STS', pai_id='1')
         setor_filho1 = Setor(id='3', nome='Setor filho1', cod_unidade='DIREP', pai_id='2')
         setor_filho2 = Setor(id='4', nome='Setor filho2', cod_unidade='DITEC', pai_id='2')
-        setores_filhos_recursivo = get_setores_filhos_recursivo_id(session=session, setor_id=setor_pai.pai_id)
+        setores_filhos_recursivo = get_setores_filhos_recursivo_id(session=session, setor_id=setor_filho1.pai_id)
         pass
+
+

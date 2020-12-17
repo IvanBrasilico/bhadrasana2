@@ -5,7 +5,7 @@ Implementado com o cadastro de Perfis para o  Usuário.
 
 #####Regras gerais
 - As Fichas e verificações físicas só podem ser editadas pelo responsável atual
-- O Perfil Supervisor pode atribuir ou liberar qualquer Ficha, podendo portanto avocar uma Ficha para editar
+- O Perfil Supervisor pode atribuir qualquer Ficha, podendo portanto avocar uma Ficha para editar
 - Se a Ficha está concluída ou arquivada, não pode mais ser editada. Podem ser adicionados Eventos, que terão
 caráter meramente informativo
 - Supervisor do Setor pode atribuir Ficha concluída ou arquivada, caso em que ela poderá ser editada novamente 
