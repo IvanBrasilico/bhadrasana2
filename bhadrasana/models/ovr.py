@@ -393,8 +393,12 @@ class Representacao(Base):
     fim = Column(DateTime, index=True)
 
     def __str__(self):
+        representante_nome = 'Nenhum'
+        if self.representante_id and self.representante:
+            representante_nome = self.representante.nome
+
         return 'Marca: {} - Representante: {} - Inicio: {} - Fim: {}'.format(
-            self.marca.nome, self.representante.nome, self.inicio, self.fim)
+            self.marca.nome, representante_nome, self.inicio, self.fim)
 
 
 class TipoMercadoria(Base):
