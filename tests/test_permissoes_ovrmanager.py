@@ -232,8 +232,38 @@ class OVRPermissoesTestCase(BaseTestCase):
         evento = atribui_responsavel_ovr(session, ovr.id, 'user_2', None)
         assert ovr.responsavel_cpf == 'user_2'
 
+    # Auditor (atribui_responsavel_ovr)
+    def test_definir_auditor(self):
+        setor1 = self.create_setor('1', 'Setor 1')
+        setor2 = self.create_setor('2', 'Setor 2')
+        user1 = self.create_usuario('1111', 'Usuario 1', setor1)
+        user2 = self.create_usuario('2222', 'Usuario 2', setor1)
+        ovr = self.create_OVR_valido()
+        ovr.setor_id = '1'
+        session.add(ovr)
+        session.commit()
+        session.refresh(ovr)
+        assert ovr.responsavel_cpf is None
+        # user1 atribui ficha a si mesmo
+        evento1 = atribui_responsavel_ovr(session, ovr.id, user1.cpf, None)
+        assert ovr.responsavel_cpf == user1.cpf
+        # TESTE: user1 define auditor como user2
+        assert ovr.cpfauditorresponsavel is None
+        evento2 = atribui_responsavel_ovr(session, ovr.id, user2.cpf, user1.cpf, True)
+        assert ovr.responsavel_cpf == user1.cpf
+        assert ovr.cpfauditorresponsavel == user2.cpf
+        # TESTE: Falha quando user_2 tenta se autoatribuir a OVR, não é responsável
+        with self.assertRaises(ESomenteUsuarioResponsavel):
+           evento3 = atribui_responsavel_ovr(session, ovr.id, user2.cpf, user2.cpf)
+        assert ovr.cpfauditorresponsavel == user2.cpf
+        # TESTE: Falha quando user_2 tenta definir auditor
+        with self.assertRaises(ESomenteUsuarioResponsavel):
+            evento4 = atribui_responsavel_ovr(session, ovr.id, user2.cpf, user2.cpf, True)
+        assert ovr.responsavel_cpf == user1.cpf
+        assert ovr.cpfauditorresponsavel == user2.cpf
+
+
     # TODO: testes de:
-    #  Definir Auditor (atribui_responsavel_ovr),
     #  Transferir para outro Setor (muda_setor_ovr),
     #  Lavratura do AI (informa_lavratura_auto),
     #  Informar Evento (gera_eventoovr),
