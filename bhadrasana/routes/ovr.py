@@ -1308,7 +1308,7 @@ def ovr_app(app):
             cpf = request.json['cpf']
             ovr = cadastra_ovr(session, request.json, cpf)
             session.refresh(ovr)
-            atribui_responsavel_ovr(session, ovr.id, cpf)
+            atribui_responsavel_ovr(session, ovr.id, cpf, None)
             session.refresh(ovr)
         except Exception as err:
             logger.error(err, exc_info=True)
