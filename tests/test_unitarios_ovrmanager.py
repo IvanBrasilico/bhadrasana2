@@ -94,6 +94,7 @@ class OVRTestCase(BaseTestCase):
         session.commit()
         assert len(get_recintos(session)) == 0
 
+
     def test02_get_recintos_dte(self):
         params = {'id': 1, 'nome': 'recinto1', 'descricao': '', 'cod_dte': 1, 'cod_siscomex': None,
                   'cod_unidade': None, 'cod_carga': None, 'create_date': datetime.now()}
@@ -104,21 +105,26 @@ class OVRTestCase(BaseTestCase):
         session.commit()
         assert len(get_recintos_dte(session)) == 0
 
+
     def test03_get_tipos_evento(self):
         tipos_evento = get_tipos_evento(session)
         self.assert_choices(tipos_evento)
+
 
     def test04_get_tipos_evento_todos(self):
         tipos_evento = get_tipos_evento_todos(session)
         self.assert_choices(tipos_evento)
 
+
     def test05_get_tipos_evento_comfase_choice(self):
         tipos_evento = get_tipos_evento_comfase_choice(session)
         self.assert_choices(tipos_evento)
 
+
     def test06_get_tipos_processo(self):
         tipos_processo = get_tipos_processo(session)
         self.assert_choices(tipos_processo)
+
 
     def test07_get_relatorios_choice(self):
         relatorio1 = Relatorio()
@@ -130,6 +136,7 @@ class OVRTestCase(BaseTestCase):
         session.delete(relatorio1)
         session.commit()
 
+
     def test08_get_relatorio(self):
         relatorio2 = Relatorio()
         relatorio2.nome = 'Relatório 2'
@@ -139,6 +146,7 @@ class OVRTestCase(BaseTestCase):
         assert relatorio is not None
         session.delete(relatorio2)
         session.commit()
+
 
     def test09_executa_relatorio(self):
         relatorio3 = Relatorio()
@@ -153,11 +161,13 @@ class OVRTestCase(BaseTestCase):
         session.delete(relatorio3)
         session.commit()
 
+
     def test10_cadastra_ovr(self):
         ovr_cadastrada = cadastra_ovr(session, params=self.params_ovr, user_name=self.new_usuario.cpf)
         assert ovr_cadastrada is not None
         session.delete(ovr_cadastrada)
         session.commit()
+
 
     # Verifica se já existe uma OVR e a retorna. Caso contrário cria uma OVR nova
     def test11_get_ovr(self):
@@ -167,12 +177,14 @@ class OVRTestCase(BaseTestCase):
         session.delete(new_ovr)
         session.commit()
 
+
     def test12_get_ovr_one(self):
         new_ovr = gera_objeto(OVR(), session=session, params=self.params_ovr)
         ovr = get_ovr_one(session, new_ovr.id)
         assert ovr.id == 1
         session.delete(new_ovr)
         session.commit()
+
 
     # Verifica a existência de uma OVR com responsável atribuído
     def test13_get_ovr_responsavel(self):
@@ -183,6 +195,7 @@ class OVRTestCase(BaseTestCase):
         assert ovr_responsavel is not None
         session.delete(new_ovr)
         session.commit()
+
 
     # Testa OVR que estão com responsável e sem responsável nos setores
     def test14_get_ovr_responsavel_setores(self):
@@ -197,6 +210,7 @@ class OVRTestCase(BaseTestCase):
         session.delete(setor2)
         session.commit()
 
+
     # Testa OVR que estão com responsável e sem responsável nos setores
     def test15_get_ovr_auditor(self):
         new_ovr = gera_objeto(OVR(), session=session, params=self.params_ovr)
@@ -205,6 +219,7 @@ class OVRTestCase(BaseTestCase):
         session.delete(new_ovr)
         session.commit()
 
+
     def test16_get_ovr_passagem(self):
         new_ovr = gera_objeto(OVR(), session=session, params=self.params_ovr)
         ovr_passagem = get_ovr_passagem(session=session, user_name=new_ovr.responsavel_cpf, datainicio=new_ovr.datahora,
@@ -212,6 +227,7 @@ class OVRTestCase(BaseTestCase):
         assert len(ovr_passagem) == 0
         session.delete(new_ovr)
         session.commit()
+
 
     def test17_get_ovr_criadaspor(self):
         new_ovr = gera_objeto(OVR(), session=session, params=self.params_ovr)
@@ -222,6 +238,7 @@ class OVRTestCase(BaseTestCase):
         assert len(ovr_criadaspor) == 1
         session.delete(new_ovr)
         session.commit()
+
 
     def test18_get_ovr_visao_usuario(self):
         new_ovr = gera_objeto(OVR(), session=session, params=self.params_ovr)
@@ -234,6 +251,7 @@ class OVRTestCase(BaseTestCase):
         session.delete(new_ovr)
         session.commit()
 
+
     def test19_calcula_tempos_por_fase(self):
         pass
 
@@ -245,6 +263,7 @@ class OVRTestCase(BaseTestCase):
         session.delete(new_ovr)
         session.commit()
 
+
     def test21_get_ovr_due(self):
         new_ovr = gera_objeto(OVR(), session=session, params=self.params_ovr)
         new_ovr.user_name = new_ovr.responsavel_cpf
@@ -252,6 +271,7 @@ class OVRTestCase(BaseTestCase):
         assert len(ovr_due) is not None
         session.delete(new_ovr)
         session.commit()
+
 
     def test21_get_ovr_filtro(self):
         pass
@@ -265,6 +285,7 @@ class OVRTestCase(BaseTestCase):
         session.delete(new_ovr)
         session.commit()
 
+
     def test23_get_ovr_empresa(self):
         new_ovr = gera_objeto(OVR(), session=session, params=self.params_ovr)
         new_ovr.user_name = new_ovr.responsavel_cpf
@@ -273,13 +294,16 @@ class OVRTestCase(BaseTestCase):
         session.delete(new_ovr)
         session.commit()
 
+
     def test24_get_flags(self):
         flags = get_flags(session=session)
         assert len(flags) > 0
 
+
     def test25_get_flags_choice(self):
         flags_choice = get_flags_choice(session=session)
         self.assert_choices(flags_choice)
+
 
     def test26_inclui_flag_ovr(self):
         new_ovr = gera_objeto(OVR(), session=session, params=self.params_ovr)
@@ -314,8 +338,8 @@ class OVRTestCase(BaseTestCase):
         session.commit()
 
     def test30_muda_setor_ovr(self):
-        setor1 = Setor(id='1', nome='Setor 1', cod_unidade='1', pai_id='1')
-        setor2 = Setor(id='2', nome='Setor 2', cod_unidade='2', pai_id='1')
+        setor1 = Setor(id='1', nome='Setor 1', cod_unidade='ALF/STS', pai_id='2')
+        setor2 = Setor(id='2', nome='Setor 2', cod_unidade='ALF/STS', pai_id='2')
         new_ovr = gera_objeto(OVR(), session=session, params=self.params_ovr)
         new_ovr.user_name = new_ovr.responsavel_cpf
         new_ovr.setor = setor1
@@ -324,6 +348,7 @@ class OVRTestCase(BaseTestCase):
         assert new_ovr.setor_id == '2'
         session.delete(new_ovr)
         session.delete(new_setor_ovr)
+        session.delete(setor1)
         session.commit()
 
 
@@ -343,6 +368,7 @@ class OVRTestCase(BaseTestCase):
         session.delete(new_ovr)
         session.commit()
         pass
+
 
     def test33_valida_mesmo_responsavel_ovr_user_name(self):
         new_ovr = gera_objeto(OVR(), session=session, params=self.params_ovr)
@@ -633,40 +659,46 @@ class OVRTestCase(BaseTestCase):
         assert usuarios is not None
 
     def test54_valida_lista_setores(self):
-        setor1 = Setor(id='1', nome='Setor 1', cod_unidade='1', pai_id='1')
+        setor1 = Setor(id='1', nome='Setor 1', cod_unidade='ALF/STS', pai_id='1')
         setores = [setor1]
         lista_setores = valida_lista_setores(setores)
         assert len(lista_setores) == 1
 
     def test55_get_usuarios_setores_choice(self):
-        setor1 = Setor(id='1', nome='Setor 1', cod_unidade='1', pai_id='1')
+        setor1 = Setor(id='1', nome='Setor 1', cod_unidade='ALF/STS', pai_id='1')
         setores = [setor1]
         usuarios_setores = get_usuarios_setores_choice(session=session, setores=setores)
         assert len(usuarios_setores) == 1
 
     def test56_get_afrfb_setores(self):
-        setor1 = Setor(id='1', nome='Setor 1', cod_unidade='1', pai_id='1')
+        setor1 = Setor(id='1', nome='Setor 1', cod_unidade='ALF/STS', pai_id='1')
         setores = [setor1]
         afrfb_setores = get_afrfb_setores(session=session, setores=setores)
         assert len(afrfb_setores) == 1
 
     def test57_get_afrfb(self):
-        setor1 = Setor(id='1', nome='Setor 1', cod_unidade='1', pai_id='1')
+        setor1 = gera_objeto(Setor(), session=session, params=self.params_setor)
         setores = [setor1]
         afrfb = get_afrfb(session=session, cod_unidade=setor1.cod_unidade)
         assert len(afrfb) == 1
+        session.delete(setor1)
+        session.commit()
 
     def test58_get_afrfb_choice(self):
-        setor1 = Setor(id='1', nome='Setor 1', cod_unidade='1', pai_id='1')
+        setor1 = gera_objeto(Setor(), session=session, params=self.params_setor)
         setores = [setor1]
         afrfb = get_afrfb_choice(session=session, cod_unidade=setor1.cod_unidade)
         assert len(afrfb) == 1
+        session.delete(setor1)
+        session.commit()
 
     def test59_get_afrfb_setores_choice(self):
-        setor1 = Setor(id='1', nome='Setor 1', cod_unidade='1', pai_id='1')
+        setor1 = gera_objeto(Setor(), session=session, params=self.params_setor)
         setores = [setor1]
         afrfb = get_afrfb_choice(session=session, cod_unidade=setor1.cod_unidade)
         assert len(afrfb) == 1
+        session.delete(setor1)
+        session.commit()
 
     def test60_usuario_index(self):
         usuarios = [self.new_usuario]
@@ -674,15 +706,22 @@ class OVRTestCase(BaseTestCase):
         assert index_usuario == 0
 
     def test61_get_setores_filhos_id(self):
-        setor1 = Setor(id='1', nome='Setor 1', cod_unidade='1', pai_id='1')
+        setor1 = gera_objeto(Setor(), session=session, params=self.params_setor)
         setores_filhos_id = get_setores_filhos_id(session=session, setor_id=setor1.pai_id)
         assert len(setores_filhos_id) == 1
+        session.delete(setor1)
+        session.commit()
 
     def test62_get_setores_filhos(self):
-        setor1 = Setor(id='1', nome='Setor Filho', cod_unidade='ALF/STS', pai_id='2')
-        setor2 = Setor(id='2', nome='Setor Pai', cod_unidade='SRRF08', pai_id='')
-        setores_filhos = get_setores_filhos(session=session, setor=setor1)
+        setor_pai = Setor(id='2', nome='Setor Pai', cod_unidade='ALF/STS', pai_id='1')
+        setor_filho1 = Setor(id='3', nome='Setor filho1', cod_unidade='DIREP', pai_id='2')
+        session.add(setor_pai)
+        session.add(setor_filho1)
+        setores_filhos = get_setores_filhos(session=session, setor=setor_pai)
         assert len(setores_filhos) == 1
+        session.delete(setor_pai)
+        session.delete(setor_filho1)
+        session.commit()
 
     def test63_get_setores_filhos_recursivo_id(self):
         setor_avo = Setor(id='1', nome='Setor Avô', cod_unidade='SRRF08', pai_id='')
@@ -692,4 +731,14 @@ class OVRTestCase(BaseTestCase):
         setores_filhos_recursivo = get_setores_filhos_recursivo_id(session=session, setor_id=setor_filho1.pai_id)
         pass
 
-
+    def test64_get_setores(self):
+        setor_avo = Setor(id='10', nome='Setor Avô', cod_unidade='SRRF08', pai_id='')
+        setor_pai = Setor(id='20', nome='Setor Pai', cod_unidade='ALF/STS', pai_id='1')
+        setor_filho1 = Setor(id='30', nome='Setor filho1', cod_unidade='DIREP', pai_id='2')
+        setor_filho2 = Setor(id='40', nome='Setor filho2', cod_unidade='DITEC', pai_id='2')
+        session.add(setor_avo)
+        session.add(setor_pai)
+        session.add(setor_filho1)
+        session.add(setor_filho2)
+        setores = get_setores(session=session)
+        assert len(setores) == 4
