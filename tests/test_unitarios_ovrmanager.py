@@ -20,7 +20,7 @@ from bhadrasana.models import Setor, Usuario, PerfilUsuario, perfilAcesso, gera_
 
 from bhadrasana.models.ovr import metadata, Enumerado, create_tiposevento, create_tiposprocesso, create_flags, Flag, \
     Relatorio, create_tipomercadoria, create_marcas, Marca, ItemTG, VisualizacaoOVR, OVR, ProcessoOVR, Recinto, \
-    EventoOVR, TGOVR, RoteiroOperacaoOVR, TipoMercadoria
+    EventoOVR, TGOVR, RoteiroOperacaoOVR, TipoMercadoria, OKRObjective, OKRResultMeta, OKRResult, ModeloDocx
 
 from bhadrasana.models.ovrmanager import gera_eventoovr, \
     gera_processoovr, cadastra_tgovr, atribui_responsavel_ovr, get_setores_filhos_recursivo, get_tipos_evento, \
@@ -37,7 +37,9 @@ from bhadrasana.models.ovrmanager import gera_eventoovr, \
     atualiza_valortotal_tg, get_tgovr_one, valida_novo_itemtg, get_itemtg_descricao_qtde_modelo, get_usuarios, \
     valida_lista_setores, get_usuarios_setores_choice, get_afrfb_setores, get_afrfb, get_afrfb_choice, usuario_index, \
     get_setores_filhos_id, get_setores_filhos, get_setores_filhos_recursivo_id, get_setores_unidade, \
-    get_setores_unidade_choice, get_setores_cpf_choice, get_roteirosoperacao, get_delta_date
+    get_setores_unidade_choice, get_setores_cpf_choice, get_roteirosoperacao, get_delta_date, get_objectives_setor, \
+    executa_okr_results, gera_okrobjective, exclui_okrobjective, get_key_results, get_key_results_choice, gera_okrmeta, \
+    exclui_okrmeta, get_lista_docx, get_docx_choices, get_docx_or_none, get_docx
 
 from typing import List, Tuple
 
@@ -887,3 +889,139 @@ class OVRTestCase(BaseTestCase):
         delta_date = get_delta_date(start=datetime(2020, 12, 29), end=datetime(2020, 12, 31))
         assert delta_date == 2
 
+    def test85_get_objectives_setor(self):
+        setor1 = Setor(id='1', nome='Setor 1', cod_unidade='SRRF08', pai_id='')
+        okr_objective = OKRObjective(id=1, nome='Objetivo 1', setor_id='1', inicio=datetime(2020, 12, 30),
+                                     fim=datetime(2021, 12, 30))
+        session.add(setor1)
+        session.add(okr_objective)
+        objectives_setor = get_objectives_setor(session=session, setor_id=okr_objective.setor_id)
+        assert objectives_setor is not None
+        session.delete(setor1)
+        session.delete(okr_objective)
+        session.commit()
+
+    def test86_executa_okr_results(self):
+        # setor1 = Setor(id='1', nome='Setor 1', cod_unidade='SRRF08', pai_id='')
+        # okr_objective = OKRObjective(id=1, nome='Objetivo 1', setor_id='1', inicio=datetime(2020, 12, 30),
+        #                              fim=datetime(2021, 12, 30))
+        # okr_resultmeta = OKRResultMeta(id=1, objective_id=okr_objective.id, result_id=1, ameta=20)
+        # session.add(setor1)
+        # session.add(okr_objective)
+        # session.add(okr_resultmeta)
+        # okr_results = executa_okr_results(session=session, objective=okr_objective)
+        # assert okr_results is not None
+        # session.delete(setor1)
+        # session.delete(okr_objective)
+        # session.delete(okr_resultmeta)
+        # session.commit()
+        pass
+
+    def test87_gera_okrobjective(self):
+        params = {'id': None, 'nome': 'Objetivo 1', 'setor_id': '1', 'inicio': datetime(2020, 12, 30),
+                  'fim': datetime(2021, 12, 30)}
+        okrobjective = gera_okrobjective(session=session, params=params)
+        assert okrobjective is not None
+        session.delete(okrobjective)
+        session.commit()
+
+    def test88_exclui_okrobjective(self):
+        params = {'id': None, 'nome': 'Objetivo 1', 'setor_id': '1', 'inicio': datetime(2020, 12, 30),
+                  'fim': datetime(2021, 12, 30)}
+        okrobjective1 = gera_okrobjective(session=session, params=params)
+        okrobjective_excluida = exclui_okrobjective(session=session, okrid=okrobjective1.id)
+        okr = session.query(OKRObjective).all()
+        assert len(okr) == 0
+
+    def test89_get_key_results(self):
+        okrresult = OKRResult(id=1, nome='Resultado1', sql='')
+        session.add(okrresult)
+        key_results = get_key_results(session=session)
+        assert len(key_results) == 1
+        session.delete(okrresult)
+        session.commit()
+
+    def test90_get_key_results_choice(self):
+        okrresult1 = OKRResult(id=1, nome='Resultado1', sql='')
+        okrresult2 = OKRResult(id=2, nome='Resultado2', sql='')
+        session.add(okrresult1)
+        session.add(okrresult2)
+        key_results_choice = get_key_results_choice(session=session)
+        self.assert_choices(key_results_choice)
+        session.delete(okrresult1)
+        session.delete(okrresult2)
+        session.commit()
+
+    def test91_gera_okrmeta(self):
+        setor1 = Setor(id='1', nome='Setor 1', cod_unidade='SRRF08', pai_id='')
+        okr_objective = OKRObjective(id=1, nome='Objetivo 1', setor_id='1', inicio=datetime(2020, 12, 30),
+                                     fim=datetime(2021, 12, 30))
+        session.add(setor1)
+        session.add(okr_objective)
+        params = {'id': None, 'objective_id': okr_objective.id, 'result_id': 1, 'ameta': 20}
+        okrmeta = gera_okrmeta(session=session, params=params)
+        assert okrmeta is not None
+        session.delete(setor1)
+        session.delete(okr_objective)
+        session.delete(okrmeta)
+
+    def test92_exclui_okrmeta(self):
+        setor1 = Setor(id='1', nome='Setor 1', cod_unidade='SRRF08', pai_id='')
+        okr_objective = OKRObjective(id=1, nome='Objetivo 1', setor_id='1', inicio=datetime(2020, 12, 30),
+                                     fim=datetime(2021, 12, 30))
+        session.add(setor1)
+        session.add(okr_objective)
+        params = {'id': None, 'objective_id': okr_objective.id, 'result_id': 1, 'ameta': 20}
+        okrmeta1 = gera_okrmeta(session=session, params=params)
+        okrmetas = session.query(OKRResultMeta).all()
+        print(okrmetas)
+        okrmeta_excluida = exclui_okrmeta(session=session, metaid=okrmeta1.id)
+        okrmetas = session.query(OKRResultMeta).all()
+        print(okrmetas)
+        assert len(okrmetas) == 0
+        session.delete(setor1)
+        session.delete(okr_objective)
+        session.delete(okrmeta1)
+
+    def test93_monta_ovr_dict(self):
+        pass
+
+    def test94_get_lista_docx(self):
+        modelo_docx_1 = ModeloDocx(id=1, filename='Nome do modelo', _id=None, fonte_docx_id=1)
+        session.add(modelo_docx_1)
+        lista_docx = get_lista_docx(session=session)
+        assert len(lista_docx) == 1
+        session.delete(modelo_docx_1)
+
+    def test95_get_docx_choices(self):
+        modelo_docx_1 = ModeloDocx(id=1, filename='Nome do modelo', _id=None, fonte_docx_id=1)
+        session.add(modelo_docx_1)
+        docx_choices = get_docx_choices(session=session)
+        self.assert_choices(docx_choices)
+        session.delete(modelo_docx_1)
+
+    def test96_get_docx_or_none(self):
+        modelo_docx_1 = ModeloDocx(id=1, filename='Nome do modelo', _id=None, fonte_docx_id=1)
+        session.add(modelo_docx_1)
+        docx = get_docx_or_none(session=session, docx_id=modelo_docx_1.id)
+        assert docx is not None
+        session.delete(modelo_docx_1)
+        session.delete(docx)
+
+    def test97_get_docx(self):
+        modelo_docx_1 = ModeloDocx(id=1, filename='Nome do modelo', _id=None, fonte_docx_id=1)
+        session.add(modelo_docx_1)
+        docx = get_docx(session=session, docx_id=modelo_docx_1.id)
+        assert docx is not None
+        assert docx.id == 1
+        session.delete(modelo_docx_1)
+        session.delete(docx)
+
+    def test98_inclui_docx(self):
+        pass
+
+    def test99_get_tiposevento_assistente(self):
+        pass
+
+    def test100_get_tipoevento_assistente_choice(self):
+        pass
