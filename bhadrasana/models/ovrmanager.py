@@ -710,6 +710,7 @@ def gera_eventoovr(session, params: dict, commit=True, user_name=None,
     tipoevento = session.query(TipoEventoOVR).filter(
         TipoEventoOVR.id == int(evento.tipoevento_id)
     ).one()
+    evento.tipoevento = tipoevento
     evento.fase = tipoevento.fase
     try:
         ovr = get_ovr(session, evento.ovr_id)
