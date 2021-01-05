@@ -649,6 +649,73 @@ class OVRAppTestCase(BaseTestCase):
         assert 'adler' in text_span_responsavel
         assert b'Solicitar Laudo' in rv.data
 
+    def test_c2_consulta_fichas(self):
+        """Irene Adler entra no sistema
+         1 - consulta suas fichas"""
+        self.login('adler', 'adler')
+        rv = self.app.get('/minhas_ovrs')
+        assert rv.status_code == 200
+        assert b'152005079623267' in rv.data
+
+    def test_c3_termos_de_retirada_amostra(self):
+        # 2 - Informa/anexa(opcional) Termos de Retirada de amostra
+        self.login('adler', 'adler')
+        rv = self.app.get('/ovr?id=%s' % 1)
+        text = str(rv.data)
+        movimentaovr_pos = text.find('action="eventoovr"')
+        movimentaovr_text = text[movimentaovr_pos:]
+        token_text = self.get_token(movimentaovr_text)
+        payload = {'csrf_token': token_text,
+                   'ovr_id': 1,
+                   'tipoevento_id': 5,
+                   'motivo': 'Termo de Retirada de amostra',
+                   'user_name': 'adler'}
+        rv = self.app.post('/eventoovr', data=payload, follow_redirects=True)
+        soup = BeautifulSoup(rv.data, features='lxml')
+        table = soup.find('table', {'id': 'table_eventos'})
+        rows = [str(row) for row in table.findAll("tr")]
+        assert len(rows) == 7
+        assert 'Aguardando Laudo Técnico' in ''.join(rows)
+
+    def test_c4_Devolver_para_Sherlock(self):
+        # 3 - Devolve para Holmes
+        self.login('adler', 'adler')
+        rv = self.app.get('/ovr?id=%s' % 1)
+        text = str(rv.data)
+        responsavelovr_pos = text.find('action="responsavelovr"')
+        responsavelovr_text = text[responsavelovr_pos:]
+        token_text = self.get_token(responsavelovr_text)
+        payload = {'csrf_token': token_text,
+                   'ovr_id': 1,
+                   'responsavel': 'holmes'}
+        rv = self.app.post('/responsavelovr', data=payload, follow_redirects=True)
+        assert b'holmes' in rv.data
+
+    # def test_c5_holmes_recebe_de_volta_ficha(self):
+    #     """Holmes consulta suas fichas
+    #      1 - Ordena saneamento"""
+    #     self.login('holmes', 'holmes')
+    #     rv = self.app.get('/minhas_ovrs')
+    #     assert rv.status_code == 200
+    #     assert b'152005079623267' in rv.data
+    #     text = str(rv.data)
+    #     movimentaovr_pos = text.find('action="eventoovr"')
+    #     movimentaovr_text = text[movimentaovr_pos:]
+    #     token_text = self.get_token(movimentaovr_text)
+    #     payload = {'csrf_token': token_text,
+    #                'ovr_id': 1,
+    #                'tipoevento_id': 7,
+    #                'motivo': 'Carga será objeto de auto de perdimento',
+    #                'user_name': 'holmes'}
+    #     rv = self.app.post('/eventoovr', data=payload, follow_redirects=True)
+    #     soup = BeautifulSoup(rv.data, features='lxml')
+    #     table = soup.find('table', {'id': 'table_eventos'})
+    #     rows = [str(row) for row in table.findAll("tr")]
+    #     assert len(rows) == 8
+    #     assert 'Aguardando Quantificação de Recinto' in ''.join(rows)
+
+
+
 
 if __name__ == '__main__':
     unittest.main()
