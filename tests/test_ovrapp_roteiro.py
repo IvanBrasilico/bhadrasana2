@@ -691,29 +691,49 @@ class OVRAppTestCase(BaseTestCase):
         rv = self.app.post('/responsavelovr', data=payload, follow_redirects=True)
         assert b'holmes' in rv.data
 
-    # def test_c5_holmes_recebe_de_volta_ficha(self):
-    #     """Holmes consulta suas fichas
-    #      1 - Ordena saneamento"""
-    #     self.login('holmes', 'holmes')
-    #     rv = self.app.get('/minhas_ovrs')
-    #     assert rv.status_code == 200
-    #     assert b'152005079623267' in rv.data
-    #     text = str(rv.data)
-    #     movimentaovr_pos = text.find('action="eventoovr"')
-    #     movimentaovr_text = text[movimentaovr_pos:]
-    #     token_text = self.get_token(movimentaovr_text)
-    #     payload = {'csrf_token': token_text,
-    #                'ovr_id': 1,
-    #                'tipoevento_id': 7,
-    #                'motivo': 'Carga será objeto de auto de perdimento',
-    #                'user_name': 'holmes'}
-    #     rv = self.app.post('/eventoovr', data=payload, follow_redirects=True)
-    #     soup = BeautifulSoup(rv.data, features='lxml')
-    #     table = soup.find('table', {'id': 'table_eventos'})
-    #     rows = [str(row) for row in table.findAll("tr")]
-    #     assert len(rows) == 8
-    #     assert 'Aguardando Quantificação de Recinto' in ''.join(rows)
+    def test_c5_holmes_recebe_de_volta_ficha(self):
+        """Holmes consulta suas fichas
+         1 - Ordena saneamento"""
+        self.login('holmes', 'holmes')
+        rv = self.app.get('/ovr?id=%s' % 1)
+        text = str(rv.data)
+        movimentaovr_pos = text.find('action="eventoovr"')
+        movimentaovr_text = text[movimentaovr_pos:]
+        token_text = self.get_token(movimentaovr_text)
+        payload = {'csrf_token': token_text,
+                   'ovr_id': 1,
+                   'tipoevento_id': 7,
+                   'motivo': 'Carga será objeto de auto de perdimento',
+                   'user_name': 'holmes'}
+        rv = self.app.post('/eventoovr', data=payload, follow_redirects=True)
+        soup = BeautifulSoup(rv.data, features='lxml')
+        table = soup.find('table', {'id': 'table_eventos'})
+        rows = [str(row) for row in table.findAll("tr")]
+        assert len(rows) == 9
+        assert 'Aguardando Saneamento' in ''.join(rows)
 
+    def test_c6_informa_termo_de_guarda(self):
+        # 3 - Recebe saneamento e informa termo de guarda
+        self.login('holmes', 'holmes')
+        rv = self.app.get('/lista_tgovr?ovr_id=%s' % 1)
+        soup = BeautifulSoup(rv.data, features='lxml')
+        form = soup.find('form', {'id': 'formtgovr'})
+        text = str(rv.data)
+        token_text = self.get_token(text)
+        payload = {'csrf_token': token_text,
+                   'ovr_id': 1,
+                   'numerolote': 'BMOU6786326',
+                   'descricao': 'Mochilas esportivas Adidas',
+                   'unidadedemedida': 'UN',
+                   'qtde': 10000,
+                   'valor': 120000}
+        rv = self.app.post('/tgovr', data=payload, follow_redirects=True)
+        assert rv.status_code == 200
+        soup = BeautifulSoup(rv.data, features='lxml')
+        table = soup.find('table', {'id': 'filtro_personalizado_table'})
+        rows = [str(row) for row in table.findAll("tr")]
+        assert len(rows) == 2
+        assert 'BMOU6786326' in str(rows)
 
 
 
