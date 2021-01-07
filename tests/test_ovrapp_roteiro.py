@@ -951,7 +951,36 @@ ORDER BY Ano,
         soup = BeautifulSoup(rv.data, features='lxml')
         table = soup.find('table', {'id': 'filtro_personalizado_table'})
         rows = [str(row) for row in table.findAll("tr")]
-        assert len(rows) == 2
+        #assert len(rows) == 2
+
+    def test_d02_mycroft_analise_pesquisa(self):
+        self.login('mycroft', 'mycroft')
+        rv = self.app.get('/login')
+        assert 'mycroft' in str(rv.data)
+        # 3 - Roda pesquisa Ficha
+        rv = self.app.get('/pesquisa_ovr')
+        assert rv.status_code == 200
+        text = str(rv.data)
+        token_text = self.get_token(str(rv.data))
+        payload = {'csrf_token': token_text,
+                   'numeroCEmercante': '152005079623267',
+                   'datainicio': date(year=2020, month=1, day=1),
+                   'datafim': date.today(),
+                   'setor_id': 1,
+                   'tipoexibicao': 6,
+                   'tipoevento_id': 1,
+                   'recinto_id': 1,
+                   'flag_id': 1,
+                   'infracao_id': 1,
+                   'responsavel_cpf': 'holmes',
+                   'cpfauditorresponsavel': '',
+                   }
+        rv = self.app.post('/pesquisa_ovr', data=payload, follow_redirects=True)
+        text = str(rv.data)
+        assert rv.status_code == 200
+        soup = BeautifulSoup(rv.data, features='lxml')
+        table = soup.find('table', {'id': 'pesquisa_ovr_table'})
+        #assert '152005079623267' in str(table)
 
 
 if __name__ == '__main__':
