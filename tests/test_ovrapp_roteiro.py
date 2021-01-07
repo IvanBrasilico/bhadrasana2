@@ -1,9 +1,10 @@
 import sys
+from urllib.request import urlopen
 
 sys.path.append('.')
 sys.path.insert(0, '../ajna_api')
 import unittest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 import mongomock
 from bs4 import BeautifulSoup
@@ -736,6 +737,44 @@ class OVRAppTestCase(BaseTestCase):
         assert len(rows) == 2
         assert 'BMOU6786326' in str(rows)
 
+    def test_c7_faz_auto_de_infracao(self):
+        # 4 - Faz auto de infração e informa
+        self.login('holmes', 'holmes')
+        rv = self.app.get('/ovr?id=%s' % 1)
+        assert rv.status_code == 200
+        text = str(rv.data)
+        token_text = self.get_token(text)
+        payload = {'csrf_token': token_text,
+                   'ovr_id': 1,
+                   'responsavel': 'holmes'}
+        rv = self.app.post('/informalavraturaauto', data=payload, follow_redirects=True)
+        assert rv.status_code == 200
+        soup = BeautifulSoup(rv.data, features='lxml')
+        form = soup.find('form', {'id': 'formovr'})
+        table = soup.find('table', {'id': 'table_eventos'})
+        assert 'Concluída' in str(form)
+        assert 'Ficha encerrada, auto lavrado' in str(table)
+
+    def test_c8_informa_processo(self):
+        # 5 - Informa RFFP
+        self.login('holmes', 'holmes')
+        rv = self.app.get('/ovr?id=%s' % 1)
+        assert rv.status_code == 200
+        text = str(rv.data)
+        token_text = self.get_token(text)
+        payload = {'csrf_token': token_text,
+                   'ovr_id': 1,
+                   'tipoprocesso_id': 3,
+                   'numero_processo': '1234'}
+        rv = self.app.post('/processoovr', data=payload, follow_redirects=True)
+        assert rv.status_code == 200
+        soup = BeautifulSoup(rv.data, features='lxml')
+        table = soup.find('table', {'id': 'table_processos'})
+        assert 'RFPFP' in str(table)
+        assert '1234' in str(table)
+
+    def test_c9_consulta_check_lista(self):
+        pass
 
     def test_mycroft_analise_geral_divisao(self):
         """ Mycroft entra no sistema
@@ -744,78 +783,79 @@ class OVRAppTestCase(BaseTestCase):
         rv = self.app.get('/minhas_ovrs')
         token_text = self.get_token(str(rv.data))
         payload = {'csrf_token': token_text,
-                   'datainicio': datetime(2020, 1, 1, 0, 0),}
+                   'datainicio': datetime(2020, 1, 1, 0, 0), }
         rv = self.app.post('/ovrs_meus_setores', data=payload, follow_redirects=True)  # Fichas a mim atribuídas
         # print(str(rv.data))
         assert rv.status_code == 200
         assert b'152005079623267' in rv.data
         # Mycroft precisa informar gerenciais/produtividade
-        rv = self.app.get('/relatorios')
-        token_text = self.get_token(str(rv.data))
         relatorio = Relatorio()
         relatorio.id = 1
         relatorio.nome = "Visão Geral Gerencial das Fichas por Setor"
         relatorio.sql = """
-        SELECT rvfs.*, tgs.QtdeTGs, ValorTotal FROM (
-         SELECT year(rvf.create_date) as Ano, month(rvf.create_date) as Mês, s.nome as Setor,
-          count(rvf.id) as "Qtde de verificações físicas", sum(rvf.peso)  as "Peso Total", sum(a.peso) as "Peso apreensões sem TG"
-          FROM ovr_ovrs ovr
-         inner join ovr_verificacoesfisicas rvf on ovr.id = rvf.ovr_id
-         inner join ovr_setores s on s.id = ovr.setor_id
-         left join ovr_apreensoes_rvf a on a.rvf_id = rvf.id
-         where rvf.create_date between :datainicio and :datafim  and s.id in :setor_id
-         group by year(rvf.create_date), month(rvf.create_date), s.nome
-          ) as rvfs
-         LEFT JOIN
-          (
-         SELECT year(tg.create_date) as Ano, month(tg.create_date) as Mês, s.nome as Setor,
-          count(tg.id) as QtdeTGs, sum(tg.valor) as ValorTotal
-          FROM ovr_ovrs ovr
-         inner join ovr_setores s on s.id = ovr.setor_id
-         inner join ovr_tgovr tg on ovr.id = tg.ovr_id
-         where tg.create_date between :datainicio and :datafim  and s.id in :setor_id
-         group by year(tg.create_date), month(tg.create_date), s.nome
-         ) as tgs
-         ON rvfs.Ano = tgs.Ano AND rvfs.Mês = tgs.Mês AND rvfs.Setor = tgs.Setor
-         UNION 
-         SELECT tgs.Ano, tgs.Mês, tgs.Setor, `Qtde de verificações físicas`, `Peso Total`, `Peso apreensões sem TG`, QtdeTGs, ValorTotal FROM
-          (
-         SELECT year(tg.create_date) as Ano, month(tg.create_date) as Mês, s.nome as Setor,
-          count(tg.id) as QtdeTGs, sum(tg.valor) as ValorTotal
-          FROM ovr_ovrs ovr
-         inner join ovr_setores s on s.id = ovr.setor_id
-         inner join ovr_tgovr tg on ovr.id = tg.ovr_id
-         where tg.create_date between :datainicio and :datafim  and s.id in :setor_id
-          group by year(tg.create_date), month(tg.create_date), s.nome
-         ) as tgs
-         LEFT JOIN
-         (SELECT year(rvf.create_date) as Ano, month(rvf.create_date) as Mês, s.nome as Setor,
-          count(rvf.id) as "Qtde de verificações físicas", sum(rvf.peso)  as "Peso Total", sum(a.peso) as "Peso apreensões sem TG"
-          FROM ovr_ovrs ovr
-         inner join ovr_verificacoesfisicas rvf on ovr.id = rvf.ovr_id
-         inner join ovr_setores s on s.id = ovr.setor_id
-         left join ovr_apreensoes_rvf a on a.rvf_id = rvf.id
-         where rvf.create_date between :datainicio and :datafim  and s.id in :setor_id
-         group by year(rvf.create_date), month(rvf.create_date), s.nome
-          ) as rvfs
-         ON rvfs.Ano = tgs.Ano AND rvfs.Mês = tgs.Mês AND rvfs.Setor = tgs.Setor
-         ORDER BY Ano, Mês, Setor
-        """
+                SELECT rvfs.*, tgs.QtdeTGs, ValorTotal FROM (
+                 SELECT year(rvf.create_date) as Ano, month(rvf.create_date) as Mês, s.nome as Setor,
+                  count(rvf.id) as "Qtde de verificações físicas", sum(rvf.peso)  as "Peso Total", sum(a.peso) as "Peso apreensões sem TG"
+                  FROM ovr_ovrs ovr
+                 inner join ovr_verificacoesfisicas rvf on ovr.id = rvf.ovr_id
+                 inner join ovr_setores s on s.id = ovr.setor_id
+                 left join ovr_apreensoes_rvf a on a.rvf_id = rvf.id
+                 where rvf.create_date between :datainicio and :datafim  and s.id in :setor_id
+                 group by year(rvf.create_date), month(rvf.create_date), s.nome
+                  ) as rvfs
+                 LEFT JOIN
+                  (
+                 SELECT year(tg.create_date) as Ano, month(tg.create_date) as Mês, s.nome as Setor,
+                  count(tg.id) as QtdeTGs, sum(tg.valor) as ValorTotal
+                  FROM ovr_ovrs ovr
+                 inner join ovr_setores s on s.id = ovr.setor_id
+                 inner join ovr_tgovr tg on ovr.id = tg.ovr_id
+                 where tg.create_date between :datainicio and :datafim  and s.id in :setor_id
+                 group by year(tg.create_date), month(tg.create_date), s.nome
+                 ) as tgs
+                 ON rvfs.Ano = tgs.Ano AND rvfs.Mês = tgs.Mês AND rvfs.Setor = tgs.Setor
+                 UNION 
+                 SELECT tgs.Ano, tgs.Mês, tgs.Setor, `Qtde de verificações físicas`, `Peso Total`, `Peso apreensões sem TG`, QtdeTGs, ValorTotal FROM
+                  (
+                 SELECT year(tg.create_date) as Ano, month(tg.create_date) as Mês, s.nome as Setor,
+                  count(tg.id) as QtdeTGs, sum(tg.valor) as ValorTotal
+                  FROM ovr_ovrs ovr
+                 inner join ovr_setores s on s.id = ovr.setor_id
+                 inner join ovr_tgovr tg on ovr.id = tg.ovr_id
+                 where tg.create_date between :datainicio and :datafim  and s.id in :setor_id
+                  group by year(tg.create_date), month(tg.create_date), s.nome
+                 ) as tgs
+                 LEFT JOIN
+                 (SELECT year(rvf.create_date) as Ano, month(rvf.create_date) as Mês, s.nome as Setor,
+                  count(rvf.id) as "Qtde de verificações físicas", sum(rvf.peso)  as "Peso Total", sum(a.peso) as "Peso apreensões sem TG"
+                  FROM ovr_ovrs ovr
+                 inner join ovr_verificacoesfisicas rvf on ovr.id = rvf.ovr_id
+                 inner join ovr_setores s on s.id = ovr.setor_id
+                 left join ovr_apreensoes_rvf a on a.rvf_id = rvf.id
+                 where rvf.create_date between :datainicio and :datafim  and s.id in :setor_id
+                 group by year(rvf.create_date), month(rvf.create_date), s.nome
+                  ) as rvfs
+                 ON rvfs.Ano = tgs.Ano AND rvfs.Mês = tgs.Mês AND rvfs.Setor = tgs.Setor
+                 ORDER BY Ano, Mês, Setor
+                """
         self.session.add(relatorio)
         self.session.commit()
+        rv = self.app.get('/relatorios')
+        text = str(rv.data)
+        token_text = self.get_token(str(rv.data))
         payload = {'csrf_token': token_text,
                    'relatorio': 1,
-                   'datainicio': '2020/01/01',
-                   'datafim': '2020/02/01',
+                   'datainicio': date(year=2020, month=1, day=1),
+                   'datafim': date.today(),
                    'setor_id': 1}
         rv = self.app.post('/relatorios', data=payload, follow_redirects=True)
         text = str(rv.data)
-        print(str(rv.data))
         assert rv.status_code == 200
         soup = BeautifulSoup(rv.data, features='lxml')
         table = soup.find('table', {'id': 'filtro_personalizado_table'})
         rows = [str(row) for row in table.findAll("tr")]
-        # assert len(rows) == 2
+        assert len(rows) == 2
+
 
 if __name__ == '__main__':
     unittest.main()
