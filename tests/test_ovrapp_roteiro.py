@@ -1,5 +1,4 @@
 import sys
-from urllib.request import urlopen
 
 sys.path.append('.')
 sys.path.insert(0, '../ajna_api')
@@ -28,7 +27,7 @@ from ajna_commons.flask.user import DBUser
 from bhadrasana.views import app
 from bhadrasana.models import Setor, Usuario
 from bhadrasana.models.ovr import metadata, create_tiposevento, create_tiposprocesso, create_flags, create_marcas, OVR, \
-    Relatorio
+    Relatorio, RoteiroOperacaoOVR
 
 from .test_base import BaseTestCase
 
@@ -296,7 +295,7 @@ class OVRAppTestCase(BaseTestCase):
         self.session.add(item2)
         self.session.commit()
 
-    def test_a1_criaFichaCE(self):
+    def test_a01a_criaFichaCE(self):
         """1. Criar ficha para CE 152005079623267"""
         recinto = self.create_recinto('Londres')
         self.session.refresh(recinto)
@@ -321,7 +320,7 @@ class OVRAppTestCase(BaseTestCase):
         assert b'152005079623267' in rv.data
         assert rv.status_code == 200
 
-    def test_a1b_cria_flag_FichaCE(self):
+    def test_a01b_cria_flag_FichaCE(self):
         """Pesquisar ficha para CE 152005079623267 e criar Flag"""
         self.login('holmes', 'holmes')
         rv = self.app.get('/pesquisa_ovr')
@@ -364,7 +363,7 @@ class OVRAppTestCase(BaseTestCase):
         text_div_flags = soup.find('div', {'id': 'div_flags_ovr'}).text
         assert 'Perecível' not in text_div_flags
 
-    def test_a2_atribuir_responsabilidade_watson(self):
+    def test_a02_atribuir_responsabilidade_watson(self):
         """2. Atribuir responsabilidade para Watson"""
         self.login('holmes', 'holmes')
         rv = self.app.get('/ovr?id=%s' % 1)
@@ -378,7 +377,7 @@ class OVRAppTestCase(BaseTestCase):
         rv = self.app.post('/responsavelovr', data=payload, follow_redirects=True)
         assert b'watson' in rv.data
 
-    def test_a3_programa_container(self):
+    def test_a03_programa_container(self):
         """3. Entrar na programação/lista de contêineres e imagens e programar verificação física de um dos contêineres"""
         self.create_CE_containeres_teste()
         self.login('holmes', 'holmes')
@@ -392,7 +391,7 @@ class OVRAppTestCase(BaseTestCase):
         assert 'n. 1' in str(rv.data)
         assert b'container=1' not in rv.data
 
-    def test_b1_consulta_fichas(self):
+    def test_b01_consulta_fichas(self):
         """Watson entra no Sistema
             1. Consulta suas fichas
         """
@@ -426,7 +425,7 @@ class OVRAppTestCase(BaseTestCase):
         # FIXME: Teste falhando, mas OK na interface???
         assert b'152005079623267' in rv.data
 
-    def test_b2_agendamento_verificacao_fisica(self):
+    def test_b02_agendamento_verificacao_fisica(self):
         """2 - Evento de agendamento de verificação física"""
         self.login('watson', 'watson')
         rv = self.app.get('/ovr?id=%s' % 1)
@@ -477,7 +476,7 @@ class OVRAppTestCase(BaseTestCase):
         assert len(rows) == 3
         """
 
-    def test_b3_informar_RVF_carregar_fotos(self):
+    def test_b03_informar_RVF_carregar_fotos(self):
         """3 - Informa RVF carregando fotos"""
         self.login('watson', 'watson')
         rv = self.app.get('lista_rvfovr?ovr_id=%s' % 1)
@@ -571,7 +570,7 @@ class OVRAppTestCase(BaseTestCase):
         assert 'Armas' not in text_div_infracoes
         assert 'Contra' in text_div_infracoes
 
-    def test_b4_Devolver_para_Holmes(self):
+    def test_b04_Devolver_para_Holmes(self):
         """4 - Devolve para Holmes"""
         self.login('watson', 'watson')
         rv = self.app.get('/ovr?id=%s' % 1)
@@ -585,7 +584,7 @@ class OVRAppTestCase(BaseTestCase):
         rv = self.app.post('/responsavelovr', data=payload, follow_redirects=True)
         assert b'holmes' in rv.data
 
-    def test_c1_Consultar_Fichas_Modificadas(self):
+    def test_c01_Consultar_Fichas_Modificadas(self):
         """Holmes consulta suas fichas, vê mudanças na verificação física
         e que possivelmente há uma contrafação, distribui
         para Irene Adler para tratar."""
@@ -651,7 +650,7 @@ class OVRAppTestCase(BaseTestCase):
         assert 'adler' in text_span_responsavel
         assert b'Solicitar Laudo' in rv.data
 
-    def test_c2_consulta_fichas(self):
+    def test_c02_consulta_fichas(self):
         """Irene Adler entra no sistema
          1 - consulta suas fichas"""
         self.login('adler', 'adler')
@@ -659,7 +658,7 @@ class OVRAppTestCase(BaseTestCase):
         assert rv.status_code == 200
         assert b'152005079623267' in rv.data
 
-    def test_c3_termos_de_retirada_amostra(self):
+    def test_c03_termos_de_retirada_amostra(self):
         # 2 - Informa/anexa(opcional) Termos de Retirada de amostra
         self.login('adler', 'adler')
         rv = self.app.get('/ovr?id=%s' % 1)
@@ -675,11 +674,9 @@ class OVRAppTestCase(BaseTestCase):
         rv = self.app.post('/eventoovr', data=payload, follow_redirects=True)
         soup = BeautifulSoup(rv.data, features='lxml')
         table = soup.find('table', {'id': 'table_eventos'})
-        rows = [str(row) for row in table.findAll("tr")]
-        assert len(rows) == 7
-        assert 'Aguardando Laudo Técnico' in ''.join(rows)
+        assert 'Aguardando Laudo Técnico' in str(table)
 
-    def test_c4_Devolver_para_Sherlock(self):
+    def test_c04_Devolver_para_Sherlock(self):
         # 3 - Devolve para Holmes
         self.login('adler', 'adler')
         rv = self.app.get('/ovr?id=%s' % 1)
@@ -693,7 +690,7 @@ class OVRAppTestCase(BaseTestCase):
         rv = self.app.post('/responsavelovr', data=payload, follow_redirects=True)
         assert b'holmes' in rv.data
 
-    def test_c5_holmes_recebe_de_volta_ficha(self):
+    def test_c05_holmes_recebe_de_volta_ficha(self):
         """Holmes consulta suas fichas
          1 - Ordena saneamento"""
         self.login('holmes', 'holmes')
@@ -710,11 +707,9 @@ class OVRAppTestCase(BaseTestCase):
         rv = self.app.post('/eventoovr', data=payload, follow_redirects=True)
         soup = BeautifulSoup(rv.data, features='lxml')
         table = soup.find('table', {'id': 'table_eventos'})
-        rows = [str(row) for row in table.findAll("tr")]
-        assert len(rows) == 9
-        assert 'Aguardando Saneamento' in ''.join(rows)
+        assert 'Aguardando Saneamento' in str(table)
 
-    def test_c6_informa_termo_de_guarda(self):
+    def test_c06_informa_termo_de_guarda(self):
         # 3 - Recebe saneamento e informa termo de guarda
         self.login('holmes', 'holmes')
         rv = self.app.get('/lista_tgovr?ovr_id=%s' % 1)
@@ -737,7 +732,7 @@ class OVRAppTestCase(BaseTestCase):
         assert len(rows) == 2
         assert 'BMOU6786326' in str(rows)
 
-    def test_c7_faz_auto_de_infracao(self):
+    def test_c07_faz_auto_de_infracao(self):
         # 4 - Faz auto de infração e informa
         self.login('holmes', 'holmes')
         rv = self.app.get('/ovr?id=%s' % 1)
@@ -755,7 +750,7 @@ class OVRAppTestCase(BaseTestCase):
         assert 'Concluída' in str(form)
         assert 'Ficha encerrada, auto lavrado' in str(table)
 
-    def test_c8_informa_processo(self):
+    def test_c08_informa_processo(self):
         # 5 - Informa RFFP
         self.login('holmes', 'holmes')
         rv = self.app.get('/ovr?id=%s' % 1)
@@ -773,10 +768,77 @@ class OVRAppTestCase(BaseTestCase):
         assert 'RFPFP' in str(table)
         assert '1234' in str(table)
 
-    def test_c9_consulta_check_lista(self):
-        pass
+    def test_c09_consulta_check_lista(self):
+        # 6 - Consulta check-lista para saber se falta algo
+        self.login('holmes', 'holmes')
+        rv = self.app.get('/ovr?id=%s' % 1)
+        assert rv.status_code == 200
+        roteiro = RoteiroOperacaoOVR(id=1, tipooperacao=1, tipoevento_id=1,
+                                     descricao='Informar responsável pela Verificação Física', ordem=1, quem='1')
+        session.add(roteiro)
+        session.commit()
+        text = str(rv.data)
+        token_text = self.get_token(text)
+        payload = {'csrf_token': token_text,
+                   'ovr_id': 1,
+                   'tipooperacao': 1,
+                   'dataentrada': date(year=2020, month=1, day=1),
+                   'adata': date(year=2020, month=2, day=1)}
+        rv = self.app.post('/ovr?id=%s' % 1, data=payload, follow_redirects=True)
+        soup = BeautifulSoup(rv.data, features='lxml')
+        text = str(rv.data)
+        checklist = soup.find('div', {'id': 'roteiro'})
+        assert 'Informar responsável pela Verificação Física' in str(checklist)
 
-    def test_mycroft_analise_geral_divisao(self):
+    def test_c10_gera_arquivos_ctma(self):
+        # 7 - Gera arquivos CTMA e informa Evento
+        self.login('holmes', 'holmes')
+        rv = self.app.get('/ovr?id=%s' % 1)
+        text = str(rv.data)
+        responsavelovr_pos = text.find('action="responsavelovr"')
+        responsavelovr_text = text[responsavelovr_pos:]
+        token_text = self.get_token(responsavelovr_text)
+        payload = {'csrf_token': token_text,
+                   'ovr_id': 1,
+                   'responsavel': 'holmes'}
+        # Atribuição de responsável para Holmes porque a ficha estava encerrada com lavratura de auto
+        rv = self.app.post('/responsavelovr', data=payload, follow_redirects=True)
+        soup = BeautifulSoup(rv.data, features='lxml')
+        text = str(rv.data)
+        movimentaovr_pos = text.find('action="eventoovr"')
+        movimentaovr_text = text[movimentaovr_pos:]
+        token_text = self.get_token(movimentaovr_text)
+        payload = {'csrf_token': token_text,
+                   'ovr_id': 1,
+                   'tipoevento_id': 11,
+                   'motivo': 'Geração de documentos de integração ao CTMA',
+                   'user_name': 'holmes'}
+        rv = self.app.post('/eventoovr', data=payload, follow_redirects=True)
+        soup = BeautifulSoup(rv.data, features='lxml')
+        text = str(rv.data)
+        table = soup.find('table', {'id': 'table_eventos'})
+        assert 'Geração de documentos de integração ao CTMA' in str(table)
+
+    def test_c11_bloqueio_do_carga(self):
+        # 8 - Atualiza bloqueio do CARGA e informa Evento
+        self.login('holmes', 'holmes')
+        rv = self.app.get('/ovr?id=%s' % 1)
+        text = str(rv.data)
+        movimentaovr_pos = text.find('action="eventoovr"')
+        movimentaovr_text = text[movimentaovr_pos:]
+        token_text = self.get_token(movimentaovr_text)
+        payload = {'csrf_token': token_text,
+                   'ovr_id': 1,
+                   'tipoevento_id': 7,
+                   'motivo': 'Atualiza bloqueio do CARGA e informa Evento',
+                   'user_name': 'holmes'}
+        rv = self.app.post('/eventoovr', data=payload, follow_redirects=True)
+        soup = BeautifulSoup(rv.data, features='lxml')
+        text = str(rv.data)
+        table = soup.find('table', {'id': 'table_eventos'})
+        assert 'Atualiza bloqueio do CARGA e informa Evento' in str(table)
+
+    def test_d01_mycroft_analise_geral_divisao(self):
         """ Mycroft entra no sistema
          1 - Acompanha ficha do setor"""
         self.login('mycroft', 'mycroft')
@@ -793,50 +855,85 @@ class OVRAppTestCase(BaseTestCase):
         relatorio.id = 1
         relatorio.nome = "Visão Geral Gerencial das Fichas por Setor"
         relatorio.sql = """
-                SELECT rvfs.*, tgs.QtdeTGs, ValorTotal FROM (
-                 SELECT year(rvf.create_date) as Ano, month(rvf.create_date) as Mês, s.nome as Setor,
-                  count(rvf.id) as "Qtde de verificações físicas", sum(rvf.peso)  as "Peso Total", sum(a.peso) as "Peso apreensões sem TG"
-                  FROM ovr_ovrs ovr
-                 inner join ovr_verificacoesfisicas rvf on ovr.id = rvf.ovr_id
-                 inner join ovr_setores s on s.id = ovr.setor_id
-                 left join ovr_apreensoes_rvf a on a.rvf_id = rvf.id
-                 where rvf.create_date between :datainicio and :datafim  and s.id in :setor_id
-                 group by year(rvf.create_date), month(rvf.create_date), s.nome
-                  ) as rvfs
-                 LEFT JOIN
-                  (
-                 SELECT year(tg.create_date) as Ano, month(tg.create_date) as Mês, s.nome as Setor,
-                  count(tg.id) as QtdeTGs, sum(tg.valor) as ValorTotal
-                  FROM ovr_ovrs ovr
-                 inner join ovr_setores s on s.id = ovr.setor_id
-                 inner join ovr_tgovr tg on ovr.id = tg.ovr_id
-                 where tg.create_date between :datainicio and :datafim  and s.id in :setor_id
-                 group by year(tg.create_date), month(tg.create_date), s.nome
-                 ) as tgs
-                 ON rvfs.Ano = tgs.Ano AND rvfs.Mês = tgs.Mês AND rvfs.Setor = tgs.Setor
-                 UNION 
-                 SELECT tgs.Ano, tgs.Mês, tgs.Setor, `Qtde de verificações físicas`, `Peso Total`, `Peso apreensões sem TG`, QtdeTGs, ValorTotal FROM
-                  (
-                 SELECT year(tg.create_date) as Ano, month(tg.create_date) as Mês, s.nome as Setor,
-                  count(tg.id) as QtdeTGs, sum(tg.valor) as ValorTotal
-                  FROM ovr_ovrs ovr
-                 inner join ovr_setores s on s.id = ovr.setor_id
-                 inner join ovr_tgovr tg on ovr.id = tg.ovr_id
-                 where tg.create_date between :datainicio and :datafim  and s.id in :setor_id
-                  group by year(tg.create_date), month(tg.create_date), s.nome
-                 ) as tgs
-                 LEFT JOIN
-                 (SELECT year(rvf.create_date) as Ano, month(rvf.create_date) as Mês, s.nome as Setor,
-                  count(rvf.id) as "Qtde de verificações físicas", sum(rvf.peso)  as "Peso Total", sum(a.peso) as "Peso apreensões sem TG"
-                  FROM ovr_ovrs ovr
-                 inner join ovr_verificacoesfisicas rvf on ovr.id = rvf.ovr_id
-                 inner join ovr_setores s on s.id = ovr.setor_id
-                 left join ovr_apreensoes_rvf a on a.rvf_id = rvf.id
-                 where rvf.create_date between :datainicio and :datafim  and s.id in :setor_id
-                 group by year(rvf.create_date), month(rvf.create_date), s.nome
-                  ) as rvfs
-                 ON rvfs.Ano = tgs.Ano AND rvfs.Mês = tgs.Mês AND rvfs.Setor = tgs.Setor
-                 ORDER BY Ano, Mês, Setor
+                SELECT rvfs.*,
+       tgs.QtdeTGs,
+       ValorTotal
+FROM
+  (SELECT year(rvf.create_date) AS Ano,
+          month(rvf.create_date) AS Mês,
+          s.nome AS Setor,
+          count(rvf.id) AS "Qtde de verificações físicas",
+          sum(rvf.peso) AS "Peso Total",
+          sum(a.peso) AS "Peso apreensões sem TG"
+   FROM ovr_ovrs ovr
+   INNER JOIN ovr_verificacoesfisicas rvf ON ovr.id = rvf.ovr_id
+   INNER JOIN ovr_setores s ON s.id = ovr.setor_id
+   LEFT JOIN ovr_apreensoes_rvf a ON a.rvf_id = rvf.id
+   WHERE rvf.create_date BETWEEN :datainicio AND :datafim
+     AND s.id in :setor_id
+   GROUP BY year(rvf.create_date),
+            month(rvf.create_date),
+            s.nome) AS rvfs
+LEFT JOIN
+  (SELECT year(tg.create_date) AS Ano,
+          month(tg.create_date) AS Mês,
+          s.nome AS Setor,
+          count(tg.id) AS QtdeTGs,
+          sum(tg.valor) AS ValorTotal
+   FROM ovr_ovrs ovr
+   INNER JOIN ovr_setores s ON s.id = ovr.setor_id
+   INNER JOIN ovr_tgovr tg ON ovr.id = tg.ovr_id
+   WHERE tg.create_date BETWEEN :datainicio AND :datafim
+     AND s.id in :setor_id
+   GROUP BY year(tg.create_date),
+            month(tg.create_date),
+            s.nome) AS tgs ON rvfs.Ano = tgs.Ano
+AND rvfs.Mês = tgs.Mês
+AND rvfs.Setor = tgs.Setor
+UNION
+SELECT tgs.Ano,
+       tgs.Mês,
+       tgs.Setor,
+       `Qtde de verificações físicas`,
+       `Peso Total`,
+       `Peso apreensões sem TG`,
+       QtdeTGs,
+       ValorTotal
+FROM
+  (SELECT year(tg.create_date) AS Ano,
+          month(tg.create_date) AS Mês,
+          s.nome AS Setor,
+          count(tg.id) AS QtdeTGs,
+          sum(tg.valor) AS ValorTotal
+   FROM ovr_ovrs ovr
+   INNER JOIN ovr_setores s ON s.id = ovr.setor_id
+   INNER JOIN ovr_tgovr tg ON ovr.id = tg.ovr_id
+   WHERE tg.create_date BETWEEN :datainicio AND :datafim
+     AND s.id in :setor_id
+   GROUP BY year(tg.create_date),
+            month(tg.create_date),
+            s.nome) AS tgs
+LEFT JOIN
+  (SELECT year(rvf.create_date) AS Ano,
+          month(rvf.create_date) AS Mês,
+          s.nome AS Setor,
+          count(rvf.id) AS "Qtde de verificações físicas",
+          sum(rvf.peso) AS "Peso Total",
+          sum(a.peso) AS "Peso apreensões sem TG"
+   FROM ovr_ovrs ovr
+   INNER JOIN ovr_verificacoesfisicas rvf ON ovr.id = rvf.ovr_id
+   INNER JOIN ovr_setores s ON s.id = ovr.setor_id
+   LEFT JOIN ovr_apreensoes_rvf a ON a.rvf_id = rvf.id
+   WHERE rvf.create_date BETWEEN :datainicio AND :datafim
+     AND s.id in :setor_id
+   GROUP BY year(rvf.create_date),
+            month(rvf.create_date),
+            s.nome) AS rvfs ON rvfs.Ano = tgs.Ano
+AND rvfs.Mês = tgs.Mês
+AND rvfs.Setor = tgs.Setor
+ORDER BY Ano,
+         Mês,
+         Setor
                 """
         self.session.add(relatorio)
         self.session.commit()
