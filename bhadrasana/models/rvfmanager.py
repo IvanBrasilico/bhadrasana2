@@ -445,6 +445,15 @@ def get_ids_anexos_mongo(db, rvf):
     return result
 
 
+def get_anexos_mongo(db, rvf):
+    filtro = {'metadata.rvf_id': str(rvf.id)}
+    # count = db['fs.files'].count_documents(filtro)
+    result = [[str(row['_fileName']), str(row['_data'])] for row in db['fs.files'].find(filtro)]
+    # result = [str(row['_id']) for row in db['fs.files'].find(filtro)]
+    # print(filtro, result, count)
+    return result
+
+
 def ressuscita_anexos_perdidos(db, session, rvf):
     # TODO: Temporário - para recuperar imagens "perdidas" na transição
     anexos_mongo = get_ids_anexos_mongo(db, rvf)
