@@ -184,14 +184,19 @@
     <div class="row col-sm-12">
         <div class="form-group">
             <h4>Selecione anexos:</h4>
-            <div class="col-sm-3"><input type="file" class="btn btn-default" name="images" id="images" multiple>
+            <div class="col-sm-2"><input type="file" class="btn btn-default" name="images" id="images" multiple>
             </div>
-            <div class="col-sm-1">
+            <div class="col-sm-2">
             </div>
-            <div class="col-sm-3">
+            <div class="col-sm-2">
                 <button type="button" class="btn btn-default btn-primary form-control" onclick="upload_files()">
                     Enviar
                 </button>
+            </div>
+            <div class="col-sm-2">
+                <a  href="rvf_download_imagens?rvf_id={{oform.id.data}}" class="btn btn-default btn-primary form-control">
+                    Download
+                </a>
             </div>
             <div class="col-sm-2">
                 <button type="button" class="btn btn-info form-control"
@@ -199,7 +204,7 @@
                     Atualizar ordem
                 </button>
             </div>
-            <div class="col-sm-3">
+            <div class="col-sm-2">
                 <a href="rvf_galeria_imagens?rvf_id={{oform.id.data}}" class="btn btn-warning form-control"
                    target="_blank">
                     Abrir fotos em Galeria de imagens</a>

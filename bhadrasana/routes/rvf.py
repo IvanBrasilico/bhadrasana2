@@ -1,10 +1,12 @@
 import base64
 import os
+import zipfile
 from datetime import date, timedelta, datetime
+from io import BytesIO
 
 from ajna_commons.flask.log import logger
 from ajna_commons.utils.images import ImageBytesTansformations
-from flask import request, flash, render_template, url_for, jsonify
+from flask import request, flash, render_template, url_for, jsonify, send_file
 from flask_login import login_required, current_user
 from werkzeug.utils import redirect
 
@@ -23,7 +25,7 @@ from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, \
     make_and_save_transformation, exclui_lacre_verificado, \
     inclui_lacre_verificado, get_imagemrvf, inclui_nova_ordem_arquivo, \
     get_anexos_ordenado, get_tiposapreensao_choice, gera_apreensao_rvf, \
-    exclui_apreensao_rvf, get_peso, rvf_ordena_imagensrvf_por_data_criacao
+    exclui_apreensao_rvf, get_peso, rvf_ordena_imagensrvf_por_data_criacao, get_anexos_mongo
 from bhadrasana.views import csrf, valid_file, get_user_save_path
 from bhadrasana.models.ovr_dict_repr import OVRDict
 
@@ -577,3 +579,21 @@ def rvf_app(app):
             logger.error(err, exc_info=True)
             return jsonify({'msg': str(err)}), 500
         return jsonify(apreensao_rvf.dump()), 201
+
+    @app.route('/rvf_download_imagens', methods=['GET', 'POST'])
+    def rfv_download_imagens():
+        session = app.config.get('dbsession')
+        db = app.config['mongo_risco']
+        rvf_id = request.args.get('rvf_id')
+        rvf = get_rvf(session, rvf_id)
+        # anexos = get_anexos_ordenado(rvf)
+        result = get_anexos_mongo(db, rvf)
+        memory_file = BytesIO()
+        with zipfile.ZipFile(memory_file, 'w') as zf:
+            # files = result['files']
+            for fileName, fileData in result:
+                data = zipfile.ZipInfo(fileName)
+                data.compress_type = zipfile.ZIP_DEFLATED
+                zf.write(fileData, data)
+        memory_file.seek(0)
+        return send_file(memory_file, attachment_filename='imagens.zip', as_attachment=True)
