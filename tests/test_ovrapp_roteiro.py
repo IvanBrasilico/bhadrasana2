@@ -1,140 +1,18 @@
 import sys
 
 sys.path.append('.')
+sys.path.append('../virasana')
+sys.path.append('../ajna_docs/commons')
 sys.path.insert(0, '../ajna_api')
 import unittest
 from datetime import datetime, timedelta, date
-
-import mongomock
 from bs4 import BeautifulSoup
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
 import virasana.integracao.mercante.mercantealchemy as mercante
-from ajnaapi.recintosapi import models as recintosapi_models
 from bhadrasana.models.ovrmanager import get_ovr
-from bhadrasana.models.rvf import create_infracoes
-from bhadrasana.routes.admin import admin_app
-from bhadrasana.routes.ovr import ovr_app
-from bhadrasana.routes.ovr2 import ovr2_app
-from bhadrasana.routes.risco import risco_app
-from bhadrasana.routes.rvf import rvf_app
-
-sys.path.append('.')
-
-import ajna_commons.flask.login as login_ajna
-from ajna_commons.flask.user import DBUser
-from bhadrasana.views import app
-from bhadrasana.models import Setor, Usuario
-from bhadrasana.models.ovr import metadata, create_tiposevento, create_tiposprocesso, create_flags, create_marcas, OVR, \
+from tests.app_creator import app, session, create_usuarios, create_tables, create_setores, engine
+from bhadrasana.models.ovr import OVR, \
     Relatorio, RoteiroOperacaoOVR
-
 from .test_base import BaseTestCase
-
-SECRET = 'teste'
-
-"""
-Divisão:    God Save the Queen
-Chefe:      mycroft senha m5
-Equipe:     221B Baker Street
-Chefe:      holmes senha sherlock
-Membros:    watson senha dr
-            adler senha irene
-Equipe: Scotland Yard
-Chefe:         lestrade senha inspetor
-Membros:       macdonald senha inspetor
-"""
-
-
-def create_setores(session):
-    setores = [(1, 'God Save the Queen', None),
-               (2, '221b', 1),
-               (3, 'SY', 1)]
-    for linha in setores:
-        setor = Setor()
-        setor.id = linha[0]
-        setor.nome = linha[1]
-        setor.pai_id = linha[2]
-        session.add(setor)
-    session.commit()
-
-
-def create_usuarios(session):
-    usuarios = [('mycroft', 'm5', 1),
-                ('holmes', 'sherlock', 2),
-                ('watson', 'dr', 2),
-                ('adler', 'irene', 2),
-                ('lestrade', 'inspetor', 3),
-                ('macdonald', 'inspetor', 3),
-                ('ivan', 'ivan', 3)
-                ]
-    for linha in usuarios:
-        usuario = Usuario()
-        usuario.cpf = linha[0]
-        usuario.nome = linha[0]
-        usuario.setor_id = linha[2]
-        session.add(usuario)
-    session.commit()
-
-
-def create_tables(engine, session):
-    drop_tables(engine)
-    metadata.create_all(engine)
-    create_tiposevento(session)
-    create_tiposprocesso(session)
-    create_flags(session)
-    create_marcas(session)
-    create_infracoes(session)
-    mercante.metadata.create_all(engine, [
-        mercante.metadata.tables['itensresumo'],
-        mercante.metadata.tables['ncmitemresumo'],
-        mercante.metadata.tables['conhecimentosresumo']
-    ])
-    recintosapi_models.Base.metadata.create_all(engine)
-
-
-def drop_tables(engine):
-    metadata.drop_all(engine)
-    mercante.metadata.drop_all(engine, [
-        mercante.metadata.tables['itensresumo'],
-        mercante.metadata.tables['ncmitemresumo'],
-        mercante.metadata.tables['conhecimentosresumo']
-    ])
-
-
-def configure_app(app, sqlsession, mongodb):
-    """Configurações gerais e de Banco de Dados da Aplicação."""
-    app.config['DEBUG'] = False
-    app.secret_key = SECRET
-    app.config['SECRET_KEY'] = SECRET
-    app.config['SESSION_TYPE'] = 'filesystem'
-    login_ajna.configure(app)
-    # Aceitar qualquer login
-    DBUser.dbsession = None
-    app.config['dbsession'] = sqlsession
-    app.config['mongodb'] = mongodb['test']
-    app.config['mongo_risco'] = mongodb['risco']
-    return app
-
-
-engine = create_engine('sqlite://')
-Session = sessionmaker(bind=engine)
-session = Session()
-from mongomock.gridfs import enable_gridfs_integration
-
-enable_gridfs_integration()
-mongodb = mongomock.MongoClient()
-
-create_tables(engine, session)
-configure_app(app, session, mongodb)
-risco_app(app)
-rvf_app(app)
-ovr_app(app)
-ovr2_app(app)
-admin_app(app, session)
-
-create_setores(session)
-create_usuarios(session)
 
 
 class OVRAppTestCase(BaseTestCase):
@@ -166,15 +44,16 @@ class OVRAppTestCase(BaseTestCase):
     def test_ovr_1(self):
         self.login('ivan', 'ivan')
         recinto = self.create_recinto('Teste OVR')
-        usuario = self.create_usuario('123', 'user1')
         self.session.refresh(recinto)
         params = {'numeroCEmercante': 'CE Teste',
                   'recinto_id': recinto.id,
                   'adata': '2020-01-01',
                   'ahora': '13:13'}
-        ovr = self.create_OVR(params, '123')
+        ovr = self.create_OVR(params, 'ivan')
         self.session.refresh(ovr)
         rv = self.app.get('/ovr?id=%s' % ovr.id)
+        # with open('saida_ovr2.html', 'w') as fileout:
+        #     fileout.write(str(rv.data))
         assert b'CE Teste' in rv.data
         assert rv.status_code == 200
 
@@ -951,7 +830,7 @@ ORDER BY Ano,
         soup = BeautifulSoup(rv.data, features='lxml')
         table = soup.find('table', {'id': 'filtro_personalizado_table'})
         rows = [str(row) for row in table.findAll("tr")]
-        #assert len(rows) == 2
+        # assert len(rows) == 2
 
     def test_d02_mycroft_analise_pesquisa(self):
         self.login('mycroft', 'mycroft')
@@ -980,7 +859,7 @@ ORDER BY Ano,
         assert rv.status_code == 200
         soup = BeautifulSoup(rv.data, features='lxml')
         table = soup.find('table', {'id': 'pesquisa_ovr_table'})
-        #assert '152005079623267' in str(table)
+        # assert '152005079623267' in str(table)
 
 
 if __name__ == '__main__':
