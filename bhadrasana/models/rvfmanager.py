@@ -447,10 +447,12 @@ def get_ids_anexos_mongo(db, rvf):
 
 def get_anexos_mongo(db, rvf):
     filtro = {'metadata.rvf_id': str(rvf.id)}
-    # count = db['fs.files'].count_documents(filtro)
-    result = [[str(row['_fileName']), str(row['_data'])] for row in db['fs.files'].find(filtro)]
-    # result = [str(row['_id']) for row in db['fs.files'].find(filtro)]
-    # print(filtro, result, count)
+    cursor = db['fs.files'].find(filtro)
+    fs = GridFS(db)
+    result = []
+    for row in cursor:
+        fobj = fs.get(row['_id'])
+        result.append(fobj)
     return result
 
 
