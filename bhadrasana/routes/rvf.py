@@ -586,14 +586,10 @@ def rvf_app(app):
         db = app.config['mongo_risco']
         rvf_id = request.args.get('rvf_id')
         rvf = get_rvf(session, rvf_id)
-        # anexos = get_anexos_ordenado(rvf)
         result = get_anexos_mongo(db, rvf)
         memory_file = BytesIO()
         with zipfile.ZipFile(memory_file, 'w') as zf:
-            # files = result['files']
-            for fileName, fileData in result:
-                data = zipfile.ZipInfo(fileName)
-                data.compress_type = zipfile.ZIP_DEFLATED
-                zf.write(fileData, data)
+            for grid_out in result:
+                zf.writestr(grid_out.filename, grid_out.read())
         memory_file.seek(0)
         return send_file(memory_file, attachment_filename='imagens.zip', as_attachment=True)
