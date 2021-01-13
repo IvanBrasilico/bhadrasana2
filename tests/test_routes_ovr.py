@@ -1,5 +1,7 @@
 import sys
 
+from bs4 import BeautifulSoup
+
 sys.path.append('.')
 sys.path.append('../virasana')
 sys.path.append('../ajna_docs/commons')
@@ -12,7 +14,7 @@ from bhadrasana.models.rvf import create_infracoes
 sys.path.append('.')
 
 from tests.app_creator import app, engine, session
-from bhadrasana.models import Setor, Usuario
+from bhadrasana.models import Setor, Usuario, PerfilUsuario, get_perfisusuario
 from bhadrasana.models.ovr import metadata, create_tiposevento, create_tiposprocesso, create_flags, create_marcas
 
 from .test_base import BaseTestCase
@@ -49,6 +51,19 @@ def create_setores(session):
     session.commit()
 
 
+def create_perfis(session):
+    perfis = [(1, 'tiberio', 2),  # Supervisor
+              (2, 'adriano', 2),  # Supervisor
+              (3, 'kanoo', 2)]    # Supervisor
+
+    for linha in perfis:
+        perfil = PerfilUsuario()
+        perfil.id = linha[0]
+        perfil.cpf = linha[1]
+        perfil.perfil = linha[2]
+    session.commit()
+
+
 def create_usuarios(session):
     usuarios = [('tiberio', 'tiberio', 40),
                 ('adriano', 'adriano', 50),
@@ -63,11 +78,15 @@ def create_usuarios(session):
         usuario.cpf = linha[0]
         usuario.nome = linha[0]
         usuario.setor_id = linha[2]
+        # usuario.perfis = linha[3]
         session.add(usuario)
     session.commit()
 
+
 create_setores(session)
+create_perfis(session)
 create_usuarios(session)
+
 
 class OVRAppTestCase(BaseTestCase):
 
@@ -94,23 +113,63 @@ class OVRAppTestCase(BaseTestCase):
         # with open('saida_login.html', 'w') as fileout:
         #     fileout.write(str(rv.data))
 
-    def test_home(self):
-        rv = self.app.get('/')
-        assert rv.status_code == 302
+    def recupera_perfil(self):
+        perfis = get_perfisusuario(self.session, 'adriano')
 
-    def test_ovr_1(self):
+    def test_a01(self):
+        # Adriano cria uma ficha limpa
+        # Atribui responsabilidade para usuario1 da sua equipe
+        # Verifica fichas do seu setor
         self.login('adriano', 'adriano')
-        recinto = self.create_recinto('Teste OVR')
-        # usuario = self.create_usuario('123', 'user1')
+        recinto = self.create_recinto('Recinto Alfândega')
         self.session.refresh(recinto)
-        params = {'numeroCEmercante': 'CE Teste',
+        params = {'tipooperacao': 'Mercadoria Abandonada',
+                  'numeroCEmercante': 'CE-123456789',
                   'recinto_id': recinto.id,
-                  'adata': '2020-01-01',
-                  'ahora': '13:13'}
+                  'adata': '2021-01-01',
+                  'ahora': '13:15'}
         ovr = self.create_OVR(params, 'adriano')
         self.session.refresh(ovr)
-        rv = self.app.get('/ovr?id=%s' % ovr.id)
-        # with open('saida_ovr1.html', 'w') as fileout:
+        ficha = self.app.get('/ovr?id=%s' % ovr.id)
+        # with open('saida_tests.html', 'w') as fileout:
         #     fileout.write(str(rv.data))
-        assert b'CE Teste' in rv.data
-        assert rv.status_code == 200
+        assert ficha.status_code == 200
+        assert ovr.id == 1
+        assert ovr.tipooperacao == 'Mercadoria Abandonada'
+        assert b'CE-123456789' in ficha.data
+        assert ovr.fase == 0  # Iniciada
+        assert ovr.tipoevento_id == 1  # Aguardando distribuição
+        assert ovr.user_name == 'adriano'
+        assert ovr.cpfauditorresponsavel is None
+        assert ovr.setor_id == '50'  # Equipe 01 - Setor do Adriano
+        assert ovr.responsavel is None
+        ficha = self.app.get('/ovr?id=%s' % 1)
+        text = str(ficha.data)
+        responsavelovr_pos = text.find('action="responsavelovr"')
+        responsavelovr_text = text[responsavelovr_pos:]
+        token_text = self.get_token(responsavelovr_text)
+        payload = {'csrf_token': token_text,
+                   'ovr_id': 1,
+                   'responsavel': 'usuario1'}
+        ficha = self.app.post('/responsavelovr', data=payload, follow_redirects=True)
+        assert b'usuario1' in ficha.data
+        assert ovr.fase == 1  # Ativa
+        assert ovr.tipoevento_id == 13  # Atribuição de responsável
+        assert ovr.tipoevento.nome == 'Atribuição de responsável'
+        assert ovr.user_name == 'adriano'
+        assert ovr.cpfauditorresponsavel is None
+        assert ovr.setor_id == '50'  # Equipe 01 - Setor do Adriano
+        assert ovr.responsavel.nome == 'usuario1'
+        soup = BeautifulSoup(ficha.data, features='lxml')
+        table = soup.find('table', {'id': 'table_eventos'})
+        rows = [str(row) for row in table.findAll("tr")]
+        assert len(rows) == 2
+        ficha_setores = self.app.get('/ovrs_meus_setores')
+        with open('saida_tests.html', 'w') as fileout:
+            fileout.write(str(ficha_setores.data))
+        assert ficha_setores.status_code == 200
+        soup = BeautifulSoup(ficha_setores.data, features='lxml')
+        table = soup.find('table', {'id': 'minhas_ovrs_table'})
+        rows = [str(row) for row in table.findAll("tr")]
+        assert len(rows) == 2
+

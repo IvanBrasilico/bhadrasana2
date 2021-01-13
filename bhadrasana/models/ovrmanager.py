@@ -737,11 +737,18 @@ def gera_eventoovr(session, params: dict, commit=True, user_name=None,
 def valida_mesmo_responsavel_ovr_user_name(session, ovr: OVR, user_name: str):
     # Se tiver algum responsável, deve ser o mesmo.
     # Se responsável for nulo, qualquer usuário pode agir
-    print('********', ovr.responsavel_cpf, user_name, ovr.fase)
+    print()
+    print(f'CPF do responsável pela ficha: {ovr.responsavel_cpf}')
+    print(f'Usuário logado: {user_name}')
+    print(f'Fase da ficha: {ovr.fase}')
+
     # logger.info('******** %s ' % ovr.responsavel_cpf)
     if ovr.fase > 0 and ovr.responsavel_cpf \
             and ovr.responsavel_cpf != user_name:
-        print('XXXXXXXX', ovr.responsavel_cpf, user_name, ovr.fase)
+        print()
+        print(f'CPF do responsável pela ficha: {ovr.responsavel_cpf}')
+        print(f'Usuário logado: {user_name}')
+        print(f'Fase da ficha: {ovr.fase}')
         raise ESomenteUsuarioResponsavel()
 
 
