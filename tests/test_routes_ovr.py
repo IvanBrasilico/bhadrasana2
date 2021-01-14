@@ -22,15 +22,15 @@ from .test_base import BaseTestCase
 SECRET = 'teste'
 
 """
-Divisão:    Divisão 01
-Chefe:      tiberio senha tiberio
+Divisão:    Divisão Teste
+Chefe:      geraldo senha geraldo
 
-Equipe:     Equipe 01
-Chefe:      adriano senha adriano
+Equipe:     Equipe A
+Chefe:      marcelo senha marcelo
 Membros:    usuario1 senha usuario1
             usuario2 senha usuario2
             
-Equipe:     Equipe 02
+Equipe:     Equipe B
 Chefe:      kanoo senha kanoo
 Membros:    usuario3 senha usuario3
             usuario4 senha usuario4
@@ -39,9 +39,9 @@ Membros:    usuario3 senha usuario3
 
 
 def create_setores(session):
-    setores = [(40, 'Divisão 01', None),
-               (50, 'Equipe 01', 40),
-               (60, 'Equipe 02', 40)]
+    setores = [(40, 'Divisão Teste', None),
+               (50, 'Equipe A', 40),
+               (60, 'Equipe B', 40)]
     for linha in setores:
         setor = Setor()
         setor.id = linha[0]
@@ -52,8 +52,8 @@ def create_setores(session):
 
 
 def create_perfis(session):
-    perfis = [(1, 'tiberio', 2),  # Supervisor
-              (2, 'adriano', 2),  # Supervisor
+    perfis = [(1, 'geraldo', 2),  # Supervisor
+              (2, 'marcelo', 2),  # Supervisor
               (3, 'kanoo', 2)]    # Supervisor
 
     for linha in perfis:
@@ -65,13 +65,13 @@ def create_perfis(session):
 
 
 def create_usuarios(session):
-    usuarios = [('tiberio', 'tiberio', 40),
-                ('adriano', 'adriano', 50),
-                ('usuario1', 'usuario1', 50),
-                ('usuario2', 'usuario2', 50),
+    usuarios = [('carlos', 'carlos', 40),
+                ('erika', 'erika', 50),
+                ('usuarioA1', 'usuarioA1', 50),
+                ('usuarioA2', 'usuarioA2', 50),
                 ('kanoo', 'kanoo', 60),
-                ('usuario3', 'usuario3', 60),
-                ('usuario4', 'usuario4', 60)
+                ('usuarioB3', 'usuarioB3', 60),
+                ('usuarioB4', 'usuarioB4', 60)
                 ]
     for linha in usuarios:
         usuario = Usuario()
@@ -114,52 +114,52 @@ class OVRAppTestCase(BaseTestCase):
         #     fileout.write(str(rv.data))
 
     def recupera_perfil(self):
-        perfis = get_perfisusuario(self.session, 'adriano')
+        perfis = get_perfisusuario(self.session, 'erika')
 
     def test_a01(self):
-        # Adriano cria uma ficha limpa
-        # Atribui responsabilidade para usuario1 da sua equipe
+        # Erika cria uma ficha limpa
+        # Atribui responsabilidade para usuarioA1 da sua equipe
         # Verifica fichas do seu setor
-        self.login('adriano', 'adriano')
-        recinto = self.create_recinto('Recinto Alfândega')
+        self.login('erika', 'erika')
+        recinto = self.create_recinto('Wonderland')
         self.session.refresh(recinto)
         params = {'tipooperacao': 'Mercadoria Abandonada',
                   'numeroCEmercante': 'CE-123456789',
+                  'cnjp_fiscalizado': '12345678',
                   'recinto_id': recinto.id,
                   'adata': '2021-01-01',
                   'ahora': '13:15'}
-        ovr = self.create_OVR(params, 'adriano')
+        ovr = self.create_OVR(params, 'erika')
         self.session.refresh(ovr)
         ficha = self.app.get('/ovr?id=%s' % ovr.id)
         # with open('saida_tests.html', 'w') as fileout:
         #     fileout.write(str(rv.data))
         assert ficha.status_code == 200
-        assert ovr.id == 1
         assert ovr.tipooperacao == 'Mercadoria Abandonada'
         assert b'CE-123456789' in ficha.data
         assert ovr.fase == 0  # Iniciada
         assert ovr.tipoevento_id == 1  # Aguardando distribuição
-        assert ovr.user_name == 'adriano'
+        assert ovr.user_name == 'erika'
         assert ovr.cpfauditorresponsavel is None
         assert ovr.setor_id == '50'  # Equipe 01 - Setor do Adriano
         assert ovr.responsavel is None
-        ficha = self.app.get('/ovr?id=%s' % 1)
+        ficha = self.app.get('/ovr?id=%s' % ovr.id)
         text = str(ficha.data)
         responsavelovr_pos = text.find('action="responsavelovr"')
         responsavelovr_text = text[responsavelovr_pos:]
         token_text = self.get_token(responsavelovr_text)
         payload = {'csrf_token': token_text,
-                   'ovr_id': 1,
-                   'responsavel': 'usuario1'}
+                   'ovr_id': ovr.id,
+                   'responsavel': 'usuarioA1'}
         ficha = self.app.post('/responsavelovr', data=payload, follow_redirects=True)
-        assert b'usuario1' in ficha.data
+        assert b'usuarioA1' in ficha.data
         assert ovr.fase == 1  # Ativa
         assert ovr.tipoevento_id == 13  # Atribuição de responsável
         assert ovr.tipoevento.nome == 'Atribuição de responsável'
-        assert ovr.user_name == 'adriano'
+        assert ovr.user_name == 'erika'
         assert ovr.cpfauditorresponsavel is None
         assert ovr.setor_id == '50'  # Equipe 01 - Setor do Adriano
-        assert ovr.responsavel.nome == 'usuario1'
+        assert ovr.responsavel.nome == 'usuarioA1'
         soup = BeautifulSoup(ficha.data, features='lxml')
         table = soup.find('table', {'id': 'table_eventos'})
         rows = [str(row) for row in table.findAll("tr")]
