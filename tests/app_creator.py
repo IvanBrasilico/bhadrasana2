@@ -12,18 +12,17 @@ from bhadrasana.routes.ovr2 import ovr2_app
 from bhadrasana.routes.risco import risco_app
 from bhadrasana.routes.rvf import rvf_app
 from bhadrasana.views import app
-
-sys.path.append('.')
-
+from ajna_commons.flask.user import DBUser
 import ajna_commons.flask.login as login_ajna
 import virasana.integracao.mercante.mercantealchemy as mercante
-from ajna_commons.flask.user import DBUser
+import bhadrasana.models.laudo as laudo
+from mongomock.gridfs import enable_gridfs_integration
+
+sys.path.append('.')
 
 engine = create_engine('sqlite://')
 Session = sessionmaker(bind=engine)
 session = Session()
-from mongomock.gridfs import enable_gridfs_integration
-
 enable_gridfs_integration()
 mongodb = mongomock.MongoClient()
 
@@ -103,6 +102,9 @@ def create_tables(engine, session):
         mercante.metadata.tables['conhecimentosresumo']
     ])
     recintosapi_models.Base.metadata.create_all(engine)
+    laudo.metadata.create_all(engine, [
+        laudo.metadata.tables['laudo_empresas'],
+    ])
 
 
 def drop_tables(engine):

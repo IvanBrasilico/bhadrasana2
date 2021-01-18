@@ -1,39 +1,37 @@
 import sys
+from datetime import datetime, date
 
-from bs4 import BeautifulSoup
+from virasana.integracao.mercante import mercante, mercantealchemy
+
+from bhadrasana.models.ovrmanager import get_ovr_responsavel, get_ovr
 
 sys.path.append('.')
 sys.path.append('../virasana')
 sys.path.append('../ajna_docs/commons')
 sys.path.insert(0, '../ajna_api')
 
-import virasana.integracao.mercante.mercantealchemy as mercante
-from ajnaapi.recintosapi import models as recintosapi_models
-from bhadrasana.models.rvf import create_infracoes
-
-sys.path.append('.')
-
-from tests.app_creator import app, engine, session
+from tests.app_creator import app, session, drop_tables, engine
 from bhadrasana.models import Setor, Usuario, PerfilUsuario, get_perfisusuario
-from bhadrasana.models.ovr import metadata, create_tiposevento, create_tiposprocesso, create_flags, create_marcas
-
+from bs4 import BeautifulSoup
+from bhadrasana.models.laudo import Empresa
 from .test_base import BaseTestCase
+from virasana.integracao.mercante.mercantealchemy import metadata
 
 SECRET = 'teste'
 
 """
 Divisão:    Divisão Teste
-Chefe:      geraldo senha geraldo
+Chefe:      carlos senha carlos
 
 Equipe:     Equipe A
-Chefe:      marcelo senha marcelo
-Membros:    usuario1 senha usuario1
-            usuario2 senha usuario2
+Chefe:      erika senha erika
+Membros:    usuarioA1 senha usuarioA1
+            usuarioA2 senha usuarioA2
             
 Equipe:     Equipe B
 Chefe:      kanoo senha kanoo
-Membros:    usuario3 senha usuario3
-            usuario4 senha usuario4
+Membros:    usuarioB3 senha usuarioB3
+            usuarioB4 senha usuarioB4
             
 """
 
@@ -54,7 +52,7 @@ def create_setores(session):
 def create_perfis(session):
     perfis = [(1, 'geraldo', 2),  # Supervisor
               (2, 'marcelo', 2),  # Supervisor
-              (3, 'kanoo', 2)]    # Supervisor
+              (3, 'kanoo', 2)]  # Supervisor
 
     for linha in perfis:
         perfil = PerfilUsuario()
@@ -83,12 +81,28 @@ def create_usuarios(session):
     session.commit()
 
 
+def create_empresas(session):
+    empresas = [(1, '04175124000169', 'Empresa de teste')]
+    for linha in empresas:
+        empresa = Empresa()
+        empresa.id = linha[0]
+        empresa.cnpj = linha[1]
+        empresa.nome = linha[2]
+        session.add(empresa)
+    session.commit()
+
+
 create_setores(session)
 create_perfis(session)
 create_usuarios(session)
+create_empresas(session)
 
 
 class OVRAppTestCase(BaseTestCase):
+
+    def render_page(self, content):
+        with open('saida_tests.html', 'w') as fileout:
+            fileout.write(content)
 
     def setUp(self) -> None:
         super().setUp(session)
@@ -109,7 +123,6 @@ class OVRAppTestCase(BaseTestCase):
                                            'username': username,
                                            'senha': senha},
                            follow_redirects=True)
-        # print('>>>>>>>>>>>>>>', rv, rv.data, rv.status_code)
         # with open('saida_login.html', 'w') as fileout:
         #     fileout.write(str(rv.data))
 
@@ -124,19 +137,18 @@ class OVRAppTestCase(BaseTestCase):
         recinto = self.create_recinto('Wonderland')
         self.session.refresh(recinto)
         params = {'tipooperacao': 'Mercadoria Abandonada',
-                  'numeroCEmercante': 'CE-123456789',
-                  'cnjp_fiscalizado': '12345678',
+                  'numeroCEmercante': 'CE-123456789AAB',
+                  'cnpj_fiscalizado': '04175124000169',
+                  'numerodeclaracao': '111222333444',
                   'recinto_id': recinto.id,
                   'adata': '2021-01-01',
                   'ahora': '13:15'}
         ovr = self.create_OVR(params, 'erika')
         self.session.refresh(ovr)
         ficha = self.app.get('/ovr?id=%s' % ovr.id)
-        # with open('saida_tests.html', 'w') as fileout:
-        #     fileout.write(str(rv.data))
         assert ficha.status_code == 200
         assert ovr.tipooperacao == 'Mercadoria Abandonada'
-        assert b'CE-123456789' in ficha.data
+        assert b'CE-123456789AAB' in ficha.data
         assert ovr.fase == 0  # Iniciada
         assert ovr.tipoevento_id == 1  # Aguardando distribuição
         assert ovr.user_name == 'erika'
@@ -145,6 +157,7 @@ class OVRAppTestCase(BaseTestCase):
         assert ovr.responsavel is None
         ficha = self.app.get('/ovr?id=%s' % ovr.id)
         text = str(ficha.data)
+        # self.render_page(text)
         responsavelovr_pos = text.find('action="responsavelovr"')
         responsavelovr_text = text[responsavelovr_pos:]
         token_text = self.get_token(responsavelovr_text)
@@ -165,11 +178,123 @@ class OVRAppTestCase(BaseTestCase):
         rows = [str(row) for row in table.findAll("tr")]
         assert len(rows) == 2
         ficha_setores = self.app.get('/ovrs_meus_setores')
-        with open('saida_tests.html', 'w') as fileout:
-            fileout.write(str(ficha_setores.data))
         assert ficha_setores.status_code == 200
         soup = BeautifulSoup(ficha_setores.data, features='lxml')
         table = soup.find('table', {'id': 'minhas_ovrs_table'})
+        # self.render_page(str(soup))
         rows = [str(row) for row in table.findAll("tr")]
         assert len(rows) == 2
 
+        # usuarioA1 cria nova ficha com o mesmo CNPJ, Número declaração e CE
+        self.login('usuarioA1', 'usuarioA1')
+        params = {'tipooperacao': 'Mercadoria Abandonada',
+                  'numeroCEmercante': 'CE-123456789AAB',
+                  'cnpj_fiscalizado': '04175124000169',
+                  'numerodeclaracao': '111222333444',
+                  'recinto_id': recinto.id,
+                  'adata': '2021-01-14',
+                  'ahora': '09:40'}
+        ovr = self.create_OVR(params, 'usuarioA1')
+        self.session.refresh(ovr)
+        ficha = self.app.get('/ovr?id=%s' % ovr.id)
+        soup = BeautifulSoup(ficha.data, features='lxml')
+        # self.render_page(str(soup))
+        assert 'Atenção!!! CE-Mercante já possui Fichas:' in str(soup)
+        assert 'Atenção!!! DUE já possui Fichas:' in str(soup)
+        assert 'Empresa (mostrando 6 meses, utilize pesquisa empresa para ver mais)' in str(soup)
+
+    def test_a02(self):
+        # usuarioB3 cria uma ficha limpa
+        # Define usuarioB4 como auditor responsável para ficha
+        self.login('usuarioB3', 'usuarioB3')
+        params = {'tipooperacao': 'Análise de risco na importação',
+                  'numeroCEmercante': '987654321AABBCC',
+                  'recinto_id': 2,
+                  'setor_id': '2',
+                  'numerodeclaracao': '1010101010',
+                  'adata': '2020-01-15',
+                  'ahora': '09:15',
+                  'dataentrada': date(year=2021, month=6, day=20)}
+        ovr = self.create_OVR(params, 'usuarioB3')
+        self.session.refresh(ovr)
+        ficha = self.app.get('/ovr?id=%s' % ovr.id)
+        # self.render_page(str(ficha.data))
+        assert ficha.status_code == 200
+        text = str(ficha.data)
+        token_text = self.get_token(text)
+        payload = {'csrf_token': token_text,
+                   'ovr_id': ovr.id,
+                   'responsavel': 'usuarioB4'
+                   }
+        ficha = self.app.post('/auditorresponsavelovr', data=payload, follow_redirects=True)
+        # self.render_page(str(ficha.data))
+        assert ficha.status_code == 200
+        assert ovr.cpfauditorresponsavel == 'usuarioB4'
+
+    def test_a03(self):
+        # Carlos cria uma ficha limpa
+        # Atribui responsabilidade para usuarioB4 da Equipe B
+        # usuarioB4 arquiva a ficha
+        self.login('carlos', 'carlos')
+        params = {'tipooperacao': 'Mercadoria Abandonada',
+                  'adata': '2021-01-01',
+                  'ahora': '13:15'}
+        ovr = self.create_OVR(params, 'carlos')
+        self.session.refresh(ovr)
+        ficha = self.app.get('/ovr?id=%s' % ovr.id)
+        assert ficha.status_code == 200
+        assert ovr.fase == 0  # Iniciada
+        assert ovr.tipoevento_id == 1  # Aguardando distribuição
+        assert ovr.user_name == 'carlos'
+        assert ovr.responsavel is None
+        ficha = self.app.get('/ovr?id=%s' % ovr.id)
+        text = str(ficha.data)
+        # self.render_page(text)
+        responsavelovr_pos = text.find('action="responsavelovr"')
+        responsavelovr_text = text[responsavelovr_pos:]
+        token_text = self.get_token(responsavelovr_text)
+        payload = {'csrf_token': token_text,
+                   'ovr_id': ovr.id,
+                   'responsavel': 'usuarioB4'}
+        ficha = self.app.post('/responsavelovr', data=payload, follow_redirects=True)
+        assert b'usuarioB4' in ficha.data
+        assert ovr.fase == 1  # Ativa
+        assert ovr.tipoevento_id == 13  # Atribuição de responsável
+        assert ovr.tipoevento.nome == 'Atribuição de responsável'
+        assert ovr.user_name == 'carlos'
+        assert ovr.responsavel.nome == 'usuarioB4'
+
+        # Usuário B4 arquiva a ficha
+        self.login('usuarioB4', 'usuarioB4')
+        ficha = self.app.get('/ovr?id=%s' % ovr.id)
+        text = str(ficha.data)
+        token_text = self.get_token(responsavelovr_text)
+        payload = {'csrf_token': token_text,
+                   'ovr_id': ovr.id,
+                   'tipoevento_id': '12'}
+        ficha = self.app.post('/eventoovr', data=payload, follow_redirects=True)
+        self.render_page(str(ficha.data))
+        assert ovr.fase == 4  # Arquivada
+        assert ovr.tipoevento_id == 12  # Arquivamento
+        assert ovr.tipoevento.nome == 'Arquivamento'
+        assert ovr.responsavel.nome == 'usuarioB4'
+
+
+    def test_z01(self):
+        # Kanoo cria uma ficha limpa
+        # Retona erro
+        self.login('kanoo', 'kanoo')
+        params = {'tipooperacao': 'Mercadoria Abandonada',
+                  'numeroCEmercante': '1222333444555AB',
+                  'recinto_id': 1,
+                  'numerodeclaracao': '111222333444',
+                  'adata': '2021-01-14',
+                  'ahora': '11:25'}
+        ovr = self.create_OVR(params, 'kanoo')
+        self.session.refresh(ovr)
+        mercantealchemy.metadata.drop_all(engine, [
+            mercantealchemy.metadata.tables['conhecimentosresumo']
+        ])
+        ficha = self.app.get('/ovr?id=%s' % ovr.id)
+        # self.render_page(str(ficha.data))
+        assert ficha.status_code == 200
