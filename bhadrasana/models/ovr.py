@@ -658,7 +658,7 @@ def create_flags(session):
 
 def create_tiposevento(session):
     """Cria dados da tabela básica de Eventos"""
-    fases = [0, 1, 2, 2, 2, 2, 2, 1, 2, 1, 2, 3, 4]
+    fases = [0, 1, 2, 2, 2, 2, 2, 1, 2, 1, 2, 4]
     for nome, fase in zip(tipoStatusOVR, fases):
         evento = TipoEventoOVR()
         evento.nome = nome

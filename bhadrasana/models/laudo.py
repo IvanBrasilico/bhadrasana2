@@ -12,6 +12,7 @@ sys.path.insert(0, '../ajna_docs/commons')
 sys.path.insert(0, '../virasana')
 
 Base = declarative_base()
+metadata = Base.metadata
 
 
 class Empresa(Base, BaseDumpable):
