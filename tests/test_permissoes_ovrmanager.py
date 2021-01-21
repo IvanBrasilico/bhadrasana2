@@ -15,7 +15,7 @@ from bhadrasana.models.ovr import metadata, create_tiposevento, create_tiposproc
     create_tipomercadoria, create_marcas
 
 from bhadrasana.models.ovrmanager import gera_processoovr, atribui_responsavel_ovr, excluir_processo, libera_ovr, \
-    lista_tgovr, cadastra_tgovr
+    lista_tgovr, cadastra_tgovr, muda_setor_ovr
 from virasana.integracao.mercante import mercantealchemy
 
 warnings.simplefilter('ignore')
@@ -264,7 +264,6 @@ class OVRPermissoesTestCase(BaseTestCase):
 
 
     # TODO: testes de:
-    #  Transferir para outro Setor (muda_setor_ovr),
     #  Lavratura do AI (informa_lavratura_auto),
     #  Informar Evento (gera_eventoovr),
     #  ItensTG,
@@ -364,6 +363,65 @@ class OVRPermissoesTestCase(BaseTestCase):
         lista_tgs = lista_tgovr(session, ovr.id)
         assert len(lista_tgs) == 2
 
+    #  Transferir para outro Setor (muda_setor_ovr),
+    def test_transferir_para_outro_setor(self):
+        setor10 = self.create_setor('10', 'Setor 10', 20)
+        setor20 = self.create_setor('20', 'Setor 20')
+        user10 = self.create_usuario('user_10', 'Usuario 10', setor10)
+        user20 = self.create_usuario('user_20', 'Usuario 20', setor20)
+        ovr = self.create_OVR_valido()
+        ovr.setor_id = '10'
+        session.add(ovr)
+        session.commit()
+        session.refresh(ovr)
+        assert ovr.setor_id == '10'
+        # Atribui OVR ao user_10
+        evento = atribui_responsavel_ovr(session, ovr.id, 'user_10', None)
+        assert ovr.responsavel_cpf == 'user_10'
+        # User_10 muda OVR para Setor 20
+        ovr = muda_setor_ovr(session, ovr.id, setor20.id, user10.cpf)
+        assert ovr.setor_id == '20'
+        assert ovr.responsavel_cpf is None
+        # User_20 autoatribui a ficha que está no setor dele e sem responsável.
+        evento = atribui_responsavel_ovr(session, ovr.id, 'user_20', None)
+        assert ovr.responsavel_cpf == 'user_20'
+        # User_10 tenta alterar o setor para 10 e dá erro
+        with self.assertRaises(ESomenteUsuarioResponsavel):
+            ovr = muda_setor_ovr(session, ovr.id, setor10.id, user10.cpf)
+        # User_20 muda OVR para Setor 10, ficha fica sem responsavel
+        ovr = muda_setor_ovr(session, ovr.id, setor10.id, user20.cpf)
+        assert ovr.setor_id == '10'
+        assert ovr.responsavel_cpf is None
+        # User_20 pode mudar a OVR que está no setor10 para setor 20 e ficha continua sem responsável
+        ovr = muda_setor_ovr(session, ovr.id, setor20.id, user20.cpf)
+        assert ovr.setor_id == '20'
+        assert ovr.responsavel_cpf is None
+        # User_10 pode mudar a OVR que está no setor20 para setor 10 e ficha continua sem responsável
+        ovr = muda_setor_ovr(session, ovr.id, setor10.id, user10.cpf)
+        assert ovr.setor_id == '10'
+        assert ovr.responsavel_cpf is None
+        # Conclusão, como a ficha fica sem responsável, qualquer usuário pode movê-la
+        # entre os setores.
+        # Se a ficha estiver atribuída a um usuário, nem o supervisor consegue mudar de setor
+        perfilusuario = PerfilUsuario()
+        perfilusuario.cpf = 'user_20'
+        perfilusuario.perfil = Enumerado.get_id(perfilAcesso, 'Supervisor')
+        session.add(perfilusuario)
+        session.commit()
+        # assert user20.perfis[0].perfil == 2  # perfil de supervisor
+        # User_10 se autoatribui
+        evento = atribui_responsavel_ovr(session, ovr.id, 'user_10', None)
+        assert ovr.responsavel_cpf == 'user_10'
+        # User_2 que é supervisor não consegue mudar a ficha para setor 20
+        with self.assertRaises(ESomenteUsuarioResponsavel):
+            ovr = muda_setor_ovr(session, ovr.id, setor20.id, user20.cpf)
+        assert ovr.setor_id == '10'
+        # User_2 que é supervisor tem que atribuir a ficha a si para poder mudar de setor
+        evento = atribui_responsavel_ovr(session, ovr.id, 'user_20', 'user_20')
+        assert ovr.responsavel_cpf == 'user_20'
+        ovr = muda_setor_ovr(session, ovr.id, setor20.id, user20.cpf)
+        assert ovr.setor_id == '20'
+        assert ovr.responsavel_cpf is None
 
 
 if __name__ == '__main__':
