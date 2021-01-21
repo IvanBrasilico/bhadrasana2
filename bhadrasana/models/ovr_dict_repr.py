@@ -103,10 +103,21 @@ class OVRDict():
                 due_str = f'{k}: {v}\n'
             rvf_dump['resumo_due'] = due_str
         if ovr.numeroCEmercante:
+            porto_origem = exibicao.get_mercante_resumo(ovr)[2][24:]
+            porto_destino = exibicao.get_mercante_resumo(ovr)[3][31:]
+            rvf_dump['porto_origem'] = porto_origem
+            rvf_dump['porto_destino'] = porto_destino
             resumo_mercante = exibicao.get_mercante_resumo(ovr)
             resumo_mercante = '\n'.join(resumo_mercante)
             resumo_mercante = re.sub(re.compile('<.*?>'), ' ', resumo_mercante)
             rvf_dump['resumo_mercante'] = resumo_mercante
+        imagens_rvf = sorted(rvf_dump['imagens'], key=lambda x: x['ordem'])
+        lista_imagens = []
+        for imagem_dict in imagens_rvf:
+            image = mongo_image(db, imagem_dict['imagem'])
+            imagem_dict['content'] = io.BytesIO(image)
+            lista_imagens.append(imagem_dict)
+        rvf_dump['imagens'] = lista_imagens
         return rvf_dump
 
     def monta_tgovr_dict(self, db, session, id: int) -> dict:
