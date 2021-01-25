@@ -2,14 +2,15 @@
 import os
 from datetime import datetime
 
+from ajna_commons.flask.log import logger
+from ajna_commons.utils.docx_utils import get_doc_generico_ovr
 from flask import request, flash, render_template, url_for
 from flask_login import login_required, current_user
 from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.utils import redirect
 
-from ajna_commons.flask.log import logger
-from ajna_commons.utils.docx_utils import get_doc_generico_ovr
 from bhadrasana.docx.docx_functions import gera_comunicado_contrafacao, gera_auto_contrafacao
+from bhadrasana.forms.encerramento_ovr import EncerramentoOVRForm
 from bhadrasana.forms.exibicao_ovr import ExibicaoOVR, TipoExibicao
 from bhadrasana.forms.ovr import FiltroDocxForm, ModeloDocxForm, HistoricoOVRForm
 from bhadrasana.models import get_usuario, usuario_tem_perfil_nome
@@ -319,3 +320,27 @@ def ovr2_app(app):
             flash(str(type(err)))
             flash(str(err))
         return redirect(url_for('autos_contrafacao', ovr_id=ovr_id))
+
+    @app.route('/encerramento_ovr', methods=['GET', 'POST'])
+    @login_required
+    def encerramento_ovr():
+        session = app.config.get('dbsession')
+        ovr_id = request.args.get('ovr_id')
+        encerramento_form = EncerramentoOVRForm(ovr_id)
+        try:
+            usuario = get_usuario(session, current_user.name)
+            if usuario is None:
+                raise Exception('Erro: Usuário não encontrado!')
+            if request.method == 'POST':
+                encerramento_form = EncerramentoOVRForm(request.form)
+                # evento = gera_encerramentovr(session, dict(encerramento_form.data.items()),
+                #                    user_name=usuario.cpf)
+                # ovr_id = evento.ovr_id
+                return redirect(url_for('encerramento_ovr', ovr_id=ovr_id))
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return render_template('encerramento_ovr.html',
+                               encerramento_form=encerramento_form)
