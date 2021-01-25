@@ -1,9 +1,7 @@
 import sys
-from datetime import datetime, date
+from datetime import date
 
-from virasana.integracao.mercante import mercante, mercantealchemy
-
-from bhadrasana.models.ovrmanager import get_ovr_responsavel, get_ovr
+from virasana.integracao.mercante import mercantealchemy
 
 sys.path.append('.')
 sys.path.append('../virasana')
@@ -15,7 +13,6 @@ from bhadrasana.models import Setor, Usuario, PerfilUsuario, get_perfisusuario
 from bs4 import BeautifulSoup
 from bhadrasana.models.laudo import Empresa
 from .test_base import BaseTestCase
-from virasana.integracao.mercante.mercantealchemy import metadata
 
 SECRET = 'teste'
 
@@ -50,8 +47,8 @@ def create_setores(session):
 
 
 def create_perfis(session):
-    perfis = [(1, 'geraldo', 2),  # Supervisor
-              (2, 'marcelo', 2),  # Supervisor
+    perfis = [(1, 'carlos', 2),  # Supervisor
+              (2, 'erika', 2),  # Supervisor
               (3, 'kanoo', 2)]  # Supervisor
 
     for linha in perfis:
@@ -119,7 +116,7 @@ class OVRAppTestCase(BaseTestCase):
         rv = self.app.get('/login')
         assert rv.data is not None
         token_text = self.get_token(str(rv.data))
-        rv = self.app.post('/login', data={'csrf_token': token_text,
+        return self.app.post('/login', data={'csrf_token': token_text,
                                            'username': username,
                                            'senha': senha},
                            follow_redirects=True)
@@ -133,7 +130,8 @@ class OVRAppTestCase(BaseTestCase):
         # Erika cria uma ficha limpa
         # Atribui responsabilidade para usuarioA1 da sua equipe
         # Verifica fichas do seu setor
-        self.login('erika', 'erika')
+        login = self.login('erika', 'erika')
+        assert b'erika' in login.data
         recinto = self.create_recinto('Wonderland')
         self.session.refresh(recinto)
         params = {'tipooperacao': 'Mercadoria Abandonada',
@@ -279,6 +277,19 @@ class OVRAppTestCase(BaseTestCase):
         assert ovr.tipoevento.nome == 'Arquivamento'
         assert ovr.responsavel.nome == 'usuarioB4'
 
+    def test_a04(self):
+        # Carlos consulta uma ficha
+        self.login('carlos', 'carlos')
+        ficha = self.app.get('/ovr/id=1')
+        assert ficha.status_code == 200
+
+    # def test_a05(self):
+    #     # Usuário não encontrado ao acessar Pesquisa OVR
+    #     login = self.login('usuarioNone', 'usuarioNone')
+    #     assert b'usuarioNone' in login.data
+    #     fichas = self.app.get('/pesquisa_ovr')
+    #     assert fichas.status_code == 200
+
 
     def test_z01(self):
         # Kanoo cria uma ficha limpa
@@ -298,3 +309,21 @@ class OVRAppTestCase(BaseTestCase):
         ficha = self.app.get('/ovr?id=%s' % ovr.id)
         # self.render_page(str(ficha.data))
         assert ficha.status_code == 200
+
+    def test_z02(self):
+        # Carlos cria uma ficha limpa
+        # Retona outro erro
+        self.login('carlos', 'carlos')
+        params = {'tipooperacao': 'Mercadoria Abandonada',
+                  'adata': '2021-01-25',
+                  'ahora': '09:25'}
+        ovr = self.create_OVR(params, 'carlos')
+        self.session.refresh(ovr)
+        drop_tables(engine)
+        ficha = self.app.get('/ovr?id=%s' % ovr.id)
+        # self.render_page(str(ficha.data))
+        assert ficha.status_code == 200
+        inclui_flag = self.app.get('/inclui_flag_ovr')
+        assert inclui_flag.status_code == 500
+        exclui_flag = self.app.get('/exclui_flag_ovr')
+        assert exclui_flag.status_code == 500
