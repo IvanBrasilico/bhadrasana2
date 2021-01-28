@@ -399,13 +399,14 @@ def ovr_app(app):
                                responsavel_form=responsavel_form,
                                historico_form=historico_ovr_form)
 
+    # telegram - Minhas Fichas
     @app.route('/minhas_fichas_text', methods=['GET'])
     def minhas_fichas_text():
         session = app.config.get('dbsession')
         try:
             # TODO: Login substituir cpf por current_user
             cpf = request.args['cpf']
-            ovrs = get_ovr_responsavel(session, cpf)
+            ovrs = get_ovr_responsavel(session, cpf, False)
             if len(ovrs) == 0:
                 result = 'Sem Fichas atribuídas para o Usuário {}'.format(cpf)
             else:
@@ -1265,6 +1266,7 @@ def ovr_app(app):
             return 'Erro! Detalhes no log da aplicação.' + str(err)
         return jsonify(result), 200
 
+    # telegram - Mostra Ficha
     @app.route('/get_ovr/<ovr_id>', methods=['GET'])
     def json_ovr(ovr_id):
         session = app.config.get('dbsession')
