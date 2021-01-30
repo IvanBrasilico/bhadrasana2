@@ -13,7 +13,7 @@ sys.path.append('.')
 
 from bhadrasana.models import Setor, Usuario, PerfilUsuario, perfilAcesso
 from bhadrasana.models.ovr import metadata, Enumerado, create_tiposevento, create_tiposprocesso, create_flags, Flag, \
-    Relatorio, create_tipomercadoria, create_marcas, Marca, ItemTG, VisualizacaoOVR, OVR, ProcessoOVR
+    Relatorio, create_tipomercadoria, create_marcas, Marca, ItemTG, VisualizacaoOVR, OVR, ProcessoOVR, TGOVR
 
 from bhadrasana.models.ovrmanager import gera_eventoovr, \
     gera_processoovr, cadastra_tgovr, atribui_responsavel_ovr, get_setores_filhos_recursivo, get_tipos_evento, \
@@ -528,6 +528,38 @@ class OVRTestCase(BaseTestCase):
         print(ovr2.numeroCEmercante)
         print(rvf.numeroCEmercante, rvf.ovr_id)
         assert len(ovrs) == 2
+
+    def test_01_FiltrosOVR_temtg(self):
+        setor1 = Setor()
+        setor1.id = 567567
+        setor1.nome = 'Setor 567'
+        session.add(setor1)
+        ovr1 = self.create_OVR_campos('R1', 'U1', 'C1', '2020-05-01', 'teste1', setor1)
+        try:
+            session.refresh(ovr1)
+            ovrs = get_ovr_filtro(session, {})
+            assert isinstance(ovrs, list)
+            assert len(ovrs) == 1
+            ovrs = get_ovr_filtro(session, {'temtg': True})
+            assert isinstance(ovrs, list)
+            assert len(ovrs) == 0
+            tgovr = TGOVR()
+            tgovr.qtde = 10
+            tgovr.valor = 100
+            tgovr.afrfb = ovr1.user_name
+            tgovr.numerolote = '1234'
+            tgovr.descricao = 'nonono'
+            tgovr.ovr_id = ovr1.id
+            session.add(tgovr)
+            session.commit()
+            ovrs = get_ovr_filtro(session, {'temtg': True})
+            assert isinstance(ovrs, list)
+            assert len(ovrs) == 1
+        finally:
+            session.delete(tgovr)
+            session.delete(ovr1)
+            session.commit()
+
 
     def test_get_ovr_empresa(self):
         ovr = self.create_OVR_valido()

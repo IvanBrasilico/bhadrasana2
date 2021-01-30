@@ -347,6 +347,7 @@ def temapreensaofiltro(pfiltro, tables, filtro):
         tables.extend([RVF, ApreensaoRVF])
     return tables, filtro
 
+
 def temtgfiltro(pfiltro, tables, filtro):
     print('***********************temtgfiltro',
           pfiltro.get('temtg'), type(pfiltro.get('temtg')))
