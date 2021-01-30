@@ -80,6 +80,8 @@ class FiltroOVRForm(FlaskForm):
     usuarioevento = SelectField('tipoevento', default=None)
     tipoexibicao = SelectField('Campos a serem exibidos na tela', default=1)
     agruparpor = SelectField('tipoevento', default=None)
+    temapreensao = BooleanField(default=False)
+    temtg = BooleanField(default=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
