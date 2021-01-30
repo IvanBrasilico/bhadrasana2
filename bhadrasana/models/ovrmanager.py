@@ -28,6 +28,7 @@ from bhadrasana.models import Usuario, Setor, EBloqueado, ESomenteUsuarioRespons
     usuario_tem_perfil_nome, ENaoAutorizado
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto, \
     get_usuario_validando
+from bhadrasana.models.filtros_ficha import FiltrosFicha
 from bhadrasana.models.laudo import get_empresa
 from bhadrasana.models.ovr import FonteDocx, Representacao, RepresentanteMarca, Assistente, \
     TiposEventoAssistente
@@ -35,7 +36,7 @@ from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
     TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria, \
     EventoEspecial, Flag, Relatorio, RoteiroOperacaoOVR, flags_table, VisualizacaoOVR, \
     OKRObjective, OKRResultMeta, OKRResult, ModeloDocx
-from bhadrasana.models.rvf import Infracao, infracoesencontradas_table, RVF, ApreensaoRVF
+from bhadrasana.models.rvf import Infracao, infracoesencontradas_table, RVF
 from bhadrasana.models.virasana_manager import get_conhecimento
 from virasana.integracao.mercante.mercantealchemy import Item
 
@@ -339,24 +340,6 @@ def get_ovr_due(session, numero: str) -> Set[int]:
     return set([ovr.id for ovr in ovrs_due])
 
 
-def temapreensaofiltro(pfiltro, tables, filtro):
-    print('************************temapreensaofiltro',
-          pfiltro.get('temapreensao'), type(pfiltro.get('temapreensao')))
-    if pfiltro and pfiltro.get('temapreensao'):
-        filtro = and_(ApreensaoRVF.id.isnot(None), filtro)
-        tables.extend([RVF, ApreensaoRVF])
-    return tables, filtro
-
-
-def temtgfiltro(pfiltro, tables, filtro):
-    print('***********************temtgfiltro',
-          pfiltro.get('temtg'), type(pfiltro.get('temtg')))
-    if pfiltro and pfiltro.get('temtg'):
-        filtro = and_(TGOVR.id.isnot(None), filtro)
-        tables.extend([TGOVR])
-    return tables, filtro
-
-
 def get_ovr_filtro(session,
                    pfiltro: dict = None,
                    user_name: str = None,
@@ -430,8 +413,11 @@ def get_ovr_filtro(session,
             numerolimpo = ''.join([s for s in numeroprocesso if s.isnumeric()])
             filtro = and_(ProcessoOVR.numerolimpo.like('%' + numerolimpo + '%'), filtro)
             tables.append(ProcessoOVR)
-        tables, filtro = temapreensaofiltro(pfiltro, tables, filtro)
-        tables, filtro = temtgfiltro(pfiltro, tables, filtro)
+        # TODO: Passar todos os ifs para métodos da classe FiltrosFicha
+        filtros_ficha = FiltrosFicha(pfiltro, tables, filtro)
+        filtros_ficha.process()
+        tables = filtros_ficha.tables
+        filtro = filtros_ficha.filtro
     logger.info('get_ovr_filtro - pfiltro' + str(pfiltro))
     logger.info('get_ovr_filtro - filtro' + str(filtro))
     q = session.query(OVR)
