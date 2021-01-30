@@ -418,13 +418,18 @@ def get_ovr_filtro(session,
         filtros_ficha.process()
         tables = filtros_ficha.tables
         filtro = filtros_ficha.filtro
+        print(tables)
     logger.info('get_ovr_filtro - pfiltro' + str(pfiltro))
     logger.info('get_ovr_filtro - filtro' + str(filtro))
     q = session.query(OVR)
     if len(tables) > 0:
-        tables = set(tables)
+        already_in_join = set()
         for table in tables:
+            print('******', table)
+            if table in already_in_join:
+                continue
             q = q.join(table, isouter=True)
+            already_in_join.add(table)
         # ovrs = q.filter(filtro).limit(100).all()
     logger.info('get_ovr_filtro - query' + str(q))
     ovrs = q.filter(filtro).limit(limit).all()
