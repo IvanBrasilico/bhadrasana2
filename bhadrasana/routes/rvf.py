@@ -294,6 +294,7 @@ def rvf_app(app):
             inclui_imagemrvf(db, session, content, file.filename, rvf_id)
         return redirect(url_for('rvf', id=rvf_id))
 
+    # telegram - upload_foto
     @csrf.exempt
     @app.route('/api/rvf_imgupload', methods=['POST'])
     def api_rvf_imgupload():
@@ -488,6 +489,7 @@ def rvf_app(app):
             return jsonify({'success': False, 'msg': str(err)}), 500
         return jsonify(arvf.dump()), 200
 
+    # telegram - edita_descricao_ficha
     @app.route('/edita_descricao_rvf', methods=['POST'])
     @csrf.exempt
     def edita_descricao_rvf():
@@ -518,6 +520,37 @@ def rvf_app(app):
         except Exception as err:
             logger.error(err, exc_info=True)
             return 'Erro! Detalhes no log da aplicação. ' + str(err), 500
+
+    # telegram - Inclui descrição e peso na apreensão
+    @app.route('/inclui_apreensao_rvf', methods=['POST'])
+    @csrf.exempt
+    def inclui_apreensao_rvf():
+        session = app.config.get('dbsession')
+        params = {}
+        try:
+            rvf_id = request.form.get('rvf_id')
+        except TypeError:
+            raise TypeError('Informe o id do RVF')
+        except ValueError:
+            raise ValueError('Informe id do RVF somente com números')
+        params['rvf_id'] = rvf_id
+        try:
+            tipoapreensao = request.form.get('tipoapreensao')
+            descricao = request.form.get('descricao')
+            peso = request.form.get('peso')
+            if descricao:
+                params['descricao'] = descricao
+            if peso:
+                params['peso'] = peso
+            params['tipo_id'] = tipoapreensao
+            gera_apreensao_rvf(session, params)
+            return jsonify({'msg': 'Sucesso!'}), 201
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return redirect(url_for('rvf', id=rvf_id))
 
     @app.route('/rvf/new', methods=['POST'])
     @csrf.exempt
