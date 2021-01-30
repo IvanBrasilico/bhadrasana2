@@ -340,10 +340,19 @@ def get_ovr_due(session, numero: str) -> Set[int]:
 
 
 def temapreensaofiltro(pfiltro, tables, filtro):
-    print('************************', pfiltro.get('temapreensao'), type(pfiltro.get('temapreensao')))
+    print('************************temapreensaofiltro',
+          pfiltro.get('temapreensao'), type(pfiltro.get('temapreensao')))
     if pfiltro and pfiltro.get('temapreensao'):
         filtro = and_(ApreensaoRVF.id.isnot(None), filtro)
         tables.extend([RVF, ApreensaoRVF])
+    return tables, filtro
+
+def temtgfiltro(pfiltro, tables, filtro):
+    print('***********************temtgfiltro',
+          pfiltro.get('temtg'), type(pfiltro.get('temtg')))
+    if pfiltro and pfiltro.get('temtg'):
+        filtro = and_(TGOVR.id.isnot(None), filtro)
+        tables.extend([TGOVR])
     return tables, filtro
 
 
@@ -421,6 +430,7 @@ def get_ovr_filtro(session,
             filtro = and_(ProcessoOVR.numerolimpo.like('%' + numerolimpo + '%'), filtro)
             tables.append(ProcessoOVR)
         tables, filtro = temapreensaofiltro(pfiltro, tables, filtro)
+        tables, filtro = temtgfiltro(pfiltro, tables, filtro)
     logger.info('get_ovr_filtro - pfiltro' + str(pfiltro))
     logger.info('get_ovr_filtro - filtro' + str(filtro))
     q = session.query(OVR)
