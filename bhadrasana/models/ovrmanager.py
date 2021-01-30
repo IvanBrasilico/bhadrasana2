@@ -425,7 +425,6 @@ def get_ovr_filtro(session,
     if len(tables) > 0:
         already_in_join = set()
         for table in tables:
-            print('******', table)
             if table in already_in_join:
                 continue
             q = q.join(table, isouter=True)
