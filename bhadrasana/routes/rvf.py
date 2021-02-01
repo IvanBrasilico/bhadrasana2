@@ -522,9 +522,9 @@ def rvf_app(app):
             return 'Erro! Detalhes no log da aplicação. ' + str(err), 500
 
     # telegram - Inclui descrição e peso na apreensão
-    @app.route('/inclui_apreensao_rvf', methods=['POST'])
+    @app.route('/api/inclui_apreensao_rvf', methods=['POST'])
     @csrf.exempt
-    def inclui_apreensao_rvf():
+    def api_inclui_apreensao_rvf():
         session = app.config.get('dbsession')
         params = {}
         try:
@@ -547,10 +547,8 @@ def rvf_app(app):
             return jsonify({'msg': 'Sucesso!'}), 201
         except Exception as err:
             logger.error(err, exc_info=True)
-            flash('Erro! Detalhes no log da aplicação.')
-            flash(str(type(err)))
-            flash(str(err))
-        return redirect(url_for('rvf', id=rvf_id))
+            return jsonify({'msg': 'Erro: %s' % str(err)}), 500
+
 
     @app.route('/rvf/new', methods=['POST'])
     @csrf.exempt
