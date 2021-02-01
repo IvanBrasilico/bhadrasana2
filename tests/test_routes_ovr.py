@@ -151,7 +151,7 @@ class OVRAppTestCase(BaseTestCase):
         assert ovr.tipoevento_id == 1  # Aguardando distribuição
         assert ovr.user_name == 'erika'
         assert ovr.cpfauditorresponsavel is None
-        assert ovr.setor_id == '50'  # Equipe 01 - Setor do Adriano
+        assert ovr.setor_id == '50'  # Equipe 01 - Setor da Érika
         assert ovr.responsavel is None
         ficha = self.app.get('/ovr?id=%s' % ovr.id)
         text = str(ficha.data)
@@ -169,19 +169,20 @@ class OVRAppTestCase(BaseTestCase):
         assert ovr.tipoevento.nome == 'Atribuição de responsável'
         assert ovr.user_name == 'erika'
         assert ovr.cpfauditorresponsavel is None
-        assert ovr.setor_id == '50'  # Equipe 01 - Setor do Adriano
+        assert ovr.setor_id == '50'  # Equipe 01 - Setor da Érika
         assert ovr.responsavel.nome == 'usuarioA1'
         soup = BeautifulSoup(ficha.data, features='lxml')
         table = soup.find('table', {'id': 'table_eventos'})
         rows = [str(row) for row in table.findAll("tr")]
         assert len(rows) == 2
-        ficha_setores = self.app.get('/ovrs_meus_setores')
-        assert ficha_setores.status_code == 200
-        soup = BeautifulSoup(ficha_setores.data, features='lxml')
-        table = soup.find('table', {'id': 'minhas_ovrs_table'})
+        # ficha_setores = self.app.get('/ovrs_meus_setores')
+        # assert ficha_setores.status_code == 200
+        # soup = BeautifulSoup(ficha_setores.data, features='lxml')
         # self.render_page(str(soup))
-        rows = [str(row) for row in table.findAll("tr")]
-        assert len(rows) == 2
+        # table = soup.find('table', {'id': 'minhas_ovrs_table'})
+        # # self.render_page(str(soup))
+        # rows = [str(row) for row in table.findAll("tr")]
+        # assert len(rows) == 2
 
         # usuarioA1 cria nova ficha com o mesmo CNPJ, Número declaração e CE
         self.login('usuarioA1', 'usuarioA1')

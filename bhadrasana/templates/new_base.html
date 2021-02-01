@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <title>Ajna</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+    <!-- Javascript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+
+
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+             <img src="/static/css/images/logo-novo.png" alt="logotipo" class="d-inline-block align-top">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-evenly" id="navbarSupportedContent">
+                <form class="d-flex">
+                    <select class="form-select rounded-0 w-auto" aria-label="Default select example">
+                        <option selected>Ficha</option>
+                        <option value="1">CE Mercante</option>
+                        <option value="2">Contêiner</option>
+                        <option value="3">DUE</option>
+                        <option value="3">Fiscalizado</option>
+                        <option value="3">RVF</option>
+                        <option value="3">FMA</option>
+                    </select>
+                    <input class="form-control rounded-0 w-auto" type="search" placeholder="Termo a pesquisar" aria-label="Search">
+                    <button class="btn btn-primary rounded-0" style="background-color:#567AB1; border-color:#567AB1;" type="submit">Pesquisar</button>
+                </form>
+                <ul class="navbar-nav mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="/pesquisa_ovr">Pesquisa avançada</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/risco">Risco</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="id_relatorios" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Relatórios
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="/relatorios">Gerais</a></li>
+                            <li><a class="dropdown-item" href="/fichas_em_abas">Kanban</a></li>
+                            <li><a class="dropdown-item" href="/ver_okrs">OKRs</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="id_documentos" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Documentos
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="/exporta_cen_rilo">Planilha CEN Rilo</a></li>
+                            <li><a class="dropdown-item" href="/gera_docx">Gerador DOCX</a></li>
+                            <li><a class="dropdown-item" href="/escaneamento_operador">Lista escaneamento</a></li>
+                            <li><a class="dropdown-item" href="/importa_planilha_recinto">Importar planilha</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="id_usuario" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                {% if current_user.is_authenticated %}
+                                    {{current_user.id}}
+                                {% endif %}
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="/minhas_ovrs">Minhas fichas</a></li>
+                            <li><a class="dropdown-item" href="/ovrs_meus_setores">Fichas do setor</a></li>
+                            <li><a class="dropdown-item" href="/ovr">Cadastrar ficha</a></li>
+                            <li><a class="dropdown-item" href="/logout">Sair</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+        {% block content %}
+        {% endblock %}
+
+    <footer class="footer fixed-bottom py-2 bg-light">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-6 d-flex">
+                    <img src="/static/css/images/logo-receita.png" class="img-fluid" alt="Responsive image">
+                </div>
+                <div class="col-sm-6 d-flex justify-content-end align-self-center">
+                    <a target="_blank" href="/ficha_site">
+                        <img src="/static/css/images/ajuda.png" class="img-fluid" alt="Responsive image">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+</body>
+</html>
