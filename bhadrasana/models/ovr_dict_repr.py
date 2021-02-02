@@ -103,10 +103,11 @@ class OVRDict():
                 due_str = f'{k}: {v}\n'
             rvf_dump['resumo_due'] = due_str
         if ovr.numeroCEmercante:
-            porto_origem = exibicao.get_mercante_resumo(ovr)[2][24:]
-            porto_destino = exibicao.get_mercante_resumo(ovr)[3][31:]
-            rvf_dump['porto_origem'] = porto_origem
-            rvf_dump['porto_destino'] = porto_destino
+            if exibicao.get_mercante_resumo(ovr):
+                porto_origem = exibicao.get_mercante_resumo(ovr)[2][24:]
+                porto_destino = exibicao.get_mercante_resumo(ovr)[3][31:]
+                rvf_dump['porto_origem'] = porto_origem
+                rvf_dump['porto_destino'] = porto_destino
             resumo_mercante = exibicao.get_mercante_resumo(ovr)
             resumo_mercante = '\n'.join(resumo_mercante)
             resumo_mercante = re.sub(re.compile('<.*?>'), ' ', resumo_mercante)
