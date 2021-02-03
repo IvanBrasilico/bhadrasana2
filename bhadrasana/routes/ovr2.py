@@ -343,4 +343,5 @@ def ovr2_app(app):
             flash(str(type(err)))
             flash(str(err))
         return render_template('encerramento_ovr.html',
-                               encerramento_form=encerramento_form)
+                               encerramento_form=encerramento_form,
+                               ovr_id=ovr_id)
