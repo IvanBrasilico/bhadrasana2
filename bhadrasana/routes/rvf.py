@@ -1,9 +1,8 @@
-import base64
 import os
 import zipfile
 from datetime import date, timedelta, datetime
 from io import BytesIO
-
+from base64 import b64encode
 from ajna_commons.flask.log import logger
 from ajna_commons.utils.images import ImageBytesTansformations
 from flask import request, flash, render_template, url_for, jsonify, send_file
@@ -14,7 +13,7 @@ from bhadrasana.docx.docx_functions import gera_OVR, gera_taseda
 from bhadrasana.forms.filtro_rvf import FiltroRVFForm
 from bhadrasana.forms.rvf import RVFForm, ImagemRVFForm, ApreensaoRVFForm
 from bhadrasana.models import get_usuario_validando, get_usuario
-from bhadrasana.models.ovrmanager import get_marcas, get_marcas_choice
+from bhadrasana.models.ovrmanager import get_marcas, get_marcas_choice, get_ovr_responsavel
 from bhadrasana.models.rvf import RVF
 from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, \
     get_ids_anexos_ordenado, \
@@ -549,6 +548,44 @@ def rvf_app(app):
             logger.error(err, exc_info=True)
             return jsonify({'msg': 'Erro: %s' % str(err)}), 500
 
+    @app.route('/api/gerar_taseda', methods=['POST'])
+    @csrf.exempt
+    def api_gerar_taseda():
+        session = app.config.get('dbsession')
+        mongodb = app.config.get('mongo_risco')
+        try:
+            rvf_id = request.form.get('rvf_id')
+        except TypeError:
+            raise TypeError('Informe o id do RVF')
+        except ValueError:
+            raise ValueError('Informe id do RVF somente com números')
+        try:
+            tipo = request.form.get('tipo')
+        except ValueError:
+            raise ValueError('Tipo de relatório inválido')
+        try:
+            rvf = get_rvf(session, rvf_id)
+            if rvf is None:
+                raise ValueError(f'Não encontrou RVF para o id {rvf_id}')
+            # OVR_out_filename = '{}_FCC{}-{}.docx'.format(
+            #     tipo, rvf_id,
+            #     datetime.strftime(datetime.now(), '%Y-%m%dT%H%M%S'))
+            # document.save(os.path.join(get_user_save_path(), OVR_out_filename))
+
+            # cria arquivo na memória e disponibiliza para API
+            rvf_dump = OVRDict(1).monta_rvf_dict(mongodb, session, rvf_id)
+            document = gera_taseda(rvf_dump, rvf.user_name)
+
+            memory_file = BytesIO()
+            with open(memory_file, 'rb') as file:
+                file.write(document)
+            memory_file.seek(0)
+
+            return jsonify({'documento': b64encode(memory_file)}, 201)
+
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            return jsonify({'msg': 'Erro: %s' % str(err)}), 500
 
     @app.route('/rvf/new', methods=['POST'])
     @csrf.exempt
