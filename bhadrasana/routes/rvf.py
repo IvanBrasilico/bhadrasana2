@@ -1,8 +1,9 @@
+import base64
 import os
 import zipfile
 from datetime import date, timedelta, datetime
 from io import BytesIO
-from base64 import b64encode
+
 from ajna_commons.flask.log import logger
 from ajna_commons.utils.images import ImageBytesTansformations
 from flask import request, flash, render_template, url_for, jsonify, send_file
@@ -14,7 +15,8 @@ from bhadrasana.docx.docx_functions import gera_OVR, gera_taseda
 from bhadrasana.forms.filtro_rvf import FiltroRVFForm
 from bhadrasana.forms.rvf import RVFForm, ImagemRVFForm, ApreensaoRVFForm
 from bhadrasana.models import get_usuario_validando, get_usuario
-from bhadrasana.models.ovrmanager import get_marcas, get_marcas_choice, get_ovr_responsavel
+from bhadrasana.models.ovr_dict_repr import OVRDict
+from bhadrasana.models.ovrmanager import get_marcas, get_marcas_choice
 from bhadrasana.models.rvf import RVF
 from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, \
     get_ids_anexos_ordenado, \
@@ -27,7 +29,6 @@ from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, \
     get_anexos_ordenado, get_tiposapreensao_choice, gera_apreensao_rvf, \
     exclui_apreensao_rvf, get_peso, rvf_ordena_imagensrvf_por_data_criacao, get_anexos_mongo
 from bhadrasana.views import csrf, valid_file, get_user_save_path
-from bhadrasana.models.ovr_dict_repr import OVRDict
 
 
 def rvf_app(app):
@@ -575,9 +576,9 @@ def rvf_app(app):
             rvf_dump = OVRDict(1).monta_rvf_dict(mongodb, session, rvf_id)
             document = gera_taseda(rvf_dump, rvf.user_name)
             path_to_upload = os.path.join(APP_PATH,
-                                  app.config.get('STATIC_FOLDER', 'static'),
-                                  rvf.user_name,
-                                  OVR_out_filename)
+                                          app.config.get('STATIC_FOLDER', 'static'),
+                                          rvf.user_name,
+                                          OVR_out_filename)
             document.save(path_to_upload)
             return jsonify(path_to_upload), 200
 
