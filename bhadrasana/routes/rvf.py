@@ -9,6 +9,7 @@ from flask import request, flash, render_template, url_for, jsonify, send_file
 from flask_login import login_required, current_user
 from werkzeug.utils import redirect
 
+from bhadrasana.conf import APP_PATH
 from bhadrasana.docx.docx_functions import gera_OVR, gera_taseda
 from bhadrasana.forms.filtro_rvf import FiltroRVFForm
 from bhadrasana.forms.rvf import RVFForm, ImagemRVFForm, ApreensaoRVFForm
@@ -567,21 +568,26 @@ def rvf_app(app):
             rvf = get_rvf(session, rvf_id)
             if rvf is None:
                 raise ValueError(f'Não encontrou RVF para o id {rvf_id}')
-            # OVR_out_filename = '{}_FCC{}-{}.docx'.format(
-            #     tipo, rvf_id,
-            #     datetime.strftime(datetime.now(), '%Y-%m%dT%H%M%S'))
-            # document.save(os.path.join(get_user_save_path(), OVR_out_filename))
+            OVR_out_filename = '{}_FCC{}-{}.docx'.format(
+                tipo, rvf_id,
+                datetime.strftime(datetime.now(), '%Y-%m%dT%H%M%S'))
 
-            # cria arquivo na memória e disponibiliza para API
             rvf_dump = OVRDict(1).monta_rvf_dict(mongodb, session, rvf_id)
             document = gera_taseda(rvf_dump, rvf.user_name)
+            path_to_upload = os.path.join(APP_PATH,
+                                  app.config.get('STATIC_FOLDER', 'static'),
+                                  rvf.user_name,
+                                  OVR_out_filename)
+            document.save(path_to_upload)
+            return jsonify(path_to_upload), 200
 
-            memory_file = BytesIO()
-            with open(memory_file, 'rb') as file:
-                file.write(document)
-            memory_file.seek(0)
-
-            return jsonify({'documento': b64encode(memory_file)}, 201)
+            # cria arquivo na memória e disponibiliza para API e retorna em bytes na API
+            # memory_file = BytesIO()
+            # with open(memory_file, 'rb') as file:
+            #     file.write(document)
+            # memory_file.seek(0)
+            #
+            # return jsonify({'documento': b64encode(memory_file)}, 201)
 
         except Exception as err:
             logger.error(err, exc_info=True)
