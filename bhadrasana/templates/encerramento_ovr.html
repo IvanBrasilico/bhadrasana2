@@ -2,22 +2,7 @@
     {% block content %}
         <!-- Seção Ficha -->
         <section id="ficha_section" class="container d-flex align-items-center my-5">
-            <h2 class="display-4">Encerramento da Ficha {{ ovr_id }}</h2>
-            <div class="dropdown dropend">
-                <a class="m-3" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
-                    <img src="/static/css/images/gear.png" alt="menu">
-                </a>
-                <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                    <li><a class="dropdown-item" href="#">Editar informações</a></li>
-                    <li><a class="dropdown-item" href="#">Atribuir responsável</a></li>
-                    <li><a class="dropdown-item" href="#">Definir auditor</a></li>
-                    <li><a class="dropdown-item" href="#">Programar verificação física</a></li>
-                    <li><a class="dropdown-item" href="#">Transferir para outro setor</a></li>
-                    <li><a class="dropdown-item" href="#">Liberar ficha</a></li>
-                    <li><a class="dropdown-item" href="#">Registrar outros eventos</a></li>
-                    <li><a class="dropdown-item" href="#">Encerrar ficha</a></li>
-                </ul>
-            </div>
+            <h2 class="display-4">Encerramento da Ficha {{ ovr.id }}</h2>
         </section>
 
         <!-- Seção Informações -->
@@ -38,43 +23,42 @@
                 <div class="col-6 float-start">
                     <dl class="row">
                         <dt class="col-3 text-end">Status:</dt>
-                        <dd class="col-9">Ativa</dd>
+                        <dd class="col-9">{{fase}}</dd>
                         <dt class="col-3 text-end">Responsável:</dt>
-                        <dd class="col-9">Adriano Diniz Castanheira</dd>
+                        <dd class="col-9">{{ovr.responsavel.nome}}</dd>
                         <dt class="col-3 text-end">Fiscalizado:</dt>
-                        <dd class="col-9">88.777.666/0001-44</dd>
+                        <dd class="col-9">{{ovr.cnpj_fiscalizado}}</dd>
                         <dt class="col-3 text-end">CE Mercante:</dt>
-                        <dd class="col-9">12345678900</dd>
+                        <dd class="col-9">{{ovr.numeroCEmercante}}</dd>
                         <dt class="col-3 text-end">Declaração:</dt>
-                        <dd class="col-9">999999.999999</dd>
+                        <dd class="col-9">{{ovr.numerodeclaracao}}</dd>
                         <dt class="col-3 text-end">Entrada:</dt>
-                        <dd class="col-9">20/12/2020</dd>
+                        <dd class="col-9">{{ovr.dataentrada}}</dd>
                         <dt class="col-3 text-end">Emissão:</dt>
-                        <dd class="col-9">25/12/2020</dd>
+                        <dd class="col-9">{{ovr.datahora}}</dd>
                         <dt class="col-3 text-end">Alertas:</dt>
-                        <dd class="col-9">Alto valor agregado Apreensão policial Contrafação </dd>
+                        <dd class="col-9">
+                            {% for flag in ovr.flags%}
+                                {{flag.nome + ' / '}}
+                            {% endfor %}
+                        </dd>
                     </dl>
                 </div>
                 <div class="col-6 float-end">
                     <dl class="row">
                         <dt class="col-3 text-end">Cadastrador:</dt>
-                        <dd class="col-9">Tibério Dâmaso Mendonça</dd>
+                        <dd class="col-9">{{usuario.nome}}</dd>
                         <dt class="col-3 text-end">Auditor:</dt>
-                        <dd class="col-9">Joel Alves Pereira</dd>
+                        <dd class="col-9">{{ovr.cpfauditorresponsavel}}</dd>
                         <dt class="col-3 text-end">Setor:</dt>
-                        <dd class="col-9">SysAdmin</dd>
+                        <dd class="col-9">{{ovr.setor}}</dd>
                         <dt class="col-3 text-end">Observações:</dt>
-                        <dd class="col-9">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus dictum tincidunt dui,
-                            tempus faucibus nibh volutpat in. Cras ut urna leo. Nulla ac arcu ut sem viverra dictum sit amet
-                            fermentum massa. Nullam pellentesque mauris augue, ac rutrum risus ultrices non. Aenean lacinia
-                            lorem malesuada magna ultrices, non ultricies enim ultrices. Interdum et malesuada fames ac ante
-                            ipsum primis in faucibus. Vestibulum quis feugiat metus. Aenean sit amet quam porttitor, dignissim
-                            diam eu, mollis enim. Aenean eget iaculis turpis, at interdum massa.</dd>
+                        <dd class="col-9">{{ovr.observacoes}}</dd>
                     </dl>
                 </div>
             </div>
             <div class="text-end">
-                <a class="link-primary" href="#">Editar</a>
+                <a class="link-primary text-decoration-none" href="/ovr?id={{ovr_id}}">Editar</a>
             </div>
         </section>
 
@@ -95,7 +79,7 @@
             <div class="col-12">
                 <table class="table">
                     <thead>
-                    <tr>
+                    <tr class="align-middle">
                         <th scope="col" class="text-center">RVF</th>
                         <th scope="col" class="text-center">Contêiner/Lote</th>
                         <th scope="col" class="text-center">Descrição</th>
@@ -106,16 +90,16 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        <th scope="row" class="text-center"><a href="#">1</a></th>
-                        <td class="text-center"><a href="#">CCUN456789</a></td>
+                    <tr class="align-middle">
+                        <td scope="row" class="text-center"><a class="text-decoration-none" href="#">1</a></td>
+                        <td class="text-center"><a class="text-decoration-none" href="#">CCUN456789</a></td>
                         <td>Interdum et malesuada fames ac ante
                         ipsum primis in faucibus. Vestibulum quis feugiat metus. Aenean sit amet quam porttitor, dignissim
                         diam eu, mollis enim. Aenean eget iaculis turpis, at interdum massa.</td>
                         <td class="text-center">2000</td>
                         <td class="text-center">3</td>
                         <td class="text-center">30</td>
-                        <td class="text-center"><a class="btn btn-danger" href="#" role="button">X</a></td>
+                        <td class="text-center"><a class="text-decoration-none" href="#" role="button">X</a></td>
                     </tr>
                     </tbody>
                 </table>
@@ -139,7 +123,7 @@
             <div class="col-12">
                 <table class="table">
                     <thead>
-                    <tr>
+                    <tr class="align-middle">
                         <th scope="col" class="text-center">TG</th>
                         <th scope="col" class="text-center">Contêiner/Lote</th>
                         <th scope="col" class="text-center">Descrição</th>
@@ -150,16 +134,16 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        <th scope="row" class="text-center"><a href="#">87</a></th>
-                        <td class="text-center"><a href="#">TYBU8769</a></td>
+                    <tr class="align-middle">
+                        <td scope="row" class="text-center"><a class="text-decoration-none" href="#">87</a></td>
+                        <td class="text-center"><a class="text-decoration-none" href="#">TYBU8769</a></td>
                         <td>Interdum et malesuada fames ac ante
                         ipsum primis in faucibus. Vestibulum quis feugiat metus. Aenean sit amet quam porttitor, dignissim
                         diam eu, mollis enim. Aenean eget iaculis turpis, at interdum massa.</td>
                         <td class="text-center">2000</td>
                         <td class="text-center">Kg</td>
                         <td class="text-center">30.000,00</td>
-                        <td class="text-center"><a class="btn btn-danger" href="#" role="button">X</a></td>
+                        <td class="text-center"><a class="text-decoration-none" href="#" role="button">X</a></td>
                     </tr>
                     </tbody>
                 </table>
@@ -183,7 +167,8 @@
             <div class="col-12">
                 <table class="table">
                     <thead>
-                    <tr>
+                    <tr class="align-middle">
+                        <th scope="col" class="text-center">ID</th>
                         <th scope="col" class="text-center">Tipo</th>
                         <th scope="col" class="text-center">Data</th>
                         <th scope="col" class="text-center">Usuário</th>
@@ -194,14 +179,15 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        <th scope="row" class="text-center"><a href="#">Dossiê</a></th>
+                    <tr class="align-middle">
+                        <td scope="row" class="text-center"><a class="text-decoration-none" href="#">2</a></td>
+                        <td scope="row" class="text-center"><a class="text-decoration-none" href="#">Dossiê</a></td>
                         <td class="text-center">23/01/2021</td>
-                        <td>Adriano Diniz Castanheira</td>
+                        <td class="text-center">Adriano Diniz Castanheira</td>
                         <td class="text-center">1234.5679-00</td>
 <!--                        <td class="text-center">Kg</td>-->
 <!--                        <td class="text-center">30.000,00</td>-->
-                        <td class="text-center"><a class="btn btn-danger" href="#" role="button">X</a></td>
+                        <td class="text-center"><a class="text-decoration-none" href="#" role="button">X</a></td>
                     </tr>
                     </tbody>
                 </table>
@@ -225,7 +211,7 @@
             <div class="col-12">
                 <table class="table">
                     <thead>
-                    <tr>
+                    <tr class="align-middle">
                         <th scope="col" class="text-center">#</th>
                         <th scope="col" class="text-center">Tipo</th>
                         <th scope="col" class="text-center">Data</th>
@@ -236,14 +222,14 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        <th scope="row" class="text-center"><a href="#">87</a></th>
-                        <td class="text-center"><a href="#">Aguardando laudo</a></td>
+                    <tr class="align-middle">
+                        <td scope="row" class="text-center"><a class="text-decoration-none" href="#">87</a></td>
+                        <td class="text-center"><a class="text-decoration-none" href="#">Aguardando laudo</a></td>
                         <td class="text-center">17/12/2020</td>
                         <td class="text-center">Adriano Diniz Castanheira</td>
                         <td class="text-center">Aguardando laudo</td>
                         <td class="text-center">File</td>
-                        <td class="text-center"><a class="btn btn-danger" href="#" role="button">X</a></td>
+                        <td class="text-center"><a class="text-decoration-none" href="#" role="button">X</a></td>
                     </tr>
                     </tbody>
                 </table>
@@ -252,29 +238,91 @@
         </section>
 
         <!-- Seção Botões -->
-        <section id="buttons_section" class="container d-flex my-5">
+        <section id="buttons_section" class="container d-flex justify-content-end my-5">
             <div class="text-end">
                 <!-- Button trigger modal -->
-                <button type="button" class="btn btn-success" data-bs-toggle="encerrar_com_resultado_modal"
-                        data-bs-target="#staticBackdrop">Encerrar com resultado</button>
-                <button type="button" class="btn btn-secondary" data-bs-toggle="encerrar_sem_resultado_modal"
-                        data-bs-target="#staticBackdrop">Encerrar sem resultado</button>
+                <button type="button" class="btn" style="background-color:#64A70B; color:white;" data-bs-toggle="modal"
+                        data-bs-target="#encerrar_ficha">Encerrar</button>
             </div>
 
-            <!-- Modal encerrar com resultado -->
-            <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-                 aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                <div class="modal-dialog">
+<!--            &lt;!&ndash; Modal encerrar com resultado &ndash;&gt;-->
+<!--            <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"-->
+<!--                 aria-labelledby="staticBackdropLabel" aria-hidden="true">-->
+<!--                <div class="modal-dialog modal-dialog-centered modal-lg">-->
+<!--                    <div class="modal-content">-->
+<!--                        <div class="modal-header">-->
+<!--                            <h5 class="modal-title display-4" id="staticBackdropLabel">Encerrar ficha</h5>-->
+<!--                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>-->
+<!--                        </div>-->
+<!--                        <div class="modal-body">-->
+<!--                            <div>-->
+<!--                                <p class="fs-4 text-danger text-center">Uma vez encerrada, a ficha aceitará somente-->
+<!--                                    eventos meramente informativos</p>-->
+<!--                            </div>-->
+<!--                            <div class="my-5">-->
+<!--                                <h3 class="display-6">Ficha</h3>-->
+<!--                                <hr class="dropdown-divider">-->
+<!--                                <dl class="row">-->
+<!--                                <dt class="col-3 text-end">Responsável:</dt>-->
+<!--                                <dd class="col-9">Adriano Diniz Castanheira</dd>-->
+<!--                                <dt class="col-3 text-end">Fiscalizado:</dt>-->
+<!--                                <dd class="col-9">88.777.666/0001-44</dd>-->
+<!--                                <dt class="col-3 text-end">CE Mercante:</dt>-->
+<!--                                <dd class="col-9">12345678900</dd>-->
+<!--                                <dt class="col-3 text-end">Declaração:</dt>-->
+<!--                                <dd class="col-9">999999.999999</dd>-->
+<!--                                <dt class="col-3 text-end">Entrada:</dt>-->
+<!--                                <dd class="col-9">20/12/2020</dd>-->
+<!--                                <dt class="col-3 text-end">Emissão:</dt>-->
+<!--                                <dd class="col-9">25/12/2020</dd>-->
+<!--                            </dl>-->
+<!--                            </div>-->
+<!--                            <div class="my-5">-->
+<!--                                <h3 class="display-6">Resultado</h3>-->
+<!--                                <hr class="dropdown-divider">-->
+<!--                                <dl class="row">-->
+<!--                                <dt class="col-3 text-end">Tipo:</dt>-->
+<!--                                <dd class="col-9">{{tiporesultado}}</dd>-->
+<!--                                <dt class="col-3 text-end">Dossiê:</dt>-->
+<!--                                <dd class="col-9">{{numerodossie}}</dd>-->
+<!--                                <dt class="col-3 text-end">PAF:</dt>-->
+<!--                                <dd class="col-9">{{numeropaf}}</dd>-->
+<!--                                <dt class="col-3 text-end">RFFP:</dt>-->
+<!--                                <dd class="col-9">{{numerorffp}}</dd>-->
+<!--                                <dt class="col-3 text-end">Auditor:</dt>-->
+<!--                                <dd class="col-9">{{responsavel_cpf}}</dd>-->
+<!--                            </dl>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                        <div class="modal-footer">-->
+<!--                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>-->
+<!--                            <a class="btn" style="background-color:#64A70B; color:white;" href="#" role="button">Encerrar</a>-->
+<!--&lt;!&ndash;                            <button type="button" class="btn btn-primary">Encerrar</button>&ndash;&gt;-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+        </section>
+
+        <!-- Modais -->
+
+        <!-- Modal encerrar ficha -->
+        <div class="modal fade" id="encerrar_ficha" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+                 aria-labelledby="encerrar_ficha" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="staticBackdropLabel">Encerrar com resultado</h5>
+                            <h5 class="modal-title display-4" id="encerrar_ficha_label">Encerrar ficha</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <p class="lead text-danger">Uma vez encerrada, a ficha aceitará <mark>somente</mark>
-                                eventos meramente informativos</p>
                             <div>
-                                <h3>Ficha</h3>
+                                <p class="fs-4 text-danger text-center">Uma vez encerrada, a ficha aceitará somente
+                                    eventos meramente informativos</p>
+                            </div>
+                            <div class="my-5">
+                                <h3 class="display-6">Ficha</h3>
+                                <hr class="dropdown-divider">
                                 <dl class="row">
                                 <dt class="col-3 text-end">Responsável:</dt>
                                 <dd class="col-9">Adriano Diniz Castanheira</dd>
@@ -288,33 +336,32 @@
                                 <dd class="col-9">20/12/2020</dd>
                                 <dt class="col-3 text-end">Emissão:</dt>
                                 <dd class="col-9">25/12/2020</dd>
-                                <dt class="col-3 text-end">Auditor:</dt>
-                                <dd class="col-9">Joel Alves Pereira</dd>
                             </dl>
                             </div>
-                            <div>
-                                <h3>Resultado</h3>
+                            <div class="my-5">
+                                <h3 class="display-6">Resultado</h3>
+                                <hr class="dropdown-divider">
                                 <dl class="row">
                                 <dt class="col-3 text-end">Tipo:</dt>
-                                <dd class="col-9">{{Termo de Guarda}}</dd>
+                                <dd class="col-9">{{tiporesultado}}</dd>
                                 <dt class="col-3 text-end">Dossiê:</dt>
-                                <dd class="col-9">{{88.777.666/0001-44}}</dd>
+                                <dd class="col-9">{{numerodossie}}</dd>
                                 <dt class="col-3 text-end">PAF:</dt>
-                                <dd class="col-9">{{12345678900}}</dd>
+                                <dd class="col-9">{{numeropaf}}</dd>
                                 <dt class="col-3 text-end">RFFP:</dt>
-                                <dd class="col-9">{{999999.999999}}</dd>
+                                <dd class="col-9">{{numerorffp}}</dd>
                                 <dt class="col-3 text-end">Auditor:</dt>
-                                <dd class="col-9">{{Adriano Diniz Castanheira}}</dd>
+                                <dd class="col-9">{{responsavel_cpf}}</dd>
                             </dl>
                             </div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            <a class="btn btn-primary" href="#" role="button">Encerrar</a>
+                            <a class="btn" style="background-color:#64A70B; color:white;" href="#" role="button">Encerrar</a>
 <!--                            <button type="button" class="btn btn-primary">Encerrar</button>-->
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
+        </div>
+
     {% endblock %}

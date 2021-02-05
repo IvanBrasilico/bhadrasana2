@@ -5,25 +5,30 @@
         <input type="hidden" name="id" value="{{ oform.id.data }}"/>
         <div class="form-group">
             <div class="row">
+                <!-- ID -->
                 <div class="col-sm-1">
                     <label for="id">ID</label>
                     <div class="form-control">
                         <span>{{ oform.id.data }}</span>
                     </div>
                 </div>
+                <!-- Número DOC -->
                 <div class="col-sm-1">
                     <label for="numero">Número doc</label>
                     {{ oform.numero(class='form-control')}}
                 </div>
+                <!-- Tipo operação -->
                 <div class="col-sm-2">
                     <label for="tipooperacao">Tipo de Operação</label>
                     <span id="btn_roteiro" data-toggle="modal" data-target="#roteiro">(?)</span>
                     {{ oform.tipooperacao(class='form-control')}}
                 </div>
+                <!-- Recinto -->
                 <div class="col-sm-3">
                     <label>Recinto</label>
                     {{ oform.recinto_id(class='form-control')}}
                 </div>
+                <!-- Status -->
                 <div class="col-sm-3">
                     <label>Status</label>
                     <div class="row">
@@ -43,6 +48,7 @@
                         </div>
                     </div>
                 </div>
+                <!-- Cadastrador -->
                 <div class="col-sm-2">
                     Cadastrador
                     <div class="form-control">
@@ -50,23 +56,28 @@
                     </div>
                 </div>
             </div>
+
             <div class="row">
+                <!-- CE Mercante -->
                 <div class="col-sm-6">
                     CE Mercante
                     {{ oform.numeroCEmercante(class='form-control')}}
                 </div>
+                <!-- Responsavel -->
                  <div class="col-sm-2">
                     <label for="responsavel">Responsável</label>
                     <div class="form-control">
                         <span id="responsavel_nome">{{ ovr.responsavel.nome }}</span>
                     </div>
                 </div>
+                <!-- Auditor responsável -->
                 <div class="col-sm-2">
                     Auditor Responsável
                     <div class="form-control">
                         <span id="auditor_descricao">{{ oform.auditor_descricao.data }}</span>
                     </div>
                 </div>
+                <!-- Setor -->
                 <div class="col-sm-2">
                     Setor
                     <div class="form-control">
@@ -80,6 +91,7 @@
             <div class="row col-sm-12">
             {% include 'divconhecimento.html' %}
             </div>
+            <!-- DUE/Declaração -->
             <div class="row col-sm-12">
                 Declaração: DUE, DUIMP, etc
                 {{ oform.numerodeclaracao(class='form-control')}}
@@ -91,29 +103,34 @@
                 CNPJ ou CPF Fiscalizado
             </div>
             <div class="row">
+                <!-- Fiscalizado CNPJ -->
                 <div class="col-sm-3">
                     <!--                    {{ oform.cnpj_fiscalizado(class='form-control', data_inputmask='"mask": "99.999.999/9999-99"') }}-->
                     {{ oform.cnpj_fiscalizado(class='form-control') }}
                 </div>
+                <!-- Fiscalizado Nome -->
                 <div class="col-sm-9">
                     {{ oform.nome_fiscalizado.data }}
                 </div>
             </div>
+            <!-- Observações -->
             <div class="row col-sm-12">
                 Observações
                 {{ oform.observacoes(class='form-control') }}
             </div>
             <div class="row">
+                <!-- Data entrada -->
                 <div class="col-sm-2">
                     <label for="adata">Data da Entrada da Carga</label>
                     {{ oform.dataentrada(class='form-control') }}
                 </div>
+                <!-- Data emissão -->
                 <div class="col-sm-2">
                     <label for="adata">Data da Emissão</label>
                     {{ oform.adata(class='form-control') }}
                 </div>
                 <div class="col-sm-2">
-                    &nbsp;
+
                     {% if oform.id.data %}
                     <button id="btn_responsavel" type="button" class="btn btn-warning form-control"
                             data-toggle="modal" data-target="#responsavel">
@@ -195,10 +212,11 @@
                 </div>
                 <div class="col-sm-3">
                     {% if oform.id.data %}
-                    <button id="btn_auto" type="button" class="btn btn-primary btn-warning form-control"
-                            data-toggle="modal" data-target="#lavratura">
-                        Lavratura do Auto de Infração
-                    </button>
+<!--                    <button id="btn_auto" type="button" class="btn btn-primary btn-warning form-control"-->
+<!--                            data-toggle="modal" data-target="#lavratura">-->
+<!--                        Lavratura do Auto de Infração-->
+<!--                    </button>-->
+                    <a href="encerramento_ovr?ovr_id={{ovr.id}}">Encerrar ficha</a>
                     {% endif %}
                 </div>
             </div>

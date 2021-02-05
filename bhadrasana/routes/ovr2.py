@@ -326,12 +326,15 @@ def ovr2_app(app):
     def encerramento_ovr():
         session = app.config.get('dbsession')
         ovr_id = request.args.get('ovr_id')
+        ovr = get_ovr(session=session, ovr_id=ovr_id)
+        fase = ovr.get_fase()
         encerramento_form = EncerramentoOVRForm(ovr_id)
         try:
             usuario = get_usuario(session, current_user.name)
             if usuario is None:
                 raise Exception('Erro: Usuário não encontrado!')
             if request.method == 'POST':
+                ovr_id = request.args.get('ovr_id')
                 encerramento_form = EncerramentoOVRForm(request.form)
                 # evento = gera_encerramentovr(session, dict(encerramento_form.data.items()),
                 #                    user_name=usuario.cpf)
@@ -344,4 +347,4 @@ def ovr2_app(app):
             flash(str(err))
         return render_template('encerramento_ovr.html',
                                encerramento_form=encerramento_form,
-                               ovr_id=ovr_id)
+                               ovr=ovr, fase=fase, usuario=usuario)
