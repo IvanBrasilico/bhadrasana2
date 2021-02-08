@@ -27,19 +27,23 @@
                         <dt class="col-3 text-end">Responsável:</dt>
                         <dd class="col-9">{{ovr.responsavel.nome}}</dd>
                         <dt class="col-3 text-end">Fiscalizado:</dt>
-                        <dd class="col-9">{{ovr.cnpj_fiscalizado}}</dd>
+                        <dd class="col-9" id="cnpj_fiscalizado">{{ovr.cnpj_fiscalizado|mascara_cpf_cnpj}}</dd>
                         <dt class="col-3 text-end">CE Mercante:</dt>
                         <dd class="col-9">{{ovr.numeroCEmercante}}</dd>
                         <dt class="col-3 text-end">Declaração:</dt>
                         <dd class="col-9">{{ovr.numerodeclaracao}}</dd>
                         <dt class="col-3 text-end">Entrada:</dt>
-                        <dd class="col-9">{{ovr.dataentrada}}</dd>
+                        <dd class="col-9">{{ovr.dataentrada.strftime('%Y-%m-%d')}}</dd>
                         <dt class="col-3 text-end">Emissão:</dt>
-                        <dd class="col-9">{{ovr.datahora}}</dd>
+                        <dd class="col-9">{{ovr.datahora.strftime('%Y-%m-%d')}}</dd>
                         <dt class="col-3 text-end">Alertas:</dt>
                         <dd class="col-9">
-                            {% for flag in ovr.flags%}
-                                {{flag.nome + ' / '}}
+                            {% for i in range(0,ovr.flags|length) %}
+                                {% if i == (ovr.flags|length -1) %}
+                                    {{ ovr.flags[i].nome }}
+                                {% else %}
+                                    {{ ovr.flags[i].nome + ' / ' }}
+                                {% endif %}
                             {% endfor %}
                         </dd>
                     </dl>
@@ -49,9 +53,9 @@
                         <dt class="col-3 text-end">Cadastrador:</dt>
                         <dd class="col-9">{{usuario.nome}}</dd>
                         <dt class="col-3 text-end">Auditor:</dt>
-                        <dd class="col-9">{{ovr.cpfauditorresponsavel}}</dd>
+                        <dd class="col-9">{{auditor_nome}}</dd>
                         <dt class="col-3 text-end">Setor:</dt>
-                        <dd class="col-9">{{ovr.setor}}</dd>
+                        <dd class="col-9">{{ovr.setor.nome}}</dd>
                         <dt class="col-3 text-end">Observações:</dt>
                         <dd class="col-9">{{ovr.observacoes}}</dd>
                     </dl>

@@ -331,6 +331,9 @@ def ovr2_app(app):
         encerramento_form = EncerramentoOVRForm(ovr_id)
         try:
             usuario = get_usuario(session, current_user.name)
+            auditor = get_usuario(session, ovr.cpfauditorresponsavel)
+            if auditor:
+                auditor_nome = auditor.nome
             if usuario is None:
                 raise Exception('Erro: Usuário não encontrado!')
             if request.method == 'POST':
@@ -347,4 +350,5 @@ def ovr2_app(app):
             flash(str(err))
         return render_template('encerramento_ovr.html',
                                encerramento_form=encerramento_form,
-                               ovr=ovr, fase=fase, usuario=usuario)
+                               ovr=ovr, fase=fase, usuario=usuario,
+                               auditor_nome=auditor_nome)
