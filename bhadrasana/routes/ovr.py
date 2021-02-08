@@ -663,6 +663,7 @@ def ovr_app(app):
             flash('Erro! Detalhes no log da aplicação.')
             flash(str(type(err)))
             flash(str(err))
+        # return redirect(request.referrer)
         return redirect(url_for('ovr', id=ovr_id))
 
     @app.route('/exclui_processo')
@@ -680,7 +681,8 @@ def ovr_app(app):
             flash('Erro! Detalhes no log da aplicação.')
             flash(str(type(err)))
             flash(str(err))
-        return redirect(url_for('ovr', id=ovr_id))
+        return redirect(request.referrer)
+        # return redirect(url_for('ovr', id=ovr_id))
 
     @app.route('/exclui_evento')
     @login_required
@@ -695,7 +697,8 @@ def ovr_app(app):
             flash('Erro! Detalhes no log da aplicação.')
             flash(str(type(err)))
             flash(str(err))
-        return redirect(url_for('ovr', id=ovr_id))
+        return redirect(request.referrer)
+        # return redirect(url_for('ovr', id=ovr_id))
 
     @app.route('/lista_tgovr', methods=['GET'])
     @login_required

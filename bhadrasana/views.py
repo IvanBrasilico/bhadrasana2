@@ -166,11 +166,28 @@ def moeda(value):
 
 @app.template_filter()
 def mascara_cpf_cnpj(value):
-    if len(value) == 11:
-        return value[:3] + "." + value[3:6] + "." + value[6:9] + "-" + value[9:]
-    elif len(value) == 14:
-        return value[:2] + "." + value[2:5] + "." + value[5:8] + "/" + value[8:12] + "-" + value[12:]
+    if value:
+        if len(value) == 11:
+            return value[:3] + "." + value[3:6] + "." + value[6:9] + "-" + value[9:]
+        elif len(value) == 14:
+            return value[:2] + "." + value[2:5] + "." + value[5:8] + "/" + value[8:12] + "-" + value[12:]
+    else:
+        return 'CNPJ/CPF não informado'
     return value
+
+@app.template_filter()
+def mascara_ce_mercante(value):
+    if value:
+        return value
+    else:
+        return 'CE Mercante não informado'
+
+@app.template_filter()
+def mascara_due(value):
+    if value:
+        return value
+    else:
+        return 'DUE não informada'
 
 @app.route('/')
 def index():

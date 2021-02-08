@@ -12,14 +12,15 @@ from werkzeug.utils import redirect
 from bhadrasana.docx.docx_functions import gera_comunicado_contrafacao, gera_auto_contrafacao
 from bhadrasana.forms.encerramento_ovr import EncerramentoOVRForm
 from bhadrasana.forms.exibicao_ovr import ExibicaoOVR, TipoExibicao
-from bhadrasana.forms.ovr import FiltroDocxForm, ModeloDocxForm, HistoricoOVRForm
+from bhadrasana.forms.ovr import FiltroDocxForm, ModeloDocxForm, HistoricoOVRForm, ProcessoOVRForm
 from bhadrasana.models import get_usuario, usuario_tem_perfil_nome
+from bhadrasana.models.laudo import get_empresa
 from bhadrasana.models.ovr import FonteDocx, Assistente
 from bhadrasana.models.ovr_dict_repr import OVRDict
 from bhadrasana.models.ovrmanager import monta_ovr_dict, get_docx_choices, get_docx, inclui_docx, \
     get_ovrs_abertas_flags, get_ovr, MarcaManager, get_ids_flags_contrafacao, \
-    get_tiposevento_assistente_choice, gera_eventoovr, get_tgovr_one
-from bhadrasana.models.rvfmanager import lista_rvfovr
+    get_tiposevento_assistente_choice, gera_eventoovr, get_tgovr_one, lista_tgovr, get_tipos_processo, get_tipos_evento
+from bhadrasana.models.rvfmanager import lista_rvfovr, get_rvf
 from bhadrasana.views import get_user_save_path, valid_file
 
 
@@ -327,13 +328,24 @@ def ovr2_app(app):
         session = app.config.get('dbsession')
         ovr_id = request.args.get('ovr_id')
         ovr = get_ovr(session=session, ovr_id=ovr_id)
-        fase = ovr.get_fase()
+        operacao = ovr.get_tipooperacao()
+        tiposprocesso = get_tipos_processo(session=session)
+        processo_form = ProcessoOVRForm(tiposprocesso=tiposprocesso)
+        tiposevento = get_tipos_evento(session=session)
+        historico_form = HistoricoOVRForm(tiposevento)
         encerramento_form = EncerramentoOVRForm(ovr_id)
         try:
+            fase = ovr.get_fase()
             usuario = get_usuario(session, current_user.name)
             auditor = get_usuario(session, ovr.cpfauditorresponsavel)
-            if auditor:
-                auditor_nome = auditor.nome
+            if ovr.cnpj_fiscalizado:
+                empresa = get_empresa(session=session, cnpj=ovr.cnpj_fiscalizado)
+            else:
+                empresa = ''
+            lista_rvfs = lista_rvfovr(session=session, ovr_id=ovr_id)
+            lista_tgovrs = lista_tgovr(session=session, ovr_id=ovr_id)
+            processos = ovr.processos
+            eventos = ovr.historico
             if usuario is None:
                 raise Exception('Erro: Usuário não encontrado!')
             if request.method == 'POST':
@@ -349,6 +361,7 @@ def ovr2_app(app):
             flash(str(type(err)))
             flash(str(err))
         return render_template('encerramento_ovr.html',
-                               encerramento_form=encerramento_form,
-                               ovr=ovr, fase=fase, usuario=usuario,
-                               auditor_nome=auditor_nome)
+                               encerramento_form=encerramento_form, ovr=ovr, fase=fase, usuario=usuario,
+                               auditor=auditor, empresa=empresa, lista_rvfs=lista_rvfs, lista_tgovrs=lista_tgovrs,
+                               processos=processos, eventos=eventos, processo_form=processo_form, operacao=operacao,
+                               historico_form=historico_form, tiposevento=tiposevento)

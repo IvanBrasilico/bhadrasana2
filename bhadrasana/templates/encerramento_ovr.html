@@ -24,18 +24,22 @@
                     <dl class="row">
                         <dt class="col-3 text-end">Status:</dt>
                         <dd class="col-9">{{fase}}</dd>
+                        <dt class="col-3 text-end">Operação:</dt>
+                        <dd class="col-9">{{operacao}}</dd>
                         <dt class="col-3 text-end">Responsável:</dt>
                         <dd class="col-9">{{ovr.responsavel.nome}}</dd>
                         <dt class="col-3 text-end">Fiscalizado:</dt>
-                        <dd class="col-9" id="cnpj_fiscalizado">{{ovr.cnpj_fiscalizado|mascara_cpf_cnpj}}</dd>
+                        <dd class="col-9">{{empresa.nome}}</dd>
+                        <dt class="col-3 text-end">CNPJ/CPF:</dt>
+                        <dd class="col-9">{{ovr.cnpj_fiscalizado|mascara_cpf_cnpj}}</dd>
                         <dt class="col-3 text-end">CE Mercante:</dt>
-                        <dd class="col-9">{{ovr.numeroCEmercante}}</dd>
+                        <dd class="col-9">{{ovr.numeroCEmercante|mascara_ce_mercante}}</dd>
                         <dt class="col-3 text-end">Declaração:</dt>
-                        <dd class="col-9">{{ovr.numerodeclaracao}}</dd>
+                        <dd class="col-9">{{ovr.numerodeclaracao|mascara_due}}</dd>
                         <dt class="col-3 text-end">Entrada:</dt>
-                        <dd class="col-9">{{ovr.dataentrada.strftime('%Y-%m-%d')}}</dd>
+                        <dd class="col-9">{{ovr.dataentrada.strftime('%d/%m/%Y')}}</dd>
                         <dt class="col-3 text-end">Emissão:</dt>
-                        <dd class="col-9">{{ovr.datahora.strftime('%Y-%m-%d')}}</dd>
+                        <dd class="col-9">{{ovr.datahora.strftime('%d/%m/%Y')}}</dd>
                         <dt class="col-3 text-end">Alertas:</dt>
                         <dd class="col-9">
                             {% for i in range(0,ovr.flags|length) %}
@@ -53,16 +57,18 @@
                         <dt class="col-3 text-end">Cadastrador:</dt>
                         <dd class="col-9">{{usuario.nome}}</dd>
                         <dt class="col-3 text-end">Auditor:</dt>
-                        <dd class="col-9">{{auditor_nome}}</dd>
+                        <dd class="col-9">{{auditor.nome}}</dd>
+                        <dt class="col-3 text-end">CPF:</dt>
+                        <dd class="col-9">{{ovr.cpfauditorresponsavel|mascara_cpf_cnpj}}</dd>
                         <dt class="col-3 text-end">Setor:</dt>
-                        <dd class="col-9">{{ovr.setor.nome}}</dd>
+                        <dd class="col-9">{{ovr.setor}}</dd>
                         <dt class="col-3 text-end">Observações:</dt>
                         <dd class="col-9">{{ovr.observacoes}}</dd>
                     </dl>
                 </div>
             </div>
             <div class="text-end">
-                <a class="link-primary text-decoration-none" href="/ovr?id={{ovr_id}}">Editar</a>
+                <a class="link-primary text-decoration-none" href="/ovr?id={{ovr.id}}">Editar</a>
             </div>
         </section>
 
@@ -74,7 +80,7 @@
                     <h3 class="display-6">Verificações físicas</h3>
                 </div>
                 <div class="col-8">
-                    <a class="m-3" href="#" role="button" aria-expanded="false">
+                    <a class="m-3" href="/rvf?ovr={{ovr.id}}" role="button" aria-expanded="false">
                         <img src="/static/css/images/plus.png" alt="menu">
                     </a>
                 </div>
@@ -90,21 +96,23 @@
                         <th scope="col" class="text-center">Peso(kg)</th>
                         <th scope="col" class="text-center">Volume</th>
                         <th scope="col" class="text-center">Fotos</th>
-                        <th scope="col" class="text-center">Excluir</th>
+<!--                        <th scope="col" class="text-center">Excluir</th>-->
                     </tr>
                     </thead>
                     <tbody>
+                    {% for rvf in lista_rvfs %}
                     <tr class="align-middle">
-                        <td scope="row" class="text-center"><a class="text-decoration-none" href="#">1</a></td>
-                        <td class="text-center"><a class="text-decoration-none" href="#">CCUN456789</a></td>
-                        <td>Interdum et malesuada fames ac ante
-                        ipsum primis in faucibus. Vestibulum quis feugiat metus. Aenean sit amet quam porttitor, dignissim
-                        diam eu, mollis enim. Aenean eget iaculis turpis, at interdum massa.</td>
-                        <td class="text-center">2000</td>
-                        <td class="text-center">3</td>
-                        <td class="text-center">30</td>
-                        <td class="text-center"><a class="text-decoration-none" href="#" role="button">X</a></td>
+                        <td scope="row" class="text-center"><a class="text-decoration-none"
+                                                               href="rvf?id={{rvf.id}}">{{rvf.id}}</a></td>
+                        <td class="text-center"><a class="text-decoration-none"
+                                                   href="rvf?id={{rvf.id}}">{{ rvf.numerolote }}</a></td>
+                        <td>{{ rvf.descricao }}</td>
+                        <td class="text-center">{{ rvf.peso }}</td>
+                        <td class="text-center">{{ rvf.volume }}</td>
+                        <td class="text-center">{{ rvf.imagens|length }}</td>
+<!--                        <td class="text-center"><a class="text-decoration-none" href="#" role="button">X</a></td>-->
                     </tr>
+                    {% endfor %}
                     </tbody>
                 </table>
             </div>
@@ -118,7 +126,7 @@
                     <h3 class="display-6">Termos de guarda</h3>
                 </div>
                 <div class="col-8">
-                    <a class="m-3" href="#" role="button" aria-expanded="false">
+                    <a class="m-3" href="lista_tgovr?ovr_id={{ovr.id}}" role="button" aria-expanded="false">
                         <img src="/static/css/images/plus.png" alt="menu">
                     </a>
                 </div>
@@ -134,21 +142,23 @@
                         <th scope="col" class="text-center">Qtdade</th>
                         <th scope="col" class="text-center">Unidade</th>
                         <th scope="col" class="text-center">Valor</th>
-                        <th scope="col" class="text-center">Excluir</th>
                     </tr>
                     </thead>
                     <tbody>
+                    {% for tgovr in lista_tgovrs %}
                     <tr class="align-middle">
-                        <td scope="row" class="text-center"><a class="text-decoration-none" href="#">87</a></td>
-                        <td class="text-center"><a class="text-decoration-none" href="#">TYBU8769</a></td>
-                        <td>Interdum et malesuada fames ac ante
-                        ipsum primis in faucibus. Vestibulum quis feugiat metus. Aenean sit amet quam porttitor, dignissim
-                        diam eu, mollis enim. Aenean eget iaculis turpis, at interdum massa.</td>
-                        <td class="text-center">2000</td>
-                        <td class="text-center">Kg</td>
-                        <td class="text-center">30.000,00</td>
-                        <td class="text-center"><a class="text-decoration-none" href="#" role="button">X</a></td>
+                        <td scope="row" class="text-center"><a class="text-decoration-none"
+                                                    href="lista_tgovr?ovr_id={{tgovr.ovr_id}}&item_id={{tgovr.id}}">
+                                                    {{tgovr.id}}</a></td>
+                        <td class="text-center"><a class="text-decoration-none"
+                                                   href="lista_tgovr?ovr_id={{tgovr.ovr_id}}&item_id={{tgovr.id}}">
+                                                    {{ tgovr.numerolote }}</a></td>
+                        <td>{{ tgovr.descricao }}</td>
+                        <td class="text-center">{% if tgovr.qtde %}{{ '%.2f' % tgovr.qtde }}{% endif %}</td>
+                        <td class="text-center">{{ tgovr.get_unidadedemedida }}</td>
+                        <td class="text-center">{%if tgovr.valor %}{{ '%.2f' % tgovr.valor }}{% endif %}</td>
                     </tr>
+                    {% endfor %}
                     </tbody>
                 </table>
             </div>
@@ -162,7 +172,8 @@
                     <h3 class="display-6">Lista de processos</h3>
                 </div>
                 <div class="col-8">
-                    <a class="m-3" href="#" role="button" aria-expanded="false">
+                    <a class="m-3" href="#" data-bs-toggle="modal" data-bs-target="#inclui_processo"
+                       role="button" aria-expanded="false">
                         <img src="/static/css/images/plus.png" alt="menu">
                     </a>
                 </div>
@@ -177,22 +188,46 @@
                         <th scope="col" class="text-center">Data</th>
                         <th scope="col" class="text-center">Usuário</th>
                         <th scope="col" class="text-center">Número</th>
-<!--                        <th scope="col" class="text-center">Unidade</th>-->
-<!--                        <th scope="col" class="text-center">Valor</th>-->
                         <th scope="col" class="text-center">Excluir</th>
                     </tr>
                     </thead>
                     <tbody>
+                    {% for processo in processos %}
                     <tr class="align-middle">
-                        <td scope="row" class="text-center"><a class="text-decoration-none" href="#">2</a></td>
-                        <td scope="row" class="text-center"><a class="text-decoration-none" href="#">Dossiê</a></td>
-                        <td class="text-center">23/01/2021</td>
-                        <td class="text-center">Adriano Diniz Castanheira</td>
-                        <td class="text-center">1234.5679-00</td>
-<!--                        <td class="text-center">Kg</td>-->
-<!--                        <td class="text-center">30.000,00</td>-->
-                        <td class="text-center"><a class="text-decoration-none" href="#" role="button">X</a></td>
+                        <td scope="row" class="text-center">{{processo.id}}</a></td>
+                        <td scope="row" class="text-center">{{ processo.tipoprocesso.descricao }}</a></td>
+                        <td class="text-center">{{ processo.create_date.strftime('%d/%m/%Y') }}</td>
+                        <td class="text-center">{{processo.user_name}}</td>
+                        <td class="text-center">{{ processo.numero }}</td>
+                        <td class="text-center">
+                            <a class="text-decoration-none" href="#" role="button" data-bs-toggle="modal"
+                               data-bs-target="#exclui_processo_{{processo.id}}">X</a>
+                        </td>
                     </tr>
+
+                    <!-- Modal excluir processo -->
+                    <div class="modal fade" id="exclui_processo_{{processo.id}}" data-bs-backdrop="static"
+                         data-bs-keyboard="false" tabindex="-1" aria-labelledby="excluir_processo" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title display-4" id="excluir_processo_label">Excluir processo</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="fs-5">
+                                        <p>Deseja realmente excluir o processo {{processo.numero}}?</p>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                    <a class="btn btn-danger" href="exclui_processo?processo_id={{processo.id}}"
+                                       role="button">Excluir</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
                     </tbody>
                 </table>
             </div>
@@ -206,7 +241,8 @@
                     <h3 class="display-6">Histórico de eventos</h3>
                 </div>
                 <div class="col-8">
-                    <a class="m-3" href="#" role="button" aria-expanded="false">
+                    <a class="m-3" href="#" data-bs-toggle="modal" data-bs-target="#registra_evento"
+                       role="button" aria-expanded="false">
                         <img src="/static/css/images/plus.png" alt="menu">
                     </a>
                 </div>
@@ -226,15 +262,43 @@
                     </tr>
                     </thead>
                     <tbody>
+                    {% for evento in eventos %}
                     <tr class="align-middle">
-                        <td scope="row" class="text-center"><a class="text-decoration-none" href="#">87</a></td>
-                        <td class="text-center"><a class="text-decoration-none" href="#">Aguardando laudo</a></td>
-                        <td class="text-center">17/12/2020</td>
-                        <td class="text-center">Adriano Diniz Castanheira</td>
-                        <td class="text-center">Aguardando laudo</td>
-                        <td class="text-center">File</td>
-                        <td class="text-center"><a class="text-decoration-none" href="#" role="button">X</a></td>
+                        <td scope="row" class="text-center">{{evento.id}}</td>
+                        <td class="text-center">{{ evento.tipoevento.nome }}</td>
+                        <td class="text-center">{{evento.create_date.strftime('%d/%m/%Y')}}</td>
+                        <td class="text-center">{{evento.user_name}}</td>
+                        <td class="text-center">{{evento.motivo}}</td>
+                        <td class="text-center">{% if evento.anexo_filename %}{{ evento.anexo_filename }}{% endif %}</td>
+                        <td class="text-center"><a class="text-decoration-none" href="#" role="button"
+                                                data-bs-toggle="modal" data-bs-target="#exclui_evento_{{evento.id}}">X
+                                                </a>
+                        </td>
                     </tr>
+                    <!-- Modal excluir evento -->
+                    <div class="modal fade" id="exclui_evento_{{evento.id}}" data-bs-backdrop="static"
+                         data-bs-keyboard="false" tabindex="-1" aria-labelledby="exclui_evento" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title display-4" id="exclui_evento_label">Excluir evento</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="fs-5">
+                                        <p>Deseja realmente excluir o evento:</p>
+                                        <p><b>{{evento.tipoevento.nome}} - nº {{evento.id}}?</b></p>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                    <a class="btn btn-danger" href="exclui_evento?evento_id={{evento.id}}&ovr_id={{ovr.id}}"
+                                       role="button">Excluir</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
                     </tbody>
                 </table>
             </div>
@@ -248,64 +312,6 @@
                 <button type="button" class="btn" style="background-color:#64A70B; color:white;" data-bs-toggle="modal"
                         data-bs-target="#encerrar_ficha">Encerrar</button>
             </div>
-
-<!--            &lt;!&ndash; Modal encerrar com resultado &ndash;&gt;-->
-<!--            <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"-->
-<!--                 aria-labelledby="staticBackdropLabel" aria-hidden="true">-->
-<!--                <div class="modal-dialog modal-dialog-centered modal-lg">-->
-<!--                    <div class="modal-content">-->
-<!--                        <div class="modal-header">-->
-<!--                            <h5 class="modal-title display-4" id="staticBackdropLabel">Encerrar ficha</h5>-->
-<!--                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>-->
-<!--                        </div>-->
-<!--                        <div class="modal-body">-->
-<!--                            <div>-->
-<!--                                <p class="fs-4 text-danger text-center">Uma vez encerrada, a ficha aceitará somente-->
-<!--                                    eventos meramente informativos</p>-->
-<!--                            </div>-->
-<!--                            <div class="my-5">-->
-<!--                                <h3 class="display-6">Ficha</h3>-->
-<!--                                <hr class="dropdown-divider">-->
-<!--                                <dl class="row">-->
-<!--                                <dt class="col-3 text-end">Responsável:</dt>-->
-<!--                                <dd class="col-9">Adriano Diniz Castanheira</dd>-->
-<!--                                <dt class="col-3 text-end">Fiscalizado:</dt>-->
-<!--                                <dd class="col-9">88.777.666/0001-44</dd>-->
-<!--                                <dt class="col-3 text-end">CE Mercante:</dt>-->
-<!--                                <dd class="col-9">12345678900</dd>-->
-<!--                                <dt class="col-3 text-end">Declaração:</dt>-->
-<!--                                <dd class="col-9">999999.999999</dd>-->
-<!--                                <dt class="col-3 text-end">Entrada:</dt>-->
-<!--                                <dd class="col-9">20/12/2020</dd>-->
-<!--                                <dt class="col-3 text-end">Emissão:</dt>-->
-<!--                                <dd class="col-9">25/12/2020</dd>-->
-<!--                            </dl>-->
-<!--                            </div>-->
-<!--                            <div class="my-5">-->
-<!--                                <h3 class="display-6">Resultado</h3>-->
-<!--                                <hr class="dropdown-divider">-->
-<!--                                <dl class="row">-->
-<!--                                <dt class="col-3 text-end">Tipo:</dt>-->
-<!--                                <dd class="col-9">{{tiporesultado}}</dd>-->
-<!--                                <dt class="col-3 text-end">Dossiê:</dt>-->
-<!--                                <dd class="col-9">{{numerodossie}}</dd>-->
-<!--                                <dt class="col-3 text-end">PAF:</dt>-->
-<!--                                <dd class="col-9">{{numeropaf}}</dd>-->
-<!--                                <dt class="col-3 text-end">RFFP:</dt>-->
-<!--                                <dd class="col-9">{{numerorffp}}</dd>-->
-<!--                                <dt class="col-3 text-end">Auditor:</dt>-->
-<!--                                <dd class="col-9">{{responsavel_cpf}}</dd>-->
-<!--                            </dl>-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                        <div class="modal-footer">-->
-<!--                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>-->
-<!--                            <a class="btn" style="background-color:#64A70B; color:white;" href="#" role="button">Encerrar</a>-->
-<!--&lt;!&ndash;                            <button type="button" class="btn btn-primary">Encerrar</button>&ndash;&gt;-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </div>-->
         </section>
 
         <!-- Modais -->
@@ -314,38 +320,38 @@
         <div class="modal fade" id="encerrar_ficha" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
                  aria-labelledby="encerrar_ficha" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title display-4" id="encerrar_ficha_label">Encerrar ficha</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title display-4" id="encerrar_ficha_label">Encerrar ficha</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div>
+                            <p class="fs-4 text-danger text-center">Uma vez encerrada, a ficha aceitará somente
+                                eventos meramente informativos</p>
                         </div>
-                        <div class="modal-body">
-                            <div>
-                                <p class="fs-4 text-danger text-center">Uma vez encerrada, a ficha aceitará somente
-                                    eventos meramente informativos</p>
-                            </div>
-                            <div class="my-5">
-                                <h3 class="display-6">Ficha</h3>
-                                <hr class="dropdown-divider">
-                                <dl class="row">
+                        <div class="my-5">
+                            <h3 class="display-6">Ficha</h3>
+                            <hr class="dropdown-divider">
+                            <dl class="row">
                                 <dt class="col-3 text-end">Responsável:</dt>
-                                <dd class="col-9">Adriano Diniz Castanheira</dd>
+                                <dd class="col-9">{{ovr.responsavel.nome}}</dd>
                                 <dt class="col-3 text-end">Fiscalizado:</dt>
-                                <dd class="col-9">88.777.666/0001-44</dd>
+                                <dd class="col-9">{{empresa.nome}}</dd>
                                 <dt class="col-3 text-end">CE Mercante:</dt>
-                                <dd class="col-9">12345678900</dd>
+                                <dd class="col-9">{{ovr.numeroCEmercante}}</dd>
                                 <dt class="col-3 text-end">Declaração:</dt>
-                                <dd class="col-9">999999.999999</dd>
+                                <dd class="col-9">{{ovr.numerodeclaracao}}</dd>
                                 <dt class="col-3 text-end">Entrada:</dt>
-                                <dd class="col-9">20/12/2020</dd>
+                                <dd class="col-9">{{ovr.dataentrada.strftime('%d/%m/%Y')}}</dd>
                                 <dt class="col-3 text-end">Emissão:</dt>
-                                <dd class="col-9">25/12/2020</dd>
+                                <dd class="col-9">{{ovr.datahora.strftime('%d/%m/%Y')}}</dd>
                             </dl>
-                            </div>
-                            <div class="my-5">
-                                <h3 class="display-6">Resultado</h3>
-                                <hr class="dropdown-divider">
-                                <dl class="row">
+                        </div>
+                        <div class="my-5">
+                            <h3 class="display-6">Resultado</h3>
+                            <hr class="dropdown-divider">
+                            <dl class="row">
                                 <dt class="col-3 text-end">Tipo:</dt>
                                 <dd class="col-9">{{tiporesultado}}</dd>
                                 <dt class="col-3 text-end">Dossiê:</dt>
@@ -357,15 +363,101 @@
                                 <dt class="col-3 text-end">Auditor:</dt>
                                 <dd class="col-9">{{responsavel_cpf}}</dd>
                             </dl>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <a class="btn" style="background-color:#64A70B; color:white;" href="#" role="button">Encerrar</a>
+                        <!--                            <button type="button" class="btn btn-primary">Encerrar</button>-->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal incluir evento -->
+        <div class="modal fade" id="registra_evento" data-bs-backdrop="static" data-bs-keyboard="false"
+                          tabindex="-1" aria-labelledby="registra_evento" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title display-4" id="inclui_evento_label">Registrar Evento</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="POST" action="eventoovr" enctype="multipart/form-data">
+                        <div class="modal-body">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <input type="hidden" name="ovr_id" value="{{ ovr.id }}"/>
+                            <dl class="row">
+                                <dt class="col-3 text-end">Fase atual:</dt>
+                                <dd class="col-9">{{fase}}</dd>
+                                <dt class="col-3 text-end">Último evento:</dt>
+                                <dd class="col-9">{{ovr.tipoevento.nome}}</dd>
+                                <hr class="dropdown-divider">
+                                <dt class="col-3 text-end">Novo evento:</dt>
+                                <dd class="col-9">{{historico_form.tipoevento_id}}</dd>
+                                <dt class="col-3 text-end">Nova fase:</dt>
+                                <dd class="col-9">{{fase}}</dd>
+                                <dt class="col-3 text-end">Motivo:</dt>
+                                <dd class="col-9">{{historico_form.motivo}}</dd>
+                                <dt class="col-3 text-end">Usuário:</dt>
+                                <dd class="col-9">{{historico_form.user_name}}</dd>
+                                <dt class="col-3 text-end">Meramente Informativo:</dt>
+                                <dd class="col-9">
+                                    {{ historico_form.meramente_informativo }} <span>Sim</span>
+                                </dd>
+                                <dt class="col-3 text-end">Anexo:</dt>
+                                <dd class="col-9">
+                                     <input id="anexo" name="anexo" type="file" value="Clique para anexar">
+                                </dd>
+                            </dl>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-secondary"
+                                    style="background-color:#64A70B; color:white;">Registrar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal incluir processo -->
+        <div class="modal fade" id="inclui_processo" data-bs-backdrop="static" data-bs-keyboard="false"
+                          tabindex="-1" aria-labelledby="encerrar_ficha" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title display-4" id="incluir_processo_label">Incluir processo</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="POST" action="processoovr" enctype="multipart/form-data">
+                        <div class="modal-body">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <input type="hidden" name="ovr_id" value="{{ ovr.id }}"/>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <label>Tipo</label>
+                                </div>
+                                <div class="col-sm-9">
+                                    {{ processo_form.tipoprocesso_id }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <label>Número</label>
+                                </div>
+                                <div class="col-sm-9">
+                                    {{ processo_form.numero_processo }}
+                                </div>
                             </div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            <a class="btn" style="background-color:#64A70B; color:white;" href="#" role="button">Encerrar</a>
-<!--                            <button type="button" class="btn btn-primary">Encerrar</button>-->
+                            <button type="submit" class="btn btn-secondary"
+                                    style="background-color:#64A70B; color:white;">Incluir</button>
                         </div>
-                    </div>
+                    </form>
                 </div>
+            </div>
         </div>
-
     {% endblock %}
