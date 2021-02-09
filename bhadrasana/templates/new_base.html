@@ -30,7 +30,7 @@
                 <form class="d-flex" method="post" action="pesquisa_simples">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <select class="form-select rounded-0 w-auto border-0" name="objeto_a_pesquisar"
-                            aria-label="Default select example">
+                            aria-label="Default select example" disabled>
                         <option selected value="ficha">Ficha</option>
                         <option value="ce">CE Mercante</option>
                         <option value="conteiner">Contêiner</option>
@@ -40,9 +40,9 @@
                         <option value="fma">FMA</option>
                     </select>
                     <input class="form-control rounded-0 w-auto border-0" name="termo_a_pesquisar" type="search"
-                           placeholder="Termo a pesquisar" aria-label="Search">
+                           placeholder="Termo a pesquisar" aria-label="Search" disabled>
                     <button class="btn btn-primary rounded-0 border-0"
-                            style="background-color:#567AB1; border-color:#567AB1;" type="submit">Pesquisar</button>
+                            style="background-color:#567AB1; border-color:#567AB1;" type="submit" disabled>Pesquisar</button>
                 </form>
                 <ul class="navbar-nav mb-2 mb-lg-0">
                     <li class="nav-item">

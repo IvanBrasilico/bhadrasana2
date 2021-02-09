@@ -91,21 +91,25 @@
             </div>
             <!-- Conteúdo -->
             <div class="col-12">
-                <table class="table">
+                <table class="table table-hover">
                     <thead>
                     <tr class="align-middle">
-                        <th scope="col" class="text-center">RVF</th>
-                        <th scope="col" class="text-center">Contêiner/Lote</th>
-                        <th scope="col" class="text-center">Descrição</th>
-                        <th scope="col" class="text-center">Peso(kg)</th>
-                        <th scope="col" class="text-center">Volume</th>
-                        <th scope="col" class="text-center">Fotos</th>
-<!--                        <th scope="col" class="text-center">Excluir</th>-->
+                        <th rowspan="2" class="text-center">RVF</th>
+                        <th rowspan="2" class="text-center">Contêiner/Lote</th>
+                        <th rowspan="2" class="text-center">Descrição</th>
+                        <th rowspan="2" class="text-center">Peso(kg)</th>
+                        <th rowspan="2" class="text-center">Volume</th>
+                        <th rowspan="2" class="text-center">Fotos</th>
+                        <th colspan="2" class="text-center border-0">Apreensão</th>
+                    </tr>
+                    <tr>
+                        <td class="text-center border-bottom">Tipo</td>
+                        <td class="text-center border-bottom">Peso(kg)</td>
                     </tr>
                     </thead>
                     <tbody>
                     {% for rvf in lista_rvfs %}
-                    <tr class="align-middle">
+                    <tr>
                         <td scope="row" class="text-center"><a class="text-decoration-none"
                                                                href="rvf?id={{rvf.id}}">{{rvf.id}}</a></td>
                         <td class="text-center">{{ rvf.numerolote|mascara_nao_informado }}</td>
@@ -113,8 +117,17 @@
                         <td class="text-center">{{ rvf.peso|mascara_nao_informado }}</td>
                         <td class="text-center">{{ rvf.volume|mascara_nao_informado }}</td>
                         <td class="text-center">{{ rvf.imagens|length }}</td>
-<!--                        <td class="text-center"><a class="text-decoration-none" href="#" role="button">X</a></td>-->
+                        {% if rvf.apreensoes %}
+                            {% for apreensao in rvf.apreensoes %}
+                        <td class="text-center">{{ apreensao.tipo.descricao }}</td>
+                        <td class="text-center">{{ apreensao.peso }}</td>
+                            {% endfor %}
+                        {% else %}
+                        <td class="text-center">Sem apreensão</td>
+                        <td class="text-center">-</td>
+                        {% endif %}
                     </tr>
+
                     {% endfor %}
                     </tbody>
                 </table>
@@ -136,7 +149,7 @@
             </div>
             <!-- Conteúdo -->
             <div class="col-12">
-                <table class="table">
+                <table class="table table-hover">
                     <thead>
                     <tr class="align-middle">
                         <th scope="col" class="text-center">TG</th>
@@ -191,7 +204,7 @@
             </div>
             <!-- Conteúdo -->
             <div class="col-12">
-                <table class="table">
+                <table class="table table-hover">
                     <thead>
                     <tr class="align-middle">
                         <th scope="col" class="text-center">ID</th>
@@ -251,16 +264,16 @@
                 <div class="col-4">
                     <h3 class="display-6">Histórico de eventos</h3>
                 </div>
-                <div class="col-8">
-                    <a class="m-3" href="#" data-bs-toggle="modal" data-bs-target="#registra_evento"
-                       role="button" aria-expanded="false">
-                        <img src="/static/css/images/plus.png" alt="menu">
-                    </a>
-                </div>
+<!--                <div class="col-8">-->
+<!--                    <a class="m-3" href="#" data-bs-toggle="modal" data-bs-target="#registra_evento"-->
+<!--                       role="button" aria-expanded="false">-->
+<!--                        <img src="/static/css/images/plus.png" alt="menu">-->
+<!--                    </a>-->
+<!--                </div>-->
             </div>
             <!-- Conteúdo -->
             <div class="col-12">
-                <table class="table">
+                <table class="table table-hover">
                     <thead>
                     <tr class="align-middle">
                         <th scope="col" class="text-center">#</th>
@@ -336,51 +349,66 @@
                         <h5 class="modal-title display-4" id="encerrar_ficha_label">Encerrar ficha</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body">
-                        <div>
-                            <p class="fs-4 text-danger text-center">Uma vez encerrada, a ficha aceitará somente
-                                eventos meramente informativos</p>
+                    <form action="/encerrar_ficha" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <div class="modal-body">
+                            <div>
+                                <p class="fs-4 text-danger text-center">Uma vez encerrada, a ficha aceitará somente
+                                    eventos meramente informativos</p>
+                            </div>
+                            <div class="my-5">
+                                <h3 class="display-6">Ficha</h3>
+                                <hr class="dropdown-divider">
+                                <dl class="row">
+                                    <dt class="col-3 text-end">Número:</dt>
+                                    <dd class="col-9"><input type="hidden" name="ovr_id"
+                                                        value="{{ovr.id}}">{{ovr.id}}</dd>
+                                    <dt class="col-3 text-end">Responsável:</dt>
+                                    <dd class="col-9"><input type="hidden" name="responsavel"
+                                                        value="{{ovr.responsavel.nome}}">{{ovr.responsavel.nome}}</dd>
+                                    <dt class="col-3 text-end">Fiscalizado:</dt>
+                                    <dd class="col-9">{{empresa.nome|mascara_nao_informado}}</dd>
+                                    <dt class="col-3 text-end">CE Mercante:</dt>
+                                    <dd class="col-9">{{ovr.numeroCEmercante|mascara_nao_informado}}</dd>
+                                    <dt class="col-3 text-end">Declaração:</dt>
+                                    <dd class="col-9">{{ovr.numerodeclaracao|mascara_nao_informado}}</dd>
+                                    <dt class="col-3 text-end">Entrada:</dt>
+                                    <dd class="col-9">{{ovr.dataentrada.strftime('%d/%m/%Y')}}</dd>
+                                    <dt class="col-3 text-end">Emissão:</dt>
+                                    <dd class="col-9">{{ovr.datahora.strftime('%d/%m/%Y')}}</dd>
+                                </dl>
+                            </div>
+                            <div class="my-5">
+                                <h3 class="display-6">Resultado</h3>
+                                <hr class="dropdown-divider">
+                                <dl class="row">
+                                    <dt class="col-3 text-end">Tipo:</dt>
+                                    {% if apreensoes %}
+                                    <dd class="col-9"><input type="hidden" name="resultado"
+                                                        value="Com resultado">Com resultado</dd>
+                                    {% else %}
+                                    <dd class="col-9"><input type="hidden" name="resultado"
+                                                        value="Sem resultado">Sem resultado</dd>
+                                    {% endif %}
+                                    <dt class="col-3 text-end">Dossiê:</dt>
+                                    <dd class="col-9">{{numerodossie}}</dd>
+                                    <dt class="col-3 text-end">PAF:</dt>
+                                    <dd class="col-9">{{numeropaf}}</dd>
+                                    <dt class="col-3 text-end">RFFP:</dt>
+                                    <dd class="col-9">{{numerorffp}}</dd>
+                                    <dt class="col-3 text-end">Auditor:</dt>
+                                    <dd class="col-9">{{responsavel_cpf}}</dd>
+                                </dl>
+                            </div>
                         </div>
-                        <div class="my-5">
-                            <h3 class="display-6">Ficha</h3>
-                            <hr class="dropdown-divider">
-                            <dl class="row">
-                                <dt class="col-3 text-end">Responsável:</dt>
-                                <dd class="col-9">{{ovr.responsavel.nome}}</dd>
-                                <dt class="col-3 text-end">Fiscalizado:</dt>
-                                <dd class="col-9">{{empresa.nome|mascara_nao_informado}}</dd>
-                                <dt class="col-3 text-end">CE Mercante:</dt>
-                                <dd class="col-9">{{ovr.numeroCEmercante|mascara_nao_informado}}</dd>
-                                <dt class="col-3 text-end">Declaração:</dt>
-                                <dd class="col-9">{{ovr.numerodeclaracao|mascara_nao_informado}}</dd>
-                                <dt class="col-3 text-end">Entrada:</dt>
-                                <dd class="col-9">{{ovr.dataentrada.strftime('%d/%m/%Y')}}</dd>
-                                <dt class="col-3 text-end">Emissão:</dt>
-                                <dd class="col-9">{{ovr.datahora.strftime('%d/%m/%Y')}}</dd>
-                            </dl>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn"
+                                    style="background-color:#64A70B; color:white;">Encerrar</button>
+<!--                            <a class="btn" style="background-color:#64A70B; color:white;" href="#" role="button">Encerrar</a>-->
+                            <!--                            <button type="button" class="btn btn-primary">Encerrar</button>-->
                         </div>
-                        <div class="my-5">
-                            <h3 class="display-6">Resultado</h3>
-                            <hr class="dropdown-divider">
-                            <dl class="row">
-                                <dt class="col-3 text-end">Tipo:</dt>
-                                <dd class="col-9">{{tiporesultado}}</dd>
-                                <dt class="col-3 text-end">Dossiê:</dt>
-                                <dd class="col-9">{{numerodossie}}</dd>
-                                <dt class="col-3 text-end">PAF:</dt>
-                                <dd class="col-9">{{numeropaf}}</dd>
-                                <dt class="col-3 text-end">RFFP:</dt>
-                                <dd class="col-9">{{numerorffp}}</dd>
-                                <dt class="col-3 text-end">Auditor:</dt>
-                                <dd class="col-9">{{responsavel_cpf}}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <a class="btn" style="background-color:#64A70B; color:white;" href="#" role="button">Encerrar</a>
-                        <!--                            <button type="button" class="btn btn-primary">Encerrar</button>-->
-                    </div>
+                    </form>
                 </div>
             </div>
         </div>

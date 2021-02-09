@@ -531,3 +531,17 @@ def exclui_apreensao_rvf(session, apreensao_id) -> List[ApreensaoRVF]:
             raise err
         return rvf.apreensoes
     return []
+
+
+def get_apreensoes(lista_rvfs):
+    for rvf in lista_rvfs:
+        if rvf.apreensoes:
+            return True
+    return False
+
+# def get_apreensoes(session, ovr_id) -> List[ApreensaoRVF]:
+#     lista_rvfs = lista_rvfovr(session=session, ovr_id=ovr_id)
+#     for rvf in lista_rvfs:
+#         apreensoes = rvf.apreensoes
+#     if apreensoes:
+#         return apreensoes

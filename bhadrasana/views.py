@@ -21,7 +21,12 @@ import io
 import os
 import tempfile
 
+import ajna_commons.flask.login as login_ajna
 from PIL import Image
+from ajna_commons.flask.conf import ALLOWED_EXTENSIONS, SECRET, logo
+from ajna_commons.flask.log import logger
+from ajna_commons.flask.user import DBUser
+from ajna_commons.utils.images import mongo_image, PIL_tobytes
 from flask import (Flask, redirect, render_template, request,
                    url_for, Response, jsonify)
 from flask_bootstrap import Bootstrap
@@ -31,11 +36,6 @@ from flask_nav import Nav
 from flask_nav.elements import Navbar, View, Separator, Subgroup
 from flask_wtf.csrf import CSRFProtect
 
-import ajna_commons.flask.login as login_ajna
-from ajna_commons.flask.conf import ALLOWED_EXTENSIONS, SECRET, logo
-from ajna_commons.flask.log import logger
-from ajna_commons.flask.user import DBUser
-from ajna_commons.utils.images import mongo_image, PIL_tobytes
 from bhadrasana.conf import APP_PATH
 from bhadrasana.models import get_usuario_telegram, Usuario
 
@@ -164,16 +164,19 @@ def moeda(value):
     return 'R$ {:,.2f}'.format(float(value)).replace(',', 'X'). \
         replace('.', ',').replace('X', '.')
 
+
 @app.template_filter()
 def mascara_cpf_cnpj(value):
     if value:
         if len(value) == 11:
-            return value[:3] + "." + value[3:6] + "." + value[6:9] + "-" + value[9:]
+            return value[:3] + '.' + value[3:6] + '.' + value[6:9] + '-' + value[9:]
         elif len(value) == 14:
-            return value[:2] + "." + value[2:5] + "." + value[5:8] + "/" + value[8:12] + "-" + value[12:]
+            return value[:2] + '.' + value[2:5] + '.' + value[5:8] + '/' + \
+                   value[8:12] + '-' + value[12:]
     else:
         return 'Não informado'
     return value
+
 
 @app.template_filter()
 def mascara_nao_informado(value):

@@ -20,7 +20,8 @@ from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
     ProcessoOVRForm, ItemTGForm, ResponsavelOVRForm, TGOVRForm, FiltroRelatorioForm, \
     FiltroMinhasOVRsForm, OKRObjectiveForm, OKRMetaForm, SetorOVRForm, EscaneamentoOperadorForm, \
     FiltroAbasForm
-from bhadrasana.models import delete_objeto, get_usuario, usuario_tem_perfil_nome
+from bhadrasana.models import delete_objeto, get_usuario, \
+    usuario_tem_perfil_nome
 from bhadrasana.models.laudo import get_empresa, get_empresas_nome, get_sats_cnpj
 from bhadrasana.models.ovr import OVR, OKRObjective, faseOVR
 from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
@@ -42,8 +43,10 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     muda_setor_ovr, get_recintos_dte, \
     excluir_processo, excluir_evento, get_ovr_visao_usuario, get_setores_cpf_choice, \
     get_processo, get_ovr_conhecimento, get_ovr_due, get_recintos_unidade, \
-    calcula_tempos_por_fase, get_setores_unidade_choice, get_afrfb_choice, get_ovr_one, \
-    libera_ovr, get_afrfb_setores_choice, get_setores_unidade, calcula_tempos_por_tipoevento
+    calcula_tempos_por_fase, get_setores_unidade_choice, \
+    get_afrfb_choice, get_ovr_one, \
+    libera_ovr, get_afrfb_setores_choice, \
+    get_setores_unidade, calcula_tempos_por_tipoevento, encerra_ficha
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects, consulta_ce_objects, \
     consulta_due_objects
@@ -1725,3 +1728,19 @@ def ovr_app(app):
                 #     resultado == rvfs
 
         return render_template('pesquisa_simples.html', resultado=resultado)
+
+    @app.route('/encerrar_ficha', methods=['POST'])
+    @login_required
+    def encerrar_ficha():
+        session = app.config.get('dbsession')
+        ovr_id = request.form.get('ovr_id')
+        usuario = get_usuario(session, current_user.name)
+        user_name = usuario.cpf
+        resultado = request.form.get('resultado')
+        if resultado == 'Com resultado':
+            try:
+                encerra_ficha(session, ovr_id, user_name)
+            except:
+                print('erro')
+
+        return render_template('index.html')

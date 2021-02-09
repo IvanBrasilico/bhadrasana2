@@ -1588,3 +1588,39 @@ def get_tiposevento_assistente(session, assistente: Assistente) -> List[TipoEven
 def get_tiposevento_assistente_choice(session, assistente: Assistente) -> List[Tuple[int, str]]:
     tipos = get_tiposevento_assistente(session, assistente)
     return [(tipo.id, tipo.nome) for tipo in tipos]
+
+
+def encerra_ficha(session, ovr_id, user_name):
+    ovr = get_ovr(session, ovr_id)
+    valida_mesmo_responsavel_ovr_user_name(session, ovr, user_name)
+    return True
+    # if not ovr.user_name:
+    #     ovr.setor_id = usuario.setor_id
+    #     ovr.user_name = usuario.cpf
+    # if ovr.fase > 2:
+    #     raise EBloqueado()
+    # for key, value in params.items():
+    #     if value and value != 'None':
+    #         setattr(ovr, key, value)
+    # ovr.datahora = handle_datahora(params)
+    # # Atribuir CNPJ do Mercante caso não informado expressamente
+    # if not ovr.cnpj_fiscalizado:
+    #     if ovr.numeroCEmercante:
+    #         try:
+    #             conhecimento = get_conhecimento(session,
+    #                                             ovr.numeroCEmercante)
+    #             if conhecimento:
+    #                 ovr.cnpj_fiscalizado = conhecimento.consignatario
+    #         except OperationalError:
+    #             pass
+    #         except Exception as err:
+    #             logger.error(str(err), exc_info=True)
+    # try:
+    #     session.add(ovr)
+    #     session.commit()
+    # except Exception as err:
+    #     session.rollback()
+    #     logger.error('Erro cadastra_ovr: %s' % str(err))
+    #     logger.error(ovr.__dict__)
+    #     raise err
+    # return ovr
