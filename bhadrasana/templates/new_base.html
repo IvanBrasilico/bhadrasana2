@@ -21,22 +21,28 @@
             <a class="navbar-brand" href="/">
              <img src="/static/css/images/logo-novo.png" alt="logotipo" class="d-inline-block align-top">
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse justify-content-evenly" id="navbarSupportedContent">
-                <form class="d-flex">
-                    <select class="form-select rounded-0 w-auto border-0" aria-label="Default select example">
-                        <option selected>Ficha</option>
-                        <option value="1">CE Mercante</option>
-                        <option value="2">Contêiner</option>
-                        <option value="3">DUE</option>
-                        <option value="3">Fiscalizado</option>
-                        <option value="3">RVF</option>
-                        <option value="3">FMA</option>
+                <form class="d-flex" method="post" action="pesquisa_simples">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <select class="form-select rounded-0 w-auto border-0" name="objeto_a_pesquisar"
+                            aria-label="Default select example">
+                        <option selected value="ficha">Ficha</option>
+                        <option value="ce">CE Mercante</option>
+                        <option value="conteiner">Contêiner</option>
+                        <option value="due">DUE</option>
+                        <option value="fiscalizado">Fiscalizado</option>
+                        <option value="rvf">RVF</option>
+                        <option value="fma">FMA</option>
                     </select>
-                    <input class="form-control rounded-0 w-auto border-0" type="search" placeholder="Termo a pesquisar" aria-label="Search">
-                    <button class="btn btn-primary rounded-0 border-0" style="background-color:#567AB1; border-color:#567AB1;" type="submit">Pesquisar</button>
+                    <input class="form-control rounded-0 w-auto border-0" name="termo_a_pesquisar" type="search"
+                           placeholder="Termo a pesquisar" aria-label="Search">
+                    <button class="btn btn-primary rounded-0 border-0"
+                            style="background-color:#567AB1; border-color:#567AB1;" type="submit">Pesquisar</button>
                 </form>
                 <ul class="navbar-nav mb-2 mb-lg-0">
                     <li class="nav-item">

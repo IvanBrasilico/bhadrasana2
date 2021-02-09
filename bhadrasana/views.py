@@ -172,22 +172,16 @@ def mascara_cpf_cnpj(value):
         elif len(value) == 14:
             return value[:2] + "." + value[2:5] + "." + value[5:8] + "/" + value[8:12] + "-" + value[12:]
     else:
-        return 'CNPJ/CPF não informado'
+        return 'Não informado'
     return value
 
 @app.template_filter()
-def mascara_ce_mercante(value):
+def mascara_nao_informado(value):
     if value:
         return value
     else:
-        return 'CE Mercante não informado'
+        return 'Não informado'
 
-@app.template_filter()
-def mascara_due(value):
-    if value:
-        return value
-    else:
-        return 'DUE não informada'
 
 @app.route('/')
 def index():

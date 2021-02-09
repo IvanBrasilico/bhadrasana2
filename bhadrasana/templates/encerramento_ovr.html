@@ -29,19 +29,20 @@
                         <dt class="col-3 text-end">Responsável:</dt>
                         <dd class="col-9">{{ovr.responsavel.nome}}</dd>
                         <dt class="col-3 text-end">Fiscalizado:</dt>
-                        <dd class="col-9">{{empresa.nome}}</dd>
+                        <dd class="col-9">{{empresa.nome|mascara_nao_informado}}</dd>
                         <dt class="col-3 text-end">CNPJ/CPF:</dt>
                         <dd class="col-9">{{ovr.cnpj_fiscalizado|mascara_cpf_cnpj}}</dd>
                         <dt class="col-3 text-end">CE Mercante:</dt>
-                        <dd class="col-9">{{ovr.numeroCEmercante|mascara_ce_mercante}}</dd>
+                        <dd class="col-9">{{ovr.numeroCEmercante|mascara_nao_informado}}</dd>
                         <dt class="col-3 text-end">Declaração:</dt>
-                        <dd class="col-9">{{ovr.numerodeclaracao|mascara_due}}</dd>
+                        <dd class="col-9">{{ovr.numerodeclaracao|mascara_nao_informado}}</dd>
                         <dt class="col-3 text-end">Entrada:</dt>
                         <dd class="col-9">{{ovr.dataentrada.strftime('%d/%m/%Y')}}</dd>
                         <dt class="col-3 text-end">Emissão:</dt>
                         <dd class="col-9">{{ovr.datahora.strftime('%d/%m/%Y')}}</dd>
                         <dt class="col-3 text-end">Alertas:</dt>
                         <dd class="col-9">
+                        {% if ovr.flags %}
                             {% for i in range(0,ovr.flags|length) %}
                                 {% if i == (ovr.flags|length -1) %}
                                     {{ ovr.flags[i].nome }}
@@ -49,6 +50,9 @@
                                     {{ ovr.flags[i].nome + ' / ' }}
                                 {% endif %}
                             {% endfor %}
+                        {% else %}
+                            Nenhum
+                        {% endif %}
                         </dd>
                     </dl>
                 </div>
@@ -104,11 +108,10 @@
                     <tr class="align-middle">
                         <td scope="row" class="text-center"><a class="text-decoration-none"
                                                                href="rvf?id={{rvf.id}}">{{rvf.id}}</a></td>
-                        <td class="text-center"><a class="text-decoration-none"
-                                                   href="rvf?id={{rvf.id}}">{{ rvf.numerolote }}</a></td>
-                        <td>{{ rvf.descricao }}</td>
-                        <td class="text-center">{{ rvf.peso }}</td>
-                        <td class="text-center">{{ rvf.volume }}</td>
+                        <td class="text-center">{{ rvf.numerolote|mascara_nao_informado }}</td>
+                        <td>{{ rvf.descricao|mascara_nao_informado }}</td>
+                        <td class="text-center">{{ rvf.peso|mascara_nao_informado }}</td>
+                        <td class="text-center">{{ rvf.volume|mascara_nao_informado }}</td>
                         <td class="text-center">{{ rvf.imagens|length }}</td>
 <!--                        <td class="text-center"><a class="text-decoration-none" href="#" role="button">X</a></td>-->
                     </tr>
@@ -150,13 +153,21 @@
                         <td scope="row" class="text-center"><a class="text-decoration-none"
                                                     href="lista_tgovr?ovr_id={{tgovr.ovr_id}}&item_id={{tgovr.id}}">
                                                     {{tgovr.id}}</a></td>
-                        <td class="text-center"><a class="text-decoration-none"
-                                                   href="lista_tgovr?ovr_id={{tgovr.ovr_id}}&item_id={{tgovr.id}}">
-                                                    {{ tgovr.numerolote }}</a></td>
-                        <td>{{ tgovr.descricao }}</td>
-                        <td class="text-center">{% if tgovr.qtde %}{{ '%.2f' % tgovr.qtde }}{% endif %}</td>
-                        <td class="text-center">{{ tgovr.get_unidadedemedida }}</td>
-                        <td class="text-center">{%if tgovr.valor %}{{ '%.2f' % tgovr.valor }}{% endif %}</td>
+                        <td class="text-center">{{ tgovr.numerolote|mascara_nao_informado }}</td>
+                        <td>{{ tgovr.descricao|mascara_nao_informado }}</td>
+                        <td class="text-center">
+                            {% if tgovr.qtde %}
+                                {{ '%.2f' % tgovr.qtde }}
+                            {% else %}
+                                Não informado
+                            {% endif %}</td>
+                        <td class="text-center">{{ tgovr.get_unidadedemedida|mascara_nao_informado }}</td>
+                        <td class="text-center">
+                            {%if tgovr.valor %}
+                                {{ '%.2f' % tgovr.valor }}
+                            {% else %}
+                                Não informado
+                            {% endif %}</td>
                     </tr>
                     {% endfor %}
                     </tbody>
@@ -337,11 +348,11 @@
                                 <dt class="col-3 text-end">Responsável:</dt>
                                 <dd class="col-9">{{ovr.responsavel.nome}}</dd>
                                 <dt class="col-3 text-end">Fiscalizado:</dt>
-                                <dd class="col-9">{{empresa.nome}}</dd>
+                                <dd class="col-9">{{empresa.nome|mascara_nao_informado}}</dd>
                                 <dt class="col-3 text-end">CE Mercante:</dt>
-                                <dd class="col-9">{{ovr.numeroCEmercante}}</dd>
+                                <dd class="col-9">{{ovr.numeroCEmercante|mascara_nao_informado}}</dd>
                                 <dt class="col-3 text-end">Declaração:</dt>
-                                <dd class="col-9">{{ovr.numerodeclaracao}}</dd>
+                                <dd class="col-9">{{ovr.numerodeclaracao|mascara_nao_informado}}</dd>
                                 <dt class="col-3 text-end">Entrada:</dt>
                                 <dd class="col-9">{{ovr.dataentrada.strftime('%d/%m/%Y')}}</dd>
                                 <dt class="col-3 text-end">Emissão:</dt>
@@ -387,26 +398,26 @@
                         <div class="modal-body">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <input type="hidden" name="ovr_id" value="{{ ovr.id }}"/>
-                            <dl class="row">
+                            <dl class="row py-2">
                                 <dt class="col-3 text-end">Fase atual:</dt>
-                                <dd class="col-9">{{fase}}</dd>
+                                <dd class="col-7">{{fase}}</dd>
                                 <dt class="col-3 text-end">Último evento:</dt>
-                                <dd class="col-9">{{ovr.tipoevento.nome}}</dd>
-                                <hr class="dropdown-divider">
+                                <dd class="col-7">{{ovr.tipoevento.nome}}</dd>
+                                <hr class="dropdown-divider my-2">
+                            </dl>
+                            <dl class="row py-2">
                                 <dt class="col-3 text-end">Novo evento:</dt>
-                                <dd class="col-9">{{historico_form.tipoevento_id}}</dd>
-                                <dt class="col-3 text-end">Nova fase:</dt>
-                                <dd class="col-9">{{fase}}</dd>
+                                <dd class="col-7">{{historico_form.tipoevento_id(class='form-select')}}</dd>
                                 <dt class="col-3 text-end">Motivo:</dt>
-                                <dd class="col-9">{{historico_form.motivo}}</dd>
-                                <dt class="col-3 text-end">Usuário:</dt>
-                                <dd class="col-9">{{historico_form.user_name}}</dd>
+                                <dd class="col-7">{{historico_form.motivo(class='form-control')}}</dd>
                                 <dt class="col-3 text-end">Meramente Informativo:</dt>
-                                <dd class="col-9">
-                                    {{ historico_form.meramente_informativo }} <span>Sim</span>
+                                <dd class="col-7">
+                                {{ historico_form.meramente_informativo }} <span>Sim</span>
                                 </dd>
+                                <dt class="col-3 text-end">Responsável:</dt>
+                                <dd class="col-7">{{ovr.responsavel.nome}}</dd>
                                 <dt class="col-3 text-end">Anexo:</dt>
-                                <dd class="col-9">
+                                <dd class="col-7">
                                      <input id="anexo" name="anexo" type="file" value="Clique para anexar">
                                 </dd>
                             </dl>
@@ -431,23 +442,23 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <form method="POST" action="processoovr" enctype="multipart/form-data">
-                        <div class="modal-body">
+                        <div class="modal-body my-3">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <input type="hidden" name="ovr_id" value="{{ ovr.id }}"/>
-                            <div class="row">
-                                <div class="col-sm-3">
-                                    <label>Tipo</label>
+                            <div class="row py-2">
+                                <div class="col-3">
+                                    <label>Tipo:</label>
                                 </div>
-                                <div class="col-sm-9">
-                                    {{ processo_form.tipoprocesso_id }}
+                                <div class="col-9">
+                                    {{ processo_form.tipoprocesso_id(class='form-select') }}
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-sm-3">
-                                    <label>Número</label>
+                            <div class="row py-2">
+                                <div class="col-3">
+                                    <label>Número:</label>
                                 </div>
-                                <div class="col-sm-9">
-                                    {{ processo_form.numero_processo }}
+                                <div class="col-9">
+                                    {{ processo_form.numero_processo(class='form-control') }}
                                 </div>
                             </div>
                         </div>

@@ -6,12 +6,12 @@ from decimal import Decimal
 from typing import Tuple
 
 import pandas as pd
+from ajna_commons.flask.log import logger
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
 from gridfs import GridFS
 from werkzeug.utils import redirect
 
-from ajna_commons.flask.log import logger
 from bhadrasana.analises.escaneamento_operador import sorteia_GMCIs
 from bhadrasana.forms.exibicao_ovr import ExibicaoOVR, TipoExibicao, agrupa_ovrs
 from bhadrasana.forms.filtro_container import FiltroContainerForm, FiltroCEForm, FiltroDUEForm
@@ -647,6 +647,7 @@ def ovr_app(app):
             flash('Erro! Detalhes no log da aplicação.')
             flash(str(type(err)))
             flash(str(err))
+        # return redirect(request.referrer)
         return redirect(url_for('ovr', id=ovr_id))
 
     @app.route('/processoovr', methods=['POST'])
@@ -1704,3 +1705,23 @@ def ovr_app(app):
         except Exception as err:
             logger.error(err, exc_info=True)
             return 'Erro! Detalhes no log da aplicação: %s' % err
+
+    @app.route('/pesquisa_simples', methods=['GET', 'POST'])
+    @login_required
+    def pesquisa_simples():
+        session = app.config.get('dbsession')
+        if request.method == 'POST':
+            objeto_a_pesquisar = request.form.get('objeto_a_pesquisar')
+            if objeto_a_pesquisar == 'ficha':
+                termo_a_pesquisar = request.form.get('termo_a_pesquisar')
+                resultado = session.query(OVR).filter(OVR.id == termo_a_pesquisar).one_or_none()
+            if objeto_a_pesquisar == 'ce':
+                termo_a_pesquisar = request.form.get('termo_a_pesquisar')
+                # ovrs = get_ovr_filtro(session=session, pfiltro=termo_a_pesquisar)
+                # rvfs = get_rvfs_filtro(session=session, pfiltro=termo_a_pesquisar)
+                # if ovrs:
+                #     resultado == ovrs
+                # if rvfs:
+                #     resultado == rvfs
+
+        return render_template('pesquisa_simples.html', resultado=resultado)

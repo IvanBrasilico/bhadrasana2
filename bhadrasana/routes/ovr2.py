@@ -19,8 +19,9 @@ from bhadrasana.models.ovr import FonteDocx, Assistente
 from bhadrasana.models.ovr_dict_repr import OVRDict
 from bhadrasana.models.ovrmanager import monta_ovr_dict, get_docx_choices, get_docx, inclui_docx, \
     get_ovrs_abertas_flags, get_ovr, MarcaManager, get_ids_flags_contrafacao, \
-    get_tiposevento_assistente_choice, gera_eventoovr, get_tgovr_one, lista_tgovr, get_tipos_processo, get_tipos_evento
-from bhadrasana.models.rvfmanager import lista_rvfovr, get_rvf
+    get_tiposevento_assistente_choice, gera_eventoovr, get_tgovr_one, lista_tgovr, get_tipos_processo, \
+    get_tipos_evento_comfase_choice
+from bhadrasana.models.rvfmanager import lista_rvfovr
 from bhadrasana.views import get_user_save_path, valid_file
 
 
@@ -331,8 +332,8 @@ def ovr2_app(app):
         operacao = ovr.get_tipooperacao()
         tiposprocesso = get_tipos_processo(session=session)
         processo_form = ProcessoOVRForm(tiposprocesso=tiposprocesso)
-        tiposevento = get_tipos_evento(session=session)
-        historico_form = HistoricoOVRForm(tiposevento)
+        tiposeventos = get_tipos_evento_comfase_choice(session=session)
+        historico_form = HistoricoOVRForm(tiposeventos=tiposeventos)
         encerramento_form = EncerramentoOVRForm(ovr_id)
         try:
             fase = ovr.get_fase()
@@ -364,4 +365,4 @@ def ovr2_app(app):
                                encerramento_form=encerramento_form, ovr=ovr, fase=fase, usuario=usuario,
                                auditor=auditor, empresa=empresa, lista_rvfs=lista_rvfs, lista_tgovrs=lista_tgovrs,
                                processos=processos, eventos=eventos, processo_form=processo_form, operacao=operacao,
-                               historico_form=historico_form, tiposevento=tiposevento)
+                               historico_form=historico_form)
