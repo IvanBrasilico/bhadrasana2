@@ -17,12 +17,11 @@ from bhadrasana.models import get_usuario, usuario_tem_perfil_nome
 from bhadrasana.models.laudo import get_empresa
 from bhadrasana.models.ovr import FonteDocx, Assistente
 from bhadrasana.models.ovr_dict_repr import OVRDict
-from bhadrasana.models.ovrmanager import monta_ovr_dict, get_docx_choices, get_docx, inclui_docx, \
-    get_ovrs_abertas_flags, get_ovr, MarcaManager, get_ids_flags_contrafacao, \
-    get_tiposevento_assistente_choice, gera_eventoovr, \
-    get_tgovr_one, lista_tgovr, get_tipos_processo, \
-    get_tipos_evento_comfase_choice
-from bhadrasana.models.rvfmanager import lista_rvfovr, get_apreensoes
+from bhadrasana.models.ovrmanager import monta_ovr_dict, get_docx_choices, get_docx,\
+    inclui_docx, get_ovrs_abertas_flags, get_ovr, MarcaManager, get_ids_flags_contrafacao, \
+    get_tiposevento_assistente_choice, gera_eventoovr, get_tgovr_one, lista_tgovr, \
+    get_tipos_processo, get_tipos_evento_comfase_choice
+from bhadrasana.models.rvfmanager import lista_rvfovr
 from bhadrasana.views import get_user_save_path, valid_file
 
 
