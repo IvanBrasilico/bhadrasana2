@@ -164,16 +164,19 @@ def moeda(value):
     return 'R$ {:,.2f}'.format(float(value)).replace(',', 'X'). \
         replace('.', ',').replace('X', '.')
 
+
 @app.template_filter()
 def mascara_cpf_cnpj(value):
     if value:
         if len(value) == 11:
-            return value[:3] + "." + value[3:6] + "." + value[6:9] + "-" + value[9:]
+            return value[:3] + '.' + value[3:6] + '.' + value[6:9] + '-' + value[9:]
         elif len(value) == 14:
-            return value[:2] + "." + value[2:5] + "." + value[5:8] + "/" + value[8:12] + "-" + value[12:]
+            return value[:2] + '.' + value[2:5] + '.' + value[5:8] + '/' + \
+                   value[8:12] + '-' + value[12:]
     else:
         return 'Não informado'
     return value
+
 
 @app.template_filter()
 def mascara_nao_informado(value):
