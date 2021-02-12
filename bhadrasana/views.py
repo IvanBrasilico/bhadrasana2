@@ -156,6 +156,16 @@ def uma_casa_decimal(value):
 
 
 @app.template_filter()
+def duas_casas_decimais(value):
+    value = convert_value(value)
+    if isinstance(value, str):
+        logger.error('uma_casa_decimal: %s' % value)
+        return value
+    return '{0:,.2f}'.format(value).replace(',', 'X'). \
+        replace('.', ',').replace('X', '.')
+
+
+@app.template_filter()
 def moeda(value):
     value = convert_value(value)
     if isinstance(value, str):

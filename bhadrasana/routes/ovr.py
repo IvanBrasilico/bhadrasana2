@@ -1736,11 +1736,23 @@ def ovr_app(app):
         ovr_id = request.form.get('ovr_id')
         usuario = get_usuario(session, current_user.name)
         user_name = usuario.cpf
-        resultado = request.form.get('resultado')
-        if resultado == 'Com resultado':
-            try:
-                encerra_ficha(session, ovr_id, user_name)
-            except:
-                print('erro')
-
+        cpf_auditor_encerramento = request.form.get('auditor')
+        tipo_resultado = int(request.form.get('tipo_resultado'))
+        try:
+            resultado = encerra_ficha(session, ovr_id, cpf_auditor_encerramento, tipo_resultado)
+            if resultado.tipo_resultado != 1:
+                params = {'ovr_id': ovr_id, 'tipoevento_id': 40, 'fase': 3,
+                          'motivo': 'Encerramento com resultado',
+                          'excluido': 0, 'meramente_informativo': 0,
+                          'user_name': user_name}
+                gera_eventoovr(session, params=params)
+            else:
+                params = {'ovr_id': ovr_id, 'tipoevento_id': 12, 'fase': 4,
+                          'motivo': 'Encerramento sem resultado',
+                          'excluido': 0, 'meramente_informativo': 0,
+                          'user_name': user_name}
+                gera_eventoovr(session, params=params)
+        except Exception as err:
+            logger.error('Erro ao encerrar a ficha')
+            logger.error(str(err))
         return render_template('index.html')

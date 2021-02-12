@@ -23,7 +23,11 @@
                 <div class="col-6 float-start">
                     <dl class="row">
                         <dt class="col-3 text-end">Status:</dt>
-                        <dd class="col-9">{{fase}}</dd>
+                        {% if fase == 'Ativa' %}
+                        <dd class="col-9 text-primary fw-bold">{{fase}}</dd>
+                        {% else %}
+                        <dd class="col-9 text-body">{{fase}}</dd>
+                        {% endif %}
                         <dt class="col-3 text-end">Operação:</dt>
                         <dd class="col-9">{{operacao}}</dd>
                         <dt class="col-3 text-end">Responsável:</dt>
@@ -36,9 +40,9 @@
                         <dd class="col-9">{{ovr.numeroCEmercante|mascara_nao_informado}}</dd>
                         <dt class="col-3 text-end">Declaração:</dt>
                         <dd class="col-9">{{ovr.numerodeclaracao|mascara_nao_informado}}</dd>
-                        <dt class="col-3 text-end">Entrada:</dt>
+                        <dt class="col-3 text-end">Entrada da carga:</dt>
                         <dd class="col-9">{{ovr.dataentrada.strftime('%d/%m/%Y')}}</dd>
-                        <dt class="col-3 text-end">Emissão:</dt>
+                        <dt class="col-3 text-end">Emissão da ficha:</dt>
                         <dd class="col-9">{{ovr.datahora.strftime('%d/%m/%Y')}}</dd>
                         <dt class="col-3 text-end">Alertas:</dt>
                         <dd class="col-9">
@@ -72,7 +76,7 @@
                 </div>
             </div>
             <div class="text-end">
-                <a class="link-primary text-decoration-none" href="/ovr?id={{ovr.id}}">Editar</a>
+                <a class="link-primary text-decoration-none" href="/ovr?id={{ovr.id}}">EDITAR</a>
             </div>
         </section>
 
@@ -121,7 +125,7 @@
                             {% for apreensao, peso in dicts.get('apreensoes').items() %}
                                 <tr>
                                     <td class="text-center">{{apreensao}}</td>
-                                    <td class="text-center">{{peso}}</td>
+                                    <td class="text-center">{{peso|duas_casas_decimais}}</td>
                                 </tr>
                             {% endfor %}
                         {% else %}
@@ -163,7 +167,7 @@
                     <tr>
                         <td scope="col" class="text-center border-bottom">NCM</td>
                         <td scope="col" class="text-center border-bottom">Qtdade</td>
-                        <td scope="col" class="text-center border-bottom">Valor</td>
+                        <td scope="col" class="text-center border-bottom">Valor total (R$)</td>
                     </tr>
                     </thead>
                     <tbody>
@@ -179,8 +183,8 @@
                             {% for ncm, dicionarios in dicts.get('NCMs').items() %}
                                 <tr>
                                     <td class="text-center">{{ncm}}</td>
-                                    <td class="text-center">{{ dicionarios.get('qtde_total') }}</td>
-                                    <td class="text-center">{{ dicionarios.get('valor') }}</td>
+                                    <td class="text-center">{{ dicionarios.get('qtde_total')|sem_casa_decimal }}</td>
+                                    <td class="text-center">{{ dicionarios.get('valor')|duas_casas_decimais }}</td>
                                 </tr>
                             {% endfor %}
                         {% else %}
@@ -379,9 +383,9 @@
                                     <dd class="col-9">{{ovr.numeroCEmercante|mascara_nao_informado}}</dd>
                                     <dt class="col-3 text-end">Declaração:</dt>
                                     <dd class="col-9">{{ovr.numerodeclaracao|mascara_nao_informado}}</dd>
-                                    <dt class="col-3 text-end">Entrada:</dt>
+                                    <dt class="col-3 text-end">Entrada da carga:</dt>
                                     <dd class="col-9">{{ovr.dataentrada.strftime('%d/%m/%Y')}}</dd>
-                                    <dt class="col-3 text-end">Emissão:</dt>
+                                    <dt class="col-3 text-end">Emissão da ficha:</dt>
                                     <dd class="col-9">{{ovr.datahora.strftime('%d/%m/%Y')}}</dd>
                                 </dl>
                             </div>
@@ -389,32 +393,37 @@
                                 <h3 class="display-6">Resultado</h3>
                                 <hr class="dropdown-divider">
                                 <dl class="row">
+                                {% if total_apreensoes|length > 0 or total_tgs|length > 0 %}
                                     {% if total_apreensoes|length > 0 %}
                                         <dt class="col-3 text-end">Apreensões:</dt>
                                             <dd class="col-9">
                                                 {% for apreensao, peso in total_apreensoes.items() %}
                                                 <input type="hidden" name="{{apreensao}}" value="{{peso}}">
-                                                    {{apreensao}}: {{peso}} /
+                                                    {{apreensao}}: {{peso|duas_casas_decimais}} /
                                                 {% endfor %}
                                             </dd>
                                     {% endif %}
                                     {% if total_tgs|length > 0 %}
                                         <dt class="col-3 text-end">Perdimento:</dt>
                                             <dd class="col-9">
-                                                <input type="hidden" name="{{perdimento}}" value="{{total_tgs['valor_total']}}">
-                                                R$ {{total_tgs['valor_total']}}
+                                                <input type="hidden" name="perdimento" value="{{total_tgs['valor_total']}}">
+                                                R$ {{total_tgs['valor_total']|duas_casas_decimais}}
                                             </dd>
                                     {% endif %}
-                                    <dt class="col-3 text-end">Dossiê:</dt>
-                                    <dd class="col-9">{{numerodossie}}</dd>
-                                    <dt class="col-3 text-end">PAF:</dt>
-                                    <dd class="col-9">{{numeropaf}}</dd>
-                                    <dt class="col-3 text-end">RFFP:</dt>
-                                    <dd class="col-9">{{numerorffp}}</dd>
+                                {% else %}
+                                    <dt class="col-3 text-end">Tipo:</dt>
+                                    <dd class="col-9">Sem resultado</dd>
+                                {% endif %}
                                     <dt class="col-3 text-end">Auditor:</dt>
-                                    <dd class="col-9">{{responsavel_cpf}}</dd>
+                                    <dd class="col-9">
+                                        <input type="hidden" name="auditor" value="{{auditor.cpf}}">
+                                        {{auditor.nome}}
+                                    </dd>
+                                    <dt class="col-3 text-end">Encerramento:</dt>
+                                    <dd class="col-9">{{ data }}</dd>
                                 </dl>
                             </div>
+                            <input type="hidden" name="tipo_resultado" value="{{tipo_resultado}}">
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>

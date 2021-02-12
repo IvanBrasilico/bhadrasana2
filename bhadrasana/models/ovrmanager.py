@@ -2,6 +2,7 @@ import io
 import sys
 from sqlite3 import OperationalError
 
+from flask_login import current_user
 from gridfs import GridFS
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -25,13 +26,13 @@ from ajna_commons.models.bsonimage import BsonImage
 from ajna_commons.flask.log import logger
 from ajna_commons.utils.images import mongo_image
 from bhadrasana.models import Usuario, Setor, EBloqueado, ESomenteUsuarioResponsavel, \
-    usuario_tem_perfil_nome, ENaoAutorizado
+    usuario_tem_perfil_nome, ENaoAutorizado, get_usuario
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto, \
     get_usuario_validando
 from bhadrasana.models.filtros_ficha import FiltrosFicha
 from bhadrasana.models.laudo import get_empresa
 from bhadrasana.models.ovr import FonteDocx, Representacao, RepresentanteMarca, Assistente, \
-    TiposEventoAssistente
+    TiposEventoAssistente, ResultadoOVR, TipoResultado
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
     TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria, \
     EventoEspecial, Flag, Relatorio, RoteiroOperacaoOVR, flags_table, VisualizacaoOVR, \
@@ -1596,7 +1597,7 @@ def lista_de_tgs_e_items(session, ovr_id):
     """
     lista_de_tgs_items = {}
     valor_total = 0
-    total_tgs = {'valor_total': valor_total}
+    total_tgs = {}
     ovr_lista_tgs = lista_tgovr(session, ovr_id)
     for tg in ovr_lista_tgs:
         qtde_total = 0
@@ -1610,7 +1611,10 @@ def lista_de_tgs_e_items(session, ovr_id):
                 n = item.ncm
                 qtde = item.qtde
                 valor_total = float(qtde * item.valor)
-                total_tgs['valor_total'] += valor_total
+                if total_tgs.get('valor_total'):
+                    total_tgs['valor_total'] += valor_total
+                else:
+                    total_tgs['valor_total'] = valor_total
                 if lista_de_tgs_items[tg.id]['NCMs'].get(n):
                     qtde_total = lista_de_tgs_items[tg.id]['NCMs'][n].get('qtde_total') \
                                  + float(qtde)
@@ -1660,68 +1664,38 @@ def lista_de_rvfs_e_apreensoes(session, ovr_id):
     return lista_de_rvfs_apreensoes, total_apreensoes
 
 
-def encerra_ficha(session, ovr_id, user_name):
+def calcula_resultado(total_apreensoes, total_tgs):
+    if total_apreensoes:
+        return TipoResultado.Apreensao.value
+    elif total_tgs:
+        return TipoResultado.Perdimento.value
+    elif total_apreensoes and total_tgs:
+        return TipoResultado.Apreensao_e_perdimento.value
+    else:
+        return TipoResultado.Sem_resultado.value
+
+
+def encerra_ficha(session, ovr_id, cpf_auditor_encerramento, tipo_resultado):
+    resultado = ResultadoOVR()
     ovr = get_ovr(session, ovr_id)
+    usuario = get_usuario(session, current_user.name)
+    user_name = usuario.cpf
     valida_mesmo_responsavel_ovr_user_name(session, ovr, user_name)
-    lista_de_tgs_e_items(session, ovr_id)
-    lista_de_rvfs_e_apreensoes(session, ovr_id)
-    # ovr_lista_tgs = lista_tgovr(session, ovr_id)
-    # ovr_lista_rvfs = session.query(RVF).filter(RVF.ovr_id == int(ovr_id)).all()
-    # lista_tg_items = {}
-    # lista_apreensoes = {}
-    # for tg in ovr_lista_tgs:
-    #     valor = 0.
-    #     for item in tg.itenstg:
-    #         try:
-    #             ncm = item.ncm
-    #             qtde = item.qtde
-    #             if lista_tg_items.get(ncm):
-    #                 valor += float(item.valor * qtde)
-    #             else:
-    #                 valor = float(item.valor * qtde)
-    #             lista_tg_items[ncm] = valor
-    #         except: TypeError
-    #             pass
-    # for rvf in ovr_lista_rvfs:
-    #     peso = 0
-    #     for apreensao in rvf.apreensoes:
-    #         try:
-    #             tipo_apreensao = apreensao.tipo.id
-    #             if lista_apreensoes.get(tipo_apreensao):
-    #                 peso += float(apreensao.peso)
-    #             else:
-    #                 peso = float(apreensao.peso)
-    #             lista_apreensoes[tipo_apreensao] = peso
-    #         except TypeError:
-    #             pass
-    return True
-    # if not ovr.user_name:
-    #     ovr.setor_id = usuario.setor_id
-    #     ovr.user_name = usuario.cpf
-    # if ovr.fase > 2:
-    #     raise EBloqueado()
-    # for key, value in params.items():
-    #     if value and value != 'None':
-    #         setattr(ovr, key, value)
-    # ovr.datahora = handle_datahora(params)
-    # # Atribuir CNPJ do Mercante caso não informado expressamente
-    # if not ovr.cnpj_fiscalizado:
-    #     if ovr.numeroCEmercante:
-    #         try:
-    #             conhecimento = get_conhecimento(session,
-    #                                             ovr.numeroCEmercante)
-    #             if conhecimento:
-    #                 ovr.cnpj_fiscalizado = conhecimento.consignatario
-    #         except OperationalError:
-    #             pass
-    #         except Exception as err:
-    #             logger.error(str(err), exc_info=True)
-    # try:
-    #     session.add(ovr)
-    #     session.commit()
-    # except Exception as err:
-    #     session.rollback()
-    #     logger.error('Erro cadastra_ovr: %s' % str(err))
-    #     logger.error(ovr.__dict__)
-    #     raise err
-    # return ovr
+    resultado.ovr_id = ovr_id
+    resultado.tipo_resultado = tipo_resultado
+    resultado.encerramento = datetime.now()
+    resultado.create_date = datetime.now()
+    resultado.user_name = user_name
+    if cpf_auditor_encerramento:
+        resultado.cpf_auditor_encerramento = cpf_auditor_encerramento
+    else:
+        resultado.cpf_auditor_encerramento = None
+    try:
+        session.add(resultado)
+        session.commit()
+    except Exception as err:
+        session.rollback()
+        logger.error('Erro ao registrar o encerramento da ficha no banco de dados')
+        logger.error(str(err))
+        raise err
+    return resultado
