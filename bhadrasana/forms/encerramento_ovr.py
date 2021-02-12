@@ -12,10 +12,11 @@ class TipoResultado(Enum):
     # não tem nada específico. Cabe aqui começar a pensar de, ao menos na tela,
     # já mostrar caminhos para facilitar
     SEMRESULTADO = 1
-    TERMODEGUARDA = 2
-    TASEDA = 3
+    APREENSAO = 2
+    PERDIMENTO = 3
     CREDITO = 4
-    OUTRO = 5
+    SANCAO = 5
+    DARF = 6
 
 
 class EncerramentoOVRForm(FlaskForm):

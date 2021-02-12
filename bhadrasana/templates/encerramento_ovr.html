@@ -97,10 +97,8 @@
                         <th rowspan="2" class="text-center">RVF</th>
                         <th rowspan="2" class="text-center">Contêiner/Lote</th>
                         <th rowspan="2" class="text-center">Descrição</th>
-                        <th rowspan="2" class="text-center">Peso(kg)</th>
-                        <th rowspan="2" class="text-center">Volume</th>
                         <th rowspan="2" class="text-center">Fotos</th>
-                        <th colspan="2" class="text-center border-0">Apreensão</th>
+                        <th colspan="2" class="text-center border-0">Apreensões</th>
                     </tr>
                     <tr>
                         <td class="text-center border-bottom">Tipo</td>
@@ -108,26 +106,31 @@
                     </tr>
                     </thead>
                     <tbody>
-                    {% for rvf in lista_rvfs %}
+
+                    {% for rvf, dicts in lista_de_rvfs_apreensoes.items() %}
                     <tr>
-                        <td scope="row" class="text-center"><a class="text-decoration-none"
-                                                               href="rvf?id={{rvf.id}}">{{rvf.id}}</a></td>
-                        <td class="text-center">{{ rvf.numerolote|mascara_nao_informado }}</td>
-                        <td>{{ rvf.descricao|mascara_nao_informado }}</td>
-                        <td class="text-center">{{ rvf.peso|mascara_nao_informado }}</td>
-                        <td class="text-center">{{ rvf.volume|mascara_nao_informado }}</td>
-                        <td class="text-center">{{ rvf.imagens|length }}</td>
-                        {% if rvf.apreensoes %}
-                            {% for apreensao in rvf.apreensoes %}
-                        <td class="text-center">{{ apreensao.tipo.descricao }}</td>
-                        <td class="text-center">{{ apreensao.peso }}</td>
+                        <td scope="row" class="text-center align-middle" rowspan="{{lista_de_rvfs_apreensoes[rvf].get('apreensoes')|length + 1}}">
+                            <a class="text-decoration-none" href="rvf?id={{rvf}}">{{rvf}}</a></td>
+                        <td class="text-center align-middle" rowspan="{{lista_de_rvfs_apreensoes[rvf].get('apreensoes')|length  + 1}}">
+                            {{lista_de_rvfs_apreensoes[rvf].get('container')}}</td>
+                        <td class="text-center align-middle" rowspan="{{lista_de_rvfs_apreensoes[rvf].get('apreensoes')|length  + 1}}">
+                            {{lista_de_rvfs_apreensoes[rvf].get('descricao')}}</td>
+                        <td class="text-center align-middle" rowspan="{{lista_de_rvfs_apreensoes[rvf].get('apreensoes')|length  + 1}}">
+                            {{lista_de_rvfs_apreensoes[rvf].get('imagens')|length}}</td>
+                        {% if dicts.get('apreensoes')|length > 0 %}
+                            {% for apreensao, peso in dicts.get('apreensoes').items() %}
+                                <tr>
+                                    <td class="text-center">{{apreensao}}</td>
+                                    <td class="text-center">{{peso}}</td>
+                                </tr>
                             {% endfor %}
                         {% else %}
-                        <td class="text-center">Sem apreensão</td>
-                        <td class="text-center">-</td>
+
+                                <td class="text-center">Sem apreensões</td>
+                                <td class="text-center">-</td>
+
                         {% endif %}
                     </tr>
-
                     {% endfor %}
                     </tbody>
                 </table>
@@ -152,35 +155,39 @@
                 <table class="table table-hover">
                     <thead>
                     <tr class="align-middle">
-                        <th scope="col" class="text-center">TG</th>
-                        <th scope="col" class="text-center">Contêiner/Lote</th>
-                        <th scope="col" class="text-center">Descrição</th>
-                        <th scope="col" class="text-center">Qtdade</th>
-                        <th scope="col" class="text-center">Unidade</th>
-                        <th scope="col" class="text-center">Valor</th>
+                        <th scope="col" rowspan="2" class="text-center">TG</th>
+                        <th scope="col" rowspan="2" class="text-center">Contêiner/Lote</th>
+                        <th scope="col" rowspan="2" class="text-center">Descrição</th>
+                        <th scope="col" colspan="3" class="text-center border-0">Itens</th>
+                    </tr>
+                    <tr>
+                        <td scope="col" class="text-center border-bottom">NCM</td>
+                        <td scope="col" class="text-center border-bottom">Qtdade</td>
+                        <td scope="col" class="text-center border-bottom">Valor</td>
                     </tr>
                     </thead>
                     <tbody>
-                    {% for tgovr in lista_tgovrs %}
+                    {% for tg, dicts in lista_de_tgs_items.items() %}
                     <tr class="align-middle">
-                        <td scope="row" class="text-center"><a class="text-decoration-none"
-                                                    href="lista_tgovr?ovr_id={{tgovr.ovr_id}}&item_id={{tgovr.id}}">
-                                                    {{tgovr.id}}</a></td>
-                        <td class="text-center">{{ tgovr.numerolote|mascara_nao_informado }}</td>
-                        <td>{{ tgovr.descricao|mascara_nao_informado }}</td>
-                        <td class="text-center">
-                            {% if tgovr.qtde %}
-                                {{ '%.2f' % tgovr.qtde }}
-                            {% else %}
-                                Não informado
-                            {% endif %}</td>
-                        <td class="text-center">{{ tgovr.get_unidadedemedida|mascara_nao_informado }}</td>
-                        <td class="text-center">
-                            {%if tgovr.valor %}
-                                {{ '%.2f' % tgovr.valor }}
-                            {% else %}
-                                Não informado
-                            {% endif %}</td>
+                        <td scope="row" class="text-center" rowspan="{{lista_de_tgs_items[tg].get('NCMs')|length + 1}}">
+                            <a class="text-decoration-none" href="lista_tgovr?ovr_id={{ovr.id}}&item_id={{tg}}">{{tg}}</a></td>
+                        <td class="text-center" rowspan="{{lista_de_tgs_items[tg].get('NCMs')|length + 1}}">
+                            {{ dicts.get('container')|mascara_nao_informado }}</td>
+                        <td rowspan="{{lista_de_tgs_items[tg].get('NCMs')|length + 1}}">
+                            {{ dicts.get('descricao')|mascara_nao_informado }}</td>
+                        {% if lista_de_tgs_items[tg].get('NCMs')|length > 0 %}
+                            {% for ncm, dicionarios in dicts.get('NCMs').items() %}
+                                <tr>
+                                    <td class="text-center">{{ncm}}</td>
+                                    <td class="text-center">{{ dicionarios.get('qtde_total') }}</td>
+                                    <td class="text-center">{{ dicionarios.get('valor') }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <td class="text-center">Não informado</td>
+                            <td class="text-center">Não informado</td>
+                            <td class="text-center">Não informado</td>
+                        {% endif %}
                     </tr>
                     {% endfor %}
                     </tbody>
@@ -346,7 +353,7 @@
             <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title display-4" id="encerrar_ficha_label">Encerrar ficha</h5>
+                        <h5 class="modal-title display-5" id="encerrar_ficha_label">Encerrar ficha</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <form action="/encerrar_ficha" method="POST">
@@ -356,7 +363,7 @@
                                 <p class="fs-4 text-danger text-center">Uma vez encerrada, a ficha aceitará somente
                                     eventos meramente informativos</p>
                             </div>
-                            <div class="my-5">
+                            <div class="my-4">
                                 <h3 class="display-6">Ficha</h3>
                                 <hr class="dropdown-divider">
                                 <dl class="row">
@@ -378,17 +385,25 @@
                                     <dd class="col-9">{{ovr.datahora.strftime('%d/%m/%Y')}}</dd>
                                 </dl>
                             </div>
-                            <div class="my-5">
+                            <div class="my-4">
                                 <h3 class="display-6">Resultado</h3>
                                 <hr class="dropdown-divider">
                                 <dl class="row">
-                                    <dt class="col-3 text-end">Tipo:</dt>
-                                    {% if apreensoes %}
-                                    <dd class="col-9"><input type="hidden" name="resultado"
-                                                        value="Com resultado">Com resultado</dd>
-                                    {% else %}
-                                    <dd class="col-9"><input type="hidden" name="resultado"
-                                                        value="Sem resultado">Sem resultado</dd>
+                                    {% if total_apreensoes|length > 0 %}
+                                        <dt class="col-3 text-end">Apreensões:</dt>
+                                            <dd class="col-9">
+                                                {% for apreensao, peso in total_apreensoes.items() %}
+                                                <input type="hidden" name="{{apreensao}}" value="{{peso}}">
+                                                    {{apreensao}}: {{peso}} /
+                                                {% endfor %}
+                                            </dd>
+                                    {% endif %}
+                                    {% if total_tgs|length > 0 %}
+                                        <dt class="col-3 text-end">Perdimento:</dt>
+                                            <dd class="col-9">
+                                                <input type="hidden" name="{{perdimento}}" value="{{total_tgs['valor_total']}}">
+                                                R$ {{total_tgs['valor_total']}}
+                                            </dd>
                                     {% endif %}
                                     <dt class="col-3 text-end">Dossiê:</dt>
                                     <dd class="col-9">{{numerodossie}}</dd>

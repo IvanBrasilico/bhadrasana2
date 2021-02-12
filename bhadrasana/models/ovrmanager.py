@@ -1590,9 +1590,110 @@ def get_tiposevento_assistente_choice(session, assistente: Assistente) -> List[T
     return [(tipo.id, tipo.nome) for tipo in tipos]
 
 
+def lista_de_tgs_e_items(session, ovr_id):
+    """ Retorna a quatidade total e valor total de cada item do TG por NCM.
+    Se o TG não tiver item, retorna a quantidde total e valor total do TG.
+    """
+    lista_de_tgs_items = {}
+    valor_total = 0
+    total_tgs = {'valor_total': valor_total}
+    ovr_lista_tgs = lista_tgovr(session, ovr_id)
+    for tg in ovr_lista_tgs:
+        qtde_total = 0
+        valor = 0
+        lista_de_tgs_items[tg.id] = {}
+        lista_de_tgs_items[tg.id]['container'] = tg.numerolote
+        lista_de_tgs_items[tg.id]['descricao'] = tg.descricao
+        lista_de_tgs_items[tg.id]['NCMs'] = {}
+        for item in tg.itenstg:
+            try:
+                n = item.ncm
+                qtde = item.qtde
+                valor_total = float(qtde * item.valor)
+                total_tgs['valor_total'] += valor_total
+                if lista_de_tgs_items[tg.id]['NCMs'].get(n):
+                    qtde_total = lista_de_tgs_items[tg.id]['NCMs'][n].get('qtde_total') \
+                                 + float(qtde)
+                    valor = lista_de_tgs_items[tg.id]['NCMs'][n].get('valor') + \
+                            float(item.valor * qtde)
+                else:
+                    lista_de_tgs_items[tg.id]['NCMs'][n] = {}
+                    qtde_total = float(qtde)
+                    valor = float(item.valor * qtde)
+                lista_de_tgs_items[tg.id]['NCMs'][n]['qtde_total'] = qtde_total
+                lista_de_tgs_items[tg.id]['NCMs'][n]['valor'] = valor
+            except TypeError:
+                pass
+    return lista_de_tgs_items, total_tgs
+
+
+def lista_de_rvfs_e_apreensoes(session, ovr_id):
+    """ Retorna a quatidade total e valor total de cada tipo de apreensão por RVF."""
+    lista_de_rvfs_apreensoes = {}
+    total_apreensoes = {}
+    ovr_lista_rvfs = session.query(RVF).filter(RVF.ovr_id == int(ovr_id)).all()
+    peso_total_apreensao = 0
+    for rvf in ovr_lista_rvfs:
+        peso = 0
+        lista_de_rvfs_apreensoes[rvf.id] = {}
+        lista_de_rvfs_apreensoes[rvf.id]['container'] = rvf.numerolote
+        lista_de_rvfs_apreensoes[rvf.id]['descricao'] = rvf.descricao
+        lista_de_rvfs_apreensoes[rvf.id]['imagens'] = rvf.imagens
+        lista_de_rvfs_apreensoes[rvf.id]['apreensoes'] = {}
+        for apreensao in rvf.apreensoes:
+            try:
+                tipo_apreensao = apreensao.tipo.descricao
+                if total_apreensoes.get(tipo_apreensao):
+                    peso_total_apreensao = total_apreensoes.get(tipo_apreensao) + \
+                                           float(apreensao.peso)
+                else:
+                    peso_total_apreensao = float(apreensao.peso)
+                total_apreensoes[tipo_apreensao] = peso_total_apreensao
+                if lista_de_rvfs_apreensoes[rvf.id]['apreensoes'].get(tipo_apreensao):
+                    peso = lista_de_rvfs_apreensoes[rvf.id]['apreensoes'].get(tipo_apreensao) + \
+                           float(apreensao.peso)
+                else:
+                    peso = float(apreensao.peso)
+                lista_de_rvfs_apreensoes[rvf.id]['apreensoes'][tipo_apreensao] = peso
+            except TypeError:
+                pass
+    return lista_de_rvfs_apreensoes, total_apreensoes
+
+
 def encerra_ficha(session, ovr_id, user_name):
     ovr = get_ovr(session, ovr_id)
     valida_mesmo_responsavel_ovr_user_name(session, ovr, user_name)
+    lista_de_tgs_e_items(session, ovr_id)
+    lista_de_rvfs_e_apreensoes(session, ovr_id)
+    # ovr_lista_tgs = lista_tgovr(session, ovr_id)
+    # ovr_lista_rvfs = session.query(RVF).filter(RVF.ovr_id == int(ovr_id)).all()
+    # lista_tg_items = {}
+    # lista_apreensoes = {}
+    # for tg in ovr_lista_tgs:
+    #     valor = 0.
+    #     for item in tg.itenstg:
+    #         try:
+    #             ncm = item.ncm
+    #             qtde = item.qtde
+    #             if lista_tg_items.get(ncm):
+    #                 valor += float(item.valor * qtde)
+    #             else:
+    #                 valor = float(item.valor * qtde)
+    #             lista_tg_items[ncm] = valor
+    #         except: TypeError
+    #             pass
+    # for rvf in ovr_lista_rvfs:
+    #     peso = 0
+    #     for apreensao in rvf.apreensoes:
+    #         try:
+    #             tipo_apreensao = apreensao.tipo.id
+    #             if lista_apreensoes.get(tipo_apreensao):
+    #                 peso += float(apreensao.peso)
+    #             else:
+    #                 peso = float(apreensao.peso)
+    #             lista_apreensoes[tipo_apreensao] = peso
+    #         except TypeError:
+    #             pass
     return True
     # if not ovr.user_name:
     #     ovr.setor_id = usuario.setor_id

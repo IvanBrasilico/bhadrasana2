@@ -17,11 +17,12 @@ from bhadrasana.models import get_usuario, usuario_tem_perfil_nome
 from bhadrasana.models.laudo import get_empresa
 from bhadrasana.models.ovr import FonteDocx, Assistente
 from bhadrasana.models.ovr_dict_repr import OVRDict
-from bhadrasana.models.ovrmanager import monta_ovr_dict, get_docx_choices, get_docx,\
+from bhadrasana.models.ovrmanager import monta_ovr_dict, get_docx_choices, get_docx, \
     inclui_docx, get_ovrs_abertas_flags, get_ovr, MarcaManager, get_ids_flags_contrafacao, \
-    get_tiposevento_assistente_choice, gera_eventoovr, get_tgovr_one, lista_tgovr, \
-    get_tipos_processo, get_tipos_evento_comfase_choice
-from bhadrasana.models.rvfmanager import lista_rvfovr, get_apreensoes
+    get_tiposevento_assistente_choice, gera_eventoovr, get_tgovr_one, get_tipos_processo, \
+    get_tipos_evento_comfase_choice, lista_de_rvfs_e_apreensoes, \
+    lista_de_tgs_e_items
+from bhadrasana.models.rvfmanager import lista_rvfovr
 from bhadrasana.views import get_user_save_path, valid_file
 
 
@@ -335,6 +336,10 @@ def ovr2_app(app):
         tiposeventos = get_tipos_evento_comfase_choice(session=session)
         historico_form = HistoricoOVRForm(tiposeventos=tiposeventos)
         encerramento_form = EncerramentoOVRForm(ovr_id)
+        lista_de_tgs_items = lista_de_tgs_e_items(session, ovr_id)[0]
+        total_tgs = lista_de_tgs_e_items(session, ovr_id)[1]
+        lista_de_rvfs_apreensoes = lista_de_rvfs_e_apreensoes(session, ovr_id)[0]
+        total_apreensoes = lista_de_rvfs_e_apreensoes(session, ovr_id)[1]
         try:
             fase = ovr.get_fase()
             usuario = get_usuario(session, current_user.name)
@@ -343,12 +348,8 @@ def ovr2_app(app):
                 empresa = get_empresa(session=session, cnpj=ovr.cnpj_fiscalizado)
             else:
                 empresa = ''
-            lista_rvfs = lista_rvfovr(session=session, ovr_id=ovr_id)
-            lista_tgovrs = lista_tgovr(session=session, ovr_id=ovr_id)
             processos = ovr.processos
             eventos = ovr.historico
-            # apreensoes = get_apreensoes(session=session, ovr_id=ovr_id)
-            apreensoes = get_apreensoes(lista_rvfs)
             if usuario is None:
                 raise Exception('Erro: Usuário não encontrado!')
             if request.method == 'POST':
@@ -370,11 +371,12 @@ def ovr2_app(app):
                                usuario=usuario,
                                auditor=auditor,
                                empresa=empresa,
-                               lista_rvfs=lista_rvfs,
-                               lista_tgovrs=lista_tgovrs,
                                processos=processos,
                                eventos=eventos,
                                processo_form=processo_form,
                                operacao=operacao,
                                historico_form=historico_form,
-                               apreensoes=apreensoes)
+                               lista_de_tgs_items=lista_de_tgs_items,
+                               lista_de_rvfs_apreensoes=lista_de_rvfs_apreensoes,
+                               total_apreensoes=total_apreensoes,
+                               total_tgs=total_tgs)

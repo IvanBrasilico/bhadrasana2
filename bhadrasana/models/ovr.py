@@ -591,6 +591,8 @@ class ResultadoOVR(BaseRastreavel):
     ovr_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                     ForeignKey('ovr_ovrs.id'))
     ovr = relationship('OVR')
+    resultado = Column(Boolean, index=False)
+    # tipo_resultado =
 
 
 class ModeloDocx(BaseRastreavel):
