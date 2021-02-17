@@ -362,7 +362,7 @@
 
         <!-- Seção Botões -->
         <section id="buttons_section" class="container d-flex justify-content-end my-5">
-            <form method="GET" action="/ovr" class="mx-3">
+            <form method="GET" action="ovr" class="mx-3">
                 <input type="hidden" name="id" value="{{ovr.id}}">
                 <button class="btn btn-primary" type="submit">Editar ficha</button>
             </form>
@@ -388,7 +388,7 @@
                         <h5 class="modal-title display-5" id="encerrar_ficha_label">Encerrar ficha</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <form action="/encerrar_ficha" method="POST">
+                    <form action="encerrar_ficha" method="POST">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         <div class="modal-body">
                             <div>
