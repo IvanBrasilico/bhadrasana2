@@ -2,7 +2,11 @@
     {% block content %}
         <!-- Seção Ficha -->
         <section id="ficha_section" class="container d-flex align-items-center my-5">
+            {% if ovr.fase < 3 %}
             <h2 class="display-4">Encerramento da Ficha {{ ovr.id }}</h2>
+            {% else %}
+            <h2 class="display-4 text-danger">Ficha {{ ovr.id }} encerrada</h2>
+            {% endif %}
         </section>
 
         <!-- Seção Informações -->
@@ -75,9 +79,12 @@
                     </dl>
                 </div>
             </div>
-            <div class="text-end">
-                <a class="link-primary text-decoration-none" href="/ovr?id={{ovr.id}}">EDITAR</a>
-            </div>
+            <!-- Editar a ficha -->
+            {% if ovr.fase < 3 %}
+<!--            <div class="text-end">-->
+<!--                <a class="link-primary text-decoration-none" href="/ovr?id={{ovr.id}}">EDITAR</a>-->
+<!--            </div>-->
+            {% endif %}
         </section>
 
         <!-- Seção Verificações Físicas -->
@@ -87,11 +94,14 @@
                 <div class="col-4">
                     <h3 class="display-6">Verificações físicas</h3>
                 </div>
-                <div class="col-8">
-                    <a class="m-3" href="/rvf?ovr={{ovr.id}}" role="button" aria-expanded="false">
-                        <img src="/static/css/images/plus.png" alt="menu">
-                    </a>
-                </div>
+                <!-- Plus -->
+                {% if ovr.fase < 3 %}
+<!--                <div class="col-8">-->
+<!--                    <a class="m-3" href="/rvf?ovr={{ovr.id}}" role="button" aria-expanded="false">-->
+<!--                        <img src="/static/css/images/plus.png" alt="menu">-->
+<!--                    </a>-->
+<!--                </div>-->
+                {% endif %}
             </div>
             <!-- Conteúdo -->
             <div class="col-12">
@@ -148,11 +158,14 @@
                 <div class="col-4">
                     <h3 class="display-6">Termos de guarda</h3>
                 </div>
-                <div class="col-8">
-                    <a class="m-3" href="lista_tgovr?ovr_id={{ovr.id}}" role="button" aria-expanded="false">
-                        <img src="/static/css/images/plus.png" alt="menu">
-                    </a>
-                </div>
+                <!-- Plus -->
+                {% if ovr.fase < 3 %}
+<!--                <div class="col-8">-->
+<!--                    <a class="m-3" href="lista_tgovr?ovr_id={{ovr.id}}" role="button" aria-expanded="false">-->
+<!--                        <img src="/static/css/images/plus.png" alt="menu">-->
+<!--                    </a>-->
+<!--                </div>-->
+                {% endif %}
             </div>
             <!-- Conteúdo -->
             <div class="col-12">
@@ -206,12 +219,15 @@
                 <div class="col-4">
                     <h3 class="display-6">Lista de processos</h3>
                 </div>
-                <div class="col-8">
-                    <a class="m-3" href="#" data-bs-toggle="modal" data-bs-target="#inclui_processo"
-                       role="button" aria-expanded="false">
-                        <img src="/static/css/images/plus.png" alt="menu">
-                    </a>
-                </div>
+                <!-- Plus -->
+                {% if ovr.fase < 3 %}
+<!--                    <div class="col-8">-->
+<!--                        <a class="m-3" href="#" data-bs-toggle="modal" data-bs-target="#inclui_processo"-->
+<!--                           role="button" aria-expanded="false">-->
+<!--                            <img src="/static/css/images/plus.png" alt="menu">-->
+<!--                        </a>-->
+<!--                    </div>-->
+                {% endif %}
             </div>
             <!-- Conteúdo -->
             <div class="col-12">
@@ -223,7 +239,9 @@
                         <th scope="col" class="text-center">Data</th>
                         <th scope="col" class="text-center">Usuário</th>
                         <th scope="col" class="text-center">Número</th>
-                        <th scope="col" class="text-center">Excluir</th>
+                        {% if ovr.fase < 3 %}
+<!--                        <th scope="col" class="text-center">Excluir</th>-->
+                        {% endif %}
                     </tr>
                     </thead>
                     <tbody>
@@ -234,10 +252,12 @@
                         <td class="text-center">{{ processo.create_date.strftime('%d/%m/%Y') }}</td>
                         <td class="text-center">{{processo.user_name}}</td>
                         <td class="text-center">{{ processo.numero }}</td>
-                        <td class="text-center">
-                            <a class="text-decoration-none" href="#" role="button" data-bs-toggle="modal"
-                               data-bs-target="#exclui_processo_{{processo.id}}">X</a>
-                        </td>
+                        {% if ovr.fase < 3 %}
+<!--                        <td class="text-center">-->
+<!--                            <a class="text-decoration-none" href="#" role="button" data-bs-toggle="modal"-->
+<!--                               data-bs-target="#exclui_processo_{{processo.id}}">X</a>-->
+<!--                        </td>-->
+                        {% endif %}
                     </tr>
 
                     <!-- Modal excluir processo -->
@@ -293,7 +313,7 @@
                         <th scope="col" class="text-center">Usuário</th>
                         <th scope="col" class="text-center">Detalhes</th>
                         <th scope="col" class="text-center">Anexo</th>
-                        <th scope="col" class="text-center">Excluir</th>
+<!--                        <th scope="col" class="text-center">Excluir</th>-->
                     </tr>
                     </thead>
                     <tbody>
@@ -305,9 +325,9 @@
                         <td class="text-center">{{evento.user_name}}</td>
                         <td class="text-center">{{evento.motivo}}</td>
                         <td class="text-center">{% if evento.anexo_filename %}{{ evento.anexo_filename }}{% endif %}</td>
-                        <td class="text-center"><a class="text-decoration-none" href="#" role="button"
-                                                data-bs-toggle="modal" data-bs-target="#exclui_evento_{{evento.id}}">X
-                                                </a>
+<!--                        <td class="text-center"><a class="text-decoration-none" href="#" role="button"-->
+<!--                                                data-bs-toggle="modal" data-bs-target="#exclui_evento_{{evento.id}}">X-->
+<!--                                                </a>-->
                         </td>
                     </tr>
                     <!-- Modal excluir evento -->
@@ -342,10 +362,18 @@
 
         <!-- Seção Botões -->
         <section id="buttons_section" class="container d-flex justify-content-end my-5">
-            <div class="text-end">
-                <!-- Button trigger modal -->
+            <form method="GET" action="/ovr" class="mx-3">
+                <input type="hidden" name="id" value="{{ovr.id}}">
+                <button class="btn btn-primary" type="submit">Editar ficha</button>
+            </form>
+            <div>
+            <!-- Button trigger modal -->
+            {% if ovr.fase >= 3 %}
+                <button type="button" class="btn btn-dark disabled">Ficha já encerrada</button>
+            {% else %}
                 <button type="button" class="btn" style="background-color:#64A70B; color:white;" data-bs-toggle="modal"
                         data-bs-target="#encerrar_ficha">Encerrar</button>
+            {% endif %}
             </div>
         </section>
 
@@ -420,7 +448,7 @@
                                         {{auditor.nome}}
                                     </dd>
                                     <dt class="col-3 text-end">Encerramento:</dt>
-                                    <dd class="col-9">{{ data }}</dd>
+                                    <dd class="col-9">{{ data_encerramento }}</dd>
                                 </dl>
                             </div>
                             <input type="hidden" name="tipo_resultado" value="{{tipo_resultado}}">

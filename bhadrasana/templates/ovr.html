@@ -129,15 +129,21 @@
                     <label for="adata">Data da Emissão da Ficha</label>
                     {{ oform.adata(class='form-control') }}
                 </div>
+                <!-- Atribuir responsável -->
                 <div class="col-sm-2">
 
                     {% if oform.id.data %}
+
+                    &nbsp;
+
+
                     <button id="btn_responsavel" type="button" class="btn btn-warning form-control"
                             data-toggle="modal" data-target="#responsavel">
                         Atribuir responsável
                     </button>
                     {% endif %}
                 </div>
+                <!-- Definir auditor -->
                 <div class="col-sm-2">
                     &nbsp;
                     {% if oform.id.data %}
@@ -147,6 +153,7 @@
                     </button>
                     {% endif %}
                 </div>
+                <!-- Transferir de setor -->
                 <div class="col-sm-2">
                     &nbsp;
                     {% if oform.id.data %}
@@ -156,16 +163,32 @@
                     </button>
                     {% endif %}
                 </div>
+                <!-- Liberar ficha -->
                 <div class="col-sm-2">
+
+                    {% if ovr.fase >= 3 %}
+
                     &nbsp;
-                    {% if oform.id.data %}
-                    <button id="btn_" type="button" class="btn btn-default form-control"
-                            onclick="location.href='libera_ficha?ovr_id={{ oform.id.data }}'">
+
+
+                    <button id="btn_disabled" type="button" class="btn btn-default form-control" disabled>
                         Liberar Ficha
                     </button>
+                    {% else %}
+                        {% if oform.id.data %}
+
+                        &nbsp;
+
+
+                        <button id="btn_" type="button" class="btn btn-default form-control"
+                                onclick="location.href='libera_ficha?ovr_id={{ oform.id.data }}'">
+                            Liberar Ficha
+                        </button>
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>
+            <!-- Alertas -->
             <div class="row">
                 <div class="col-sm-3">
                     <h3>Alertas / Observações importantes</h3>
@@ -177,6 +200,7 @@
                     </div>
                 </div>
             </div>
+            <!-- Flags -->
             <div class="row">
                 <div class="col-sm-12" id="div_flags_ovr">
                     {% for flag in flags_ovr %}
@@ -211,12 +235,15 @@
                     {% endif %}
                 </div>
                 <div class="col-sm-3">
-                    {% if oform.id.data %}
+                    {% if ovr.fase > 0 and ovr.fase < 3 %}
 <!--                    <button id="btn_auto" type="button" class="btn btn-primary btn-warning form-control"-->
 <!--                            data-toggle="modal" data-target="#lavratura">-->
 <!--                        Lavratura do Auto de Infração-->
 <!--                    </button>-->
-                    <a href="encerramento_ovr?ovr_id={{ovr.id}}">Encerrar ficha</a>
+                        <a href="encerramento_ovr?ovr_id={{ovr.id}}" class="btn btn-danger form-control">Encerrar ficha</a>
+                    {% else %}
+                        <a href="encerramento_ovr?ovr_id={{ovr.id}}"
+                           class="btn btn-danger form-control hidden">Encerrar ficha</a>
                     {% endif %}
                 </div>
             </div>

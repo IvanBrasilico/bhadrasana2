@@ -10,7 +10,6 @@ from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.utils import redirect
 
 from bhadrasana.docx.docx_functions import gera_comunicado_contrafacao, gera_auto_contrafacao
-from bhadrasana.forms.encerramento_ovr import EncerramentoOVRForm
 from bhadrasana.forms.exibicao_ovr import ExibicaoOVR, TipoExibicao
 from bhadrasana.forms.ovr import FiltroDocxForm, ModeloDocxForm, HistoricoOVRForm, ProcessoOVRForm
 from bhadrasana.models import get_usuario, usuario_tem_perfil_nome
@@ -335,12 +334,12 @@ def ovr2_app(app):
         processo_form = ProcessoOVRForm(tiposprocesso=tiposprocesso)
         tiposeventos = get_tipos_evento_comfase_choice(session=session)
         historico_form = HistoricoOVRForm(tiposeventos=tiposeventos)
-        encerramento_form = EncerramentoOVRForm(ovr_id)
         lista_de_tgs_items = lista_de_tgs_e_items(session, ovr_id)[0]
         total_tgs = lista_de_tgs_e_items(session, ovr_id)[1]
         lista_de_rvfs_apreensoes = lista_de_rvfs_e_apreensoes(session, ovr_id)[0]
         total_apreensoes = lista_de_rvfs_e_apreensoes(session, ovr_id)[1]
         tipo_resultado = calcula_resultado(total_apreensoes, total_tgs)
+        data_encerramento = datetime.now().strftime('%d/%m/%Y')
         try:
             fase = ovr.get_fase()
             usuario = get_usuario(session, current_user.name)
@@ -353,20 +352,15 @@ def ovr2_app(app):
             eventos = ovr.historico
             if usuario is None:
                 raise Exception('Erro: Usuário não encontrado!')
-            if request.method == 'POST':
-                ovr_id = request.args.get('ovr_id')
-                encerramento_form = EncerramentoOVRForm(request.form)
-                # evento = gera_encerramentovr(session, dict(encerramento_form.data.items()),
-                #                    user_name=usuario.cpf)
-                # ovr_id = evento.ovr_id
-                return redirect(url_for('encerramento_ovr', ovr_id=ovr_id))
+            # if request.method == 'POST':
+            #     ovr_id = request.args.get('ovr_id')
+            #     return redirect(url_for('encerramento_ovr', ovr_id=ovr_id))
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
             flash(str(type(err)))
             flash(str(err))
         return render_template('encerramento_ovr.html',
-                               encerramento_form=encerramento_form,
                                ovr=ovr,
                                fase=fase,
                                usuario=usuario,
@@ -381,4 +375,5 @@ def ovr2_app(app):
                                lista_de_rvfs_apreensoes=lista_de_rvfs_apreensoes,
                                total_apreensoes=total_apreensoes,
                                total_tgs=total_tgs,
-                               tipo_resultado=tipo_resultado)
+                               tipo_resultado=tipo_resultado,
+                               data_encerramento=data_encerramento)

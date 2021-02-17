@@ -1743,16 +1743,17 @@ def ovr_app(app):
             if resultado.tipo_resultado != 1:
                 params = {'ovr_id': ovr_id, 'tipoevento_id': 40, 'fase': 3,
                           'motivo': 'Encerramento com resultado',
-                          'excluido': 0, 'meramente_informativo': 0,
-                          'user_name': user_name}
-                gera_eventoovr(session, params=params)
+                          'excluido': 0, 'meramente_informativo': 0}
+                gera_eventoovr(session, params=params, user_name=user_name)
+                flash(f'Ficha nº {ovr_id} encerrada com sucesso!')
             else:
                 params = {'ovr_id': ovr_id, 'tipoevento_id': 12, 'fase': 4,
                           'motivo': 'Encerramento sem resultado',
-                          'excluido': 0, 'meramente_informativo': 0,
-                          'user_name': user_name}
-                gera_eventoovr(session, params=params)
+                          'excluido': 0, 'meramente_informativo': 0}
+                gera_eventoovr(session, params=params, user_name=user_name)
+                flash(f'Ficha nº {ovr_id} encerrada com sucesso!')
         except Exception as err:
             logger.error('Erro ao encerrar a ficha')
             logger.error(str(err))
-        return render_template('index.html')
+            flash('Ficha não encerrada. ' + str(err))
+        return redirect(url_for('index'))
