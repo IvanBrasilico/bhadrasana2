@@ -1741,13 +1741,13 @@ def ovr_app(app):
         try:
             resultado = encerra_ficha(session, ovr_id, cpf_auditor_encerramento, tipo_resultado)
             if resultado.tipo_resultado != 1:
-                params = {'ovr_id': ovr_id, 'tipoevento_id': 40, 'fase': 3,
+                params = {'ovr_id': ovr_id, 'tipoevento_id': 14, 'fase': 3,
                           'motivo': 'Encerramento com resultado',
                           'excluido': 0, 'meramente_informativo': 0}
                 gera_eventoovr(session, params=params, user_name=user_name)
                 flash(f'Ficha nº {ovr_id} encerrada com sucesso!')
             else:
-                params = {'ovr_id': ovr_id, 'tipoevento_id': 12, 'fase': 4,
+                params = {'ovr_id': ovr_id, 'tipoevento_id': 15, 'fase': 4,
                           'motivo': 'Encerramento sem resultado',
                           'excluido': 0, 'meramente_informativo': 0}
                 gera_eventoovr(session, params=params, user_name=user_name)
