@@ -1,0 +1,416 @@
+{% extends "new_base.html" %}
+    {% block content %}
+        <!-- Seção Ficha -->
+        <section id="ficha_section" class="container d-flex align-items-center my-5">
+            <h2 class="display-4">Encerramento da Ficha {{ ovr_id }}</h2>
+            <div class="dropdown dropend">
+                <a class="m-3" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="/static/gear.png" alt="menu">
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                    <li><a class="dropdown-item" href="/ovr?id={{ovr_id}}">Editar informações</a></li>
+                    <li><a class="dropdown-item" role="button" data-bs-toggle="modal"
+                        data-bs-target="#atribuir_responsavel" href="#atribuir_responsavel">Atribuir responsável</a></li>
+                    <li><a class="dropdown-item" href="#">Definir auditor</a></li>
+                    <li><a class="dropdown-item" href="#">Programar verificação física</a></li>
+                    <li><a class="dropdown-item" href="#">Transferir para outro setor</a></li>
+                    <li><a class="dropdown-item" href="#">Liberar ficha</a></li>
+                    <li><a class="dropdown-item" href="#">Registrar outros eventos</a></li>
+<!--                    <li><a class="dropdown-item" href="#">Encerrar ficha</a></li>-->
+                </ul>
+            </div>
+        </section>
+
+        <!-- Seção Informações -->
+        <section id="info_section" class="container d-flex flex-column my-5">
+            <!-- Título -->
+            <div class="row align-items-center mb-5">
+                <div class="col-4">
+                    <h3 class="display-6">Informações gerais</h3>
+                </div>
+<!--                <div class="col-8">-->
+<!--                    <a class="m-3" href="#" role="button" aria-expanded="false">-->
+<!--                        <img src="/static/plus.png" alt="menu">-->
+<!--                    </a>-->
+<!--                </div>-->
+            </div>
+            <!-- Conteúdo -->
+            <div class="d-flex">
+                <div class="col-6 float-start">
+                    <dl class="row">
+                        <dt class="col-3 text-end">Status:</dt>
+                        <dd class="col-9">Ativa</dd>
+                        <dt class="col-3 text-end">Responsável:</dt>
+                        <dd class="col-9">Adriano Diniz Castanheira</dd>
+                        <dt class="col-3 text-end">Fiscalizado:</dt>
+                        <dd class="col-9">88.777.666/0001-44</dd>
+                        <dt class="col-3 text-end">CE Mercante:</dt>
+                        <dd class="col-9">12345678900</dd>
+                        <dt class="col-3 text-end">Declaração:</dt>
+                        <dd class="col-9">999999.999999</dd>
+                        <dt class="col-3 text-end">Entrada:</dt>
+                        <dd class="col-9">20/12/2020</dd>
+                        <dt class="col-3 text-end">Emissão:</dt>
+                        <dd class="col-9">25/12/2020</dd>
+                        <dt class="col-3 text-end">Alertas:</dt>
+                        <dd class="col-9">Alto valor agregado Apreensão policial Contrafação </dd>
+                    </dl>
+                </div>
+                <div class="col-6 float-end">
+                    <dl class="row">
+                        <dt class="col-3 text-end">Cadastrador:</dt>
+                        <dd class="col-9">Tibério Dâmaso Mendonça</dd>
+                        <dt class="col-3 text-end">Auditor:</dt>
+                        <dd class="col-9">Joel Alves Pereira</dd>
+                        <dt class="col-3 text-end">Setor:</dt>
+                        <dd class="col-9">SysAdmin</dd>
+                        <dt class="col-3 text-end">Observações:</dt>
+                        <dd class="col-9">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus dictum tincidunt dui,
+                            tempus faucibus nibh volutpat in. Cras ut urna leo. Nulla ac arcu ut sem viverra dictum sit amet
+                            fermentum massa. Nullam pellentesque mauris augue, ac rutrum risus ultrices non. Aenean lacinia
+                            lorem malesuada magna ultrices, non ultricies enim ultrices. Interdum et malesuada fames ac ante
+                            ipsum primis in faucibus. Vestibulum quis feugiat metus. Aenean sit amet quam porttitor, dignissim
+                            diam eu, mollis enim. Aenean eget iaculis turpis, at interdum massa.</dd>
+                    </dl>
+                </div>
+            </div>
+            <div class="text-end">
+                <a class="link-primary text-decoration-none" href="/ovr?id={{ovr_id}}">Editar</a>
+            </div>
+        </section>
+
+        <!-- Seção Verificações Físicas -->
+        <section id="rvf_section" class="container my-5">
+            <!-- Título -->
+            <div class="row align-items-center mb-5">
+                <div class="col-4">
+                    <h3 class="display-6">Verificações físicas</h3>
+                </div>
+                <div class="col-8">
+                    <a class="m-3" href="#" role="button" aria-expanded="false">
+                        <img src="/static/plus.png" alt="menu">
+                    </a>
+                </div>
+            </div>
+            <!-- Conteúdo -->
+            <div class="col-12">
+                <table class="table">
+                    <thead>
+                    <tr class="align-middle">
+                        <th scope="col" class="text-center">RVF</th>
+                        <th scope="col" class="text-center">Contêiner/Lote</th>
+                        <th scope="col" class="text-center">Descrição</th>
+                        <th scope="col" class="text-center">Peso(kg)</th>
+                        <th scope="col" class="text-center">Volume</th>
+                        <th scope="col" class="text-center">Fotos</th>
+                        <th scope="col" class="text-center">Excluir</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr class="align-middle">
+                        <td scope="row" class="text-center"><a class="text-decoration-none" href="#">1</a></td>
+                        <td class="text-center"><a class="text-decoration-none" href="#">CCUN456789</a></td>
+                        <td>Interdum et malesuada fames ac ante
+                        ipsum primis in faucibus. Vestibulum quis feugiat metus. Aenean sit amet quam porttitor, dignissim
+                        diam eu, mollis enim. Aenean eget iaculis turpis, at interdum massa.</td>
+                        <td class="text-center">2000</td>
+                        <td class="text-center">3</td>
+                        <td class="text-center">30</td>
+                        <td class="text-center"><a class="text-decoration-none" href="#" role="button">X</a></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Seção Termos de guarda -->
+        <section id="tg_section" class="container my-5">
+            <!-- Título -->
+            <div class="row align-items-center mb-5">
+                <div class="col-4">
+                    <h3 class="display-6">Termos de guarda</h3>
+                </div>
+                <div class="col-8">
+                    <a class="m-3" href="#" role="button" aria-expanded="false">
+                        <img src="/static/plus.png" alt="menu">
+                    </a>
+                </div>
+            </div>
+            <!-- Conteúdo -->
+            <div class="col-12">
+                <table class="table">
+                    <thead>
+                    <tr class="align-middle">
+                        <th scope="col" class="text-center">TG</th>
+                        <th scope="col" class="text-center">Contêiner/Lote</th>
+                        <th scope="col" class="text-center">Descrição</th>
+                        <th scope="col" class="text-center">Qtdade</th>
+                        <th scope="col" class="text-center">Unidade</th>
+                        <th scope="col" class="text-center">Valor</th>
+                        <th scope="col" class="text-center">Excluir</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr class="align-middle">
+                        <td scope="row" class="text-center"><a class="text-decoration-none" href="#">87</a></td>
+                        <td class="text-center"><a class="text-decoration-none" href="#">TYBU8769</a></td>
+                        <td>Interdum et malesuada fames ac ante
+                        ipsum primis in faucibus. Vestibulum quis feugiat metus. Aenean sit amet quam porttitor, dignissim
+                        diam eu, mollis enim. Aenean eget iaculis turpis, at interdum massa.</td>
+                        <td class="text-center">2000</td>
+                        <td class="text-center">Kg</td>
+                        <td class="text-center">30.000,00</td>
+                        <td class="text-center"><a class="text-decoration-none" href="#" role="button">X</a></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Seção Processos -->
+        <section id="processos_section" class="container my-5">
+            <!-- Título -->
+            <div class="row align-items-center mb-5">
+                <div class="col-4">
+                    <h3 class="display-6">Lista de processos</h3>
+                </div>
+                <div class="col-8">
+                    <a class="m-3" href="#" role="button" aria-expanded="false">
+                        <img src="/static/plus.png" alt="menu">
+                    </a>
+                </div>
+            </div>
+            <!-- Conteúdo -->
+            <div class="col-12">
+                <table class="table">
+                    <thead>
+                    <tr class="align-middle">
+                        <th scope="col" class="text-center">ID</th>
+                        <th scope="col" class="text-center">Tipo</th>
+                        <th scope="col" class="text-center">Data</th>
+                        <th scope="col" class="text-center">Usuário</th>
+                        <th scope="col" class="text-center">Número</th>
+<!--                        <th scope="col" class="text-center">Unidade</th>-->
+<!--                        <th scope="col" class="text-center">Valor</th>-->
+                        <th scope="col" class="text-center">Excluir</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr class="align-middle">
+                        <td scope="row" class="text-center"><a class="text-decoration-none" href="#">2</a></td>
+                        <td scope="row" class="text-center"><a class="text-decoration-none" href="#">Dossiê</a></td>
+                        <td class="text-center">23/01/2021</td>
+                        <td class="text-center">Adriano Diniz Castanheira</td>
+                        <td class="text-center">1234.5679-00</td>
+<!--                        <td class="text-center">Kg</td>-->
+<!--                        <td class="text-center">30.000,00</td>-->
+                        <td class="text-center"><a class="text-decoration-none" href="#" role="button">X</a></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Seção Histórico de eventos -->
+        <section id="eventos_section" class="container my-5">
+            <!-- Título -->
+            <div class="row align-items-center mb-5">
+                <div class="col-4">
+                    <h3 class="display-6">Histórico de eventos</h3>
+                </div>
+                <div class="col-8">
+                    <a class="m-3" href="#" role="button" aria-expanded="false">
+                        <img src="/static/plus.png" alt="menu">
+                    </a>
+                </div>
+            </div>
+            <!-- Conteúdo -->
+            <div class="col-12">
+                <table class="table">
+                    <thead>
+                    <tr class="align-middle">
+                        <th scope="col" class="text-center">#</th>
+                        <th scope="col" class="text-center">Tipo</th>
+                        <th scope="col" class="text-center">Data</th>
+                        <th scope="col" class="text-center">Usuário</th>
+                        <th scope="col" class="text-center">Detalhes</th>
+                        <th scope="col" class="text-center">Anexo</th>
+                        <th scope="col" class="text-center">Excluir</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr class="align-middle">
+                        <td scope="row" class="text-center"><a class="text-decoration-none" href="#">87</a></td>
+                        <td class="text-center"><a class="text-decoration-none" href="#">Aguardando laudo</a></td>
+                        <td class="text-center">17/12/2020</td>
+                        <td class="text-center">Adriano Diniz Castanheira</td>
+                        <td class="text-center">Aguardando laudo</td>
+                        <td class="text-center">File</td>
+                        <td class="text-center"><a class="text-decoration-none" href="#" role="button">X</a></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+
+        <!-- Seção Botões -->
+        <section id="buttons_section" class="container d-flex justify-content-end my-5">
+            <div class="text-end">
+                <!-- Button trigger modal -->
+                <button type="button" class="btn" style="background-color:#64A70B; color:white;" data-bs-toggle="modal"
+                        data-bs-target="#encerrar_ficha">Encerrar</button>
+            </div>
+
+<!--            &lt;!&ndash; Modal encerrar com resultado &ndash;&gt;-->
+<!--            <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"-->
+<!--                 aria-labelledby="staticBackdropLabel" aria-hidden="true">-->
+<!--                <div class="modal-dialog modal-dialog-centered modal-lg">-->
+<!--                    <div class="modal-content">-->
+<!--                        <div class="modal-header">-->
+<!--                            <h5 class="modal-title display-4" id="staticBackdropLabel">Encerrar ficha</h5>-->
+<!--                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>-->
+<!--                        </div>-->
+<!--                        <div class="modal-body">-->
+<!--                            <div>-->
+<!--                                <p class="fs-4 text-danger text-center">Uma vez encerrada, a ficha aceitará somente-->
+<!--                                    eventos meramente informativos</p>-->
+<!--                            </div>-->
+<!--                            <div class="my-5">-->
+<!--                                <h3 class="display-6">Ficha</h3>-->
+<!--                                <hr class="dropdown-divider">-->
+<!--                                <dl class="row">-->
+<!--                                <dt class="col-3 text-end">Responsável:</dt>-->
+<!--                                <dd class="col-9">Adriano Diniz Castanheira</dd>-->
+<!--                                <dt class="col-3 text-end">Fiscalizado:</dt>-->
+<!--                                <dd class="col-9">88.777.666/0001-44</dd>-->
+<!--                                <dt class="col-3 text-end">CE Mercante:</dt>-->
+<!--                                <dd class="col-9">12345678900</dd>-->
+<!--                                <dt class="col-3 text-end">Declaração:</dt>-->
+<!--                                <dd class="col-9">999999.999999</dd>-->
+<!--                                <dt class="col-3 text-end">Entrada:</dt>-->
+<!--                                <dd class="col-9">20/12/2020</dd>-->
+<!--                                <dt class="col-3 text-end">Emissão:</dt>-->
+<!--                                <dd class="col-9">25/12/2020</dd>-->
+<!--                            </dl>-->
+<!--                            </div>-->
+<!--                            <div class="my-5">-->
+<!--                                <h3 class="display-6">Resultado</h3>-->
+<!--                                <hr class="dropdown-divider">-->
+<!--                                <dl class="row">-->
+<!--                                <dt class="col-3 text-end">Tipo:</dt>-->
+<!--                                <dd class="col-9">{{tiporesultado}}</dd>-->
+<!--                                <dt class="col-3 text-end">Dossiê:</dt>-->
+<!--                                <dd class="col-9">{{numerodossie}}</dd>-->
+<!--                                <dt class="col-3 text-end">PAF:</dt>-->
+<!--                                <dd class="col-9">{{numeropaf}}</dd>-->
+<!--                                <dt class="col-3 text-end">RFFP:</dt>-->
+<!--                                <dd class="col-9">{{numerorffp}}</dd>-->
+<!--                                <dt class="col-3 text-end">Auditor:</dt>-->
+<!--                                <dd class="col-9">{{responsavel_cpf}}</dd>-->
+<!--                            </dl>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                        <div class="modal-footer">-->
+<!--                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>-->
+<!--                            <a class="btn" style="background-color:#64A70B; color:white;" href="#" role="button">Encerrar</a>-->
+<!--&lt;!&ndash;                            <button type="button" class="btn btn-primary">Encerrar</button>&ndash;&gt;-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+        </section>
+
+        <!-- Modais -->
+
+        <!-- Modal encerrar ficha -->
+        <div class="modal fade" id="encerrar_ficha" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+                 aria-labelledby="encerrar_ficha" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title display-4" id="encerrar_ficha_label">Encerrar ficha</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div>
+                                <p class="fs-4 text-danger text-center">Uma vez encerrada, a ficha aceitará somente
+                                    eventos meramente informativos</p>
+                            </div>
+                            <div class="my-5">
+                                <h3 class="display-6">Ficha</h3>
+                                <hr class="dropdown-divider">
+                                <dl class="row">
+                                <dt class="col-3 text-end">Responsável:</dt>
+                                <dd class="col-9">Adriano Diniz Castanheira</dd>
+                                <dt class="col-3 text-end">Fiscalizado:</dt>
+                                <dd class="col-9">88.777.666/0001-44</dd>
+                                <dt class="col-3 text-end">CE Mercante:</dt>
+                                <dd class="col-9">12345678900</dd>
+                                <dt class="col-3 text-end">Declaração:</dt>
+                                <dd class="col-9">999999.999999</dd>
+                                <dt class="col-3 text-end">Entrada:</dt>
+                                <dd class="col-9">20/12/2020</dd>
+                                <dt class="col-3 text-end">Emissão:</dt>
+                                <dd class="col-9">25/12/2020</dd>
+                            </dl>
+                            </div>
+                            <div class="my-5">
+                                <h3 class="display-6">Resultado</h3>
+                                <hr class="dropdown-divider">
+                                <dl class="row">
+                                <dt class="col-3 text-end">Tipo:</dt>
+                                <dd class="col-9">{{tiporesultado}}</dd>
+                                <dt class="col-3 text-end">Dossiê:</dt>
+                                <dd class="col-9">{{numerodossie}}</dd>
+                                <dt class="col-3 text-end">PAF:</dt>
+                                <dd class="col-9">{{numeropaf}}</dd>
+                                <dt class="col-3 text-end">RFFP:</dt>
+                                <dd class="col-9">{{numerorffp}}</dd>
+                                <dt class="col-3 text-end">Auditor:</dt>
+                                <dd class="col-9">{{responsavel_cpf}}</dd>
+                            </dl>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <a class="btn" style="background-color:#64A70B; color:white;" href="#" role="button">Encerrar</a>
+<!--                            <button type="button" class="btn btn-primary">Encerrar</button>-->
+                        </div>
+                    </div>
+                </div>
+        </div>
+
+        <!-- Atribuir responsável -->
+        <div class="modal fade" id="atribuir_responsavel" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+             aria-labelledby="atribuir_responsavel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title display-6" id="atribuir_responsavel_label">Atribuir responsável</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="POST" action="responsavelovr" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <input type="hidden" name="ovr_id" value="{{ ovr_id }}"/>
+                        <div class="modal-body my-3">
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <label>Nome</label>
+                                </div>
+                                <div class="col-sm-9">
+                                    {{ responsavel_form.responsavel }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button class="btn btn-primary" type="submit"
+                                    style="background-color:#567AB1; border-color:#567AB1;">Atribuir
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endblock %}

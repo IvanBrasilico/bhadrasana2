@@ -668,3 +668,9 @@ def rvf_app(app):
                 zf.writestr(grid_out.filename, grid_out.read())
         memory_file.seek(0)
         return send_file(memory_file, attachment_filename='imagens.zip', as_attachment=True)
+
+    @app.route('/new_rvf', methods=['POST', 'GET'])
+    @login_required
+    def new_rvf():
+        form = RVFForm()
+        return render_template('new_rvf.html', form=form)
