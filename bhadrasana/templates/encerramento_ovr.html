@@ -45,7 +45,11 @@
                         <dt class="col-3 text-end">Declaração:</dt>
                         <dd class="col-9">{{ovr.numerodeclaracao|mascara_nao_informado}}</dd>
                         <dt class="col-3 text-end">Entrada da carga:</dt>
+                        {% if ovr.dataentrada %}
                         <dd class="col-9">{{ovr.dataentrada.strftime('%d/%m/%Y')}}</dd>
+                        {% else %}
+                        <dd class="col-9">Não informado</dd>
+                        {% endif %}
                         <dt class="col-3 text-end">Emissão da ficha:</dt>
                         <dd class="col-9">{{ovr.datahora.strftime('%d/%m/%Y')}}</dd>
                         <dt class="col-3 text-end">Alertas:</dt>
@@ -412,7 +416,11 @@
                                     <dt class="col-3 text-end">Declaração:</dt>
                                     <dd class="col-9">{{ovr.numerodeclaracao|mascara_nao_informado}}</dd>
                                     <dt class="col-3 text-end">Entrada da carga:</dt>
+                                    {% if ovr.dataentrada %}
                                     <dd class="col-9">{{ovr.dataentrada.strftime('%d/%m/%Y')}}</dd>
+                                    {% else %}
+                                    <dd class="col-9">Não informado</dd>
+                                    {% endif %}
                                     <dt class="col-3 text-end">Emissão da ficha:</dt>
                                     <dd class="col-9">{{ovr.datahora.strftime('%d/%m/%Y')}}</dd>
                                 </dl>
