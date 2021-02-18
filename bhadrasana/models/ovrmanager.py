@@ -709,6 +709,12 @@ def informa_lavratura_auto(session, ovr_id: int,
     return ovr
 
 
+def get_tipoevento_id(session, evento_especial):
+    tipoevento = session.query(TipoEventoOVR).filter(
+        TipoEventoOVR.eventoespecial == evento_especial).first()
+    return tipoevento.id
+
+
 def gera_eventoovr(session, params: dict, commit=True, user_name=None,
                    valida_usuario=True) -> EventoOVR:
     evento = EventoOVR()

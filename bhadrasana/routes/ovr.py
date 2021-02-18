@@ -23,7 +23,7 @@ from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
 from bhadrasana.models import delete_objeto, get_usuario, \
     usuario_tem_perfil_nome
 from bhadrasana.models.laudo import get_empresa, get_empresas_nome, get_sats_cnpj
-from bhadrasana.models.ovr import OVR, OKRObjective, faseOVR
+from bhadrasana.models.ovr import OVR, OKRObjective, faseOVR, EventoEspecial
 from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_ovr_filtro, gera_eventoovr, gera_processoovr, get_tipos_processo, lista_itemtg, \
     get_itemtg, get_recintos, \
@@ -46,7 +46,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     calcula_tempos_por_fase, get_setores_unidade_choice, \
     get_afrfb_choice, get_ovr_one, \
     libera_ovr, get_afrfb_setores_choice, \
-    get_setores_unidade, calcula_tempos_por_tipoevento, encerra_ficha
+    get_setores_unidade, calcula_tempos_por_tipoevento, encerra_ficha, get_tipoevento_id
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects, consulta_ce_objects, \
     consulta_due_objects
@@ -1741,15 +1741,17 @@ def ovr_app(app):
         try:
             resultado = encerra_ficha(session, ovr_id, cpf_auditor_encerramento, tipo_resultado)
             if resultado.tipo_resultado != 1:
-                params = {'ovr_id': ovr_id, 'tipoevento_id': 14, 'fase': 3,
-                          'motivo': 'Encerramento com resultado',
-                          'excluido': 0, 'meramente_informativo': 0}
+                params = {'ovr_id': ovr_id,
+                          'tipoevento_id': get_tipoevento_id(
+                              session, EventoEspecial.EncerramentoComResultado.value),
+                          'motivo': 'Encerramento com resultado'}
                 gera_eventoovr(session, params=params, user_name=user_name)
                 flash(f'Ficha nº {ovr_id} encerrada com sucesso!')
             else:
-                params = {'ovr_id': ovr_id, 'tipoevento_id': 15, 'fase': 4,
-                          'motivo': 'Encerramento sem resultado',
-                          'excluido': 0, 'meramente_informativo': 0}
+                params = {'ovr_id': ovr_id,
+                          'tipoevento_id': get_tipoevento_id(
+                              session, EventoEspecial.EncerramentoSemResultado.value),
+                          'motivo': 'Encerramento sem resultado'}
                 gera_eventoovr(session, params=params, user_name=user_name)
                 flash(f'Ficha nº {ovr_id} encerrada com sucesso!')
         except Exception as err:
@@ -1757,3 +1759,29 @@ def ovr_app(app):
             logger.error(str(err))
             flash('Ficha não encerrada. ' + str(err))
         return redirect(url_for('index'))
+
+    # telegram - Minhas Fichas
+    @app.route('/api/minhas_verificacoes', methods=['GET'])
+    def api_minhas_verificacoes():
+        session = app.config.get('dbsession')
+        try:
+            cpf = request.args['cpf']
+            ovrs = get_ovr_responsavel(session, cpf, False)
+            if len(ovrs) == 0:
+                result = 'Sem Verificações atribuídas para o Usuário {}'.format(cpf)
+            else:
+                # cria dicionario result
+                # chave = RVF e valor = conteiner
+                result = {}
+                # percorre ovrs e lista RVFs
+                for aovr in ovrs:
+                    rvfs = lista_rvfovr(session, aovr.id)
+                    # adiciona ao result uma tupla com o id de cada RVF e o conteiner
+                    for rvf in rvfs:
+                        if rvf.numerolote:
+                            result[str(rvf.id)] = str(rvf.numerolote)
+
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            return 'Erro! Detalhes no log da aplicação.' + str(err)
+        return jsonify(result), 200
