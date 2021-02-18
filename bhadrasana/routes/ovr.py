@@ -1741,6 +1741,9 @@ def ovr_app(app):
         try:
             resultado = encerra_ficha(session, ovr_id, cpf_auditor_encerramento, tipo_resultado)
             if resultado.tipo_resultado != 1:
+                if cpf_auditor_encerramento is None:
+                    raise Exception('Erro ao encerrar a ficha. Ficha com resultado, '
+                                    'mas sem auditor definido.')
                 params = {'ovr_id': ovr_id,
                           'tipoevento_id': get_tipoevento_id(
                               session, EventoEspecial.EncerramentoComResultado.value),
