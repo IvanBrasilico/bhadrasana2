@@ -1,15 +1,139 @@
 {% extends "new_base.html" %}
     {% block content %}
+<script>
+      function registraApreensao() {
+        var table = document.getElementById("lista_apreensoes");
+        var row = table.insertRow(1);
+        var tipo = row.insertCell(0);
+        var descricao = row.insertCell(1);
+        var peso = row.insertCell(2);
+        var valor_tipo = document.forms["registra_apreensao"]["tipo"].value;
+        var valor_peso = document.forms["registra_apreensao"]["peso"].value;
+        var valor_descricao = document.forms["registra_apreensao"]["descricao"].value;
+        tipo.innerHTML = valor_tipo;
+        peso.innerHTML = valor_peso;
+        descricao.innerHTML = valor_descricao;
+      }
+</script>
         <!-- Seção RVF -->
         <section id="rvf_section" class="container d-flex align-items-center my-5">
-            <h2 class="display-4">RVF número rvf.id</h2>
+            <h2 class="display-4">Cadastrar RVF</h2>
         </section>
 
-        <!-- Formulário -->
-        <section id="form_section" class="container d-flex flex-column my-5">
-
+        <!-- Informações gerais -->
+        <section id="info_section" class="container d-flex flex-column my-5">
+            <!-- Título -->
+            <div class="row align-items-center mb-5">
+                <div class="col-4">
+                    <h3 class="display-6">Informações gerais</h3>
+                </div>
+            </div>
+            <!-- Conteúdo -->
+            <form method="POST" id="form_rvf" action="new_rvf">
+                <div class="d-flex">
+                    <div class="col-6 flow-start">
+                            <dl class="row">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                <dt class="col-6 text-end">Ficha associada:</dt>
+                                <dd class="col-6 text-body">ovr.id</dd>
+                                <dt class="col-6 text-end">CE Mercante:</dt>
+                                <dd class="col-6">{{rvf_form.numeroCEmercante(class='form-control')}}</dd>
+                                <dt class="col-6 text-end">Conteiner:</dt>
+                                <dd class="col-6">{{rvf_form.numerolote(class='form-control')}}</dd>
+                                <dt class="col-6 text-end">Peso verificado (kg):</dt>
+                                <dd class="col-6">{{rvf_form.peso(class='form-control')}}</dd>
+                                <dt class="col-6 text-end">Peso manifestado (kg):</dt>
+                                <dd class="col-6">{{rvf_form.peso_manifestado(class='form-control')}}</dd>
+                                <dt class="col-6 text-end">Volume (m3):</dt>
+                                <dd class="col-6">{{rvf_form.volume(class='form-control')}}</dd>
+                                <dt class="col-6 text-end">Inspeção não invasiva?</dt>
+                                <dd class="col-6">{{rvf_form.inspecaonaoinvasiva}} Sim</dd>
+                            </dl>
+                        </div>
+                    <div class="col-6 flow-end">
+                            <dl class="row">
+                                <dt class="col-6 text-end">Data da verificação:</dt>
+                                <dd class="col-6">{{rvf_form.adata(class='form-control')}}</dd>
+                                <dt class="col-6 text-end">Hora da verificação:</dt>
+                                <dd class="col-6">{{rvf_form.ahora(class='form-control')}}</dd>
+                                <dt class="col-6 text-end">Descrição:</dt>
+                                <dd class="col-6">{{rvf_form.descricao(class='form-control')}}</dd>
+                            </dl>
+                        </div>
+                </div>
+            </form>
         </section>
 
-        <!-- Seção Verificações Físicas -->
+        <!-- Apreensões -->
+        <section id="apreensoes_section" class="container my-5">
+            <!-- Título -->
+            <div class="row align-items-center mb-5">
+                <div class="col-4">
+                    <h3 class="display-6">Registrar apreensões</h3>
+                </div>
+                <div class="col-8">
+                    <a class="m-3" href="#" role="button" aria-expanded="false"
+                    data-bs-toggle="modal" data-bs-target="#registrar_apreensao">
+                        <img src="/static/plus.png" alt="menu">
+                    </a>
+                </div>
+            </div>
+            <!-- Conteúdo -->
+            <div class="col-12">
+                <table class="table" id="lista_apreensoes">
+                    <thead>
+                    <tr class="align-middle">
+                        <th scope="col" class="text-center">Tipo</th>
+                        <th scope="col" class="text-center">Descrição</th>
+                        <th scope="col" class="text-center">Peso (kg)</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr class="align-middle">
+                        <td class="text-center"></td>
+                        <td></td>
+                        <td class="text-center"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- Modal registrar apreensão -->
+            <div class="modal fade" id="registrar_apreensao" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+             aria-labelledby="registrar_apreensao" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form name="registra_apreensao">
+
+                    <!-- Header -->
+                    <div class="modal-header">
+                        <h5 class="modal-title display-6" id="registrar_apreensao_label">Registrar apreensão</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="modal-body my-3">
+                        <dl class="row">
+                            <dt class="col-3 text-end">Tipo:</dt>
+                            <dd class="col-9"><input type="text" name="tipo" id="tipo"></dd>
+                            <dt class="col-3 text-end">Peso:</dt>
+                            <dd class="col-9"><input type="text" name="peso" id="peso"></dd>
+                            <dt class="col-3 text-end">Descrição:</dt>
+                            <dd class="col-9"><input type="text" name="descricao" id="descricao"></dd>
+                        </dl>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button class="btn btn-primary" type="submit" onclick="registraApreensao()"
+                                    data-bs-dismiss="modal" style="background-color:#567AB1; border-color:#567AB1;">Registrar
+                            </button>
+                    </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        </section>
+
 
     {% endblock %}

@@ -8,14 +8,17 @@
                 <input type="hidden" name="ovr_id" value="{{ oform.ovr_id.data }}"/>
                 <div class="row">
                     <div class="form-group">
+                        <!-- ID -->
                         <div class="col-sm-1">
                             ID<br>
                             <span id="rvfid">{{ oform.id.data }}</span>
                         </div>
+                        <!-- Criador -->
                         <div class="col-sm-1">
                             Criador<br>
                             {{ oform.user_descricao.data }}
                         </div>
+                        <!-- CE Mercante -->
                         <div class="col-sm-3">
                             CE Mercante
                             {{ oform.numeroCEmercante(class='form-control')}}

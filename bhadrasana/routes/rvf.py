@@ -672,5 +672,8 @@ def rvf_app(app):
     @app.route('/new_rvf', methods=['POST', 'GET'])
     @login_required
     def new_rvf():
-        form = RVFForm()
-        return render_template('new_rvf.html', form=form)
+        rvf_form = RVFForm()
+        apreensao_form = ApreensaoRVFForm
+        return render_template('new_rvf.html',
+                               rvf_form=rvf_form,
+                               apreensao_form=apreensao_form)
