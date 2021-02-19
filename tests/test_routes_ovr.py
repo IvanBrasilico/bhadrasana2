@@ -71,7 +71,7 @@ def create_usuarios(session):
     for linha in usuarios:
         usuario = Usuario()
         usuario.cpf = linha[0]
-        usuario.nome = linha[0]
+        usuario.nome = linha[1]
         usuario.setor_id = linha[2]
         # usuario.perfis = linha[3]
         session.add(usuario)
@@ -123,6 +123,9 @@ class OVRAppTestCase(BaseTestCase):
         # with open('saida_login.html', 'w') as fileout:
         #     fileout.write(str(rv.data))
 
+    def logout(self):
+        return self.app.get('/logout', follow_redirects=True)
+
     def recupera_perfil(self):
         perfis = get_perfisusuario(self.session, 'erika')
 
@@ -141,36 +144,36 @@ class OVRAppTestCase(BaseTestCase):
                   'recinto_id': recinto.id,
                   'adata': '2021-01-01',
                   'ahora': '13:15'}
-        ovr = self.create_OVR(params, 'erika')
-        self.session.refresh(ovr)
-        ficha = self.app.get('/ovr?id=%s' % ovr.id)
+        ovr1 = self.create_OVR(params, 'erika')
+        self.session.refresh(ovr1)
+        ficha = self.app.get('/ovr?id=%s' % ovr1.id)
         assert ficha.status_code == 200
-        assert ovr.tipooperacao == 'Mercadoria Abandonada'
+        assert ovr1.tipooperacao == 'Mercadoria Abandonada'
         assert b'CE-123456789AAB' in ficha.data
-        assert ovr.fase == 0  # Iniciada
-        assert ovr.tipoevento_id == 1  # Aguardando distribuição
-        assert ovr.user_name == 'erika'
-        assert ovr.cpfauditorresponsavel is None
-        assert ovr.setor_id == '50'  # Equipe 01 - Setor da Érika
-        assert ovr.responsavel is None
-        ficha = self.app.get('/ovr?id=%s' % ovr.id)
+        assert ovr1.fase == 0  # Iniciada
+        assert ovr1.tipoevento_id == 1  # Aguardando distribuição
+        assert ovr1.user_name == 'erika'
+        assert ovr1.cpfauditorresponsavel is None
+        assert ovr1.setor_id == '50'  # Equipe 01 - Setor da Érika
+        assert ovr1.responsavel is None
+        ficha = self.app.get('/ovr?id=%s' % ovr1.id)
         text = str(ficha.data)
         # self.render_page(text)
         responsavelovr_pos = text.find('action="responsavelovr"')
         responsavelovr_text = text[responsavelovr_pos:]
         token_text = self.get_token(responsavelovr_text)
         payload = {'csrf_token': token_text,
-                   'ovr_id': ovr.id,
+                   'ovr_id': ovr1.id,
                    'responsavel': 'usuarioA1'}
         ficha = self.app.post('/responsavelovr', data=payload, follow_redirects=True)
         assert b'usuarioA1' in ficha.data
-        assert ovr.fase == 1  # Ativa
-        assert ovr.tipoevento_id == 13  # Atribuição de responsável
-        assert ovr.tipoevento.nome == 'Atribuição de responsável'
-        assert ovr.user_name == 'erika'
-        assert ovr.cpfauditorresponsavel is None
-        assert ovr.setor_id == '50'  # Equipe 01 - Setor da Érika
-        assert ovr.responsavel.nome == 'usuarioA1'
+        assert ovr1.fase == 1  # Ativa
+        assert ovr1.tipoevento_id == 13  # Atribuição de responsável
+        assert ovr1.tipoevento.nome == 'Atribuição de responsável'
+        assert ovr1.user_name == 'erika'
+        assert ovr1.cpfauditorresponsavel is None
+        assert ovr1.setor_id == '50'  # Equipe 01 - Setor da Érika
+        assert ovr1.responsavel.nome == 'usuarioA1'
         soup = BeautifulSoup(ficha.data, features='lxml')
         table = soup.find('table', {'id': 'table_eventos'})
         rows = [str(row) for row in table.findAll("tr")]
@@ -193,14 +196,17 @@ class OVRAppTestCase(BaseTestCase):
                   'recinto_id': recinto.id,
                   'adata': '2021-01-14',
                   'ahora': '09:40'}
-        ovr = self.create_OVR(params, 'usuarioA1')
-        self.session.refresh(ovr)
-        ficha = self.app.get('/ovr?id=%s' % ovr.id)
+        ovr2 = self.create_OVR(params, 'usuarioA1')
+        self.session.refresh(ovr2)
+        ficha = self.app.get('/ovr?id=%s' % ovr2.id)
         soup = BeautifulSoup(ficha.data, features='lxml')
         # self.render_page(str(soup))
         assert 'Atenção!!! CE-Mercante já possui Fichas:' in str(soup)
         assert 'Atenção!!! DUE já possui Fichas:' in str(soup)
         assert 'Empresa (mostrando 6 meses, utilize pesquisa empresa para ver mais)' in str(soup)
+        session.delete(ovr1)
+        session.delete(ovr2)
+        self.logout()
 
     def test_a02(self):
         # usuarioB3 cria uma ficha limpa
@@ -214,21 +220,23 @@ class OVRAppTestCase(BaseTestCase):
                   'adata': '2020-01-15',
                   'ahora': '09:15',
                   'dataentrada': date(year=2021, month=6, day=20)}
-        ovr = self.create_OVR(params, 'usuarioB3')
-        self.session.refresh(ovr)
-        ficha = self.app.get('/ovr?id=%s' % ovr.id)
+        ovr1 = self.create_OVR(params, 'usuarioB3')
+        self.session.refresh(ovr1)
+        ficha = self.app.get('/ovr?id=%s' % ovr1.id)
         # self.render_page(str(ficha.data))
         assert ficha.status_code == 200
         text = str(ficha.data)
         token_text = self.get_token(text)
         payload = {'csrf_token': token_text,
-                   'ovr_id': ovr.id,
+                   'ovr_id': ovr1.id,
                    'responsavel': 'usuarioB4'
                    }
         ficha = self.app.post('/auditorresponsavelovr', data=payload, follow_redirects=True)
         # self.render_page(str(ficha.data))
         assert ficha.status_code == 200
-        assert ovr.cpfauditorresponsavel == 'usuarioB4'
+        assert ovr1.cpfauditorresponsavel == 'usuarioB4'
+        session.delete(ovr1)
+        self.logout()
 
     def test_a03(self):
         # Carlos cria uma ficha limpa
@@ -238,51 +246,54 @@ class OVRAppTestCase(BaseTestCase):
         params = {'tipooperacao': 'Mercadoria Abandonada',
                   'adata': '2021-01-01',
                   'ahora': '13:15'}
-        ovr = self.create_OVR(params, 'carlos')
-        self.session.refresh(ovr)
-        ficha = self.app.get('/ovr?id=%s' % ovr.id)
+        ovr1 = self.create_OVR(params, 'carlos')
+        self.session.refresh(ovr1)
+        ficha = self.app.get('/ovr?id=%s' % ovr1.id)
         assert ficha.status_code == 200
-        assert ovr.fase == 0  # Iniciada
-        assert ovr.tipoevento_id == 1  # Aguardando distribuição
-        assert ovr.user_name == 'carlos'
-        assert ovr.responsavel is None
-        ficha = self.app.get('/ovr?id=%s' % ovr.id)
+        assert ovr1.fase == 0  # Iniciada
+        assert ovr1.tipoevento_id == 1  # Aguardando distribuição
+        assert ovr1.user_name == 'carlos'
+        assert ovr1.responsavel is None
+        ficha = self.app.get('/ovr?id=%s' % ovr1.id)
         text = str(ficha.data)
         # self.render_page(text)
         responsavelovr_pos = text.find('action="responsavelovr"')
         responsavelovr_text = text[responsavelovr_pos:]
         token_text = self.get_token(responsavelovr_text)
         payload = {'csrf_token': token_text,
-                   'ovr_id': ovr.id,
+                   'ovr_id': ovr1.id,
                    'responsavel': 'usuarioB4'}
         ficha = self.app.post('/responsavelovr', data=payload, follow_redirects=True)
         assert b'usuarioB4' in ficha.data
-        assert ovr.fase == 1  # Ativa
-        assert ovr.tipoevento_id == 13  # Atribuição de responsável
-        assert ovr.tipoevento.nome == 'Atribuição de responsável'
-        assert ovr.user_name == 'carlos'
-        assert ovr.responsavel.nome == 'usuarioB4'
+        assert ovr1.fase == 1  # Ativa
+        assert ovr1.tipoevento_id == 13  # Atribuição de responsável
+        assert ovr1.tipoevento.nome == 'Atribuição de responsável'
+        assert ovr1.user_name == 'carlos'
+        assert ovr1.responsavel.nome == 'usuarioB4'
 
         # Usuário B4 arquiva a ficha
         self.login('usuarioB4', 'usuarioB4')
-        ficha = self.app.get('/ovr?id=%s' % ovr.id)
+        ficha = self.app.get('/ovr?id=%s' % ovr1.id)
         text = str(ficha.data)
         token_text = self.get_token(responsavelovr_text)
         payload = {'csrf_token': token_text,
-                   'ovr_id': ovr.id,
+                   'ovr_id': ovr1.id,
                    'tipoevento_id': '12'}
         ficha = self.app.post('/eventoovr', data=payload, follow_redirects=True)
         self.render_page(str(ficha.data))
-        assert ovr.fase == 4  # Arquivada
-        assert ovr.tipoevento_id == 12  # Arquivamento
-        assert ovr.tipoevento.nome == 'Arquivamento'
-        assert ovr.responsavel.nome == 'usuarioB4'
+        assert ovr1.fase == 4  # Arquivada
+        assert ovr1.tipoevento_id == 12  # Arquivamento
+        assert ovr1.tipoevento.nome == 'Arquivamento'
+        assert ovr1.responsavel.nome == 'usuarioB4'
+        session.delete(ovr1)
+        self.logout()
 
     def test_a04(self):
         # Carlos consulta uma ficha
         self.login('carlos', 'carlos')
         ficha = self.app.get('/ovr/id=1')
         assert ficha.status_code == 200
+        self.logout()
 
     # def test_a05(self):
     #     # Usuário não encontrado ao acessar Pesquisa OVR
@@ -290,6 +301,29 @@ class OVRAppTestCase(BaseTestCase):
     #     assert b'usuarioNone' in login.data
     #     fichas = self.app.get('/pesquisa_ovr')
     #     assert fichas.status_code == 200
+
+    def test_a06_encerrar_ficha(self):
+        # Kanoo cria ficha limpa e tenta encerrar sem atribuir responsável
+        self.login('kanoo', 'kanoo')
+        params = {'tipooperacao': 'Mercadoria Abandonada',
+                  'recinto_id': 1}
+        ovr1 = self.create_OVR(params, 'kanoo')
+        self.session.refresh(ovr1)
+        assert ovr1.id is not None
+        assert ovr1.responsavel is None
+        assert ovr1.fase == 0
+        encerramento_ovr = self.app.get('/encerramento_ovr?ovr_id=%s' % ovr1.id)
+        assert encerramento_ovr.status_code == 200
+        text = str(encerramento_ovr.data)
+        self.render_page(text)
+        encerrar_ficha = text.find('action="encerrar_ficha"')
+        encerrar_ficha_text = text[encerrar_ficha:]
+        token_text = self.get_token(encerrar_ficha_text)
+        payload = {'csrf_token': token_text,
+                   'ovr_id': ovr1.id}
+        ficha_encerrada = self.app.post('/encerrar_ficha', data=payload, follow_redirects=True)
+        # self.render_page(str(ficha_encerrada.data))
+        self.logout()
 
 
     def test_z01(self):
@@ -302,14 +336,15 @@ class OVRAppTestCase(BaseTestCase):
                   'numerodeclaracao': '111222333444',
                   'adata': '2021-01-14',
                   'ahora': '11:25'}
-        ovr = self.create_OVR(params, 'kanoo')
-        self.session.refresh(ovr)
+        ovr1 = self.create_OVR(params, 'kanoo')
+        self.session.refresh(ovr1)
         mercantealchemy.metadata.drop_all(engine, [
             mercantealchemy.metadata.tables['conhecimentosresumo']
         ])
-        ficha = self.app.get('/ovr?id=%s' % ovr.id)
+        ficha = self.app.get('/ovr?id=%s' % ovr1.id)
         # self.render_page(str(ficha.data))
         assert ficha.status_code == 200
+        self.logout()
 
     def test_z02(self):
         # Carlos cria uma ficha limpa
@@ -318,13 +353,14 @@ class OVRAppTestCase(BaseTestCase):
         params = {'tipooperacao': 'Mercadoria Abandonada',
                   'adata': '2021-01-25',
                   'ahora': '09:25'}
-        ovr = self.create_OVR(params, 'carlos')
-        self.session.refresh(ovr)
+        ovr1 = self.create_OVR(params, 'carlos')
+        self.session.refresh(ovr1)
         drop_tables(engine)
-        ficha = self.app.get('/ovr?id=%s' % ovr.id)
+        ficha = self.app.get('/ovr?id=%s' % ovr1.id)
         # self.render_page(str(ficha.data))
         assert ficha.status_code == 200
         inclui_flag = self.app.get('/inclui_flag_ovr')
         assert inclui_flag.status_code == 500
         exclui_flag = self.app.get('/exclui_flag_ovr')
         assert exclui_flag.status_code == 500
+        self.logout()
