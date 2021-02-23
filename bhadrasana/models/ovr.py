@@ -40,6 +40,8 @@ tipoStatusOVREspecial = [
     ('Definição de Auditor Responsável', EventoEspecial.AuditorResponsavel.value, 1),
     ('Atribuição para outro Setor', EventoEspecial.MudancaSetor.value, 0),
     ('Inspeção não invasiva', EventoEspecial.InspecaoNaoInvasiva.value, 1),
+    ('Encerramento com resultado', EventoEspecial.EncerramentoComResultado.value, 3),
+    ('Encerramento sem resultado', EventoEspecial.EncerramentoSemResultado.value, 4),
 ]
 
 tipoStatusOVR = [
