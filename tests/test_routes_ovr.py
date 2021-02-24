@@ -367,7 +367,7 @@ class OVRAppTestCase(BaseTestCase):
 
         # Tenta encerrar ficha
         lista_de_rvfs_apreensoes = lista_de_rvfs_e_apreensoes(session, ovr_id=ovr1.id)
-        payload = {'lista_de_rvfs_apreensoes': lista_de_rvfs_apreensoes}
+        # payload = {'lista_de_rvfs_apreensoes': lista_de_rvfs_apreensoes}
         encerramento_ovr = self.app.get('/encerramento_ovr?ovr_id=%s' % ovr1.id)
         assert encerramento_ovr.status_code == 200
         text = str(encerramento_ovr.data)
@@ -434,6 +434,126 @@ class OVRAppTestCase(BaseTestCase):
         ficha_encerrada = self.app.post('/encerrar_ficha', data=payload, follow_redirects=True)
         assert ficha_encerrada.status_code == 200
         # self.render_page(str(ficha_encerrada.data))
+        session.delete(ovr1)
+        self.logout()
+
+    def test_a08_atribuirresponsavel_com_erro(self):
+        # Érika cria ficha limpa, tenta se autoatribuir, mas dá erro
+        self.login('erika', 'erika')
+        params_ovr = {'tipooperacao': 'Mercadoria Abandonada',
+                      'recinto_id': 1}
+        ovr1 = self.create_OVR(params_ovr, 'erika')
+        self.session.refresh(ovr1)
+        assert ovr1.id is not None
+        assert ovr1.responsavel is None
+        assert ovr1.fase == 0
+
+        # Tenta atribuir responsabilidade para ela mesma
+        ficha = self.app.get('/ovr?id=%s' % ovr1.id)
+        text = str(ficha.data)
+        # self.render_page(text)
+        responsavelovr_pos = text.find('action="responsavelovr"')
+        responsavelovr_text = text[responsavelovr_pos:]
+        token_text = self.get_token(responsavelovr_text)
+        payload = {'csrf_token': token_text}
+        self.app.post('/responsavelovr', data=payload, follow_redirects=True)
+        assert Exception
+        session.delete(ovr1)
+        self.logout()
+
+    def test_a09_atribuir_auditor_responsavel_com_erro(self):
+        # Érika cria ficha limpa, tenta atribuir um autidor responsável, mas dá erro
+        self.login('erika', 'erika')
+        params_ovr = {'tipooperacao': 'Mercadoria Abandonada',
+                      'recinto_id': 1}
+        ovr1 = self.create_OVR(params_ovr, 'erika')
+        self.session.refresh(ovr1)
+        assert ovr1.id is not None
+        assert ovr1.responsavel is None
+        assert ovr1.fase == 0
+
+        # Tenta definir auditor
+        ficha = self.app.get('/ovr?id=%s' % ovr1.id)
+        text = str(ficha.data)
+        # self.render_page(text)
+        auditorresponsavelovr_pos = text.find('action="auditorresponsavelovr"')
+        auditorresponsavelovr_text = text[auditorresponsavelovr_pos:]
+        token_text = self.get_token(auditorresponsavelovr_text)
+        payload = {'csrf_token': token_text}
+        self.app.post('/auditorresponsavelovr', data=payload, follow_redirects=True)
+        assert Exception
+        session.delete(ovr1)
+        self.logout()
+
+    def test_a10_informalavraturaauto_com_erro(self):
+        # Érika cria ficha limpa, tenta informar lavratura de auto, mas dá erro
+        self.login('erika', 'erika')
+        params_ovr = {'tipooperacao': 'Mercadoria Abandonada',
+                      'recinto_id': 1}
+        ovr1 = self.create_OVR(params_ovr, 'erika')
+        self.session.refresh(ovr1)
+        assert ovr1.id is not None
+        assert ovr1.responsavel is None
+        assert ovr1.fase == 0
+
+        # Tenta lavar auto
+        ficha = self.app.get('/ovr?id=%s' % ovr1.id)
+        text = str(ficha.data)
+        # self.render_page(text)
+        informalavraturaauto_pos = text.find('action="informalavraturaauto"')
+        informalavraturaauto_text = text[informalavraturaauto_pos:]
+        token_text = self.get_token(informalavraturaauto_text)
+        payload = {'csrf_token': token_text}
+        self.app.post('/informalavraturaauto', data=payload, follow_redirects=True)
+        assert Exception
+        session.delete(ovr1)
+        self.logout()
+
+    def test_a11_processoovr_com_erro(self):
+        # Érika cria ficha limpa, tenta informar processo, mas dá erro
+        self.login('erika', 'erika')
+        params_ovr = {'tipooperacao': 'Mercadoria Abandonada',
+                      'recinto_id': 1}
+        ovr1 = self.create_OVR(params_ovr, 'erika')
+        self.session.refresh(ovr1)
+        assert ovr1.id is not None
+        assert ovr1.responsavel is None
+        assert ovr1.fase == 0
+
+        # Tenta informar processo
+        ficha = self.app.get('/ovr?id=%s' % ovr1.id)
+        text = str(ficha.data)
+        # self.render_page(text)
+        processoovr_pos = text.find('action="processoovr"')
+        processoovr_text = text[processoovr_pos:]
+        token_text = self.get_token(processoovr_text)
+        payload = {'csrf_token': token_text}
+        self.app.post('/processoovr', data=payload, follow_redirects=True)
+        assert Exception
+        session.delete(ovr1)
+        self.logout()
+
+    def test_a12_tgovr_com_erro(self):
+        # Érika cria ficha limpa, tenta salvar TG, mas dá erro
+        self.login('erika', 'erika')
+        params_ovr = {'tipooperacao': 'Mercadoria Abandonada',
+                      'recinto_id': 1,
+                      'fase': 3}
+        ovr1 = self.create_OVR(params_ovr, 'erika')
+        self.session.refresh(ovr1)
+        assert ovr1.id is not None
+        assert ovr1.responsavel is None
+
+        # Tenta salvar TG
+        ficha = self.app.get('lista_tgovr?ovr_id=%s' % ovr1.id)
+        text = str(ficha.data)
+        # self.render_page(text)
+        tgovr_pos = text.find('action="tgovr"')
+        tgovr_text = text[tgovr_pos:]
+        token_text = self.get_token(tgovr_text)
+        payload = {'csrf_token': token_text, 'ovr_id': ovr1.id}
+        self.app.post('/tgovr', data=payload, follow_redirects=True)
+        assert Exception
         session.delete(ovr1)
         self.logout()
 
