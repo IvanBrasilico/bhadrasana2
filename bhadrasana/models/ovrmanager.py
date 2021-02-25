@@ -1606,32 +1606,25 @@ def lista_de_tgs_e_items(session, ovr_id):
     total_tgs = {}
     ovr_lista_tgs = lista_tgovr(session, ovr_id)
     for tg in ovr_lista_tgs:
-        qtde_total = 0
         valor = 0
         lista_de_tgs_items[tg.id] = {}
         lista_de_tgs_items[tg.id]['container'] = tg.numerolote
         lista_de_tgs_items[tg.id]['descricao'] = tg.descricao
-        lista_de_tgs_items[tg.id]['NCMs'] = {}
         for item in tg.itenstg:
             try:
-                n = item.ncm
                 qtde = item.qtde
                 valor_total = float(qtde * item.valor)
                 if total_tgs.get('valor_total'):
                     total_tgs['valor_total'] += valor_total
                 else:
                     total_tgs['valor_total'] = valor_total
-                if lista_de_tgs_items[tg.id]['NCMs'].get(n):
-                    qtde_total = lista_de_tgs_items[tg.id]['NCMs'][n].get('qtde_total') \
-                                 + float(qtde)
-                    valor = lista_de_tgs_items[tg.id]['NCMs'][n].get('valor') + \
+                if lista_de_tgs_items[tg.id].get('valor'):
+                    valor = lista_de_tgs_items[tg.id].get('valor') + \
                             float(item.valor * qtde)
                 else:
-                    lista_de_tgs_items[tg.id]['NCMs'][n] = {}
-                    qtde_total = float(qtde)
+                    lista_de_tgs_items[tg.id]['valor'] = {}
                     valor = float(item.valor * qtde)
-                lista_de_tgs_items[tg.id]['NCMs'][n]['qtde_total'] = qtde_total
-                lista_de_tgs_items[tg.id]['NCMs'][n]['valor'] = valor
+                lista_de_tgs_items[tg.id]['valor'] = valor
             except TypeError:
                 pass
     return lista_de_tgs_items, total_tgs

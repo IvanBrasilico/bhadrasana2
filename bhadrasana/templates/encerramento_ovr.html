@@ -116,7 +116,7 @@
                         <th rowspan="2" class="text-center">Contêiner/Lote</th>
                         <th rowspan="2" class="text-center">Descrição</th>
                         <th rowspan="2" class="text-center">Fotos</th>
-                        <th colspan="2" class="text-center border-0">Apreensões</th>
+                        <th colspan="2" class="text-center border-0">Apreensões sem TG</th>
                     </tr>
                     <tr>
                         <td class="text-center border-bottom">Tipo</td>
@@ -176,39 +176,20 @@
                 <table class="table table-hover">
                     <thead>
                     <tr class="align-middle">
-                        <th scope="col" rowspan="2" class="text-center">TG</th>
-                        <th scope="col" rowspan="2" class="text-center">Contêiner/Lote</th>
-                        <th scope="col" rowspan="2" class="text-center">Descrição</th>
-                        <th scope="col" colspan="3" class="text-center border-0">Itens</th>
-                    </tr>
-                    <tr>
-                        <td scope="col" class="text-center border-bottom">NCM</td>
-                        <td scope="col" class="text-center border-bottom">Qtde</td>
-                        <td scope="col" class="text-center border-bottom">Valor total (R$)</td>
+                        <th scope="col" class="text-center">TG</th>
+                        <th scope="col" class="text-center">Contêiner/Lote</th>
+                        <th scope="col" class="text-center">Descrição</th>
+                        <th scope="col" class="text-center">Valor total (R$)</th>
                     </tr>
                     </thead>
                     <tbody>
                     {% for tg, dicts in lista_de_tgs_items.items() %}
                     <tr class="align-middle">
-                        <td scope="row" class="text-center" rowspan="{{lista_de_tgs_items[tg].get('NCMs')|length + 1}}">
+                        <td scope="row" class="text-center">
                             <a class="text-decoration-none" href="lista_tgovr?ovr_id={{ovr.id}}&item_id={{tg}}">{{tg}}</a></td>
-                        <td class="text-center" rowspan="{{lista_de_tgs_items[tg].get('NCMs')|length + 1}}">
-                            {{ dicts.get('container')|mascara_nao_informado }}</td>
-                        <td rowspan="{{lista_de_tgs_items[tg].get('NCMs')|length + 1}}">
-                            {{ dicts.get('descricao')|mascara_nao_informado }}</td>
-                        {% if lista_de_tgs_items[tg].get('NCMs')|length > 0 %}
-                            {% for ncm, dicionarios in dicts.get('NCMs').items() %}
-                                <tr>
-                                    <td class="text-center">{{ncm}}</td>
-                                    <td class="text-center">{{ dicionarios.get('qtde_total')|sem_casa_decimal }}</td>
-                                    <td class="text-center">{{ dicionarios.get('valor')|duas_casas_decimais }}</td>
-                                </tr>
-                            {% endfor %}
-                        {% else %}
-                            <td class="text-center">Não informado</td>
-                            <td class="text-center">Não informado</td>
-                            <td class="text-center">Não informado</td>
-                        {% endif %}
+                        <td class="text-center">{{ dicts.get('container')|mascara_nao_informado }}</td>
+                        <td>{{ dicts.get('descricao')|mascara_nao_informado }}</td>
+                        <td class="text-center">{{dicts.get('valor')|duas_casas_decimais}}</td>
                     </tr>
                     {% endfor %}
                     </tbody>
@@ -368,14 +349,15 @@
         <section id="buttons_section" class="container d-flex justify-content-end my-5">
             <form method="GET" action="ovr" class="mx-3">
                 <input type="hidden" name="id" value="{{ovr.id}}">
-                <button class="btn btn-primary" type="submit">Editar ficha</button>
+                <button class="btn" type="submit" style="background-color:#567AB1; border-color:#567AB1; color: #FFF;">
+                    Editar ficha</button>
             </form>
             <div>
             <!-- Button trigger modal -->
             {% if ovr.fase >= 3 %}
                 <button type="button" class="btn btn-dark disabled">Ficha já encerrada</button>
             {% else %}
-                <button type="button" class="btn" style="background-color:#64A70B; color:white;" data-bs-toggle="modal"
+                <button type="button" class="btn btn-warning" data-bs-toggle="modal"
                         data-bs-target="#encerrar_ficha">Encerrar</button>
             {% endif %}
             </div>
@@ -479,17 +461,14 @@
                             {% if total_apreensoes|length > 0 or total_tgs|length > 0 %}
                                 {% if auditor %}
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                    <button type="submit" class="btn"
-                                            style="background-color:#64A70B; color:white;">Encerrar</button>
+                                    <button type="submit" class="btn btn-danger">Encerrar</button>
                                 {% else %}
                                     <button type="button" class="btn btn-secondary disabled" data-bs-dismiss="modal">Cancelar</button>
-                                    <button type="submit" class="btn disabled"
-                                            style="background-color:#64A70B; color:white;">Encerrar</button>
+                                    <button type="submit" class="btn btn-danger disabled">Encerrar</button>
                                 {% endif %}
                             {% else %}
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                <button type="submit" class="btn"
-                                            style="background-color:#64A70B; color:white;">Encerrar</button>
+                                <button type="submit" class="btn btn-danger">Encerrar</button>
                             {% endif %}
                         </div>
                     </form>

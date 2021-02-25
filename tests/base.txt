@@ -18,7 +18,7 @@ tipoStatusOVR
    tipoevento_id 6 =  'Aguardando Laudo de Marcas',
    tipoevento_id 7 =  'Aguardando Saneamento',
    tipoevento_id 8 =  'Recebimento de Saneamento',
-   tipoevento_id 9 = 'Intimação/Notificação',
+   tipoevento_id 9 =   'Intimação/Notificação',
    tipoevento_id 10 =  'Intimação Não Respondida',
    tipoevento_id 11 =  'Retificação do Termo de Guarda',
    tipoevento_id 12 =  'Arquivamento',
