@@ -1188,16 +1188,16 @@ order_secta = ('TIPO', 'NCM', 'MARCA', 'MODELO', 'OBSERVAÇÃO',
                'UNIDADE', 'QUANTIDADE', 'VALOR')
 
 de_para = OrderedDict([
-    ('descricao', ['Descrição', 'TIPO']),
+    ('descricao', ['Descrição', 'TIPO', 'Tipo de Produto']),
     ('ncm', ['Código NCM', 'NCM']),
-    ('contramarca', ['Marca', 'MARCA']),
-    ('modelo', ['Modelo', 'MODELO']),
-    ('unidadedemedida', ['Unid. Medida', 'UNIDADE']),
+    ('contramarca', ['Marca', 'MARCA', 'Marca da Mercadoria']),
+    ('modelo', ['Modelo', 'MODELO', 'Modelo da Mercadoria']),
+    ('unidadedemedida', ['Unid. Medida', 'UNIDADE', 'Unidade de Medida da Mercadoria']),
     ('procedencia', ['País Procedência', '*****']),  # Não utilizado ainda
     ('origem', ['País Origem', '***']),  # Não utilizado ainda
     ('moeda', ['Moeda', '****']),  # Não utilizado ainda
-    ('qtde', ['Quantidade', 'QUANTIDADE']),
-    ('valor', ['Valor Unitário', 'VALOR']),
+    ('qtde', ['Quantidade', 'QUANTIDADE', 'Quantidade da Mercadoria']),
+    ('valor', ['Valor Unitário', 'VALOR', 'Valor Item']),
 ])
 
 
