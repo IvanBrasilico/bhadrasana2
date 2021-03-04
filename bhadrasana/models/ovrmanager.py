@@ -1188,7 +1188,9 @@ order_secta = ('TIPO', 'NCM', 'MARCA', 'MODELO', 'OBSERVAÇÃO',
                'UNIDADE', 'QUANTIDADE', 'VALOR')
 
 de_para = OrderedDict([
-    ('descricao', ['Descrição', 'TIPO', 'Tipo de Produto']),
+    ('descricao', ['Descrição', 'TIPO', 'Tipo de Produto', 'Marca da Mercadoria',
+                   'Modelo da Mercadoria', 'Observações da Mercadoria']),
+    ('Taxa de Câmbio', ['Taxa de Câmbio']),
     ('ncm', ['Código NCM', 'NCM']),
     ('contramarca', ['Marca', 'MARCA', 'Marca da Mercadoria']),
     ('modelo', ['Modelo', 'MODELO', 'Modelo da Mercadoria']),
@@ -1220,13 +1222,28 @@ def procura_chave_lower(akey: str, original: dict):
     return result
 
 
+def recupera_taxa_cambio(original):
+    try:
+        return float(original.get('Taxa de Câmbio'))
+    except (ValueError, TypeError) as err:
+        print('....................', err)
+        return 1
+
+
 def muda_chaves(original: dict) -> dict:
     new_dict = {}
     print(original)
     for key, alternative_keys in de_para.items():
         for alternative_key in alternative_keys:
             if original.get(alternative_key):
-                new_dict[key] = original.get(alternative_key)
+                if key == 'descricao':
+                    if not original.get(alternative_key) == '*[OUTROS (DEMAIS TIPOS)]':
+                        if new_dict.get(key):
+                            new_dict[key] += ' ' + str(original.get(alternative_key))
+                        else:
+                            new_dict[key] = original.get(alternative_key)
+                else:
+                    new_dict[key] = original.get(alternative_key)
             else:
                 valor = procura_chave_lower(alternative_key, original)
                 if valor:
@@ -1299,7 +1316,7 @@ def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
                         format(de_para.get('ncm'))
             valor = row.get('valor')
             if valor:
-                itemtg.valor = valor
+                itemtg.valor = valor * recupera_taxa_cambio(row)
             else:
                 itemtg.valor = 0
                 if alertas.get('valor') is None:
