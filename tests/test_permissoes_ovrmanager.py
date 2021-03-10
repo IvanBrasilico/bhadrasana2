@@ -261,6 +261,10 @@ class OVRPermissoesTestCase(BaseTestCase):
             evento4 = atribui_responsavel_ovr(session, ovr.id, user2.cpf, user2.cpf, True)
         assert ovr.responsavel_cpf == user1.cpf
         assert ovr.cpfauditorresponsavel == user2.cpf
+        # Teste: user1 se define como auditor responsável
+        evento2 = atribui_responsavel_ovr(session, ovr.id, user1.cpf, user1.cpf, True)
+        assert ovr.responsavel_cpf == user1.cpf
+        assert ovr.cpfauditorresponsavel == user1.cpf
 
 
     # TODO: testes de:
@@ -358,7 +362,7 @@ class OVRPermissoesTestCase(BaseTestCase):
         with self.assertRaises(ESomenteUsuarioResponsavel):
             tg = cadastra_tgovr(session, params, 'user_1')
         assert tg.user_name == 'user_2'
-        assert tg.unidadedemedida == 1
+        assert tg.unidadedemedida == 2  # sem unidade
         # lista TGs dessa OVR
         lista_tgs = lista_tgovr(session, ovr.id)
         assert len(lista_tgs) == 2

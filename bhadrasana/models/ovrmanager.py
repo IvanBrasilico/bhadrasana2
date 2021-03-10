@@ -887,7 +887,9 @@ def lista_tgovr(session, ovr_id) -> List[TGOVR]:
         ovr_id = int(ovr_id)
     except (ValueError, TypeError):
         return []
-    return session.query(TGOVR).filter(TGOVR.ovr_id == ovr_id).all()
+    tgs = session.query(TGOVR).filter(TGOVR.ovr_id == ovr_id).all()
+    atualiza_unidade_tg(session, tgs)
+    return tgs
 
 
 def atualiza_valortotal_tg(session, tg_id: int):
@@ -903,6 +905,32 @@ def atualiza_valortotal_tg(session, tg_id: int):
     # print(total_qtde, total_valor)
     session.add(tg)
     session.commit()
+
+
+def atualiza_unidade_tg(session, tgs: list):
+    """ Atualiza o campo unidade da capa do TG com base nas unidades dos itens
+            Todos itens UN => 0
+            Todos itens KG => 1
+            Sem itens no TG => 2
+            Mix de UN com KG => 2
+    """
+    unidade_medida = Enumerado.index_unidadeMedida(' ')
+    for item in tgs:
+        tg = session.query(TGOVR).filter(TGOVR.id == item.id).one_or_none()
+        try:
+            lista_itens = session.query(ItemTG).filter(ItemTG.tg_id == tg.id).all()
+            for i, item_tg in enumerate(lista_itens):
+                if i == 0:
+                    unidade_medida = item_tg.unidadedemedida
+                else:
+                    if not item_tg.unidadedemedida == unidade_medida:
+                        unidade_medida = Enumerado.index_unidadeMedida(' ')
+        except Exception as err:
+            logger.error('TG sem itens ', err)
+            tg.unidadedemedida = unidade_medida
+        tg.unidadedemedida = unidade_medida
+        session.add(tg)
+        session.commit()
 
 
 def get_tgovr_one(session, tg_id: int) -> TGOVR:

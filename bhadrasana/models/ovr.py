@@ -97,7 +97,8 @@ tipoProcesso = [
 
 unidadeMedida = [
     'UN',
-    'KG'
+    'KG',
+    ' '
 ]
 
 
