@@ -128,10 +128,12 @@ def executa_relatorio(session, relatorio: Relatorio,
             columns='Ação', values='qtde'
         ).fillna(0).reset_index()
         names = df_eventos_especiais.columns
+        print(df_eventos_especiais.dtypes)
         rows = df_eventos_especiais.values.tolist()
 
     result.append(names)
     result.extend(rows)
+
     return result
 
 

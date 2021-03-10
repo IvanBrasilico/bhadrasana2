@@ -1,15 +1,14 @@
 import os
+import pandas as pd
 import re
 from _collections import defaultdict
+from ajna_commons.flask.log import logger
 from datetime import datetime, date, timedelta
 from decimal import Decimal
-from typing import Tuple
-
-import pandas as pd
-from ajna_commons.flask.log import logger
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
 from gridfs import GridFS
+from typing import Tuple
 from werkzeug.utils import redirect
 
 from bhadrasana.analises.escaneamento_operador import sorteia_GMCIs
@@ -934,13 +933,33 @@ def ovr_app(app):
 
     def formata_linhas_relatorio(rows: list) -> list:
         formated_rows = []
+        linha_totais = [0. for r in range(len(rows[0]) - 2)]
         for row in rows:
+            for ind, col in enumerate(row[2:]):
+                if isinstance(col, Decimal) or isinstance(col, float):
+                    try:
+                        valor_col = float(col)
+                        linha_totais[ind] += valor_col
+                    except:
+                        pass
+                if isinstance(col, int):
+                    linha_totais[ind] = int(linha_totais[ind]) + col
+        rows_copy = rows.copy()
+        rows_copy.append([ '--', '--', *linha_totais])
+        for row in rows_copy:
             formated_cols = []
-            for col in row:
+            for ind, col in enumerate(row):
                 # logger.info(str(col) + str(type(col)))
-                if isinstance(col, Decimal):
-                    fcol = '{:,.2f}'.format(float(col))
-                    fcol = fcol.replace(',', '-').replace('.', ',').replace('-', '.')
+                if isinstance(col, Decimal) or isinstance(col, float):
+                    try:
+                        valor_col = float(col)
+                        if not valor_col:
+                            fcol = '-'
+                        else:
+                            fcol = '{:,.2f}'.format(valor_col)
+                            fcol = fcol.replace(',', '-').replace('.', ',').replace('-', '.')
+                    except:
+                        fcol = '-'
                     formated_cols.append(fcol)
                 else:
                     formated_cols.append(col)
