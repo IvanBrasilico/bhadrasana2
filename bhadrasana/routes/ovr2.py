@@ -352,9 +352,6 @@ def ovr2_app(app):
             eventos = ovr.historico
             if usuario is None:
                 raise Exception('Erro: Usuário não encontrado!')
-            # if request.method == 'POST':
-            #     ovr_id = request.args.get('ovr_id')
-            #     return redirect(url_for('encerramento_ovr', ovr_id=ovr_id))
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')

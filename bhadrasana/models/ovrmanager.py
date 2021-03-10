@@ -889,7 +889,9 @@ def lista_tgovr(session, ovr_id) -> List[TGOVR]:
         ovr_id = int(ovr_id)
     except (ValueError, TypeError):
         return []
-    return session.query(TGOVR).filter(TGOVR.ovr_id == ovr_id).all()
+    tgs = session.query(TGOVR).filter(TGOVR.ovr_id == ovr_id).all()
+    atualiza_unidade_tg(session, tgs)
+    return tgs
 
 
 def atualiza_valortotal_tg(session, tg_id: int):
@@ -905,6 +907,32 @@ def atualiza_valortotal_tg(session, tg_id: int):
     # print(total_qtde, total_valor)
     session.add(tg)
     session.commit()
+
+
+def atualiza_unidade_tg(session, tgs: list):
+    """ Atualiza o campo unidade da capa do TG com base nas unidades dos itens
+            Todos itens UN => 0
+            Todos itens KG => 1
+            Sem itens no TG => 2
+            Mix de UN com KG => 2
+    """
+    unidade_medida = Enumerado.index_unidadeMedida(' ')
+    for item in tgs:
+        tg = session.query(TGOVR).filter(TGOVR.id == item.id).one_or_none()
+        try:
+            lista_itens = session.query(ItemTG).filter(ItemTG.tg_id == tg.id).all()
+            for i, item_tg in enumerate(lista_itens):
+                if i == 0:
+                    unidade_medida = item_tg.unidadedemedida
+                else:
+                    if not item_tg.unidadedemedida == unidade_medida:
+                        unidade_medida = Enumerado.index_unidadeMedida(' ')
+        except Exception as err:
+            logger.error('TG sem itens ', err)
+            tg.unidadedemedida = unidade_medida
+        tg.unidadedemedida = unidade_medida
+        session.add(tg)
+        session.commit()
 
 
 def get_tgovr_one(session, tg_id: int) -> TGOVR:
@@ -1190,16 +1218,18 @@ order_secta = ('TIPO', 'NCM', 'MARCA', 'MODELO', 'OBSERVAÇÃO',
                'UNIDADE', 'QUANTIDADE', 'VALOR')
 
 de_para = OrderedDict([
-    ('descricao', ['Descrição', 'TIPO']),
+    ('descricao', ['Descrição', 'TIPO', 'Tipo de Produto', 'Marca da Mercadoria',
+                   'Modelo da Mercadoria', 'Observações da Mercadoria']),
+    ('Taxa de Câmbio', ['Taxa de Câmbio']),
     ('ncm', ['Código NCM', 'NCM']),
-    ('contramarca', ['Marca', 'MARCA']),
-    ('modelo', ['Modelo', 'MODELO']),
-    ('unidadedemedida', ['Unid. Medida', 'UNIDADE']),
+    ('contramarca', ['Marca', 'MARCA', 'Marca da Mercadoria']),
+    ('modelo', ['Modelo', 'MODELO', 'Modelo da Mercadoria']),
+    ('unidadedemedida', ['Unid. Medida', 'UNIDADE', 'Unidade de Medida da Mercadoria']),
     ('procedencia', ['País Procedência', '*****']),  # Não utilizado ainda
     ('origem', ['País Origem', '***']),  # Não utilizado ainda
     ('moeda', ['Moeda', '****']),  # Não utilizado ainda
-    ('qtde', ['Quantidade', 'QUANTIDADE']),
-    ('valor', ['Valor Unitário', 'VALOR']),
+    ('qtde', ['Quantidade', 'QUANTIDADE', 'Quantidade da Mercadoria']),
+    ('valor', ['Valor Unitário', 'VALOR', 'Valor Item']),
 ])
 
 
@@ -1222,13 +1252,28 @@ def procura_chave_lower(akey: str, original: dict):
     return result
 
 
+def recupera_taxa_cambio(original):
+    try:
+        return float(original.get('Taxa de Câmbio'))
+    except (ValueError, TypeError) as err:
+        print('....................', err)
+        return 1
+
+
 def muda_chaves(original: dict) -> dict:
     new_dict = {}
     print(original)
     for key, alternative_keys in de_para.items():
         for alternative_key in alternative_keys:
             if original.get(alternative_key):
-                new_dict[key] = original.get(alternative_key)
+                if key == 'descricao':
+                    if not original.get(alternative_key) == '*[OUTROS (DEMAIS TIPOS)]':
+                        if new_dict.get(key):
+                            new_dict[key] += ' ' + str(original.get(alternative_key))
+                        else:
+                            new_dict[key] = original.get(alternative_key)
+                else:
+                    new_dict[key] = original.get(alternative_key)
             else:
                 valor = procura_chave_lower(alternative_key, original)
                 if valor:
@@ -1301,7 +1346,7 @@ def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
                         format(de_para.get('ncm'))
             valor = row.get('valor')
             if valor:
-                itemtg.valor = valor
+                itemtg.valor = valor * recupera_taxa_cambio(row)
             else:
                 itemtg.valor = 0
                 if alertas.get('valor') is None:
@@ -1608,32 +1653,25 @@ def lista_de_tgs_e_items(session, ovr_id):
     total_tgs = {}
     ovr_lista_tgs = lista_tgovr(session, ovr_id)
     for tg in ovr_lista_tgs:
-        qtde_total = 0
         valor = 0
         lista_de_tgs_items[tg.id] = {}
         lista_de_tgs_items[tg.id]['container'] = tg.numerolote
         lista_de_tgs_items[tg.id]['descricao'] = tg.descricao
-        lista_de_tgs_items[tg.id]['NCMs'] = {}
         for item in tg.itenstg:
             try:
-                n = item.ncm
                 qtde = item.qtde
                 valor_total = float(qtde * item.valor)
                 if total_tgs.get('valor_total'):
                     total_tgs['valor_total'] += valor_total
                 else:
                     total_tgs['valor_total'] = valor_total
-                if lista_de_tgs_items[tg.id]['NCMs'].get(n):
-                    qtde_total = lista_de_tgs_items[tg.id]['NCMs'][n].get('qtde_total') \
-                                 + float(qtde)
-                    valor = lista_de_tgs_items[tg.id]['NCMs'][n].get('valor') + \
+                if lista_de_tgs_items[tg.id].get('valor'):
+                    valor = lista_de_tgs_items[tg.id].get('valor') + \
                             float(item.valor * qtde)
                 else:
-                    lista_de_tgs_items[tg.id]['NCMs'][n] = {}
-                    qtde_total = float(qtde)
+                    lista_de_tgs_items[tg.id]['valor'] = {}
                     valor = float(item.valor * qtde)
-                lista_de_tgs_items[tg.id]['NCMs'][n]['qtde_total'] = qtde_total
-                lista_de_tgs_items[tg.id]['NCMs'][n]['valor'] = valor
+                lista_de_tgs_items[tg.id]['valor'] = valor
             except TypeError:
                 pass
     return lista_de_tgs_items, total_tgs
