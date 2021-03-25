@@ -945,7 +945,7 @@ def ovr_app(app):
                 if isinstance(col, int):
                     linha_totais[ind] = int(linha_totais[ind]) + col
         rows_copy = rows.copy()
-        rows_copy.append([ '--', '--', *linha_totais])
+        rows_copy.append(['--', '--', *linha_totais])
         for row in rows_copy:
             formated_cols = []
             for ind, col in enumerate(row):

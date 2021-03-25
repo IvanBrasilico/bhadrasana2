@@ -1,0 +1,168 @@
+{% extends "new_base.html" %} {{super()}}
+{% block content %}
+<script src="static/js/registrarRVF.js"></script>
+<meta name="csrftoken" content="{{ csrf_token() }}">
+    <!-- Seção RVF -->
+    <section id="rvf_section" class="container d-flex align-items-center my-5">
+        <h2 class="display-4">Registrar RVF</h2>
+    </section>
+
+        <!-- Informações gerais -->
+        <section id="info_section" class="container d-flex flex-column my-5">
+            <!-- Título -->
+            <div class="row align-items-center mb-5">
+                <div class="col-4">
+                    <h3 class="display-6">Informações gerais</h3>
+                </div>
+            </div>
+
+            <!-- Formulário que cadadstra a RVF -->
+            <form method="POST" id="form_rvf" action="new_rvf">
+<!--                <input type="hidden" id="csrf_token" name="csrf_token" value="{{ csrf_token() }}"/>-->
+                <div class="d-flex">
+                    <div class="col-6 flow-start">
+                        <dl class="row">
+                            <dt class="col-6 text-end">Ficha associada:</dt>
+                            <dd class="col-6 text-body" id="ovr_id">{{ovr_id}}</dd>
+                            <dt class="col-6 text-end">CE Mercante:</dt>
+                            <dd class="col-6">{{rvf_form.numeroCEmercante(class='form-control')}}</dd>
+                            <dt class="col-6 text-end">Conteiner:</dt>
+                            <dd class="col-6">{{rvf_form.numerolote(class='form-control')}}</dd>
+                            <dt class="col-6 text-end">Peso verificado (kg):</dt>
+                            <dd class="col-6">{{rvf_form.peso(class='form-control')}}</dd>
+                            <dt class="col-6 text-end">Peso manifestado (kg):</dt>
+                            <dd class="col-6">{{rvf_form.peso_manifestado(class='form-control')}}</dd>
+                            <dt class="col-6 text-end">Volume (m3):</dt>
+                            <dd class="col-6">{{rvf_form.volume(class='form-control')}}</dd>
+                            <dt class="col-6 text-end">Inspeção não invasiva?</dt>
+                            <dd class="col-6">{{rvf_form.inspecaonaoinvasiva}} Sim</dd>
+                            <dt class="col-6 text-end">Data da verificação:</dt>
+                            <dd class="col-6">{{rvf_form.adata(class='form-control')}}</dd>
+                            <dt class="col-6 text-end">Hora da verificação:</dt>
+                            <dd class="col-6">{{rvf_form.ahora(class='form-control')}}</dd>
+                        </dl>
+                    </div>
+                    <div class="col-6 flow-end">
+                        <dl class="row">
+                            <dt class="col-6 text-end">Lacres verificados:</dt>
+                            <dd class="col-6"><input type="text" name="lacreInput" id="lacreInputID"
+                                                     class="form-control" onkeypress="verificaEnterNoInput(event, 'lacresverificadosID')"></dd>
+                            <dt class="col-6 text-end"></dt>
+                            <dd id="lacresverificadosID" class="text-end col-6"></dd>
+
+                            <dt class="col-6 text-end">Possíveis infrações:</dt>
+<!--                            <dd class="col-6"><input type="text" name="infracoesInput" id="infracoesInput"-->
+<!--                                                     class="form-control" onkeypress="verificaEnterNoInput(event, '#infracoesEncontradasID')"></dd>-->
+                            <dd class="col-6">{{ rvf_form.infracao_id(class='form-control', onchange='checkOptionSelection(event, "#infracao_id")') }}</dd>
+                            <dt class="col-6 text-end"></dt>
+                            <dd id="infracoesEncontradasID" class="text-end col-6"></dd>
+
+                            <dt class="col-6 text-end">Marcas encontradas:</dt>
+                            <dd class="col-6">{{ rvf_form.marca_id(class='form-control', onchange='checkOptionSelection(event, "#marca_id")') }}</dd>
+<!--                            <dd class="col-6"><input type="text" name="marcasInput" id="marcasInput"-->
+<!--                                                     class="form-control" onkeypress="verificaEnterNoInput(event, '#marcasEncontradasID')"></dd>-->
+                            <dt class="col-6 text-end"></dt>
+                            <dd id="marcasEncontradasID" class="text-end col-6"></dd>
+                            <dt class="col-6 text-end">Descrição:</dt>
+                            <dd class="col-6">{{rvf_form.descricao(class='form-control')}}</dd>
+                        </dl>
+                    </div>
+                </div>
+<!--                <button type="submit" id="saveBtn"></button>-->
+            </form>
+        </section>
+
+        <!-- Apreensões -->
+        <section id="apreensoes_section" class="container my-5">
+            <!-- Título -->
+            <div class="row align-items-center mb-5">
+                <div class="col-4">
+                    <h3 class="display-6">Apreensões sem TG</h3>
+                </div>
+                <!-- Button trigger modal -->
+                <div class="col-8">
+                    <a class="m-3" href="#" role="button" aria-expanded="false"
+                    data-bs-toggle="modal" data-bs-target="#registarApreensaoModal">
+                        <img src="/static/plus.png" alt="menu">
+                    </a>
+                </div>
+            </div>
+
+            <!-- Tabela de apreensões -->
+            <div class="col-12">
+                <table class="table">
+                    <thead>
+                    <tr class="align-middle">
+                        <th scope="col" class="text-center">Tipo</th>
+                        <th scope="col" class="text-center">Peso (kg)</th>
+                        <th scope="col" class="text-center">Descrição</th>
+                        <th scope="col" class="text-center">Excluir</th>
+                    </tr>
+                    </thead>
+                    <tbody id="listaApreensoesBody"></tbody>
+                </table>
+            </div>
+
+            <!-- Modal registrar apreensão -->
+            <div class="modal fade" id="registarApreensaoModal" tabindex="-1" aria-labelledby="registarApreensaoLabel"
+                 aria-hidden="true"  data-bs-backdrop="static" data-bs-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <form name="registra_apreensao" id="registraApreensaoID">
+                            <!-- Header -->
+                            <div class="modal-header">
+                                <h5 class="modal-title display-6" id="registrar_apreensao_label">Registrar apreensão</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+
+                            <!-- Body -->
+                            <div class="modal-body my-3 px-5">
+                                <dl class="row">
+                                    <dt class="col-3 text-end">Tipo:</dt>
+                                    <dd class="col-9">{{ apreensao_form.tipo_id(class='form-control') }}</dd>
+                                    <dt class="col-3 text-end">Peso:</dt>
+                                    <dd class="col-9">{{ apreensao_form.peso(class='form-control') }}</dd>
+                                    <dt class="col-3 text-end">Descrição:</dt>
+                                    <dd class="col-9">{{ apreensao_form.descricao(class='form-control') }}</dd>
+                                </dl>
+                            </div>
+
+                            <!-- Footer -->
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                <button class="btn btn-primary" type="submit" onclick="registraApreensao()"
+                                        data-bs-dismiss="modal" style="background-color:#567AB1; border-color:#567AB1;">Registrar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Imagens -->
+        <section id="imagens_section" class="container my-5">
+            <!-- Título -->
+            <div class="row align-items-center mb-5">
+                <div class="col-4">
+                    <h3 class="display-6">Adicionar Imagens</h3>
+                </div>
+                <div class="col-4">
+                    <label for="file" style="cursor: pointer;"><img src="/static/plus.png" alt="menu"></label>
+                </div>
+                <div class="col-4">
+                    <input type="file" accept="image/jpeg, image/png" onchange="previewImg(event)"
+                           name="image" id="file" style="display: none;" multiple>
+                </div>
+            </div>
+            <!-- Conteúdo -->
+            <div class="row row-cols-4 g-4" id="cardGallery"></div>
+        </section>
+
+        <!-- Seção Botões -->
+        <section id="buttons_section" class="container d-flex justify-content-end my-5">
+            <a href="/ovr?id={{ovr_id}}" target="_self" id="redirectBtn" class="btn btn-primary d-none"
+               onClick="openWindowReload(this)" type="button"></a>
+            <a class="btn btn-primary" type="button" onclick="registraRVF()" style="background-color:#567AB1; border-color:#567AB1;">Registrar RVF</a>
+        </section>
+{% endblock %}

@@ -20,6 +20,17 @@ class RVFForm(RastreavelForm):
     adata = DateField(u'Data')
     ahora = TimeField(u'Horário')
     inspecaonaoinvasiva = BooleanField('Apenas inspeção não invasiva', default=False)
+    marca_id = SelectField('Lista de marcas licenciadas, se existir', default=0)
+    infracao_id = SelectField('Lista de possíveis infrações', default=0)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.marca_id.choices = [(None, 'Selecione')]
+        if kwargs.get('marcas'):
+            self.marca_id.choices.extend(kwargs.get('marcas'))
+        self.infracao_id.choices = [(None, 'Selecione')]
+        if kwargs.get('infracoes'):
+            self.infracao_id.choices.extend(kwargs.get('infracoes'))
 
 
 class ImagemRVFForm(RastreavelForm):

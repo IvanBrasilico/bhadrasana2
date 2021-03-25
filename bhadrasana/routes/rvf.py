@@ -27,7 +27,8 @@ from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, \
     make_and_save_transformation, exclui_lacre_verificado, \
     inclui_lacre_verificado, get_imagemrvf, inclui_nova_ordem_arquivo, \
     get_anexos_ordenado, get_tiposapreensao_choice, gera_apreensao_rvf, \
-    exclui_apreensao_rvf, get_peso, rvf_ordena_imagensrvf_por_data_criacao, get_anexos_mongo
+    exclui_apreensao_rvf, get_peso, rvf_ordena_imagensrvf_por_data_criacao, \
+    get_anexos_mongo, get_infracoes_choice
 from bhadrasana.views import csrf, valid_file, get_user_save_path
 
 
@@ -669,11 +670,41 @@ def rvf_app(app):
         memory_file.seek(0)
         return send_file(memory_file, attachment_filename='imagens.zip', as_attachment=True)
 
-    @app.route('/new_rvf', methods=['POST', 'GET'])
+    @app.route('/registrar_rvf', methods=['POST', 'GET'])
     @login_required
-    def new_rvf():
-        rvf_form = RVFForm()
-        apreensao_form = ApreensaoRVFForm
-        return render_template('new_rvf.html',
+    def registrar_rvf():
+        session = app.config.get('dbsession')
+        ovr_id = request.args.get('ovr_id')
+        get_usuario_validando(session, current_user.id)
+        marcas = get_marcas_choice(session)
+        infracoes = get_infracoes_choice(session)
+        rvf_form = RVFForm(marcas=marcas, infracoes=infracoes)
+        tiposapreensao = get_tiposapreensao_choice(session)
+        apreensao_form = ApreensaoRVFForm(tiposapreensao=tiposapreensao)
+
+        if request.method == 'POST':
+            rvf_params = request.get_json()
+            ovr_id = rvf_params['ovr_id']
+            lacres = rvf_params['lacresVerificados']
+            infracoes = rvf_params['infracoesEncontradas']
+            marcas = rvf_params['marcasEncontradas']
+            apreensoes = rvf_params['apreensoesObtidas']
+            new_rvf = cadastra_rvf(session,
+                                   user_name=current_user.name,
+                                   params=rvf_params)
+            session.refresh(new_rvf)
+            for lacre in lacres:
+                new_lacre = inclui_lacre_verificado(session, new_rvf.id, lacre)
+            for infracao in infracoes:
+                new_infracao = inclui_infracao_encontrada(session, new_rvf.id, infracao)
+            for marca in marcas:
+                new_marca = inclui_marca_encontrada(session, new_rvf.id, marca)
+            for apreensao in apreensoes:
+                apreensao['rvf_id'] = new_rvf.id
+                new_apreensao = gera_apreensao_rvf(session, apreensao)
+            return 'RVF cadastrada', 200
+
+        return render_template('registrar_rvf.html',
+                               ovr_id=ovr_id,
                                rvf_form=rvf_form,
                                apreensao_form=apreensao_form)
