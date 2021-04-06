@@ -1,0 +1,191 @@
+{% extends "new_base.html" %} {{super()}}
+{% block content %}
+<script src=""></script>
+<meta name="csrftoken" content="{{ csrf_token() }}">
+    <!-- Seção RVF -->
+    <section id="rvf_section" class="container my-5">
+        <div class="row align-items-center">
+            <div class="col-6">
+                <h2 class="display-4">RVF nº {{rvf.id}}</h2>
+            </div>
+            <div class="col-6 text-end">
+                <a class="btn btn-primary" type="button" href="rvf_docx?rvf_id={{rvf.id}}&tipo=taseda" style="background-color:#567AB1; border-color:#567AB1;">Imprimir Taseda</a>
+                <a class="btn btn-primary" type="button" href="rvf_impressao/{{rvf.id}}" style="background-color:#567AB1; border-color:#567AB1;">Imprimir RVF</a>
+                <a class="btn btn-primary" type="button" href="rvf_docx?rvf_id={{rvf.id}}" style="background-color:#567AB1; border-color:#567AB1;">Imprimir OVR</a>
+                <a class="btn btn-info" type="button">Editar RVF</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Informações gerais -->
+    <section id="info_section" class="container d-flex flex-column my-5">
+        <!-- Título -->
+        <div class="row align-items-center mb-5">
+            <div class="col-4">
+                <h3 class="display-6">Informações gerais</h3>
+            </div>
+        </div>
+
+        <!-- Informações da RVF -->
+        <div class="d-flex">
+            <div class="col-6 flow-start">
+                <dl class="row">
+                    <dt class="col-6 text-end mb-3">Ficha associada:</dt>
+                    <dd class="col-6 text-body" id="ovr_id">{{rvf.ovr_id}}</dd>
+                    <dt class="col-6 text-end mb-3">CE Mercante:</dt>
+                    <dd class="col-6">{{rvf.numeroCEmercante}}</dd>
+                    <dt class="col-6 text-end mb-3">Conteiner:</dt>
+                    <dd class="col-6">{{rvf.numerolote}}</dd>
+                    <dt class="col-6 text-end mb-3">Peso verificado (kg):</dt>
+                    <dd class="col-6">{{rvf.peso}}</dd>
+                    <dt class="col-6 text-end mb-3">Volume (m3):</dt>
+                    <dd class="col-6">{{rvf.volume}}</dd>
+                    <dt class="col-6 text-end mb-3">Inspeção não invasiva?</dt>
+                    {% if rvf.inspecaonaoinvasiva %}
+                    <dd class="col-6">Sim</dd>
+                    {% else %}
+                    <dd class="col-6">Não</dd>
+                    {% endif %}
+                    <dt class="col-6 text-end mb-3">Data da verificação:</dt>
+                    <dd class="col-6">{{rvf.datahora.date().strftime("%d/%m/%Y")}}</dd>
+                    <dt class="col-6 text-end mb-3">Hora da verificação:</dt>
+                    <dd class="col-6">{{rvf.datahora.time()}}</dd>
+                </dl>
+            </div>
+            <div class="col-6 flow-end">
+                <dl class="row">
+                    <dt class="col-6 text-end mb-3">Lacres verificados:</dt>
+                    <dd class="col-6">
+                    {% for lacre in lacres_da_rvf %}
+                        {{lacre + ','}}
+                    {% endfor %}
+                    </dd>
+
+                    <dt class="col-6 text-end mb-3">Possíveis infrações:</dt>
+                    <dd class="col-6">
+                    {% for infracao in infracoes_da_rvf %}
+                        {{infracao + ','}}
+                    {% endfor %}
+                    </dd>
+
+                    <dt class="col-6 text-end mb-3">Marcas encontradas:</dt>
+                    <dd class="col-6">
+                    {% for marca in marcas_da_rvf %}
+                        {{marca + ','}}
+                    {% endfor %}
+                    </dd>
+
+                    <dt class="col-6 text-end mb-3">Descrição:</dt>
+                    <dd class="col-6">{{rvf.descricao}}</dd>
+                </dl>
+            </div>
+        </div>
+    </section>
+
+    <!-- Apreensões -->
+    <section id="apreensoes_section" class="container my-5">
+        <!-- Título -->
+        <div class="row align-items-center mb-5">
+            <div class="col-4">
+                <h3 class="display-6">Apreensões sem TG</h3>
+            </div>
+            <!-- Button trigger modal -->
+<!--                <div class="col-8">-->
+<!--                    <a class="m-3" href="#" role="button" aria-expanded="false"-->
+<!--                    data-bs-toggle="modal" data-bs-target="#registarApreensaoModal">-->
+<!--                        <img src="/static/plus.png" alt="menu">-->
+<!--                    </a>-->
+<!--                </div>-->
+        </div>
+
+        <!-- Tabela de apreensões -->
+        <div class="col-12">
+            <table class="table">
+                <thead>
+                <tr class="align-middle">
+                    <th scope="col" class="text-center">Tipo</th>
+                    <th scope="col" class="text-center">Peso (kg)</th>
+                    <th scope="col" class="text-center">Descrição</th>
+<!--                        <th scope="col" class="text-center">Excluir</th>-->
+                </tr>
+                </thead>
+                <tbody id="listaApreensoesBody">
+                {% for apreensao in apreensoes_da_rvf %}
+                    <tr>
+                        <td class="text-center">{{apreensao.tipo.descricao}}</td>
+                        <td class="text-center">{{apreensao.peso}}</td>
+                        <td class="text-center">{{apreensao.descricao}}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Imagens -->
+    <section id="imagens_section" class="container my-5">
+        <!-- Título -->
+        <div class="row align-items-center mb-5">
+            <div class="col-4">
+                <h3 class="display-6">Imagens</h3>
+            </div>
+            <div class="col-8 text-end">
+                <a class="btn btn-warning" type="button" data-bs-toggle="modal" data-bs-target="#imageCarousel">Abrir galeria</a>
+                <a class="btn btn-warning" type="button" href="rvf_download_imagens?rvf_id={{rvf.id}}">Download</a>
+            </div>
+
+            <!--Modal galeria de imagens-->
+            <div class="modal fade" id="imageCarousel" tabindex="-1" aria-labelledby="imageCarousel"
+             aria-hidden="true"  data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <!-- Header -->
+                    <div class="modal-header">
+                        <h5 class="modal-title display-6">Galeria</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="modal-body my-3 px-5">
+                        <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                <div class="carousel-item active">
+                                    <img src="data:image/jpg;base64,{{imagens_da_rvf[0]}}" class="d-block w-100">
+                                </div>
+                                {% for imagem in imagens_da_rvf[1:] %}
+                                <div class="carousel-item">
+                                    <img src="data:image/jpg;base64,{{imagem}}" class="d-block w-100" alt="...">
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <button class="carousel-control-prev" type="button" style="opacity: 0;" data-bs-target="#carouselExampleControls" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button"  style="opacity: 0;" data-bs-target="#carouselExampleControls" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+        <!-- Conteúdo -->
+        <div class="row row-cols-4 g-4" id="cardGallery">
+        {% for imagem in imagens_da_rvf %}
+            <div class="col">
+                <div class="card border-0">
+                    <img id="img" class="card-img-top" style="width:300px; height: 200px" src="data:image/jpg;base64,{{imagem}}"/>
+                    <div class="card-img-overlay text-end">
+                        <a download="Imagem-RVF nº {{rvf.id}}.jpg" href="data:image/jpg;base64,{{imagem}}" class="card-title text-end text-white" style="cursor: pointer">
+                            <h4><i class="bi bi-file-earmark-arrow-down-fill" style="color:#ffc107;"></i></h4>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+    </section>
+{% endblock %}

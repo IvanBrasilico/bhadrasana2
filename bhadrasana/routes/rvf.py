@@ -6,8 +6,10 @@ from io import BytesIO
 
 from ajna_commons.flask.log import logger
 from ajna_commons.utils.images import ImageBytesTansformations
+from bson import ObjectId
 from flask import request, flash, render_template, url_for, jsonify, send_file
 from flask_login import login_required, current_user
+from gridfs import GridFS
 from werkzeug.utils import redirect
 
 from bhadrasana.conf import APP_PATH
@@ -674,6 +676,7 @@ def rvf_app(app):
     @login_required
     def registrar_rvf():
         session = app.config.get('dbsession')
+        mongodb = app.config.get('mongo_risco')
         ovr_id = request.args.get('ovr_id')
         get_usuario_validando(session, current_user.id)
         marcas = get_marcas_choice(session)
@@ -689,10 +692,12 @@ def rvf_app(app):
             infracoes = rvf_params['infracoesEncontradas']
             marcas = rvf_params['marcasEncontradas']
             apreensoes = rvf_params['apreensoesObtidas']
+            imagens = rvf_params['imagensRecebidas']
             new_rvf = cadastra_rvf(session,
                                    user_name=current_user.name,
                                    params=rvf_params)
             session.refresh(new_rvf)
+
             for lacre in lacres:
                 new_lacre = inclui_lacre_verificado(session, new_rvf.id, lacre)
             for infracao in infracoes:
@@ -702,9 +707,57 @@ def rvf_app(app):
             for apreensao in apreensoes:
                 apreensao['rvf_id'] = new_rvf.id
                 new_apreensao = gera_apreensao_rvf(session, apreensao)
+            for imagem in imagens:
+                content = base64.b64decode(imagem['content'].split(',')[1])
+                filename = imagem['name']
+                dataModificacao = datetime.now()
+                rvf_id = new_rvf.id
+                new_imagem = inclui_imagemrvf(mongodb, session, content, filename, dataModificacao, rvf_id)
+
             return 'RVF cadastrada', 200
 
         return render_template('registrar_rvf.html',
                                ovr_id=ovr_id,
                                rvf_form=rvf_form,
                                apreensao_form=apreensao_form)
+
+    @app.route('/consultar_rvf', methods=['GET'])
+    @login_required
+    def consultar_rvf():
+        session = app.config.get('dbsession')
+        mongodb = app.config.get('mongo_risco')
+        get_usuario_validando(session, current_user.id)
+        ovr_id = request.args.get('ovr_id')
+        rvf_id = request.args.get('id')
+        rvf = get_rvf(session, rvf_id)
+
+        lacres_da_rvf = []
+        for lacre_verificado in rvf.lacresverificados:
+            lacres_da_rvf.append(lacre_verificado.numero)
+        infracoes_da_rvf = []
+        for infracao in rvf.infracoesencontradas:
+            infracoes_da_rvf.append(infracao.nome)
+        marcas_da_rvf = []
+        for marca in rvf.marcasencontradas:
+            marcas_da_rvf.append(marca.nome)
+        apreensoes_da_rvf = []
+        for apreensao in rvf.apreensoes:
+            apreensoes_da_rvf.append(apreensao)
+
+        fs = GridFS(mongodb)
+        imagens_da_rvf = []
+        for imagem in rvf.imagens:
+            grid_out = fs.get(ObjectId(imagem.imagem))
+            imagem_bytes = grid_out.read()
+            imagem_string = str(base64.b64encode(imagem_bytes)).split('\'')[1]
+            imagens_da_rvf.append(imagem_string)
+
+        return render_template('consultar_rvf.html',
+                               ovr_id=ovr_id,
+                               rvf=rvf,
+                               lacres_da_rvf=lacres_da_rvf,
+                               infracoes_da_rvf=infracoes_da_rvf,
+                               marcas_da_rvf=marcas_da_rvf,
+                               apreensoes_da_rvf=apreensoes_da_rvf,
+                               imagens_da_rvf=imagens_da_rvf
+                               )
