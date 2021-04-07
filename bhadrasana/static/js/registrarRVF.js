@@ -2,7 +2,9 @@ let lacresVerificados = [];
 let infracoesEncontradas = [];
 let marcasEncontradas = [];
 let apreensoesObtidas = [];
-let imagensRecebidas = [];
+let imgList = [];
+
+
 
 function registraApreensao() {
 
@@ -157,7 +159,141 @@ function removeSpan(event, contentTag, content, selectField, selectValue){
     event.preventDefault();
 }
 
+function openWindowReload(link) {
+    let href = link.href;
+    window.open(link,'_self');
+    document.location.reload(true);
+}
+
+
+function previewImg(event){
+    let filesToUpload = event.target.files;
+
+	for (i = 0; i < filesToUpload.length; i++){
+	    let cardGallery = document.querySelector("#cardGallery");
+        let cardCol = document.createElement("div");
+        cardCol.classList.add("col");
+        cardCol.classList.add("dropzone");
+        cardCol.setAttribute("draggable", "true");
+        cardCol.addEventListener('dragstart', handleDragStart, false);
+        cardCol.addEventListener('dragover', handleDragOver, false);
+        cardCol.addEventListener('dragenter', handleDragEnter, false);
+        cardCol.addEventListener('dragleave', handleDragLeave, false);
+        cardCol.addEventListener('dragend', handleDragEnd, false);
+        cardCol.addEventListener('drop', handleDrop, false);
+        cardCol.innerHTML = `
+            <div class="card border-0" style="cursor: move;">
+                <img id="img" class="card-img-top" style="width:300px; height: 200px"/>
+                <div class="card-img-overlay text-end">
+                    <a class="card-title text-end text-white" style="cursor: default" onclick="removeElement(this.parentElement)">
+                        <i class="bi bi-x-circle-fill"></i>
+                    </a>
+                </div>
+            </div>
+        `
+        cardGallery.appendChild(cardCol);
+        let image = document.getElementById("img");
+        img.id = "img-"+[i];
+        let file = filesToUpload[i];
+        let reader = new FileReader();
+        reader.onload = function(){
+            image.src = reader.result;
+            image.name = file.name;
+        }
+        reader.readAsDataURL(file);
+	}
+}
+
+function removeElement(element){
+    element.parentElement.parentElement.remove();
+}
+
+function handleDragStart(e) {
+    dragSrcEl = this;
+
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', this.innerHTML);
+  }
+
+function handleDragEnd(e) {
+    this.classList.remove('border');
+}
+
+function handleDragOver(e) {
+    this.classList.add('border');
+    if (e.preventDefault) {
+      e.preventDefault();
+    }
+
+    return false;
+  }
+
+function handleDragEnter(e) {
+    this.classList.add('border');
+}
+
+function handleDragLeave(e) {
+    this.classList.remove('border');
+}
+
+function handleDrop(e) {
+  e.stopPropagation();
+
+    if (dragSrcEl !== this) {
+      dragSrcEl.innerHTML = this.innerHTML;
+      this.innerHTML = e.dataTransfer.getData('text/html');
+    }
+    this.classList.remove('border');
+    return false;
+}
+
+function extractDocImgs(){
+    let docImgs = document.images;
+    for (let i = 0; i < docImgs.length; i++) {
+        if (docImgs[i].id != ""){
+            let id = docImgs[i].id;
+            let name = docImgs[i].name;
+            let content = docImgs[i].src;
+
+            imgObj = {
+                id: id,
+                name: name,
+                content: content
+            }
+            imgList.push(imgObj);
+        }
+    }
+    return imgList;
+}
+
+//function extractBlob(){
+//    for (let i = 0; i < imgList.length; i++){
+//        fetch(imgList[i].content)
+//        .then(res => res.blob())
+//        .then(blob => {
+//            imgList[i].content = blob;
+//            imgList[i].size = blob.size;
+//            imgList[i].type = blob.type;
+//        });
+//    }
+//    return imgList;
+//}
+
+//function extractImgContent(){
+//    for (let i = 0; i < imgList.length; i++){
+//        let reader = new FileReader();
+//        reader.onload = function(){
+//            imgList[i].content = reader.result;
+//        }
+//    reader.readAsDataURL(imgList[i].content);
+//    }
+//    return imgList;
+//}
+
 function registraRVF(){
+
+    extractDocImgs();
+
     let token = document.getElementsByName("csrftoken")[0].content;
     let inspecaonaoinvasiva = document.querySelector("#inspecaonaoinvasiva");
     let ovr_id = document.querySelector("#ovr_id").textContent;
@@ -184,65 +320,32 @@ function registraRVF(){
         infracoesEncontradas: infracoesEncontradas,
         marcasEncontradas: marcasEncontradas,
         apreensoesObtidas: apreensoesObtidas,
-        imagensRecebidas: imagensRecebidas
-
+        imagensRecebidas: imgList
     };
     const url = '/registrar_rvf';
 
     fetch(url, {
       method: 'POST',
+      redirect: 'follow',
       headers: {
         "Content-Type": "application/json",
         "X-Requested-With": "XMLHttpRequest",
-        "Accept": "application/json, text-plain, */*",
+        "Accept": "application/json, multipart/form-data, text-plain, */*",
         "X-CSRF-TOKEN": token
       },
       body: JSON.stringify(data),
     })
 
     .then((response) => {
-        return response.text();
+        return response.json();
     })
-    .then((text) => {
-        console.log(text);
-        redirectBtn.click();
+
+    .then((json) => {
+        let url = '/consultar_rvf?id='+json['id'];
+        window.location.href = url;
     })
 
     .catch((error) => {
       console.error('Error:', error);
     });
-}
-
-function openWindowReload(link) {
-    let href = link.href;
-    window.open(link,'_self');
-    document.location.reload(true);
-}
-
-function previewImg(event){
-    let inputField = event.target;
-
-	for (i = 0; i < inputField.files.length; i++){
-	    let cardGallery = document.querySelector("#cardGallery");
-        let cardCol = document.createElement("div");
-        cardCol.classList.add("col");
-        cardCol.innerHTML = `
-            <div class="card border-0">
-                <img id="img" class="card-img-top" style="width:300px; height: 200px"/>
-                <div class="card-img-overlay text-end">
-                    <a class="card-title text-end text-white" onclick="removeElement(this.parentElement)"><i class="bi bi-x-circle-fill"></i></a>
-                </div>
-            </div>
-        `
-        cardGallery.appendChild(cardCol);
-        let image = document.getElementById('img');
-        img.id = "img-"+[i];
-        image.src = URL.createObjectURL(inputField.files[i]);
-        imagensRecebidas.push(inputField.files[i]);
-	}
-}
-
-function removeElement(element){
-    element.parentElement.parentElement.remove();
-
 }

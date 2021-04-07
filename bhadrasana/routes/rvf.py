@@ -712,9 +712,10 @@ def rvf_app(app):
                 filename = imagem['name']
                 dataModificacao = datetime.now()
                 rvf_id = new_rvf.id
-                new_imagem = inclui_imagemrvf(mongodb, session, content, filename, dataModificacao, rvf_id)
+                new_imagem = inclui_imagemrvf(mongodb, session, content,
+                                              filename, dataModificacao, rvf_id)
 
-            return 'RVF cadastrada', 200
+            return jsonify({'id': new_rvf.id}), 200
 
         return render_template('registrar_rvf.html',
                                ovr_id=ovr_id,

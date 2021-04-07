@@ -226,7 +226,15 @@
                     </button>
                     {% endif %}
                 </div>
-                <div class="col-sm-3">
+                <div class="col-sm-2">
+
+                    <a type="button" class="btn btn-primary btn-success form-control"
+                            href="registrar_rvf?ovr_id={{ovr.id}}">
+                    Registrar RVF
+                    </a>
+
+                </div>
+                <div class="col-sm-2">
                     {% if oform.id.data %}
                     <button id="btn_tg" type="button" class="btn btn-primary btn-success form-control"
                             onclick="window.open('lista_tgovr?ovr_id={{oform.id.data}}')">
@@ -234,7 +242,7 @@
                     </button>
                     {% endif %}
                 </div>
-                <div class="col-sm-3">
+                <div class="col-sm-2">
                     {% if ovr.fase > 0 and ovr.fase < 3 %}
 <!--                    <button id="btn_auto" type="button" class="btn btn-primary btn-warning form-control"-->
 <!--                            data-toggle="modal" data-target="#lavratura">-->
