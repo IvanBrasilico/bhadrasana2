@@ -337,6 +337,9 @@ function registraRVF(){
     })
 
     .then((response) => {
+        if (response.ok) {
+            alert('RVF registrada com sucesso')
+        }
         return response.json();
     })
 
