@@ -50,6 +50,16 @@ ovr2_app(app)
 admin_app(app, db_session)
 
 
+class ForceHttpsRedirects:
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, environ, start_response):
+        environ["wsgi.url_scheme"] = "https"
+        return self.app(environ, start_response)
+
+app.wsgi_app = ForceHttpsRedirects(app.wsgi_app) # Add middleware to force all redirects to https
+
 @app.teardown_appcontext
 def shutdown_session(exception=None):
     db_session.remove()
