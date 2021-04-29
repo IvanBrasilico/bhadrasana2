@@ -1,15 +1,14 @@
 import base64
 import os
 import zipfile
-from datetime import date, timedelta, datetime
-from io import BytesIO
-
 from ajna_commons.flask.log import logger
 from ajna_commons.utils.images import ImageBytesTansformations
 from bson import ObjectId
+from datetime import date, timedelta, datetime
 from flask import request, flash, render_template, url_for, jsonify, send_file
 from flask_login import login_required, current_user
 from gridfs import GridFS
+from io import BytesIO
 from werkzeug.utils import redirect
 
 from bhadrasana.conf import APP_PATH
@@ -192,7 +191,7 @@ def rvf_app(app):
         except Exception as err:
             logger.warning(err, exc_info=True)
             flash(str(err))
-        return redirect(url_for('rvf', id=rvf_id))
+        return redirect(url_for('rvf', id=rvf_id, _scheme="https"))
 
     @app.route('/inclui_lacre_verificado', methods=['GET'])
     @login_required
