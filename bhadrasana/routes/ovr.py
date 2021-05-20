@@ -1080,9 +1080,8 @@ def ovr_app(app):
         imagens = []
         filtro_form = FiltroCEForm()
         try:
-            if request.method == 'POST':
-                filtro_form = FiltroCEForm(request.form)
-                filtro_form.validate()
+            filtro_form = FiltroCEForm(request.values)
+            if filtro_form.validate():
                 rvfs, ovrs, infoce = \
                     consulta_ce_objects(filtro_form.numeroCEmercante.data, session)
                 imagens = get_imagens_conhecimento(mongodb,
