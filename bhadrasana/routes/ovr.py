@@ -1,14 +1,15 @@
 import os
-import pandas as pd
 import re
 from _collections import defaultdict
-from ajna_commons.flask.log import logger
 from datetime import datetime, date, timedelta
 from decimal import Decimal
+from typing import Tuple
+
+import pandas as pd
+from ajna_commons.flask.log import logger
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
 from gridfs import GridFS
-from typing import Tuple
 from werkzeug.utils import redirect
 
 from bhadrasana.analises.escaneamento_operador import sorteia_GMCIs
@@ -1064,29 +1065,23 @@ def ovr_app(app):
                                imagens=imagens,
                                limit=limit)
 
-    @app.route('/consulta_ce', methods=['GET', 'POST'])
+    @app.route('/consulta_ce/<ce>', methods=['GET'])
     @login_required
-    def consulta_ce():
-        """Tela para consulta única de número de CE-Mercante
-
-        Dentro do intervalo de datas, traz lista de ojetos do sistema que contenham
-        alguma referência ao contêiner.
-        """
+    @csrf.exempt
+    def consulta_ce_(ce):
         session = app.config.get('dbsession')
         mongodb = app.config['mongodb']
         ovrs = []
         rvfs = []
         infoce = {}
         imagens = []
-        filtro_form = FiltroCEForm()
         try:
-            filtro_form = FiltroCEForm(request.values)
-            if filtro_form.validate():
-                rvfs, ovrs, infoce = \
-                    consulta_ce_objects(filtro_form.numeroCEmercante.data, session)
-                imagens = get_imagens_conhecimento(mongodb,
-                                                   filtro_form.numeroCEmercante.data)
-                logger.info(imagens)
+            filtro_form = FiltroCEForm(numeroCEmercante=ce)
+            rvfs, ovrs, infoce = \
+                consulta_ce_objects(ce, session)
+            imagens = get_imagens_conhecimento(mongodb, ce)
+            # logger.info(imagens)
+            # logger.error(filtro_form.errors)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
@@ -1098,6 +1093,27 @@ def ovr_app(app):
                                ovrs=ovrs,
                                infoce=infoce,
                                imagens=imagens)
+
+    @app.route('/consulta_ce', methods=['GET', 'POST'])
+    @login_required
+    def consulta_ce():
+        """Tela para consulta única de número de CE-Mercante
+
+        Dentro do intervalo de datas, traz lista de ojetos do sistema que contenham
+        alguma referência ao contêiner.
+        """
+        filtro_form = FiltroCEForm()
+        try:
+            filtro_form = FiltroCEForm(request.form)
+            if request.method == 'POST' and filtro_form.validate():
+                return consulta_ce_(filtro_form.numeroCEmercante.data)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return render_template('pesquisa_ce.html',
+                               oform=filtro_form)
 
     @app.route('/consulta_due', methods=['GET', 'POST'])
     @login_required
