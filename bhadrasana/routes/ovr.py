@@ -1086,9 +1086,10 @@ def ovr_app(app):
                 return redirect(f'consulta_ce?numeroCEmercante={filtro_form.numeroCEmercante.data}')
             if request.method == 'GET':
                 filtro_form = FiltroCEForm(request.args)
-                rvfs, ovrs, infoce = \
-                    consulta_ce_objects(filtro_form.numeroCEmercante.data, session)
-                imagens = get_imagens_conhecimento(mongodb, filtro_form.numeroCEmercante.data)
+                if filtro_form.numeroCEmercante.data:
+                    rvfs, ovrs, infoce = \
+                        consulta_ce_objects(filtro_form.numeroCEmercante.data, session)
+                    imagens = get_imagens_conhecimento(mongodb, filtro_form.numeroCEmercante.data)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
