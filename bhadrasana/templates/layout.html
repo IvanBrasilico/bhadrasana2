@@ -1,12 +1,16 @@
-{% extends "bootstrap/base.html" %} {% block title %} AJNA - Bhadrasana - Visão computacional e Aprendizado de máquina na
-vigilância aduaneira {% endblock %} {% block head %}
+{% extends "bootstrap/base.html" %}
+{% block head %}
+{% block title %}
+    {% if title_page %}
+        <title> {{ title_page }} </title>
+    {% else %}
+        <title>AJNA - Fichas</title>
+    {% endif %}
+
+{% endblock %}
 <link href="/static/css/bootstrap.min.css" rel="stylesheet">
 <link href="/static/css/jquery-ui.min.css" rel="stylesheet">
-{% if title_page %}
-    <title> {{ title_page }} </title>
-{% else %}
-    <title>AJNA-FICHAS</title>
-{% endif %}
+
 <style>
     .table {
         margin: auto;
