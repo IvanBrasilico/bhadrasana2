@@ -85,6 +85,7 @@ def rvf_app(app):
         lacres_verificados = []
         arvf = None
         rvf_form = RVFForm()
+        title_page = "RVF"
         try:
             if request.method == 'POST':
                 rvf_form = RVFForm(request.form)
