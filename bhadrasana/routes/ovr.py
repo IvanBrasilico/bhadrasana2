@@ -109,7 +109,10 @@ def ovr_app(app):
         processo_form = ProcessoOVRForm()
         responsavel_form = ResponsavelOVRForm()
         setor_ovr_form = SetorOVRForm()
-        title_page = "FICHA " + ovr_id
+        if ovr_id:
+            title_page = 'FICHA ' + ovr_id
+        else:
+            title_page = 'NOVA FICHA'
         try:
             tiposeventos = get_tipos_evento_comfase_choice(session)
             usuario = get_usuario(session, current_user.name)
