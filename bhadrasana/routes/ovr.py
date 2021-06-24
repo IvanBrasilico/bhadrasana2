@@ -684,8 +684,7 @@ def ovr_app(app):
             flash('Erro! Detalhes no log da aplicação.')
             flash(str(type(err)))
             flash(str(err))
-        return redirect(request.referrer)
-        # return redirect(url_for('ovr', id=ovr_id))
+        return redirect(url_for('ovr', id=ovr_id))
 
     @app.route('/exclui_evento')
     @login_required
@@ -700,8 +699,7 @@ def ovr_app(app):
             flash('Erro! Detalhes no log da aplicação.')
             flash(str(type(err)))
             flash(str(err))
-        return redirect(request.referrer)
-        # return redirect(url_for('ovr', id=ovr_id))
+        return redirect(url_for('ovr', id=ovr_id))
 
     @app.route('/lista_tgovr', methods=['GET'])
     @login_required
@@ -940,8 +938,8 @@ def ovr_app(app):
                     try:
                         valor_col = float(col)
                         linha_totais[ind] += valor_col
-                    except:
-                        pass
+                    except Exception as err:
+                        logger.error(str(err))
                 if isinstance(col, int):
                     linha_totais[ind] = int(linha_totais[ind]) + col
         rows_copy = rows.copy()
@@ -958,8 +956,9 @@ def ovr_app(app):
                         else:
                             fcol = '{:,.2f}'.format(valor_col)
                             fcol = fcol.replace(',', '-').replace('.', ',').replace('-', '.')
-                    except:
+                    except Exception as err:
                         fcol = '-'
+                        logger.error(str(err))
                     formated_cols.append(fcol)
                 else:
                     formated_cols.append(col)

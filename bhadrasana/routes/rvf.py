@@ -699,20 +699,20 @@ def rvf_app(app):
             session.refresh(new_rvf)
 
             for lacre in lacres:
-                new_lacre = inclui_lacre_verificado(session, new_rvf.id, lacre)
+                inclui_lacre_verificado(session, new_rvf.id, lacre)
             for infracao in infracoes:
-                new_infracao = inclui_infracao_encontrada(session, new_rvf.id, infracao)
+                inclui_infracao_encontrada(session, new_rvf.id, infracao)
             for marca in marcas:
-                new_marca = inclui_marca_encontrada(session, new_rvf.id, marca)
+                inclui_marca_encontrada(session, new_rvf.id, marca)
             for apreensao in apreensoes:
                 apreensao['rvf_id'] = new_rvf.id
-                new_apreensao = gera_apreensao_rvf(session, apreensao)
+                gera_apreensao_rvf(session, apreensao)
             for imagem in imagens:
                 content = base64.b64decode(imagem['content'].split(',')[1])
                 filename = imagem['name']
                 dataModificacao = datetime.now()
                 rvf_id = new_rvf.id
-                new_imagem = inclui_imagemrvf(mongodb, session, content,
+                inclui_imagemrvf(mongodb, session, content,
                                               filename, dataModificacao, rvf_id)
 
             return jsonify({'id': new_rvf.id}), 200
