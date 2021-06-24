@@ -55,12 +55,14 @@ class ForceHttpsRedirects:
         self.app = app
 
     def __call__(self, environ, start_response):
-        environ["wsgi.url_scheme"] = "https"
+        environ['wsgi.url_scheme'] = 'https'
         return self.app(environ, start_response)
 
 
 if os.environ.get('DEBUG') != '1':
-    app.wsgi_app = ForceHttpsRedirects(app.wsgi_app) # Add middleware to force all redirects to https
+    # Add middleware to force all redirects to https
+    app.wsgi_app = ForceHttpsRedirects(app.wsgi_app)
+
 
 @app.teardown_appcontext
 def shutdown_session(exception=None):

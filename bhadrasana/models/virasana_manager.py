@@ -6,7 +6,6 @@ import requests
 
 from ajna_commons.flask.log import logger
 from ajna_commons.utils.sanitiza import mongo_sanitizar
-
 from bhadrasana.models.laudo import get_empresa, get_sats_cnpj
 from virasana.integracao.mercante.mercantealchemy import Item, Conhecimento, NCMItem
 
@@ -158,9 +157,11 @@ def get_conhecimento(session, numero: str) -> Conhecimento:
     return session.query(Conhecimento).filter(
         Conhecimento.numeroCEmercante == numero).one_or_none()
 
+
 def get_conhecimentos_filhotes(session, numero: str) -> List[Conhecimento]:
     return session.query(Conhecimento).filter(
         Conhecimento.numeroCEMaster == numero).all()
+
 
 def get_ces_empresa(session, cnpj: str, limit=40) -> List[Conhecimento]:
     if not cnpj or len(cnpj) < 8:

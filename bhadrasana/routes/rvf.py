@@ -41,7 +41,7 @@ def rvf_app(app):
         rvfs = []
         filtro_form = FiltroRVFForm(datainicio=date.today() - timedelta(days=10),
                                     datafim=date.today())
-        title_page = "Pesquisa RVF"
+        title_page = 'Pesquisa RVF'
         try:
             if request.method == 'POST':
                 filtro_form = FiltroRVFForm(request.form)
@@ -63,7 +63,7 @@ def rvf_app(app):
         session = app.config.get('dbsession')
         ovr_id = request.args.get('ovr_id')
         lista = lista_rvfovr(session, ovr_id)
-        title_page = "Verificações Físicas"
+        title_page = 'Verificações Físicas'
         return render_template('lista_rvfovr.html',
                                listarvfovr=lista,
                                ovr_id=ovr_id,
@@ -85,7 +85,7 @@ def rvf_app(app):
         lacres_verificados = []
         arvf = None
         rvf_form = RVFForm()
-        title_page = "RVF"
+        title_page = 'RVF'
         try:
             if request.method == 'POST':
                 rvf_form = RVFForm(request.form)
@@ -109,7 +109,7 @@ def rvf_app(app):
             marcas = get_marcas(session)
             infracoes = get_infracoes(session)
             rvf_id = request.args.get('id')
-            title_page = "RVF " + rvf_id
+            title_page = 'RVF ' + rvf_id
             if rvf_id is not None:
                 arvf = get_rvf(session, rvf_id)
                 print('arvf.inspecaonaoinvasiva', arvf.inspecaonaoinvasiva)
@@ -126,7 +126,7 @@ def rvf_app(app):
                 infracoes_encontradas = arvf.infracoesencontradas
                 marcas_encontradas = arvf.marcasencontradas
                 lacres_verificados = arvf.lacresverificados
-                # Temporário - para recuperar imagens "perdidas" na transição
+                # Temporário - para recuperar imagens 'perdidas' na transição
                 ressuscita_anexos_perdidos(db, session, arvf)
                 anexos = get_ids_anexos_ordenado(arvf)
                 usuario = get_usuario(session, arvf.user_name)
@@ -198,7 +198,7 @@ def rvf_app(app):
         except Exception as err:
             logger.warning(err, exc_info=True)
             flash(str(err))
-        return redirect(url_for('rvf', id=rvf_id, _scheme="https"))
+        return redirect(url_for('rvf', id=rvf_id, _scheme='https'))
 
     @app.route('/inclui_lacre_verificado', methods=['GET'])
     @login_required

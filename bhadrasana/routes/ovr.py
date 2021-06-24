@@ -6,12 +6,12 @@ from decimal import Decimal
 from typing import Tuple
 
 import pandas as pd
-from ajna_commons.flask.log import logger
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
 from gridfs import GridFS
 from werkzeug.utils import redirect
 
+from ajna_commons.flask.log import logger
 from bhadrasana.analises.escaneamento_operador import sorteia_GMCIs
 from bhadrasana.forms.exibicao_ovr import ExibicaoOVR, TipoExibicao, agrupa_ovrs
 from bhadrasana.forms.filtro_container import FiltroContainerForm, FiltroCEForm, FiltroDUEForm
@@ -281,7 +281,7 @@ def ovr_app(app):
         print(setores)
         usuarios = get_usuarios_setores_choice(session, setores)
         auditores = get_afrfb_setores_choice(session, setores)
-        title_page = "Pesquisa Fichas"
+        title_page = 'Pesquisa Fichas'
         filtro_form = FiltroOVRForm(
             datainicio=date.today() - timedelta(days=10),
             datafim=date.today(),
@@ -351,7 +351,7 @@ def ovr_app(app):
         inicio = date(year=today.year, month=today.month, day=1)
         active_tab = request.args.get('active_tab')
         print(request.url)
-        title_page = "Minhas Fichas"
+        title_page = 'Minhas Fichas'
         if active_tab is None or active_tab not in TABS:
             tab_url = request.url.split('/')[-1]
             print(tab_url)
@@ -379,19 +379,19 @@ def ovr_app(app):
             if active_tab == 'minhas_ovrs':
                 ovrs = get_ovr_responsavel(session, current_user.name, oform.orfas.data)
             elif active_tab == 'ovrs_meus_setores':
-                title_page = "Fichas dos Meus Setores"
+                title_page = 'Fichas dos Meus Setores'
                 ovrs = get_ovr_filtro(session,
                                       dict(oform.data.items()),
                                       user_name=current_user.name)
             elif active_tab == 'ovrs_auditor':
-                title_page = "Fichas Sou Auditor Responsável"
+                title_page = 'Fichas Sou Auditor Responsável'
                 ovrs = get_ovr_auditor(session, current_user.name)
             elif active_tab == 'ovrs_passagem':
-                title_page = "Fichas que passaram por mim"
+                title_page = 'Fichas que passaram por mim'
                 ovrs = get_ovr_passagem(session, current_user.name,
                                         oform.datainicio.data, oform.datafim.data)
             else:
-                title_page = "Fichas criadas por mim"
+                title_page = 'Fichas criadas por mim'
                 ovrs = get_ovr_criadaspor(session, current_user.name,
                                           oform.datainicio.data, oform.datafim.data)
             exibicao = ExibicaoOVR(session, int(oform.tipoexibicao.data), current_user.id)
@@ -453,7 +453,7 @@ def ovr_app(app):
         today = date.today()
         inicio = date(year=today.year, month=today.month, day=1)
         usuario = get_usuario(session, current_user.name)
-        title_page = "Relatórios"
+        title_page = 'Relatórios'
         filtro_form = FiltroRelatorioForm(
             datainicio=inicio,
             datafim=date.today(),
@@ -725,7 +725,7 @@ def ovr_app(app):
         item_id = request.args.get('item_id')
         listatgovr = []
         oform = TGOVRForm()
-        title_page = "Termos de Guarda"
+        title_page = 'Termos de Guarda'
         try:
             listatgovr = lista_tgovr(session, ovr_id)
             marcas = get_marcas_choice(session)
@@ -786,7 +786,7 @@ def ovr_app(app):
             if tg_id is None:
                 raise KeyError('Ocorreu um erro: parâmetro tg_id'
                                'é necessário nesta tela.')
-            title_page = "TG " + tg_id
+            title_page = 'TG ' + tg_id
             item_id = request.args.get('item_id')
             listaitemtg = lista_itemtg(session, tg_id)
             if item_id:
@@ -1006,6 +1006,8 @@ def ovr_app(app):
             ovr = get_ovr(session, ovr_id)
             if ovr is None or ovr.id is None:
                 raise KeyError('OVR não encontrada')
+            imagens = get_imagens_dict_container_id(mongodb, ovr.numeroCEmercante,
+                                                    ovr.numerodeclaracao)
             container = request.args.get('container')
             if container:
                 programa_rvf_container(
@@ -1013,8 +1015,6 @@ def ovr_app(app):
                     ovr, container, imagens.get(container)
                 )
                 return redirect(url_for('programa_rvf_ajna', ovr_id=ovr_id))
-            imagens = get_imagens_dict_container_id(mongodb, ovr.numeroCEmercante,
-                                                    ovr.numerodeclaracao)
             conhecimento = get_conhecimento(session, ovr.numeroCEmercante)
             due = get_due(mongodb, ovr.numerodeclaracao)
             containers = get_containers_conhecimento(session, ovr.numeroCEmercante)
@@ -1060,7 +1060,7 @@ def ovr_app(app):
             datainicio=date.today() - timedelta(days=360),
             datafim=date.today()
         )
-        title_page = "Pesquisa Contêiner"
+        title_page = 'Pesquisa Contêiner'
         try:
             if request.method == 'POST':
                 filtro_form = FiltroContainerForm(request.form)
@@ -1100,11 +1100,12 @@ def ovr_app(app):
         infoce = {}
         imagens = []
         filtro_form = FiltroCEForm()
-        title_page = "Pesquisa CE"
+        title_page = 'Pesquisa CE'
         try:
             filtro_form = FiltroCEForm(request.form)
             if request.method == 'POST' and filtro_form.validate():
-                return redirect(f'consulta_ce?numeroCEmercante={filtro_form.numeroCEmercante.data}')
+                return redirect(
+                    f'consulta_ce?numeroCEmercante={filtro_form.numeroCEmercante.data}')
             if request.method == 'GET':
                 filtro_form = FiltroCEForm(request.args)
                 if filtro_form.numeroCEmercante.data:
@@ -1139,7 +1140,7 @@ def ovr_app(app):
         infodue = {}
         imagens = []
         filtro_form = FiltroDUEForm()
-        title_page = "Pesquisa DUE"
+        title_page = 'Pesquisa DUE'
         try:
             if request.method == 'POST':
                 filtro_form = FiltroDUEForm(request.form)
@@ -1209,7 +1210,7 @@ def ovr_app(app):
         dues = []
         eventos = []
         imagens = []
-        title_page = "Pesquisa Empresa"
+        title_page = 'Pesquisa Empresa'
         filtro_form = FiltroEmpresaForm(
             datainicio=date.today() - timedelta(days=10),
             datafim=date.today()
@@ -1387,7 +1388,7 @@ def ovr_app(app):
         okrmeta_form = OKRMetaForm(key_results=lista_key_results)
         lista_setores = get_setores_choice(session)
         okrobjective_form = OKRObjectiveForm(setores=lista_setores)
-        title_page = "Painel OKRs"
+        title_page = 'Painel OKRs'
         try:
             if id_objetivo is not None:
                 objective = session.query(OKRObjective). \
@@ -1505,7 +1506,7 @@ def ovr_app(app):
         today = date.today()
         inicio = date(year=today.year, month=today.month, day=1)
         filtro_form = FiltroRelatorioForm()
-        title_page = "Exporta Planilha CEN Rilo"
+        title_page = 'Exporta Planilha CEN Rilo'
         try:
             usuario = get_usuario(session, current_user.name)
             lista_setores = get_setores_choice(session)
@@ -1536,7 +1537,7 @@ def ovr_app(app):
             flash('Erro! Detalhes no log da aplicação.')
             flash(str(type(err)))
             flash(str(err))
-        return render_template('cen_rilo.html', oform=filtro_form ,title_page=title_page)
+        return render_template('cen_rilo.html', oform=filtro_form, title_page=title_page)
 
     @app.route('/escaneamento_operador', methods=['GET', 'POST'])
     @login_required
@@ -1544,7 +1545,7 @@ def ovr_app(app):
         session = app.config['dbsession']
         gmcis = []
         escaneamento_form = EscaneamentoOperadorForm()
-        title_page = "Lista para Escaneamento no Operador"
+        title_page = 'Lista para Escaneamento no Operador'
         try:
             recintos = get_recintos_dte(session)
             if request.method == 'POST':
@@ -1585,7 +1586,7 @@ def ovr_app(app):
         filtroform = FiltroAbasForm()
         supervisor = False
         temposmedios_por_fase = {}
-        title_page = "Kanban"
+        title_page = 'Kanban'
         try:
             usuario = get_usuario(session, current_user.name)
             if usuario is None:
