@@ -158,6 +158,9 @@ def get_conhecimento(session, numero: str) -> Conhecimento:
     return session.query(Conhecimento).filter(
         Conhecimento.numeroCEmercante == numero).one_or_none()
 
+def get_conhecimentos_filhotes(session, numero: str) -> List[Conhecimento]:
+    return session.query(Conhecimento).filter(
+        Conhecimento.numeroCEMaster == numero).all()
 
 def get_ces_empresa(session, cnpj: str, limit=40) -> List[Conhecimento]:
     if not cnpj or len(cnpj) < 8:
@@ -184,6 +187,7 @@ def get_detalhe_conhecimento(session, numeroCEmercante: str) -> dict:
     linha['containers'] = get_containers_conhecimento(
         session,
         numeroCEmercante)
+    linha['filhotes'] = get_conhecimentos_filhotes(session, numeroCEmercante)
     linha['ncms'] = get_ncms_conhecimento(session, numeroCEmercante)
     logger.info('get_laudos')
     if conhecimento:

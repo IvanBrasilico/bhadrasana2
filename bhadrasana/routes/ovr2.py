@@ -86,6 +86,7 @@ def ovr2_app(app):
         db = app.config['mongo_risco']
         formdocx = FiltroDocxForm()
         modeloform = ModeloDocxForm()
+        title_page = "Gerador de Documentos"
         try:
             lista_docx = get_docx_choices(session)
             formdocx = FiltroDocxForm(lista_docx=lista_docx)
@@ -131,7 +132,10 @@ def ovr2_app(app):
             flash('Erro! Detalhes no log da aplicação.')
             flash(str(type(err)))
             flash(str(err))
-        return render_template('gera_docx.html', formdocx=formdocx, modeloform=modeloform)
+        return render_template('gera_docx.html',
+                               formdocx=formdocx,
+                               modeloform=modeloform,
+                               title_page=title_page)
 
     @app.route('/novo_docx', methods=['POST'])
     @login_required
@@ -183,6 +187,7 @@ def ovr2_app(app):
         exibicao_ovr = ExibicaoOVR(session, TipoExibicao.Descritivo, current_user.name)
         titulos = exibicao_ovr.get_titulos()
         evento_form = HistoricoOVRForm()
+        title_page = "Assistente de Contrafação"
         try:
             usuario = get_usuario(session, current_user.name)
             if usuario is None:
@@ -218,7 +223,8 @@ def ovr2_app(app):
                                ovr=ovr,
                                rvfs=rvfs,
                                supervisor=supervisor,
-                               evento_form=evento_form)
+                               evento_form=evento_form,
+                               title_page=title_page)
 
     @app.route('/comunicado_contrafacao', methods=['GET'])
     @app.route('/termo_contrafacao', methods=['GET'])
@@ -340,6 +346,7 @@ def ovr2_app(app):
         total_apreensoes = lista_de_rvfs_e_apreensoes(session, ovr_id)[1]
         tipo_resultado = calcula_resultado(total_apreensoes, total_tgs)
         data_encerramento = datetime.now().strftime('%d/%m/%Y')
+        title_page = "Encerramento"
         try:
             fase = ovr.get_fase()
             usuario = get_usuario(session, current_user.name)
@@ -373,4 +380,5 @@ def ovr2_app(app):
                                total_apreensoes=total_apreensoes,
                                total_tgs=total_tgs,
                                tipo_resultado=tipo_resultado,
-                               data_encerramento=data_encerramento)
+                               data_encerramento=data_encerramento,
+                               title_page=title_page)

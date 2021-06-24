@@ -1,15 +1,14 @@
 import base64
 import os
 import zipfile
-from datetime import date, timedelta, datetime
-from io import BytesIO
-
 from ajna_commons.flask.log import logger
 from ajna_commons.utils.images import ImageBytesTansformations
 from bson import ObjectId
+from datetime import date, timedelta, datetime
 from flask import request, flash, render_template, url_for, jsonify, send_file
 from flask_login import login_required, current_user
 from gridfs import GridFS
+from io import BytesIO
 from werkzeug.utils import redirect
 
 from bhadrasana.conf import APP_PATH
@@ -42,6 +41,7 @@ def rvf_app(app):
         rvfs = []
         filtro_form = FiltroRVFForm(datainicio=date.today() - timedelta(days=10),
                                     datafim=date.today())
+        title_page = "Pesquisa RVF"
         try:
             if request.method == 'POST':
                 filtro_form = FiltroRVFForm(request.form)
@@ -54,7 +54,8 @@ def rvf_app(app):
             flash(str(err))
         return render_template('pesquisa_rvf.html',
                                oform=filtro_form,
-                               rvfs=rvfs)
+                               rvfs=rvfs,
+                               title_page=title_page)
 
     @app.route('/lista_rvfovr', methods=['POST', 'GET'])
     @login_required
@@ -62,9 +63,11 @@ def rvf_app(app):
         session = app.config.get('dbsession')
         ovr_id = request.args.get('ovr_id')
         lista = lista_rvfovr(session, ovr_id)
+        title_page = "Verificações Físicas"
         return render_template('lista_rvfovr.html',
                                listarvfovr=lista,
-                               ovr_id=ovr_id)
+                               ovr_id=ovr_id,
+                               title_page=title_page)
 
     @app.route('/rvf', methods=['POST', 'GET'])
     @login_required
@@ -82,6 +85,7 @@ def rvf_app(app):
         lacres_verificados = []
         arvf = None
         rvf_form = RVFForm()
+        title_page = "RVF"
         try:
             if request.method == 'POST':
                 rvf_form = RVFForm(request.form)
@@ -105,6 +109,7 @@ def rvf_app(app):
             marcas = get_marcas(session)
             infracoes = get_infracoes(session)
             rvf_id = request.args.get('id')
+            title_page = "RVF " + rvf_id
             if rvf_id is not None:
                 arvf = get_rvf(session, rvf_id)
                 print('arvf.inspecaonaoinvasiva', arvf.inspecaonaoinvasiva)
@@ -142,7 +147,8 @@ def rvf_app(app):
                                infracoes_encontradas=infracoes_encontradas,
                                marcas_encontradas=marcas_encontradas,
                                lacres_verificados=lacres_verificados,
-                               anexos=anexos)
+                               anexos=anexos,
+                               title_page=title_page)
 
     @app.route('/rvf_impressao/<rvf_id>', methods=['GET'])
     @login_required
@@ -192,7 +198,7 @@ def rvf_app(app):
         except Exception as err:
             logger.warning(err, exc_info=True)
             flash(str(err))
-        return redirect(url_for('rvf', id=rvf_id))
+        return redirect(url_for('rvf', id=rvf_id, _scheme="https"))
 
     @app.route('/inclui_lacre_verificado', methods=['GET'])
     @login_required

@@ -3,6 +3,7 @@
         {% if infoce %}
         {% set conhecimento = infoce.conhecimento %}
         {% set empresa = infoce.empresa %}
+        {% set filhotes = infoce.filhotes %}
         {% set containers = infoce.containers %}
         {% set ncms = infoce.ncms %}
         {% set sats = infoce.sats %}
@@ -10,6 +11,8 @@
         {% if conhecimento %}
         Número CE Mercante: <a href="/virasana/cemercante/{{ conhecimento.numeroCEmercante }}">{{
         conhecimento.numeroCEmercante }}</a>
+        CE Master: <a href="/bhadrasana2/consulta_ce?numeroCEmercante={{ conhecimento.numeroCEMaster }}">{{
+        conhecimento.numeroCEMaster }}</a>
         {% if ovr %}
         <font size="+1"><b>&nbsp;&nbsp; - &nbsp;
             <a href="programa_rvf_ajna?ovr_id={{ovr.id}}" target="_blank">
@@ -27,7 +30,12 @@
         <br>
         Descrição Mercadoria:{{ conhecimento.descricao }}
         <br>
-        <!--Nº BL original: {{ conhecimento.descricao }} -->
+        BLs filhotes: {% for filhote in filhotes %}
+        <a href="/bhadrasana2/consulta_ce?numeroCEmercante={{filhote.numeroCEmercante}}">
+            {{filhote.numeroCEmercante}}</a>
+        {% endfor %}
+        <br>
+        <br>
         Contêineres: {% for container in containers %}
         nº: {{container.codigoConteiner}} - {{"%.2f"|format(container.pesoBruto|float)}}kg
         {% endfor %}

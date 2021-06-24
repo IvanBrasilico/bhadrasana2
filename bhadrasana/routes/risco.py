@@ -157,6 +157,7 @@ def risco_app(app):
                  'recintos': RecintoRiscosAtivosForm}
         FormClass = forms[active_tab]
         riscos_ativos_form = FormClass()
+        title_page = "Risco"
         if request.method == 'GET':
             riscos_ativos_form = FormClass(request.values,
                                            datainicio=date.today() - timedelta(days=5),
@@ -178,7 +179,8 @@ def risco_app(app):
                                csv_salvo=csv_salvo,
                                lista_csv=lista_csv,
                                planilha_atual=planilha_atual,
-                               active_tab=active_tab)
+                               active_tab=active_tab,
+                               title_page=title_page)
 
     @app.route('/edita_risco', methods=['POST', 'GET'])
     @login_required
@@ -188,10 +190,12 @@ def risco_app(app):
         user_name = current_user.name
         riscos_ativos = riscosativos(session, user_name)
         edita_risco_form = get_edita_risco_form(active_tab)
+        title_page = "Edita Risco"
         return render_template('edita_risco.html',
                                riscos_ativos=riscos_ativos,
                                oform=edita_risco_form,
-                               active_tab=active_tab)
+                               active_tab=active_tab,
+                               title_page=title_page)
 
     @app.route('/inclui_risco', methods=['POST'])
     @login_required
@@ -319,6 +323,7 @@ def risco_app(app):
     def importa_planilha_recinto():
         """Importar arquivo de eventos de recintos.
         """
+        title_page = "Importa Planilha Recinto"
         if request.method == 'POST':
             planilha = get_planilha_valida(request, 'planilha')
             if planilha:
@@ -331,4 +336,5 @@ def risco_app(app):
                     flash('Planilha recebida com %s linhas. Processando...' % msg)
                 else:
                     flash('Erro: %s' % msg)
-        return render_template('importa_planilha_recinto.html')
+        return render_template('importa_planilha_recinto.html',
+                               title_page=title_page)
