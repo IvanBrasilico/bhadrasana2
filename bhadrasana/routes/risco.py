@@ -157,7 +157,7 @@ def risco_app(app):
                  'recintos': RecintoRiscosAtivosForm}
         FormClass = forms[active_tab]
         riscos_ativos_form = FormClass()
-        title_page = "Risco"
+        title_page = 'Risco'
         if request.method == 'GET':
             riscos_ativos_form = FormClass(request.values,
                                            datainicio=date.today() - timedelta(days=5),
@@ -190,7 +190,7 @@ def risco_app(app):
         user_name = current_user.name
         riscos_ativos = riscosativos(session, user_name)
         edita_risco_form = get_edita_risco_form(active_tab)
-        title_page = "Edita Risco"
+        title_page = 'Edita Risco'
         return render_template('edita_risco.html',
                                riscos_ativos=riscos_ativos,
                                oform=edita_risco_form,
@@ -323,7 +323,7 @@ def risco_app(app):
     def importa_planilha_recinto():
         """Importar arquivo de eventos de recintos.
         """
-        title_page = "Importa Planilha Recinto"
+        title_page = 'Importa Planilha Recinto'
         if request.method == 'POST':
             planilha = get_planilha_valida(request, 'planilha')
             if planilha:

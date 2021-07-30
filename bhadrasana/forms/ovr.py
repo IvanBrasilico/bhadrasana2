@@ -27,8 +27,8 @@ class OVRForm(FlaskForm):
                                 default='')
     numerodeclaracao = StringField(u'DUE ou DUIMP ou DTA',
                                    default='')
-    adata = DateField(u'Data')
     dataentrada = DateField(u'Data')
+    adata = DateField(u'Data')
     ahora = TimeField(u'Horário')
     user_name = StringField()
     user_descricao = StringField(default='')

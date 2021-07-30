@@ -86,7 +86,7 @@ def ovr2_app(app):
         db = app.config['mongo_risco']
         formdocx = FiltroDocxForm()
         modeloform = ModeloDocxForm()
-        title_page = "Gerador de Documentos"
+        title_page = 'Gerador de Documentos'
         try:
             lista_docx = get_docx_choices(session)
             formdocx = FiltroDocxForm(lista_docx=lista_docx)
@@ -187,7 +187,7 @@ def ovr2_app(app):
         exibicao_ovr = ExibicaoOVR(session, TipoExibicao.Descritivo, current_user.name)
         titulos = exibicao_ovr.get_titulos()
         evento_form = HistoricoOVRForm()
-        title_page = "Assistente de Contrafação"
+        title_page = 'Assistente de Contrafação'
         try:
             usuario = get_usuario(session, current_user.name)
             if usuario is None:
@@ -346,7 +346,7 @@ def ovr2_app(app):
         total_apreensoes = lista_de_rvfs_e_apreensoes(session, ovr_id)[1]
         tipo_resultado = calcula_resultado(total_apreensoes, total_tgs)
         data_encerramento = datetime.now().strftime('%d/%m/%Y')
-        title_page = "Encerramento"
+        title_page = 'Encerramento'
         try:
             fase = ovr.get_fase()
             usuario = get_usuario(session, current_user.name)

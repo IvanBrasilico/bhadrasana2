@@ -105,7 +105,6 @@
             <div class="row">
                 <!-- Fiscalizado CNPJ -->
                 <div class="col-sm-3">
-                    <!--                    {{ oform.cnpj_fiscalizado(class='form-control', data_inputmask='"mask": "99.999.999/9999-99"') }}-->
                     {{ oform.cnpj_fiscalizado(class='form-control') }}
                 </div>
                 <!-- Fiscalizado Nome -->
@@ -122,7 +121,7 @@
                 <!-- Data entrada -->
                 <div class="col-sm-2">
                     <label for="adata">Data da Entrada da Carga</label>
-                    {{ oform.dataentrada(class='form-control', required='required') }}
+                    {{ oform.dataentrada(class='form-control') }}
                 </div>
                 <!-- Data emissão -->
                 <div class="col-sm-2">
@@ -139,7 +138,7 @@
 
                     <button id="btn_responsavel" type="button" class="btn btn-warning form-control"
                             data-toggle="modal" data-target="#responsavel">
-                        Atribuir responsável
+                        Distribuir Ficha
                     </button>
                     {% endif %}
                 </div>
@@ -226,14 +225,6 @@
                     </button>
                     {% endif %}
                 </div>
-<!--                <div class="col-sm-2">-->
-
-<!--                    <a type="button" class="btn btn-primary btn-success form-control"-->
-<!--                            href="registrar_rvf?ovr_id={{ovr.id}}">-->
-<!--                    Registrar RVF-->
-<!--                    </a>-->
-
-<!--                </div>-->
                 <div class="col-sm-3">
                     {% if oform.id.data %}
                     <button id="btn_tg" type="button" class="btn btn-primary btn-success form-control"
@@ -244,14 +235,10 @@
                 </div>
                 <div class="col-sm-3">
                     {% if ovr.fase > 0 and ovr.fase < 3 %}
-<!--                    <button id="btn_auto" type="button" class="btn btn-primary btn-warning form-control"-->
-<!--                            data-toggle="modal" data-target="#lavratura">-->
-<!--                        Lavratura do Auto de Infração-->
-<!--                    </button>-->
                         <a href="encerramento_ovr?ovr_id={{ovr.id}}" class="btn btn-warning form-control">Conferir e encerrar</a>
                     {% else %}
                         <a href="encerramento_ovr?ovr_id={{ovr.id}}"
-                           class="btn btn-danger form-control hidden">Encerrar ficha</a>
+                           class="btn btn-danger form-control">Encerrar ficha</a>
                     {% endif %}
                 </div>
             </div>
