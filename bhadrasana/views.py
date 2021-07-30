@@ -18,10 +18,14 @@ Adicionalmente, permite o merge entre bases, navegação de bases, e
 a aplicação de filtros/parâmetros de risco.
 """
 import io
+import json
 import os
 import tempfile
 
 import ajna_commons.flask.login as login_ajna
+import pandas as pd
+import plotly
+import plotly.express as px
 from PIL import Image
 from ajna_commons.flask.conf import ALLOWED_EXTENSIONS, SECRET, logo
 from ajna_commons.flask.log import logger
@@ -37,7 +41,8 @@ from flask_nav.elements import Navbar, View, Separator, Subgroup
 from flask_wtf.csrf import CSRFProtect
 
 from bhadrasana.conf import APP_PATH
-from bhadrasana.models import get_usuario_telegram, Usuario
+from bhadrasana.models import get_usuario_telegram, Usuario, get_usuario
+from bhadrasana.models.ovrmanager import get_ovrs_setor, get_ovr_responsavel_setores
 
 tmpdir = tempfile.mkdtemp()
 
@@ -200,7 +205,19 @@ def mascara_nao_informado(value):
 def index():
     """View retorna index.html ou login se não autenticado."""
     if current_user.is_authenticated:
-        return render_template('index.html')
+        session = app.config.get('dbsession')
+        ovrs = get_ovr_responsavel_setores(session, current_user.id)
+
+
+
+        df = pd.DataFrame({
+            'Fruit': ['Abertas', 'Oranges', 'Bananas', 'Apples', 'Oranges', 'Bananas'],
+            'Amount': [4, 1, 2, 2, 4, 5],
+            'City': ['SF', 'SF', 'SF', 'Montreal', 'Montreal', 'Montreal']
+        })
+        fig = px.bar(df, x='Fruit', y='Amount', color='City', barmode='group')
+        graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+        return render_template('index.html', graphJSON=graphJSON)
     else:
         return redirect(url_for('commons.login'))
 

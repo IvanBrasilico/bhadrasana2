@@ -8,6 +8,9 @@
             <br> A documentação do Sistema está em: <a href="/ficha_site/"> MANUAL DO SISTEMA FICHAS DE CONTROLE </a>
             <br> Outros sistemas e documentações no <a href="/"> raiz do Servidor Ajna </a>
         </div>
+        <div class="col-md-12">
+            <div id="chart" class="chart"></div>
+        </div>
     </div>
     <div id="list" class="row">
         <div class="table-responsive col-md-12">
@@ -20,5 +23,8 @@
 </div>
 <!-- /#main -->
 {% endblock %} {% block scripts %} {{super()}}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script type="text/javascript">
+  var graphs = {{graphJSON | safe}};
+  Plotly.plot('chart', graphs, {});
 </script> {% endblock %}
