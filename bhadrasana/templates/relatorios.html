@@ -58,6 +58,7 @@
                    id="filtro_personalizado_table">
                 <thead>
                 <tr>
+                    <th>Seq</th>
                     {% for coluna in linhas[0] %}
                     <th>{{ coluna }}</th>
                     {% endfor %}
@@ -66,10 +67,13 @@
                 <tbody>
                 {% for linha in linhas[1:] %}
                 <tr>
+                    <td>{{loop.index}}</td>
                     {% for coluna in linha %}
                         {% if linhas[0][loop.index - 1] == 'Ficha' %}
-                            <td><a href="ovr?id={{coluna}}" target="_blank">{{ coluna }}</a></td>
-                        {% elif linhas[0][loop.index - 1] == 'Verificacao' %}
+                            <td onmouseover="showMsg(this, '{{coluna}}')" onmouseout="clearMsg(this)">
+                                <a href="ovr?id={{coluna}}" target="_blank">{{ coluna }}</a>
+                            </td>
+                        {% elif linhas[0][loop.index - 1] in ('Verificacao', 'RVF') %}
                             <td><a href="rvf?id={{coluna}}" target="_blank">{{ coluna }}</a></td>
                         {% else %}
                             <td>{{ coluna }}</td>
@@ -111,5 +115,22 @@
     function exporta_planilhaovr() {
         window.location.assign('exportaplanilhaovr');
     }
+
+    function showMsg(obj, id) {
+        xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4) {
+                if (this.status == 200) {
+                    obj.title = this.responseText;
+                }
+            }
+        }
+        xhttp.open("GET", "/bhadrasana2/ficha/summary/" + id, true);
+        xhttp.send();
+    }
+    function clearMsg(obj) {
+        obj.title = "";
+    }
+
 </script>
 {% endblock %}

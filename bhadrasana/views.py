@@ -42,7 +42,7 @@ from flask_wtf.csrf import CSRFProtect
 
 from bhadrasana.conf import APP_PATH
 from bhadrasana.models import get_usuario_telegram, Usuario, get_usuario
-from bhadrasana.models.ovrmanager import get_ovrs_setor, get_ovr_responsavel_setores
+from bhadrasana.models.ovrmanager import get_ovrs_setor, get_ovr_responsavel_setores, get_ovr_responsavel
 
 tmpdir = tempfile.mkdtemp()
 
@@ -206,16 +206,15 @@ def index():
     """View retorna index.html ou login se não autenticado."""
     if current_user.is_authenticated:
         session = app.config.get('dbsession')
-        ovrs = get_ovr_responsavel_setores(session, current_user.id)
-
-
-
+        ovrs = get_ovr_responsavel(session, current_user.id)
+        liberadas = sum([ovr.fase == 0 for ovr in ovrs])
+        ativas = sum([ovr.fase == 1 for ovr in ovrs])
+        supensas = sum([ovr.fase == 2 for ovr in ovrs])
         df = pd.DataFrame({
-            'Fruit': ['Abertas', 'Oranges', 'Bananas', 'Apples', 'Oranges', 'Bananas'],
-            'Amount': [4, 1, 2, 2, 4, 5],
-            'City': ['SF', 'SF', 'SF', 'Montreal', 'Montreal', 'Montreal']
+            'Fase': ['Liberada', 'Ativa', 'Suspensa'],
+            'Qtde': [liberadas, ativas, supensas],
         })
-        fig = px.bar(df, x='Fruit', y='Amount', color='City', barmode='group')
+        fig = px.pie(df, names='Fase', values='Qtde', title='Resumo das minhas Fichas')
         graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
         return render_template('index.html', graphJSON=graphJSON)
     else:

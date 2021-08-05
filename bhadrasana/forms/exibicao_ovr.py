@@ -387,6 +387,8 @@ class ExibicaoOVR:
     def get_eventos_resumo(self, ovr) -> list:
         resumo = []
         for evento in ovr.historico:
+            if 'ição' in evento.tipoevento.nome: #Elimina eventos de distribuição e atribuição
+                continue
             resumo.append('{} - {} - {} - {}'.format(
                 evento.tipoevento.nome, evento.user_name,
                 datetime.strftime(evento.create_date, '%d/%m/%Y %H:%M'), evento.motivo))
