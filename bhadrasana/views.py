@@ -18,14 +18,15 @@ Adicionalmente, permite o merge entre bases, navegação de bases, e
 a aplicação de filtros/parâmetros de risco.
 """
 import io
-import json
 import os
 import tempfile
+from datetime import date
 
 import ajna_commons.flask.login as login_ajna
 import pandas as pd
 import plotly
 import plotly.express as px
+import plotly.graph_objs as go
 from PIL import Image
 from ajna_commons.flask.conf import ALLOWED_EXTENSIONS, SECRET, logo
 from ajna_commons.flask.log import logger
@@ -42,7 +43,10 @@ from flask_wtf.csrf import CSRFProtect
 
 from bhadrasana.conf import APP_PATH
 from bhadrasana.models import get_usuario_telegram, Usuario, get_usuario
-from bhadrasana.models.ovrmanager import get_ovrs_setor, get_ovr_responsavel_setores, get_ovr_responsavel
+from bhadrasana.models.ovr import OKRObjective
+from bhadrasana.models.ovrmanager import get_ovr_responsavel, \
+    executa_okr_results
+from bhadrasana.routes.plotly_graphs import gauge_plotly
 
 tmpdir = tempfile.mkdtemp()
 
@@ -206,6 +210,7 @@ def index():
     """View retorna index.html ou login se não autenticado."""
     if current_user.is_authenticated:
         session = app.config.get('dbsession')
+        datas_objective = ''
         ovrs = get_ovr_responsavel(session, current_user.id)
         liberadas = sum([ovr.fase == 0 for ovr in ovrs])
         ativas = sum([ovr.fase == 1 for ovr in ovrs])
@@ -214,9 +219,28 @@ def index():
             'Fase': ['Liberada', 'Ativa', 'Suspensa'],
             'Qtde': [liberadas, ativas, supensas],
         })
-        fig = px.pie(df, names='Fase', values='Qtde', title='Resumo das minhas Fichas')
-        graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-        return render_template('index.html', graphJSON=graphJSON)
+        plot = plotly.offline.plot({
+            'data': px.pie(df, names='Fase', values='Qtde', title='Resumo das minhas Fichas'),
+            'layout': go.Layout(title='Minhas Fichas')
+        },
+            show_link=False,
+            output_type='div',
+            image_width=300)
+        plots = [plot]
+        usuario = get_usuario(session, current_user.name)
+        setor_id = usuario.setor_id
+        objective = session.query(OKRObjective).filter(OKRObjective.setor_id == setor_id). \
+            order_by(OKRObjective.id.desc()).first()
+        if objective:
+            results = executa_okr_results(session, objective)
+            for result in results[:2]:
+                delta = ((date.today() - objective.inicio.date()) /
+                         (objective.fim - objective.inicio)) * result.ameta
+                plot = gauge_plotly(result.result.nome, result.ameta,
+                                    sum([row['result'] for row in result.resultados]),
+                                    delta)
+                plots.append(plot)
+        return render_template('index.html', plots=plots, objective=objective)
     else:
         return redirect(url_for('commons.login'))
 

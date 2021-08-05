@@ -8,6 +8,26 @@
             <br> A documentação do Sistema está em: <a href="/ficha_site/"> MANUAL DO SISTEMA FICHAS DE CONTROLE </a>
             <br> Outros sistemas e documentações no <a href="/"> raiz do Servidor Ajna </a>
         </div>
+        <!--Gráficos de boas vindas-->
+        <div id="plots_title" class="row col-sm-12">
+            <div class="col-sm-4">
+                Estado das <a href="minhas_ovrs">Fichas para mim</a>
+            </div>
+            <div class="col-sm-8">
+                <a href="ver_okrs">Resultados chaves</a>
+                do meu Setor {% if objective %}
+                de {{objective.inicio.strftime('%d/%m/%Y')}} a {{objective.fim.strftime('%d/%m/%Y')}}{% endif %}
+            </div>
+        </div>
+        <div id="plots" class="row col-sm-12">
+            {% for plot in plots %}
+            <div class="col-sm-4">
+                <div class="col-sm-12">
+                    {{ plot | safe }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
         <div class="col-md-12">
             <div id="chart" class="chart"></div>
         </div>
