@@ -233,7 +233,7 @@ def index():
             order_by(OKRObjective.id.desc()).first()
         if objective:
             results = executa_okr_results(session, objective)
-            for result in results[:2]:
+            for result in results[:5]:
                 delta = ((date.today() - objective.inicio.date()) /
                          (objective.fim - objective.inicio)) * result.ameta
                 plot = gauge_plotly(result.result.nome, result.ameta,
