@@ -2,7 +2,6 @@ import io
 import sys
 from sqlite3 import OperationalError
 
-from flask_login import current_user
 from gridfs import GridFS
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -26,13 +25,13 @@ from ajna_commons.models.bsonimage import BsonImage
 from ajna_commons.flask.log import logger
 from ajna_commons.utils.images import mongo_image
 from bhadrasana.models import Usuario, Setor, EBloqueado, ESomenteUsuarioResponsavel, \
-    usuario_tem_perfil_nome, ENaoAutorizado, get_usuario
+    usuario_tem_perfil_nome, ENaoAutorizado
 from bhadrasana.models import handle_datahora, ESomenteMesmoUsuario, gera_objeto, \
     get_usuario_validando
 from bhadrasana.models.filtros_ficha import FiltrosFicha
 from bhadrasana.models.laudo import get_empresa
 from bhadrasana.models.ovr import FonteDocx, Representacao, RepresentanteMarca, Assistente, \
-    TiposEventoAssistente, ResultadoOVR, TipoResultado
+    TiposEventoAssistente, ResultadoOVR
 from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
     TipoProcessoOVR, ItemTG, Recinto, TGOVR, Marca, Enumerado, TipoMercadoria, \
     EventoEspecial, Flag, Relatorio, RoteiroOperacaoOVR, flags_table, VisualizacaoOVR, \
@@ -802,6 +801,36 @@ def gera_processoovr(session, params) -> ProcessoOVR:
         params['numero'] = params['numero_processo']
     return gera_objeto(ProcessoOVR(),
                        session, params)
+
+
+@mesmo_responsavel
+def gera_resultadoovr(session, params) -> ResultadoOVR:
+    ovr = get_ovr_one(session, params['ovr_id'])
+    params['cpf_auditor'] = ovr.cpfauditorresponsavel
+    return gera_objeto(ResultadoOVR(),
+                       session, params)
+
+
+def get_resultado(session, resultado_id: int) -> ResultadoOVR:
+    resultado = session.query(ResultadoOVR). \
+        filter(ResultadoOVR.id == resultado_id).one_or_none()
+    if resultado is None:
+        raise KeyError(f'resultado {resultado_id} não encontrado')
+    return resultado
+
+
+def excluir_resultado(session, resultado: ResultadoOVR, user_cpf):
+    ovr = resultado.ovr
+    if ovr.responsavel_cpf != user_cpf:
+        raise ESomenteUsuarioResponsavel()
+    session.delete(resultado)
+    try:
+        session.commit()
+        return ovr
+    except Exception as err:
+        logger.error(err, exc_info=True)
+        session.rollback()
+
 
 
 def get_processo(session, processo_id: int) -> ProcessoOVR:
@@ -1710,38 +1739,19 @@ def lista_de_rvfs_e_apreensoes(session, ovr_id):
     return lista_de_rvfs_apreensoes, total_apreensoes
 
 
-def calcula_resultado(total_apreensoes, total_tgs):
-    if total_apreensoes:
-        return TipoResultado.Apreensao.value
-    elif total_tgs:
-        return TipoResultado.Perdimento.value
-    elif total_apreensoes and total_tgs:
-        return TipoResultado.Apreensao_e_perdimento.value
-    else:
-        return TipoResultado.Sem_resultado.value
-
-
-def encerra_ficha(session, ovr_id, cpf_auditor_encerramento, tipo_resultado):
-    resultado = ResultadoOVR()
+def encerra_ficha(session, ovr_id: int, user_name: str) -> EventoOVR:
     ovr = get_ovr(session, ovr_id)
-    usuario = get_usuario(session, current_user.name)
-    user_name = usuario.cpf
-    valida_mesmo_responsavel_ovr_user_name(session, ovr, user_name)
-    resultado.ovr_id = ovr_id
-    resultado.tipo_resultado = tipo_resultado
-    resultado.encerramento = datetime.now()
-    resultado.create_date = datetime.now()
-    resultado.user_name = user_name
-    if cpf_auditor_encerramento:
-        resultado.cpf_auditor_encerramento = cpf_auditor_encerramento
+    if len(ovr.resultados) > 0:
+        if ovr.cpfauditorresponsavel is None:
+            raise Exception('Erro ao encerrar a ficha. Ficha com resultado, '
+                            'mas sem auditor definido.')
+        params = {'ovr_id': ovr_id,
+                  'tipoevento_id': get_tipoevento_id(
+                      session, EventoEspecial.EncerramentoComResultado.value),
+                  'motivo': 'Encerramento com resultado'}
     else:
-        resultado.cpf_auditor_encerramento = None
-    try:
-        session.add(resultado)
-        session.commit()
-    except Exception as err:
-        session.rollback()
-        logger.error('Erro ao registrar o encerramento da ficha no banco de dados')
-        logger.error(str(err))
-        raise err
-    return resultado
+        params = {'ovr_id': ovr_id,
+                  'tipoevento_id': get_tipoevento_id(
+                      session, EventoEspecial.EncerramentoSemResultado.value),
+                  'motivo': 'Encerramento sem resultado'}
+    return gera_eventoovr(session, params=params, user_name=user_name)

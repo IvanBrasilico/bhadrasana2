@@ -249,8 +249,9 @@
     &nbsp;<br>
 </div>
 
-<!--Histórico de eventos-->
 {% if oform.id.data %}
+
+<!--Histórico de eventos-->
 <div class="row col-sm-12">
     <div class="col-sm-9">
         <h4>Histórico de Eventos</h4>
@@ -403,8 +404,75 @@
         </table>
     </div>
 </div>
-{% endif %}
+
+
+<!--Lista de resultados-->
+<div class="row col-sm-12">
+    <div class="col-sm-9">
+        <h4>Lista de resultados</h4>
+    </div>
+    <div class="col-sm-3">
+        <button id="btn_resultado" type="button" class="btn btn-primary btn-warning form-control"
+                data-toggle="modal" data-target="#resultado">Informar resultado
+        </button>
+    </div>
+    <div class="col-sm-3"></div>
+    <div class="table-responsive table row col-sm-12">
+        <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive"
+               cellspacing="0"
+               cellpadding="0"
+               id="table_resultados">
+            <tr>
+                <th>Tipo de resultado</th>
+                <th>Valor</th>
+                <th>Data</th>
+                <th>Excluir</th>
+            </tr>
+            {% for resultado in resultados %}
+
+            <tr>
+                <td align="center">
+                    {{ resultado.get_tipo_resultado }}
+                </td>
+                <td align="center">
+                    {{ resultado.valor }}
+                </td>
+                <td align="center">
+                    {{ resultado.create_date }}
+                </td>
+                <td align="center">
+                    <a href="#" data-toggle="modal" data-target="#modalDeletaresultado{{resultado.id}}">&times;</a>
+                </td>
+                <!--Modal exclui resultado-->
+                <div class="modal fade" id="modalDeletaresultado{{resultado.id}}" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+            aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title" id="ModalLabel3r">Excluir resultado</h1>
+                        </div>
+                        <div class="modal-body">
+                            <p>Deseja realmente excluir o resultado?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <a type="button" class="btn btn-danger" href="exclui_resultado?resultado_id={{resultado.id}}">Excluir</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </tr>
+
+            {% endfor %}
+            {% if not resultados %}
+            <tr>
+                <td>Sem resultados informados.</td>
+            </tr>
+            {% endif %}
+        </table>
+    </div>
 </div>
+{% endif %}
 
 <!--Footer-->
 <div id="bottom" class="row col-sm-12">
@@ -454,7 +522,7 @@
                     <input type="hidden" name="ovr_id" value="{{ oform.id.data }}"/>
                     <div class="row">
                         <div class="col-sm-3">
-                            <label for="tipoprocesso">Nome Auditor</label>
+                            <label for="responsavel">Nome Auditor</label>
                         </div>
                         <div class="col-sm-9">
                             {{ responsavel_form.responsavel(class='form-control') }}
@@ -641,6 +709,43 @@
     </div>
 </div>
 
+
+<div class="modal fade" id="resultado" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title" id="ModalLabel2r">Registra resultado relativo à Ficha</h1>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="resultadoovr" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <input type="hidden" name="ovr_id" value="{{ oform.id.data }}"/>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label for="tipo_resultado">Tipo</label>
+                        </div>
+                        <div class="col-sm-9">
+                            {{ resultado_form.tipo_resultado(class='form-control') }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label for="motivo">Valor</label>
+                        </div>
+                        <div class="col-sm-9">
+                            {{ resultado_form.valor(class='form-control') }}
+                        </div>
+                    </div>
+                    <input class="btn btn-primary" type="submit" value="Registrar"/>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 
 

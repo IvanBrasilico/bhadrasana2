@@ -6,7 +6,7 @@ from wtforms.fields.html5 import DateField, TimeField, DecimalField
 from wtforms.validators import optional
 
 from bhadrasana.forms.exibicao_ovr import TipoExibicao
-from bhadrasana.models.ovr import Enumerado
+from bhadrasana.models.ovr import Enumerado, TipoResultado
 from bhadrasana.models.ovr_dict_repr import FonteDocx
 
 
@@ -177,6 +177,20 @@ class ProcessoOVRForm(RastreavelForm):
         self.tipoprocesso_id.choices = []
         if kwargs.get('tiposprocesso'):
             self.tipoprocesso_id.choices.extend(kwargs.get('tiposprocesso'))
+
+
+class ResultadoOVRForm(RastreavelForm):
+    id = IntegerField('ID')
+    ovr_id = IntegerField('OVR')
+    cpf_auditor = StringField(u'CPF do Auditor',
+                                  default='')
+    tipo_resultado = SelectField('tipoprocesso', default=0)
+    valor = StringField(u'Valor',
+                                  default='')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.tipo_resultado.choices = [(i.value, i.name) for i in TipoResultado]
 
 
 class ResponsavelOVRForm(FlaskForm):

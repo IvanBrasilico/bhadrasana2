@@ -19,7 +19,7 @@ from bhadrasana.forms.filtro_empresa import FiltroEmpresaForm
 from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
     ProcessoOVRForm, ItemTGForm, ResponsavelOVRForm, TGOVRForm, FiltroRelatorioForm, \
     FiltroMinhasOVRsForm, OKRObjectiveForm, OKRMetaForm, SetorOVRForm, EscaneamentoOperadorForm, \
-    FiltroAbasForm
+    FiltroAbasForm, ResultadoOVRForm
 from bhadrasana.models import delete_objeto, get_usuario, \
     usuario_tem_perfil_nome
 from bhadrasana.models.laudo import get_empresa, get_empresas_nome, get_sats_cnpj
@@ -46,7 +46,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     calcula_tempos_por_fase, get_setores_unidade_choice, \
     get_afrfb_choice, get_ovr_one, \
     libera_ovr, get_afrfb_setores_choice, \
-    get_setores_unidade, calcula_tempos_por_tipoevento, encerra_ficha, get_tipoevento_id
+    get_setores_unidade, calcula_tempos_por_tipoevento, encerra_ficha, get_tipoevento_id, gera_resultadoovr
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects, consulta_ce_objects, \
     consulta_due_objects
@@ -94,6 +94,7 @@ def ovr_app(app):
         mongodb = app.config['mongodb']
         listahistorico = []
         processos = []
+        resultados = []
         conhecimento = None
         ncms = []
         containers = []
@@ -107,6 +108,7 @@ def ovr_app(app):
         ovr_form = OVRForm()
         historico_form = HistoricoOVRForm()
         processo_form = ProcessoOVRForm()
+        resultado_form = ResultadoOVRForm()
         responsavel_form = ResponsavelOVRForm()
         setor_ovr_form = SetorOVRForm()
         if ovr_id:
@@ -169,6 +171,7 @@ def ovr_app(app):
                         ovr_form.id.data = ovr.id
                         listahistorico = ovr.historico
                         processos = ovr.processos
+                        resultados = ovr.resultados
                         flags_ovr = ovr.flags
                         itens_roteiro = get_itens_roteiro_checked(session, ovr)
                         rvfs = lista_rvfovr(session, ovr_id)
@@ -214,9 +217,11 @@ def ovr_app(app):
                                qtdeimagens=qtdeimagens,
                                historico_form=historico_form,
                                processo_form=processo_form,
+                               resultado_form=resultado_form,
                                responsavel_form=responsavel_form,
                                listahistorico=listahistorico,
                                processos=processos,
+                               resultados=resultados,
                                flags=flags,
                                flags_ovr=flags_ovr,
                                itens_roteiro=itens_roteiro,
@@ -683,6 +688,41 @@ def ovr_app(app):
             flash(str(type(err)))
             flash(str(err))
         # return redirect(request.referrer)
+        return redirect(url_for('ovr', id=ovr_id))
+
+
+    @app.route('/resultadoovr', methods=['POST'])
+    @login_required
+    def resultadoovr():
+        session = app.config.get('dbsession')
+        try:
+            ovr_id = request.form['ovr_id']
+            resultado_ovr_form = ResultadoOVRForm(request.form)
+            resultado_ovr_form.validate()
+            gera_resultadoovr(session, dict(resultado_ovr_form.data.items()))
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        # return redirect(request.referrer)
+        return redirect(url_for('ovr', id=ovr_id))
+
+    @app.route('/exclui_resultado')
+    @login_required
+    def exclui_resultado():
+        session = app.config.get('dbsession')
+        ovr_id = None
+        resultado_id = request.args.get('resultado_id')
+        try:
+            resultado = get_resultado(session, resultado_id)
+            ovr_id = resultado.ovr.id
+            excluir_resultado(session, resultado, current_user.name)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
         return redirect(url_for('ovr', id=ovr_id))
 
     @app.route('/exclui_processo')
@@ -1791,27 +1831,9 @@ def ovr_app(app):
         ovr_id = request.form.get('ovr_id')
         usuario = get_usuario(session, current_user.name)
         user_name = usuario.cpf
-        cpf_auditor_encerramento = request.form.get('auditor')
-        tipo_resultado = int(request.form.get('tipo_resultado'))
         try:
-            resultado = encerra_ficha(session, ovr_id, cpf_auditor_encerramento, tipo_resultado)
-            if resultado.tipo_resultado != 1:
-                if cpf_auditor_encerramento is None:
-                    raise Exception('Erro ao encerrar a ficha. Ficha com resultado, '
-                                    'mas sem auditor definido.')
-                params = {'ovr_id': ovr_id,
-                          'tipoevento_id': get_tipoevento_id(
-                              session, EventoEspecial.EncerramentoComResultado.value),
-                          'motivo': 'Encerramento com resultado'}
-                gera_eventoovr(session, params=params, user_name=user_name)
-                flash(f'Ficha nº {ovr_id} encerrada com sucesso!')
-            else:
-                params = {'ovr_id': ovr_id,
-                          'tipoevento_id': get_tipoevento_id(
-                              session, EventoEspecial.EncerramentoSemResultado.value),
-                          'motivo': 'Encerramento sem resultado'}
-                gera_eventoovr(session, params=params, user_name=user_name)
-                flash(f'Ficha nº {ovr_id} encerrada com sucesso!')
+            encerra_ficha(session, ovr_id)
+            flash(f'Ficha nº {ovr_id} encerrada com sucesso!')
         except Exception as err:
             logger.error('Erro ao encerrar a ficha')
             logger.error(str(err))

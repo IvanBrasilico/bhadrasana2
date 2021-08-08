@@ -24,7 +24,11 @@ def agrupa_ovrs(ovrs, listaovrs, campo):
     listaagrupada = defaultdict(list)
     if campo and campo != 'None':
         for ovr, exibicao_linha in zip(ovrs, listaovrs):
-            listaagrupada[getattr(ovr, campo)].append(exibicao_linha)
+            if campo == 'fase':
+                grupo = ovr.get_fase()
+            else:
+                grupo = getattr(ovr, campo)
+            listaagrupada[grupo].append(exibicao_linha)
     else:
         listaagrupada['Sem grupos'] = listaovrs
     return listaagrupada

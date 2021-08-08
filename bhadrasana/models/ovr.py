@@ -103,13 +103,11 @@ unidadeMedida = [
 
 
 class TipoResultado(Enum):
-    Sem_resultado = 1
-    Apreensao = 2
-    Perdimento = 3
-    Credito = 4
-    Sancao = 5
-    Darf = 6
-    Apreensao_e_perdimento = 7
+    Apreensao = 1
+    Perdimento = 2
+    Credito = 3
+    Sancao = 4
+    DARF = 5
 
 
 class FonteDocx(Enum):
@@ -188,6 +186,7 @@ class OVR(BaseRastreavel, BaseDumpable):
                            onupdate=func.current_timestamp())
     historico = relationship('EventoOVR', back_populates='ovr')
     processos = relationship('ProcessoOVR', back_populates='ovr')
+    resultados = relationship('ResultadoOVR', back_populates='ovr')
     tgs = relationship('TGOVR', back_populates='ovr')
     flags = relationship('Flag', secondary=flags_table)
     cnpj_fiscalizado = Column(VARCHAR(15), index=True)
@@ -606,15 +605,15 @@ class ResultadoOVR(BaseRastreavel):
     ovr_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                     ForeignKey('ovr_ovrs.id'))
     ovr = relationship('OVR')
-    cpf_auditor_encerramento = Column(VARCHAR(11))
+    cpf_auditor = Column(VARCHAR(11))
     tipo_resultado = Column(Integer(), default=1)
-    encerramento = Column(DateTime, index=True)
-    user_name = Column(VARCHAR(11), index=True)
-    create_date = Column(TIMESTAMP, index=True)
+    valor = Column(Numeric(12, 2))
+
+
 
     @property
     def get_tipo_resultado(self):
-        return Enum.tipo_resultado(self.tipo_resultado)
+        return TipoResultado(self.tipo_resultado).name
 
 
 class ModeloDocx(BaseRastreavel):
@@ -745,17 +744,13 @@ if __name__ == '__main__':  # pragma: no-cover
         # sys.exit(0)
         metadata.create_all(engine,
                             [
-                                metadata.tables['ovr_tiposeventoassistente'],
+                                metadata.tables['ovr_resultados'],
                             ])
         sys.exit(0)
         metadata.drop_all(engine,
-                          [
-                              # metadata.tables['ovr_tgvor_marcas'],
-                              # metadata.tables['ovr_itenstg'],
-                              # metadata.tables['ovr_eventos'],
-                              # metadata.tables['ovr_processos'],
-                              # metadata.tables['ovr_tgovr'],
-                          ])
+                            [
+                                metadata.tables['ovr_resultados'],
+                            ])
         processos = []  # session.query(ProcessoOVR).all()
         for processo in processos:
             # print(processo)

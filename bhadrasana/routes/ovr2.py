@@ -20,7 +20,7 @@ from bhadrasana.models.ovrmanager import monta_ovr_dict, get_docx_choices, get_d
     inclui_docx, get_ovrs_abertas_flags, get_ovr, MarcaManager, get_ids_flags_contrafacao, \
     get_tiposevento_assistente_choice, gera_eventoovr, get_tgovr_one, get_tipos_processo, \
     get_tipos_evento_comfase_choice, lista_de_rvfs_e_apreensoes, \
-    lista_de_tgs_e_items, calcula_resultado
+    lista_de_tgs_e_items
 from bhadrasana.models.rvfmanager import lista_rvfovr
 from bhadrasana.views import get_user_save_path, valid_file
 
@@ -344,7 +344,6 @@ def ovr2_app(app):
         total_tgs = lista_de_tgs_e_items(session, ovr_id)[1]
         lista_de_rvfs_apreensoes = lista_de_rvfs_e_apreensoes(session, ovr_id)[0]
         total_apreensoes = lista_de_rvfs_e_apreensoes(session, ovr_id)[1]
-        tipo_resultado = calcula_resultado(total_apreensoes, total_tgs)
         data_encerramento = datetime.now().strftime('%d/%m/%Y')
         title_page = 'Encerramento'
         try:
@@ -379,6 +378,5 @@ def ovr2_app(app):
                                lista_de_rvfs_apreensoes=lista_de_rvfs_apreensoes,
                                total_apreensoes=total_apreensoes,
                                total_tgs=total_tgs,
-                               tipo_resultado=tipo_resultado,
                                data_encerramento=data_encerramento,
                                title_page=title_page)

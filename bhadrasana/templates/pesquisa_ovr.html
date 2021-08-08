@@ -192,7 +192,7 @@
         &nbsp;<br>
         <h4><u>Clique nos títulos da tabela para ordenar</u></h4>
         {% for grupo, sub_listaovrs in listaagrupada.items() %}
-        <h3>{{ grupo }}</h3>
+        <h3>{{ grupo }} ({{ sub_listaovrs | length }})</h3>
         <div class="table">
             <table class="inlineTable table table-bordered table-hover table-responsive"
                    id="pesquisa_ovr_table">
