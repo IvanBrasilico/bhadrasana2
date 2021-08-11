@@ -14,7 +14,7 @@ from bhadrasana.forms.exibicao_ovr import ExibicaoOVR, TipoExibicao
 from bhadrasana.forms.ovr import FiltroDocxForm, ModeloDocxForm, HistoricoOVRForm, ProcessoOVRForm
 from bhadrasana.models import get_usuario, usuario_tem_perfil_nome
 from bhadrasana.models.laudo import get_empresa
-from bhadrasana.models.ovr import FonteDocx, Assistente
+from bhadrasana.models.ovr import FonteDocx, Assistente, ResultadoOVR, TipoResultado
 from bhadrasana.models.ovr_dict_repr import OVRDict
 from bhadrasana.models.ovrmanager import monta_ovr_dict, get_docx_choices, get_docx, \
     inclui_docx, get_ovrs_abertas_flags, get_ovr, MarcaManager, get_ids_flags_contrafacao, \
@@ -340,13 +340,43 @@ def ovr2_app(app):
         processo_form = ProcessoOVRForm(tiposprocesso=tiposprocesso)
         tiposeventos = get_tipos_evento_comfase_choice(session=session)
         historico_form = HistoricoOVRForm(tiposeventos=tiposeventos)
-        lista_de_tgs_items = lista_de_tgs_e_items(session, ovr_id)[0]
-        total_tgs = lista_de_tgs_e_items(session, ovr_id)[1]
-        lista_de_rvfs_apreensoes = lista_de_rvfs_e_apreensoes(session, ovr_id)[0]
-        total_apreensoes = lista_de_rvfs_e_apreensoes(session, ovr_id)[1]
         data_encerramento = datetime.now().strftime('%d/%m/%Y')
         title_page = 'Encerramento'
         try:
+            lista_de_tgs_items, total_tgs = lista_de_tgs_e_items(session, ovr_id)
+            if total_tgs.get('valor_total', 0) != 0:
+                print('Tem TGs')
+                resultado = session.query(ResultadoOVR).\
+                    filter(ResultadoOVR.ovr_id == ovr.id).\
+                    filter(ResultadoOVR.tipo_resultado == TipoResultado.Perdimento.value).one_or_none()
+                if resultado is None:
+                    print('Inclui resultado')
+                    resultado = ResultadoOVR()
+                    resultado.ovr_id = ovr.id
+                    resultado.tipo_resultado = TipoResultado.Perdimento.value
+                    resultado.cpf_auditor = ovr.cpfauditorresponsavel
+                resultado.valor = total_tgs['valor_total']
+                session.add(resultado)
+                session.commit()
+                print(f'Valor resultado {resultado.valor}')
+            lista_de_rvfs_apreensoes, total_apreensoes = lista_de_rvfs_e_apreensoes(session, ovr_id)
+            total_apreensoes_geral = 0
+            if total_apreensoes:
+                total_apreensoes_geral = sum([valor for valor in total_apreensoes.values()])
+            if total_apreensoes_geral != 0:
+                print('Tem Apreensoes')
+                resultado = session.query(ResultadoOVR). \
+                    filter(ResultadoOVR.ovr_id == ovr.id). \
+                    filter(ResultadoOVR.tipo_resultado == TipoResultado.Apreensao.value).one_or_none()
+                if resultado is None:
+                    resultado = ResultadoOVR()
+                    resultado.ovr_id = ovr.id
+                    resultado.tipo_resultado = TipoResultado.Apreensao.value
+                    resultado.cpf_auditor = ovr.cpfauditorresponsavel
+                resultado.valor = total_apreensoes_geral
+                session.add(resultado)
+                session.commit()
+            session.refresh(ovr)
             fase = ovr.get_fase()
             usuario = get_usuario(session, current_user.name)
             auditor = get_usuario(session, ovr.cpfauditorresponsavel)
@@ -356,6 +386,7 @@ def ovr2_app(app):
                 empresa = ''
             processos = ovr.processos
             eventos = ovr.historico
+            resultados = ovr.resultados
             if usuario is None:
                 raise Exception('Erro: Usuário não encontrado!')
         except Exception as err:
@@ -371,6 +402,7 @@ def ovr2_app(app):
                                empresa=empresa,
                                processos=processos,
                                eventos=eventos,
+                               resultados=resultados,
                                processo_form=processo_form,
                                operacao=operacao,
                                historico_form=historico_form,

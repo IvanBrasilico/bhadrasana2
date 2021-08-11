@@ -46,7 +46,8 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     calcula_tempos_por_fase, get_setores_unidade_choice, \
     get_afrfb_choice, get_ovr_one, \
     libera_ovr, get_afrfb_setores_choice, \
-    get_setores_unidade, calcula_tempos_por_tipoevento, encerra_ficha, get_tipoevento_id, gera_resultadoovr
+    get_setores_unidade, calcula_tempos_por_tipoevento, encerra_ficha, get_tipoevento_id, gera_resultadoovr, \
+    get_resultado, excluir_resultado
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects, consulta_ce_objects, \
     consulta_due_objects
@@ -1832,7 +1833,7 @@ def ovr_app(app):
         usuario = get_usuario(session, current_user.name)
         user_name = usuario.cpf
         try:
-            encerra_ficha(session, ovr_id)
+            encerra_ficha(session, ovr_id, user_name)
             flash(f'Ficha nº {ovr_id} encerrada com sucesso!')
         except Exception as err:
             logger.error('Erro ao encerrar a ficha')

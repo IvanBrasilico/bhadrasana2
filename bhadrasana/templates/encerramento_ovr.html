@@ -389,14 +389,15 @@
                                     <dd class="col-9"><input type="hidden" name="ovr_id"
                                                         value="{{ovr.id}}">{{ovr.id}}</dd>
                                     <dt class="col-3 text-end">Responsável:</dt>
-                                    <dd class="col-9"><input type="hidden" name="responsavel"
-                                                        value="{{ovr.responsavel.nome}}">{{ovr.responsavel.nome}}</dd>
+                                    <dd class="col-9">{{ovr.responsavel.nome}}</dd>
                                     <dt class="col-3 text-end">Fiscalizado:</dt>
                                     <dd class="col-9">{{empresa.nome|mascara_nao_informado}}</dd>
                                     <dt class="col-3 text-end">CE Mercante:</dt>
                                     <dd class="col-9">{{ovr.numeroCEmercante|mascara_nao_informado}}</dd>
                                     <dt class="col-3 text-end">Declaração:</dt>
                                     <dd class="col-9">{{ovr.numerodeclaracao|mascara_nao_informado}}</dd>
+                                    <dt class="col-3 text-end">Observações:</dt>
+                                    <dd class="col-9">{{ovr.observacoes|mascara_nao_informado}}</dd>
                                     <dt class="col-3 text-end">Entrada da carga:</dt>
                                     {% if ovr.dataentrada %}
                                     <dd class="col-9">{{ovr.dataentrada.strftime('%d/%m/%Y')}}</dd>
@@ -411,29 +412,18 @@
                                 <h3 class="display-6">Resultado</h3>
                                 <hr class="dropdown-divider">
                                 <dl class="row">
-                                {% if total_apreensoes|length > 0 or total_tgs|length > 0 %}
-                                    {% if total_apreensoes|length > 0 %}
-                                        <dt class="col-3 text-end">Apreensões:</dt>
+                                {% if resultados|length > 0 %}
+                                    {% for resultado in resultados %}
+                                        <dt class="col-3 text-end">Resultado:</dt>
                                             <dd class="col-9">
-                                                {% for apreensao, peso in total_apreensoes.items() %}
-                                                <input type="hidden" name="{{apreensao}}" value="{{peso}}">
-                                                    {{apreensao}}: {{peso|duas_casas_decimais}} /
-                                                {% endfor %}
+                                                {{resultado.get_tipo_resultado}} - R$ {{resultado.valor|duas_casas_decimais}}
                                             </dd>
-                                    {% endif %}
-                                    {% if total_tgs|length > 0 %}
-                                        <dt class="col-3 text-end">Perdimento:</dt>
-                                            <dd class="col-9">
-                                                <input type="hidden" name="perdimento" value="{{total_tgs['valor_total']}}">
-                                                R$ {{total_tgs['valor_total']|duas_casas_decimais}}
-                                            </dd>
-                                    {% endif %}
+                                    {% endfor %}
                                 {% else %}
                                     <dt class="col-3 text-end">Tipo:</dt>
                                     <dd class="col-9">Sem resultado</dd>
                                 {% endif %}
                                     <dt class="col-3 text-end">Auditor:</dt>
-                                    {% if total_apreensoes|length > 0 or total_tgs|length > 0 %}
                                         {% if auditor %}
                                             <dd class="col-9">
                                                 <input type="hidden" name="auditor" value="{{auditor.cpf}}">
@@ -446,19 +436,13 @@
                                                    href="ovr?id={{ovr.id}}">Definir</a>
                                             </dd>
                                         {% endif %}
-                                    {% else %}
-                                        <dd class="col-9">
-                                            <input type="hidden" name="auditor" value="">
-                                        </dd>
-                                    {% endif %}
                                     <dt class="col-3 text-end">Encerramento:</dt>
                                     <dd class="col-9">{{ data_encerramento }}</dd>
                                 </dl>
                             </div>
-                            <input type="hidden" name="tipo_resultado" value="{{tipo_resultado}}">
                         </div>
                         <div class="modal-footer">
-                            {% if total_apreensoes|length > 0 or total_tgs|length > 0 %}
+                            {% if resultados|length > 0 %}
                                 {% if auditor %}
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                                     <button type="submit" class="btn btn-danger">Encerrar</button>
