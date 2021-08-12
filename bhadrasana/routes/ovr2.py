@@ -342,12 +342,23 @@ def ovr2_app(app):
         historico_form = HistoricoOVRForm(tiposeventos=tiposeventos)
         data_encerramento = datetime.now().strftime('%d/%m/%Y')
         title_page = 'Encerramento'
+        fase = 0
+        usuario = ''
+        auditor = ''
+        empresa = ''
+        processos = []
+        eventos = []
+        resultados = []
+        lista_de_tgs_items = []
+        lista_de_rvfs_apreensoes = []
+        total_apreensoes = []
+        total_tgs = []
         try:
             lista_de_tgs_items, total_tgs = lista_de_tgs_e_items(session, ovr_id)
             if total_tgs.get('valor_total', 0) != 0:
                 print('Tem TGs')
-                resultado = session.query(ResultadoOVR).\
-                    filter(ResultadoOVR.ovr_id == ovr.id).\
+                resultado = session.query(ResultadoOVR). \
+                    filter(ResultadoOVR.ovr_id == ovr.id). \
                     filter(ResultadoOVR.tipo_resultado == TipoResultado.Perdimento.value).one_or_none()
                 if resultado is None:
                     print('Inclui resultado')

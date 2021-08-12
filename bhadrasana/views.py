@@ -18,6 +18,7 @@ Adicionalmente, permite o merge entre bases, navegação de bases, e
 a aplicação de filtros/parâmetros de risco.
 """
 import io
+import json
 import os
 import tempfile
 from datetime import date
@@ -25,7 +26,6 @@ from datetime import date
 import ajna_commons.flask.login as login_ajna
 import pandas as pd
 import plotly
-import plotly.express as px
 import plotly.graph_objs as go
 from PIL import Image
 from ajna_commons.flask.conf import ALLOWED_EXTENSIONS, SECRET, logo
@@ -40,6 +40,7 @@ from flask_login import current_user
 from flask_nav import Nav
 from flask_nav.elements import Navbar, View, Separator, Subgroup
 from flask_wtf.csrf import CSRFProtect
+from plotly.subplots import make_subplots
 
 from bhadrasana.conf import APP_PATH
 from bhadrasana.models import get_usuario_telegram, Usuario, get_usuario
@@ -219,14 +220,16 @@ def index():
             'Fase': ['Liberada', 'Ativa', 'Suspensa'],
             'Qtde': [liberadas, ativas, supensas],
         })
-        plot = plotly.offline.plot({
-            'data': px.pie(df, names='Fase', values='Qtde', title='Resumo das minhas Fichas'),
-            'layout': go.Layout(title='Minhas Fichas')
-        },
-            show_link=False,
-            output_type='div',
-            image_width=300)
-        plots = [plot]
+        fig = make_subplots(rows=2, cols=3, horizontal_spacing=0.1,
+                            specs=[[{"type": "pie"}, {"type": "indicator"}, {"type": "indicator"}],
+                                   [{"type": "indicator"}, {"type": "indicator"}, {"type": "indicator"}]])
+        fichas_pie = go.Pie(labels=df.Fase.values, values=df.Qtde.values,
+                            textinfo='label+value',
+                            insidetextorientation='radial',
+                            title='Resumo das minhas Fichas')
+        row = 1
+        col = 1
+        fig.add_trace(fichas_pie, row=row, col=col)
         usuario = get_usuario(session, current_user.name)
         setor_id = usuario.setor_id
         objective = session.query(OKRObjective).filter(OKRObjective.setor_id == setor_id). \
@@ -236,11 +239,21 @@ def index():
             for result in results[:5]:
                 delta = ((date.today() - objective.inicio.date()) /
                          (objective.fim - objective.inicio)) * result.ameta
-                plot = gauge_plotly(result.result.nome, result.ameta,
-                                    sum([row['result'] for row in result.resultados]),
-                                    delta)
-                plots.append(plot)
-        return render_template('index.html', plots=plots, objective=objective)
+                indicator = gauge_plotly(result.result.nome, result.ameta,
+                                         sum([row['result'] for row in result.resultados]),
+                                         delta)
+                col += 1
+                if col > 3:
+                    col = 1
+                    row += 1
+                fig.add_trace(indicator, row=row, col=col)
+        fig.update_layout(
+            # grid={'rows': 2, 'columns': 3, 'pattern': "independent"},
+            margin=dict(r=0, t=0, b=0, l=0),
+        )
+        fig.update(layout_showlegend=False)
+        graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+        return render_template('index.html', plots=[], objective=objective, graphJSON=graphJSON)
     else:
         return redirect(url_for('commons.login'))
 
