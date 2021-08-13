@@ -43,7 +43,7 @@ from flask_wtf.csrf import CSRFProtect
 from plotly.subplots import make_subplots
 
 from bhadrasana.conf import APP_PATH
-from bhadrasana.models import get_usuario_telegram, Usuario, get_usuario
+from bhadrasana.models import get_usuario_telegram, Usuario, get_usuario, Setor
 from bhadrasana.models.ovr import OKRObjective
 from bhadrasana.models.ovrmanager import get_ovr_responsavel, \
     executa_okr_results
@@ -234,6 +234,11 @@ def index():
         setor_id = usuario.setor_id
         objective = session.query(OKRObjective).filter(OKRObjective.setor_id == setor_id). \
             order_by(OKRObjective.id.desc()).first()
+        if not objective:
+            setor = session.query(Setor).filter(Setor.id == setor_id).one()
+            if setor.pai_id:
+                objective = session.query(OKRObjective).filter(OKRObjective.setor_id == setor.pai_id). \
+                    order_by(OKRObjective.id.desc()).first()
         if objective:
             results = executa_okr_results(session, objective)
             for result in results[:5]:
