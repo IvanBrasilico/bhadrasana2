@@ -56,7 +56,8 @@ def bar_plotly(linhas: list, nome: str) -> str:
         return ''
 
 
-def gauge_plotly(resultado: str, meta: int, medicao: int, delta: int = None) -> str:
+def gauge_plotly(resultado: str, meta: int, medicao: int, delta: int = None,
+                 font_size=50) -> str:
     """Desenha um gauge indicator com plotly.
 
     medicao: nivel do gauge
@@ -77,7 +78,7 @@ def gauge_plotly(resultado: str, meta: int, medicao: int, delta: int = None) -> 
                    'value': delta}
                },
         title={'text': resultado},
-        number={"font": {"size": 50}}
+        number={"font": {"size": font_size}}
     )
 
 def gauge_plotly_plot(resultado: str, meta: int, medicao: int, delta: int = None) -> str:
@@ -88,14 +89,12 @@ def gauge_plotly_plot(resultado: str, meta: int, medicao: int, delta: int = None
     meta: nível máximo do gauge
     delta: percentual de tempo do periodo decorrido, para referencia
     """
-    data = [gauge_plotly(meta, medicao, delta)]
+    data = [gauge_plotly(resultado, meta, medicao, delta, 40)]
     plot = plotly.offline.plot({
         'data': data,
-        'layout': go.Layout(title=resultado)
     },
         show_link=False,
-        output_type='div',
-        image_width=300)
+        output_type='div')
     return plot
 
 

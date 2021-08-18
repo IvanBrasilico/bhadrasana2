@@ -6,12 +6,12 @@ from decimal import Decimal
 from typing import Tuple
 
 import pandas as pd
+from ajna_commons.flask.log import logger
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
 from gridfs import GridFS
 from werkzeug.utils import redirect
 
-from ajna_commons.flask.log import logger
 from bhadrasana.analises.escaneamento_operador import sorteia_GMCIs
 from bhadrasana.forms.exibicao_ovr import ExibicaoOVR, TipoExibicao, agrupa_ovrs
 from bhadrasana.forms.filtro_container import FiltroContainerForm, FiltroCEForm, FiltroDUEForm
@@ -23,7 +23,7 @@ from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
 from bhadrasana.models import delete_objeto, get_usuario, \
     usuario_tem_perfil_nome
 from bhadrasana.models.laudo import get_empresa, get_empresas_nome, get_sats_cnpj
-from bhadrasana.models.ovr import OVR, OKRObjective, faseOVR, EventoEspecial
+from bhadrasana.models.ovr import OVR, OKRObjective, faseOVR
 from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_ovr_filtro, gera_eventoovr, gera_processoovr, get_tipos_processo, lista_itemtg, \
     get_itemtg, get_recintos, \
@@ -46,7 +46,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     calcula_tempos_por_fase, get_setores_unidade_choice, \
     get_afrfb_choice, get_ovr_one, \
     libera_ovr, get_afrfb_setores_choice, \
-    get_setores_unidade, calcula_tempos_por_tipoevento, encerra_ficha, get_tipoevento_id, gera_resultadoovr, \
+    get_setores_unidade, calcula_tempos_por_tipoevento, encerra_ficha, gera_resultadoovr, \
     get_resultado, excluir_resultado
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects, consulta_ce_objects, \
@@ -57,7 +57,7 @@ from bhadrasana.models.virasana_manager import get_conhecimento, \
     get_containers_conhecimento, get_ncms_conhecimento, get_imagens_dict_container_id, \
     get_imagens_container, get_dues_empresa, get_ces_empresa, \
     get_due, get_detalhes_mercante, get_imagens_conhecimento, get_imagens_due
-from bhadrasana.routes.plotly_graphs import bar_plotly, gauge_plotly, burndown_plotly
+from bhadrasana.routes.plotly_graphs import bar_plotly, burndown_plotly, gauge_plotly_plot
 from bhadrasana.scripts.gera_planilha_rilo import monta_planilha_rilo
 from bhadrasana.views import get_user_save_path, valid_file, csrf
 
@@ -690,7 +690,6 @@ def ovr_app(app):
             flash(str(err))
         # return redirect(request.referrer)
         return redirect(url_for('ovr', id=ovr_id))
-
 
     @app.route('/resultadoovr', methods=['POST'])
     @login_required
@@ -1444,9 +1443,9 @@ def ovr_app(app):
                         else:
                             delta = ((today - objective.inicio.date()) /
                                      (objective.fim - objective.inicio)) * result.ameta
-                            plot = gauge_plotly(result.result.nome, result.ameta,
-                                                sum([row['result'] for row in result.resultados]),
-                                                delta)
+                            plot = gauge_plotly_plot(result.result.nome, result.ameta,
+                                                     sum([row['result'] for row in result.resultados]),
+                                                     delta)
                         plots.append(plot)
             if setor_id is None:
                 usuario = get_usuario(session, current_user.name)
