@@ -236,6 +236,7 @@ def ovr_app(app):
         return trata_ovr(request, id)
 
     @app.route('/ovr', methods=['POST', 'GET'])
+    @csrf.exempt
     @login_required
     def ovr():
         id = request.args.get('id')
