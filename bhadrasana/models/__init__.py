@@ -182,10 +182,13 @@ def handle_datahora(params):
         data = datetime.date.today()
         logger.error('handle_datahora: %s' % err)
     try:
-        hora = datetime.datetime.strptime(hora, '%H:%M').time()
+        if isinstance(hora, str):
+            hora = datetime.datetime.strptime(hora, '%H:%M').time()
     except Exception as err:
         hora = datetime.datetime.now().time()
         logger.error('handle_datahora: %s' % err)
+    if hora is None:
+        hora = datetime.datetime.now().time()
     return datetime.datetime.combine(data, hora)
 
 
