@@ -27,6 +27,7 @@ setup(
         'Pillow',   # Centralizar acesso imagens no virasana??
         'plotly', # Ver como retirar necessidade
         'odfpy',
+        'pandas',
         'pymongo',
         'pymysql',
         'python-docx',
