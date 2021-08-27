@@ -994,7 +994,7 @@ def ovr_app(app):
         formated_rows = []
         linha_totais = [0. for r in range(len(rows[0]) - 2)]
         for row in rows:
-            for ind, col in enumerate(row[2:]):
+            for ind, col in enumerate(list(row)[2:]):
                 if isinstance(col, Decimal) or isinstance(col, float):
                     try:
                         valor_col = float(col)
