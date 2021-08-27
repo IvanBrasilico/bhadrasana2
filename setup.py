@@ -33,7 +33,7 @@ setup(
         'python-docx',
         'redis', # Ver como retirar necessidade
         'requests', # Ver como retirar necessidade
-        'sqlalchemy',
+        'sqlalchemy==1.3.24',
         'xlrd',
         'xlwt',
     ],
