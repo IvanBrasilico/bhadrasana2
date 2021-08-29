@@ -191,24 +191,24 @@
                         {% for key, value in row.items() %}
                         <td align="center" style="word-wrap: break-word; max-width: 150px;">
                             {% if key=='numeroCEmercante' %}
-                            <a href="https://ajna.labin.rf08.srf/virasana/cemercante/{{value}}" target="_BLANK">
+                            <a href="/virasana/cemercante/{{value}}" target="_BLANK">
                                 {{value}}
                             </a><br>
                             <a href="ovr?numeroCEmercante={{value}}" target="_BLANK">
                                 Criar OVR
                             </a>
                             {% elif key=='codigoConteiner' %}
-                            <a href="https://ajna.labin.rf08.srf/virasana/files?numero={{value}}" target="_BLANK">
+                            <a href="/virasana/files?numero={{value}}" target="_BLANK">
                                 {{value}}
                             </a>
                             {% elif key=='num' %}
-                            <a href="https://ajna.labin.rf08.srf/virasana/files?numero={{value}}" target="_BLANK">
+                            <a href="/virasana/files?numero={{value}}" target="_BLANK">
                                 {{value}}
                             </a>
                             {% elif key=='_id' %}
                             {% if value %}
-                            <a href="https://ajna.labin.rf08.srf/virasana/file?_id={{value}}" target="_BLANK">
-                                <img src="https://ajna.labin.rf08.srf/virasana/mini1/{{ value}}" width="150px"/>
+                            <a href="/virasana/file?_id={{value}}" target="_BLANK">
+                                <img src="/virasana/mini1/{{ value}}" width="150px"/>
                             </a>
                             {% endif %}
                             {% else %}
