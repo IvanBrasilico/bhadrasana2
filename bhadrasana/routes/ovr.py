@@ -1796,8 +1796,8 @@ def ovr_app(app):
         try:
             exibicao_ovr = ExibicaoOVR(session, TipoExibicao.Resumo, current_user.id)
             ovr = get_ovr(session, oid)
-            resumo_html = exibicao_ovr.get_OVR_resumo(ovr, mercante=True,
-                                                      mostra_ovr=False, eventos=True)
+            resumo_html = exibicao_ovr.get_OVR_resumo(ovr, mercante=False,
+                                                      mostra_ovr=True, eventos=True)
             resumo_texto = '\n'.join(resumo_html)
             resumo_texto = re.sub(re.compile('<.*?>'), ' ', resumo_texto)
             return resumo_texto

@@ -131,9 +131,9 @@ class ExibicaoOVR:
         evento_user_descricao = ''
         motivo = ''
         ind_aux = ind
-
         if len(ovr.historico) >= ind:
-            while ovr.historico[len(ovr.historico) - ind].meramente_informativo:
+            while ovr.historico[len(ovr.historico) - ind].meramente_informativo or \
+                    'ição' in ovr.historico[len(ovr.historico) - ind].tipoevento.nome:
                 ind += 1
             if ind >= len(ovr.historico):
                 ind = ind_aux
@@ -391,7 +391,7 @@ class ExibicaoOVR:
     def get_eventos_resumo(self, ovr) -> list:
         resumo = []
         for evento in ovr.historico:
-            if 'ição' in evento.tipoevento.nome: #Elimina eventos de distribuição e atribuição
+            if 'ição' in evento.tipoevento.nome:  # Elimina eventos de distribuição e atribuição
                 continue
             resumo.append('{} - {} - {} - {}'.format(
                 evento.tipoevento.nome, evento.user_name,
