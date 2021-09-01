@@ -125,7 +125,13 @@ def mercanterisco(session, pfiltros: dict, limit=1000, operador_ou=False):
     resultproxy = session.execute(query)
     result = []
     for row in resultproxy:
-        result.append(OrderedDict([(key, row[key]) for key in keys]))
+        row_dict = OrderedDict()
+        for key in keys:
+            for column, value in row.items():
+                if key in column:
+                    row_dict[key] = value
+                    break
+        result.append(row_dict)
     return result, str_filtros
 
 

@@ -27,6 +27,7 @@ setup(
         'Pillow',   # Centralizar acesso imagens no virasana??
         'plotly', # Ver como retirar necessidade
         'odfpy',
+        'openpyxl',
         'pandas',
         'pymongo',
         'pymysql',
@@ -34,7 +35,6 @@ setup(
         'redis', # Ver como retirar necessidade
         'requests', # Ver como retirar necessidade
         'sqlalchemy==1.3.24',
-        'xlrd',
         'xlwt',
     ],
     dependency_links=[
