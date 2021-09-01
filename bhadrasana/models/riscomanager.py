@@ -114,7 +114,12 @@ def mercanterisco(session, pfiltros: dict, limit=1000, operador_ou=False):
         Conhecimento.numeroCEmercante == NCMItem.numeroCEMercante
     )
     filtros = and_(filtros_data, filtros)
-    query = select([Conhecimento, NCMItem]).select_from(j). \
+    # ncm_item = aliased(NCMItem)
+    keys_sql = [Conhecimento.numeroCEmercante, Conhecimento.descricao,
+                Conhecimento.embarcador, Conhecimento.portoDestFinal,
+                Conhecimento.consignatario, Conhecimento.portoOrigemCarga, NCMItem.codigoConteiner,
+                NCMItem.identificacaoNCM]
+    query = select(keys_sql).select_from(j). \
         where(filtros). \
         order_by(Conhecimento.numeroCEmercante). \
         limit(limit)
@@ -124,10 +129,10 @@ def mercanterisco(session, pfiltros: dict, limit=1000, operador_ou=False):
     logger.info(str_filtros)
     resultproxy = session.execute(query)
     result = []
-    for row in resultproxy:
+    for rowproxy in resultproxy:
         row_dict = OrderedDict()
         for key in keys:
-            for column, value in row.items():
+            for column, value in rowproxy.items():
                 if key in column:
                     row_dict[key] = value
                     break
