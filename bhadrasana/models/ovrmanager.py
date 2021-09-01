@@ -1319,6 +1319,8 @@ def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
     if 'csv' in lfilename:
         df = pd.read_csv(afile, sep=';',
                          header=1, encoding='windows-1252')
+    elif '.xlsx' in lfilename:
+        df = pd.read_excel(afile, engine='openpyxl')
     elif '.xls' in lfilename:
         df = pd.read_excel(afile)
     elif '.ods' in lfilename:
