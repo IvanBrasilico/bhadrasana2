@@ -351,6 +351,8 @@ def get_ovr_filtro(session,
     if user_name:
         ids_setores = [setor.id for setor in get_setores_cpf(session, user_name)]
         logger.info('Setores:' + str(ids_setores))
+        expr = OVR.setor_id.in_(ids_setores)
+        logger.info(expr.compile(compile_kwargs={"literal_binds": True}))
         filtro = and_(OVR.setor_id.in_(ids_setores))
         logger.info('Setores filtro:' + str(filtro))
     if pfiltro and isinstance(pfiltro, dict):
