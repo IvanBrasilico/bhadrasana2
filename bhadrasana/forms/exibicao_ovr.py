@@ -135,6 +135,8 @@ class ExibicaoOVR:
             while ovr.historico[len(ovr.historico) - ind].meramente_informativo or \
                     'ição' in ovr.historico[len(ovr.historico) - ind].tipoevento.nome:
                 ind += 1
+                if ind >= len(ovr.historico):
+                    break
             if ind >= len(ovr.historico):
                 ind = ind_aux
             evento_atual = ovr.historico[len(ovr.historico) - ind]
