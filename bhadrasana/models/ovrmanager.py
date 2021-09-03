@@ -350,7 +350,9 @@ def get_ovr_filtro(session,
     tables = []
     if user_name:
         ids_setores = [setor.id for setor in get_setores_cpf(session, user_name)]
+        print('Setores:', ids_setores)
         filtro = and_(OVR.setor_id.in_(ids_setores))
+        print('Setores filtro:', filtro)
     if pfiltro and isinstance(pfiltro, dict):
         if pfiltro.get('datainicio'):
             filtro = and_(OVR.datahora >= pfiltro.get('datainicio'), filtro)
