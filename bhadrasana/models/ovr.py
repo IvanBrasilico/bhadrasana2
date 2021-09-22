@@ -108,6 +108,8 @@ class TipoResultado(Enum):
     Credito = 3
     Sancao = 4
     DARF = 5
+    MultaRFB = 6
+    MultaOutroOrgao = 7
 
 
 class FonteDocx(Enum):
