@@ -1331,7 +1331,7 @@ def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
         df = pd.read_excel(afile, engine='odf')
     else:
         raise Exception('Extensão de arquivo desconhecida! Conheço .csv, .ods e .xls')
-    # print(df.head())
+    print(df.head())
     df = df.replace({np.nan: None})
     alertas = dict()
     index = 0
