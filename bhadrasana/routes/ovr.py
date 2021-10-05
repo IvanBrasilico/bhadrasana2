@@ -926,6 +926,7 @@ def ovr_app(app):
             tg_id = request.form['tg_id']
             tg = get_tgovr(session, tg_id)
             planilha = request.files['planilha']
+            logger.info(f'Abrindo planilha {planilha}')
             alertas = importa_planilha_tg(session, tg, planilha)
             if alertas:
                 flash(alertas)
