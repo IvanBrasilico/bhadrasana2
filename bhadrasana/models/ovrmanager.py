@@ -1381,6 +1381,8 @@ def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
                         format(de_para.get('ncm'))
             valor = row.get('valor')
             if valor:
+                if isinstance(valor, str):
+                    valor = float(valor)
                 itemtg.valor = valor * recupera_taxa_cambio(row)
             else:
                 itemtg.valor = 0
