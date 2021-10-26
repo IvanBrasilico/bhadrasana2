@@ -135,7 +135,7 @@ class OVRDict():
         ovr_dict['valor'] = tgovr.valor
         ovr_dict['datatg'] = tgovr.create_date
         itenstg = [itemtg.dump() for itemtg in tgovr.itenstg]
-        ovr_dict['tgs'] = itenstg
+        ovr_dict['itenstg'] = itenstg
         return ovr_dict
 
     def monta_marcas_dict(self, db, session, id: int) -> List[dict]:
