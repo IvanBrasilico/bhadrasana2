@@ -1365,10 +1365,13 @@ def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
             itemtg.descricao = row['descricao'].strip()
             itemtg.qtde = row['qtde']
             try:
+                unidade = row['unidadedemedida'].strip()
                 itemtg.unidadedemedida = Enumerado. \
-                    index_unidadeMedida(row['unidadedemedida'].strip())
-            except ValueError:
+                    index_unidadeMedida(row['unidadedemedida'].strip().upper())
+                print(itemtg.unidadedemedida)
+            except ValueError as err:
                 itemtg.unidadedemedida = Enumerado.index_unidadeMedida('UN')
+                print(err, unidade)
             itemtg.modelo = row.get('modelo')
             itemtg.contramarca = row.get('marca')
             ncm = row.get('ncm')
