@@ -1,0 +1,43 @@
+import pandas as pd
+import plotly.express as px
+
+from gerencial import engine, AnoMes
+
+SQL_Fichas_Tempos_Exp = \
+    '''SELECT year(ficha.create_date) as Ano, month(ficha.create_date) as Mês, e.fase as Estágio,
+     ficha.id as Ficha, ficha.create_date as create_date, 
+     min(ev.create_date) as data_evento_inicial, max(ev.create_date) as data_evento_ultimo
+      FROM ovr_ovrs ficha
+     inner join ovr_eventos ev on ev.ovr_id = ficha.id
+     inner join Enumerado e on e.id = ficha.fase
+     where ficha.setor_id = 3
+     group by Ano, Mês, Ficha
+     order by Ano, Mês;'''
+
+df_fichas_tempos = pd.read_sql(SQL_Fichas_Tempos_Exp, engine)
+df_fichas_tempos['Duracao'] = df_fichas_tempos.apply(lambda x: (x.data_evento_ultimo - x.create_date).days, axis=1)
+df_fichas_tempos['AnoMes'] = df_fichas_tempos.apply(AnoMes, axis=1)
+
+
+def FigFichasTempoTotal(df_=df_fichas_tempos):
+    df_fichas_estagio = df_.groupby(['AnoMes', 'Estágio']).Ficha.count().reset_index()
+    print(f'{df_fichas_estagio.Ficha.sum()} Fichas de controle no total, com os seguintes status:')
+    fig = px.pie(df_fichas_estagio, names='Estágio', values='Ficha')
+    fig.update_traces(textposition='inside', textinfo='percent+label+value')
+    fig.show()
+
+def FigFichasEstagio(df_=df_fichas_tempos):
+    df_fichas_estagio = df_.groupby(['AnoMes', 'Estágio']).Ficha.count().reset_index()
+    fig = px.bar(df_fichas_estagio,
+                 x='AnoMes', y='Ficha', color='Estágio')
+    fig.update_xaxes(categoryorder='category ascending')
+    fig.show()
+
+
+def FigFichasTemposMedia(df_=df_fichas_tempos):
+    df_fichas_tempos_media = df_.groupby(['AnoMes', 'Estágio']).Duracao.mean().reset_index()
+    fig = px.line(df_fichas_tempos_media[df_fichas_tempos_media['Estágio'].isin(['Concluída', 'Arquivada'])],
+                  x='AnoMes', y='Duracao', color='Estágio')
+    fig.update_xaxes(categoryorder='category ascending')
+    fig.show()
+
