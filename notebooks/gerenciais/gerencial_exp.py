@@ -18,6 +18,21 @@ df_fichas_tempos = pd.read_sql(SQL_Fichas_Tempos_Exp, engine)
 df_fichas_tempos['Duracao'] = df_fichas_tempos.apply(lambda x: (x.data_evento_ultimo - x.create_date).days, axis=1)
 df_fichas_tempos['AnoMes'] = df_fichas_tempos.apply(AnoMes, axis=1)
 
+SQL_APREENSOES = \
+'''
+SELECT year(ovr.datahora) as Ano, month(ovr.datahora) as Mês,
+  ovr.id as Ficha, rvf.id as RVF, rvf.descricao as relato,
+  a.id as Apreensao, a.descricao, t.descricao, a.peso as Peso
+  FROM ovr_ovrs ovr
+ inner join ovr_verificacoesfisicas rvf on rvf.ovr_id = ovr.id
+ inner join ovr_apreensoes_rvf a on a.rvf_id = rvf.id
+ inner join ovr_tiposapreensao t on t.id = a.tipo_id
+ where ovr.setor_id in (1, 2, 3)
+ order by Ano, Mês, Ficha, RVF, Apreensao;'''
+
+
+df_apreensoes = pd.read_sql(SQL_APREENSOES, engine)
+df_apreensoes['AnoMes'] = df_apreensoes.apply(AnoMes, axis=1)
 
 def FigFichasTempoTotal(df_=df_fichas_tempos):
     df_fichas_estagio = df_.groupby(['AnoMes', 'Estágio']).Ficha.count().reset_index()

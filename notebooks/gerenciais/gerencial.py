@@ -7,10 +7,10 @@ import plotly.graph_objects as go
 
 pd.options.display.float_format = 'R$ {:,.2f}'.format
 
-caminho_commons = os.path.join('..', '..', 'ajna_docs', 'commons')
-caminho_virasana = os.path.join('..', '..', 'ajna_docs', 'virasana')
+caminho_commons = os.path.join('../..', '..', 'ajna_docs', 'commons')
+caminho_virasana = os.path.join('../..', '..', 'ajna_docs', 'virasana')
 sys.path.append(caminho_commons)
-sys.path.append('..')
+sys.path.append('../..')
 sys.path.append(caminho_virasana)
 
 from bhadrasana.models import engine
