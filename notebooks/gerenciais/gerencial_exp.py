@@ -3,6 +3,8 @@ import plotly.express as px
 
 from gerencial import engine, AnoMes
 
+pd.options.display.float_format = '{:,.2f}'.format
+
 SQL_Fichas_Tempos_Exp = \
     '''SELECT year(ficha.create_date) as Ano, month(ficha.create_date) as Mês, e.fase as Estágio,
      ficha.id as Ficha, ficha.create_date as create_date, 
