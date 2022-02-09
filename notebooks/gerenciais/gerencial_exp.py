@@ -37,7 +37,9 @@ SQL_APREENSOES = \
 def FigFichasTempoTotal(df_=df_fichas_tempos):
     df_fichas_estagio = df_.groupby(['AnoMes', 'Estágio']).Ficha.count().reset_index()
     print(f'{df_fichas_estagio.Ficha.sum()} Fichas de controle no total, com os seguintes status:')
-    fig = px.pie(df_fichas_estagio, names='Estágio', values='Ficha')
+    fig = px.pie(df_fichas_estagio, names='Estágio', values='Ficha',
+                 title='Quantidade de Fichas por Estágio atual')
+    fig.update_layout(width=1200)
     fig.update_traces(textposition='inside', textinfo='percent+label+value')
     fig.show()
 
@@ -45,7 +47,9 @@ def FigFichasTempoTotal(df_=df_fichas_tempos):
 def FigFichasEstagio(df_=df_fichas_tempos):
     df_fichas_estagio = df_.groupby(['AnoMes', 'Estágio']).Ficha.count().reset_index()
     fig = px.bar(df_fichas_estagio,
-                 x='AnoMes', y='Ficha', color='Estágio')
+                 x='AnoMes', y='Ficha', color='Estágio',
+                 title='Quantidade de Fichas por Estágio atual iniciadas no mês')
+    fig.update_layout(width=1200)
     fig.update_xaxes(categoryorder='category ascending')
     fig.show()
 
@@ -53,7 +57,9 @@ def FigFichasEstagio(df_=df_fichas_tempos):
 def FigFichasTemposMedia(df_=df_fichas_tempos):
     df_fichas_tempos_media = df_.groupby(['AnoMes', 'Estágio']).Duracao.mean().reset_index()
     fig = px.line(df_fichas_tempos_media[df_fichas_tempos_media['Estágio'].isin(['Concluída', 'Arquivada'])],
-                  x='AnoMes', y='Duracao', color='Estágio')
+                  x='AnoMes', y='Duracao', color='Estágio',
+                  title='Tempo médio de Fichas iniciadas no mês, até a conclusão ou arquivamento')
+    fig.update_layout(width=1200)
     fig.update_xaxes(categoryorder='category ascending')
     fig.show()
 
@@ -73,9 +79,12 @@ df_apreensoes_sum = df_apreensoes.groupby(['Ano', 'Mês']).agg(
 
 
 def FigTotalApreensaoPorAno():
-    fig = px.bar(df_apreensoes_ano_sum, x='Ano', y='qtde', text='peso')
+    fig = px.bar(df_apreensoes_ano_sum, x='Ano', y='qtde', text='peso',
+                 title='Soma dos pesos de apreensões')
     fig.show()
-    fig = px.bar(df_apreensoes, x='Ano', y='Peso', text='Ficha', barmode='group', text_auto=True)
+    fig = px.bar(df_apreensoes, x='Ano', y='Peso', text='Ficha', barmode='group', text_auto=True,
+                 title='Pesos de apreensões empilhados')
+    fig.update_layout(width=1200)
     fig.show()
 
 
@@ -89,6 +98,8 @@ def FigTotalApreensaoPorAnoMes():
         bar = go.Bar(name=str(ano), x=x, y=y, text=text)
         data.append(bar)
     fig = go.Figure(data=data)
+    fig.update_layout(title='Peso de apreensões por ano e mês')
+    fig.update_layout(width=1200)
     fig.show()
     print(df_apreensoes_sum.pivot(index='Ano', columns='Mês', values='peso').fillna(0.))
     print(df_apreensoes_sum.pivot(index='Ano', columns='Mês', values='qtde').fillna(0.))
