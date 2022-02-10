@@ -391,9 +391,9 @@ def ovr2_app(app):
             fase = ovr.get_fase()
             usuario = get_usuario(session, current_user.name)
             auditor = get_usuario(session, ovr.cpfauditorresponsavel)
-            if ovr.cnpj_fiscalizado:
-                empresa = get_empresa(session=session, cnpj=ovr.cnpj_fiscalizado)
-            else:
+            try:
+                empresa = get_empresa(session, ovr.cnpj_fiscalizado)
+            except ValueError as err:
                 empresa = ''
             processos = ovr.processos
             eventos = ovr.historico
