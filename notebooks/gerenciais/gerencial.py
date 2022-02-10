@@ -1,5 +1,6 @@
 import os
 import sys
+from datetime import datetime
 
 import pandas as pd
 import plotly.express as px
@@ -184,3 +185,40 @@ def FigTotalTGOutlet():
                  title='Valores de TG empilhados')
     fig.update_layout(width=1200)
     fig.show()
+
+
+SQL_PENDENTE_OUTLET = \
+    '''SELECT r.nome as Recinto, ficha.id as 'Ficha', rvf.id as 'RVF', rvf.datahora 'Data de Abertura',
+     ficha.numeroCEmercante, rvf.numerolote as Contêiner
+     FROM ovr_ovrs ficha
+     INNER JOIN ovr_verificacoesfisicas rvf ON  rvf.ovr_id = ficha.id
+     inner join ovr_flags_ovr flags on flags.rvf_id = ficha.id
+     INNER JOIN ovr_recintos r ON r.id = ficha.recinto_id
+     where flags.flag_id = 9 AND ficha.fase <3
+     ORDER BY r.nome, rvf.datahora'''
+
+df_pendente_outlet = pd.read_sql(SQL_PENDENTE_OUTLET, engine)
+today_ = datetime.today()
+df_pendente_outlet['Dias sem conclusão'] = \
+    df_pendente_outlet.apply(lambda x: (today_ - x['Data de Abertura']).days, axis=1)
+lista_ovr = ', '.join([str(i) for i in df_pendente_outlet.Ficha.values])
+
+SQL_EVENTOS = \
+    '''SELECT ovr_id as Ficha, tipoevento_id, t.nome, motivo FROM ovr_eventos e
+    inner join ovr_tiposevento t on e.tipoevento_id = t.id  where ovr_id in (%s)
+    ORDER BY ovr_id;'''
+# Tipos de Evento : 36 Em análise da Fiscalização
+#                    7 Aguardando quantificação do Recinto
+#                   21 Termo de Guarda informado
+#                   36 Em análise da Fiscalização
+#                   8 Recebimento de quantificação do Recinto
+#
+df_eventos = pd.read_sql(SQL_EVENTOS % lista_ovr, engine)
+
+SQL_PROCESSOS = \
+    '''SELECT ovr_id, numero, tipoprocesso_id, tipoProcesso, create_date FROM ovr_processos p
+    inner join Enumerado e on e.id = p.tipoprocesso_id where ovr_id in (%s)
+    ORDER BY ovr_id;'''
+
+df_processos = pd.read_sql(SQL_PROCESSOS % lista_ovr, engine)
+
