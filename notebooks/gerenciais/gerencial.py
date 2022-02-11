@@ -98,12 +98,13 @@ def FigNCMPorAno():
 #### Fichas
 
 SQL_Fichas_Tempos = \
-    '''SELECT year(ficha.create_date) as Ano, month(ficha.create_date) as Mês, e.fase as Estágio,
+    '''SELECT year(ficha.create_date) as Ano, month(ficha.create_date) as Mês, r.nome as Recinto, e.fase as Estágio,
      ficha.id as Ficha, ficha.create_date as create_date, 
      min(ev.create_date) as data_evento_inicial, max(ev.create_date) as data_evento_ultimo
       FROM ovr_ovrs ficha
      inner join ovr_eventos ev on ev.ovr_id = ficha.id
      inner join Enumerado e on e.id = ficha.fase
+     inner join ovr_recintos r on r.id = ficha.recinto_id
      where ficha.setor_id in (1, 2)
      group by Ano, Mês, Ficha
      order by Ano, Mês;'''
@@ -155,13 +156,14 @@ SQL_TGs_OUTLET = \
      order by Ano, Mês;'''
 
 SQL_Fichas_Outlet_Tempos = \
-    '''SELECT year(ficha.create_date) as Ano, month(ficha.create_date) as Mês, e.fase as Estágio,
+    '''SELECT year(ficha.create_date) as Ano, month(ficha.create_date) as Mês, r.nome as Recinto, e.fase as Estágio,
      ficha.id as Ficha, ficha.create_date as create_date, 
      min(ev.create_date) as data_evento_inicial, max(ev.create_date) as data_evento_ultimo
       FROM ovr_ovrs ficha
      inner join ovr_eventos ev on ev.ovr_id = ficha.id
      inner join ovr_flags_ovr flags on flags.rvf_id = ficha.id
      inner join Enumerado e on e.id = ficha.fase
+     inner join ovr_recintos r on r.id = ficha.recinto_id
      where flags.flag_id = 9
      group by Ano, Mês, Ficha
      order by Ano, Mês;'''
@@ -237,3 +239,17 @@ for tipoevento_id, descricao in tipos_eventos.items():
             ('Ficha', 'tipoevento_id'))[['Ficha', 'create_date']].set_index('Ficha')
     )
     df_pendente_outlet = df_pendente_outlet.rename(columns={'create_date': descricao}).fillna('Sem evento')
+
+df_autos_recinto = df_fichas_tempos[df_fichas_tempos['Estágio'] == 'Concluída']. \
+    groupby('Recinto').agg(
+    qtde=pd.NamedAgg(column='Ficha', aggfunc='count'),
+    duracao_media=pd.NamedAgg(column='Duracao', aggfunc='mean')
+).reset_index()
+df_autos_recinto.duracao_media = df_autos_recinto.duracao_media.astype(int)
+
+df_autos_recinto_outlet = df_fichas_outlet_tempos[df_fichas_outlet_tempos['Estágio'] == 'Concluída']. \
+    groupby('Recinto').agg(
+    qtde=pd.NamedAgg(column='Ficha', aggfunc='count'),
+    duracao_media=pd.NamedAgg(column='Duracao', aggfunc='mean')
+).reset_index()
+df_autos_recinto_outlet.duracao_media = df_autos_recinto_outlet.duracao_media.astype(int)
