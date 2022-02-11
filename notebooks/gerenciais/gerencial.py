@@ -221,6 +221,7 @@ df_processos = pd.read_sql(SQL_PROCESSOS % lista_ovr, engine)
 #                    7 Aguardando quantificação do Recinto
 #                   21 Termo de Guarda informado
 #                   8 Recebimento de quantificação do Recinto
+df_pendente_outlet = df_pendente_outlet.set_index('Ficha')
 df_pendente_outlet = df_pendente_outlet.join(
     df_eventos[df_eventos.tipoevento_id == 36].drop_duplicates(
         ('Ficha', 'tipoevento_id'))[['Ficha', 'motivo']].set_index('Ficha')
@@ -229,7 +230,6 @@ df_pendente_outlet = df_pendente_outlet.rename(columns={'motivo': 'Parecer'}).fi
 tipos_eventos = {36: 'Análise',
                  7: 'TG solicitado',
                  21: 'TG recebido'}
-df_pendente_outlet.set_index('Ficha')
 for tipoevento_id, descricao in tipos_eventos.items():
     df_pendente_outlet = df_pendente_outlet.join(
         df_eventos[df_eventos.tipoevento_id == tipoevento_id].drop_duplicates(
