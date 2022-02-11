@@ -6,7 +6,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
-WIDTH = 1000
+WIDTH = 1100
 pd.options.display.float_format = 'R$ {:,.2f}'.format
 
 caminho_commons = os.path.join('../..', '..', 'ajna_docs', 'commons')

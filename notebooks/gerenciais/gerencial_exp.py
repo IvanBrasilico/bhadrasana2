@@ -81,6 +81,7 @@ df_apreensoes_sum = df_apreensoes.groupby(['Ano', 'Mês']).agg(
 def FigTotalApreensaoPorAno():
     fig = px.bar(df_apreensoes_ano_sum, x='Ano', y='qtde', text='peso',
                  title='Soma dos pesos de apreensões')
+    fig.update_layout(width=WIDTH)
     fig.show()
     fig = px.bar(df_apreensoes, x='Ano', y='Peso', text='Ficha', barmode='group', text_auto=True,
                  title='Pesos de apreensões empilhados')
