@@ -6,7 +6,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
-WIDTH=1000
+WIDTH = 1000
 pd.options.display.float_format = 'R$ {:,.2f}'.format
 
 caminho_commons = os.path.join('../..', '..', 'ajna_docs', 'commons')
@@ -60,11 +60,11 @@ df_ncm = pd.read_sql(SQL_TGs_NCM, engine)
 def FigTotalTGPorAno():
     fig = px.bar(df_ano_sum, x='Ano', y='valor', text='qtde',
                  title='Soma do valor de TG')
-    fig.update_layout(WIDTH=1200)
+    fig.update_layout(width=WIDTH)
     fig.show()
     fig = px.bar(df_detalhe, x='Ano', y='ValorTG', text='Ficha', barmode='group', text_auto=True,
                  title='Valores de TG empilhados')
-    fig.update_layout(WIDTH=1200)
+    fig.update_layout(width=WIDTH)
     fig.show()
 
 
@@ -78,7 +78,7 @@ def FigTotalTGPorAnoMes():
         data.append(bar)
     fig = go.Figure(data=data)
     fig.update_layout(title='Valor Total de TG por ano e mês')
-    fig.update_layout(WIDTH=1200)
+    fig.update_layout(width=WIDTH)
     fig.show()
     print(df_sum.pivot(index='Ano', columns='Mês', values='ValorTG').fillna(0.))
 
@@ -90,7 +90,7 @@ def FigNCMPorAno():
     df_ncm_10_mais = pd.concat(lista)
     fig = px.bar(df_ncm_10_mais, x="Ano", y="Valor", color="NCM", text_auto=True,
                  title="Soma valor perdimento por posição NCM do Item TG - 10 maiores por ano")
-    fig.update_layout(WIDTH=1200)
+    fig.update_layout(width=WIDTH)
     fig.show()
     print(df_ncm_10_mais.pivot(index='NCM', columns='Ano', values='Valor').fillna(0.))
 
@@ -119,7 +119,7 @@ def FigFichasTempoTotal(df_=df_fichas_tempos):
     fig = px.pie(df_fichas_estagio, names='Estágio', values='Ficha',
                  title='Quantidade de Fichas por Estágio atual')
     fig.update_traces(textposition='inside', textinfo='percent+label+value')
-    fig.update_layout(WIDTH=1200)
+    fig.update_layout(width=WIDTH)
     fig.show()
 
 
@@ -129,7 +129,7 @@ def FigFichasEstagio(df_=df_fichas_tempos):
                  x='AnoMes', y='Ficha', color='Estágio',
                  title='Quantidade de Fichas por Estágio atual iniciadas no mês')
     fig.update_xaxes(categoryorder='category ascending')
-    fig.update_layout(WIDTH=1200)
+    fig.update_layout(width=WIDTH)
     fig.show()
 
 
@@ -139,7 +139,7 @@ def FigFichasTemposMedia(df_=df_fichas_tempos):
                   x='AnoMes', y='Duracao', color='Estágio',
                   title='Tempo médio de Fichas iniciadas no mês, até a conclusão ou arquivamento')
     fig.update_xaxes(categoryorder='category ascending')
-    fig.update_layout(WIDTH=1200)
+    fig.update_layout(width=WIDTH)
     fig.show()
 
 
@@ -180,11 +180,11 @@ df_fichas_outlet_tempos['AnoMes'] = df_fichas_outlet_tempos.apply(AnoMes, axis=1
 def FigTotalTGOutlet():
     fig = px.bar(df_tgs_outlet_sum, x='AnoMes', y='valor', text='qtde',
                  title='Soma do valor de TG')
-    fig.update_layout(WIDTH=1200)
+    fig.update_layout(width=WIDTH)
     fig.show()
     fig = px.bar(df_tgs_outlet, x='AnoMes', y='ValorTG', text='Ficha', barmode='group', text_auto=True,
                  title='Valores de TG empilhados')
-    fig.update_layout(WIDTH=1200)
+    fig.update_layout(width=WIDTH)
     fig.show()
 
 
