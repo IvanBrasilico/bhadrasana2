@@ -204,11 +204,10 @@ df_pendente_outlet['Dias sem conclusão'] = \
 lista_ovr = ', '.join([str(i) for i in df_pendente_outlet.Ficha.values])
 
 SQL_EVENTOS = \
-    '''SELECT ovr_id as Ficha, tipoevento_id, t.nome, create_date, motivo FROM ovr_eventos e
+    '''SELECT ovr_id as Ficha, tipoevento_id, t.nome, e.create_date, motivo FROM ovr_eventos e
     inner join ovr_tiposevento t on e.tipoevento_id = t.id  where ovr_id in (%s)
     ORDER BY ovr_id;'''
 
-lista_ovr = ', '.join([str(i) for i in df_pendente_outlet.Ficha.values])
 df_eventos = pd.read_sql(SQL_EVENTOS % lista_ovr, engine)
 
 SQL_PROCESSOS = \
@@ -221,16 +220,12 @@ df_processos = pd.read_sql(SQL_PROCESSOS % lista_ovr, engine)
 # Tipos de Evento : 36 Em análise da Fiscalização
 #                    7 Aguardando quantificação do Recinto
 #                   21 Termo de Guarda informado
-#                   36 Em análise da Fiscalização
 #                   8 Recebimento de quantificação do Recinto
-
-
 df_pendente_outlet = df_pendente_outlet.join(
     df_eventos[df_eventos.tipoevento_id == 36].drop_duplicates(
         ('Ficha', 'tipoevento_id'))[['Ficha', 'motivo']].set_index('Ficha')
 )
 df_pendente_outlet = df_pendente_outlet.rename(columns={'motivo': 'Parecer'}).fillna('--')
-
 tipos_eventos = {36: 'Análise',
                  7: 'TG solicitado',
                  21: 'TG recebido'}
@@ -241,4 +236,3 @@ for tipoevento_id, descricao in tipos_eventos.items():
             ('Ficha', 'tipoevento_id'))[['Ficha', 'create_date']].set_index('Ficha')
     )
     df_pendente_outlet = df_pendente_outlet.rename(columns={'create_date': descricao}).fillna('Sem evento')
-df_pendente_outlet
