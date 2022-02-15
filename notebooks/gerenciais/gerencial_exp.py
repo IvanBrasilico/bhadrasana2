@@ -23,7 +23,7 @@ df_fichas_tempos['AnoMes'] = df_fichas_tempos.apply(AnoMes, axis=1)
 
 SQL_APREENSOES = \
     '''
-    SELECT year(ovr.datahora) as Ano, month(ovr.datahora) as Mês,
+    SELECT year(rvf.datahora) as Ano, month(rvf.datahora) as Mês,
       ovr.id as Ficha, rvf.id as RVF, rvf.descricao as relato,
       a.id as Apreensao, a.descricao, t.descricao, a.peso as Peso
       FROM ovr_ovrs ovr
@@ -79,6 +79,7 @@ df_apreensoes_sum = df_apreensoes.groupby(['Ano', 'Mês']).agg(
 
 
 def FigTotalApreensaoPorAno():
+    df_apreensoes_ano_sum.peso = df_apreensoes_ano_sum.peso.astype(int)
     fig = px.bar(df_apreensoes_ano_sum, x='Ano', y='qtde', text='peso',
                  title='Soma dos pesos de apreensões')
     fig.update_layout(width=WIDTH)
