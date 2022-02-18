@@ -84,7 +84,7 @@ def risco_app(app):
                 # print(lista)
                 if lista and len(lista) > 0:
                     _id = lista[0]['_id']
-            linha['_id'] = _id
+            linha['Imagem'] = _id
             lista_risco_nova.append(linha)
         return lista_risco_nova
 

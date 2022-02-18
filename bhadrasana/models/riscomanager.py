@@ -256,6 +256,9 @@ def exclui_riscos(session):
 def le_csv(filename):
     df = pd.read_csv(filename, sep=';',
                      header=5)
+    print(df.columns)
+    df['identificacaoNCM'] = df['identificacaoNCM'].astype(str)
+    df = df.groupby(list(df.columns)[:-1])['identificacaoNCM'].apply(', '.join).reset_index()
     with open(filename, 'r') as in_file:
         for i in range(5):
             linha = in_file.readline()
