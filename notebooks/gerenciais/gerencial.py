@@ -253,3 +253,39 @@ df_autos_recinto_outlet = df_fichas_outlet_tempos[df_fichas_outlet_tempos['Está
     duracao_media=pd.NamedAgg(column='Duracao', aggfunc='mean')
 ).reset_index()
 df_autos_recinto_outlet.duracao_media = df_autos_recinto_outlet.duracao_media.astype(int)
+
+########## EQPEM
+
+SQL_INSPECOES = '''SELECT year(ev.create_date) as Ano, month(ev.create_date) as Mês, tipo.nome as Tipo,
+count(ev.id) as Qtde
+FROM ovr_eventos ev
+INNER JOIN ovr_tiposevento tipo ON ev.tipoevento_id = tipo.id
+INNER JOIN ovr_ovrs ficha ON ev.ovr_id = ficha.id
+WHERE ev.tipoevento_id in (14, 22, 40) and ficha.setor_id in (1, 2, 3)
+GROUP BY year(ev.create_date), month(ev.create_date), tipo.nome
+UNION ALL
+SELECT year(ficha.create_date) as Ano, month(ficha.create_date) as Mês, 'Abertura de Ficha' as Tipo,
+count(ficha.id) as Qtde
+FROM ovr_ovrs ficha 
+WHERE ficha.setor_id in (1, 2, 3)
+GROUP BY year(ficha.create_date), month(ficha.create_date)
+order by Ano, Mês, Tipo;
+ '''
+
+df_inspecoes = pd.read_sql(SQL_INSPECOES, engine)
+df_inspecoes['AnoMes'] = df_inspecoes.apply(AnoMes, axis=1)
+
+
+def FigTotalInspecoes(df=df_inspecoes):
+    order_dict = {'Abertura de Ficha': 0,
+                  'Inspeção não Invasiva': 1,
+                  'Verificação física informada': 2,
+                  'Encerramento com resultado': 3}
+
+    df.sort_values(['Tipo'], key=lambda x: x.map(order_dict), inplace=True)
+    fig = px.bar(df,
+                 x='AnoMes', y='Qtde', color='Tipo',
+                 title='Quantidade de Seleções/Inspeções/RVFs por mês')
+    fig.update_layout(barmode='group')
+    fig.update_xaxes(categoryorder='category ascending')
+    fig.show()
