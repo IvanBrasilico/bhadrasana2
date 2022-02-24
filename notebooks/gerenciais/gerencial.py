@@ -88,6 +88,7 @@ def FigNCMPorAno():
     for ano in df_ncm.Ano.unique():
         lista.append(df_ncm[df_ncm.Ano == ano].head(10))
     df_ncm_10_mais = pd.concat(lista)
+    df_ncm_10_mais.sort_values(["NCM"], inplace=True)
     fig = px.bar(df_ncm_10_mais, x="Ano", y="Valor", color="NCM", text_auto=True,
                  title="Soma valor perdimento por posição NCM do Item TG - 10 maiores por ano")
     fig.update_layout(width=WIDTH)
