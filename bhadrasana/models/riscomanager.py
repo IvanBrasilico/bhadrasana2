@@ -78,7 +78,8 @@ def container_recinto(session, recinto: int, datainicio: datetime, datafim: date
 
 def mercanterisco(session, pfiltros: dict, limit=1000, operador_ou=False):
     keys = ['numeroCEmercante', 'descricao', 'embarcador', 'portoDestFinal',
-            'consignatario', 'portoOrigemCarga', 'codigoConteiner', 'identificacaoNCM']
+            'consignatario', 'portoOrigemCarga']
+    keys_ncm = ['codigoConteiner', 'identificacaoNCM']
     if operador_ou:
         operador = or_
     else:
@@ -95,15 +96,16 @@ def mercanterisco(session, pfiltros: dict, limit=1000, operador_ou=False):
         lista = pfiltros.get(key)
         if lista is not None:
             filtro = or_(
-                *[and_(getattr(Conhecimento, key).like(porto + '%')) for porto in lista]
+                *[and_(getattr(Conhecimento, key).like(valor + '%')) for valor in lista]
             )
             filtros = operador(filtros, filtro)
-    if pfiltros.get('ncm'):
-        filtro = or_(
-            *[and_(NCMItem.identificacaoNCM.like(ncm + '%'))
-              for ncm in pfiltros.get('ncm')]
-        )
-        filtros = operador(filtros, filtro)
+    for key in keys_ncm:
+        lista = pfiltros.get(key)
+        if lista is not None:
+            filtro = or_(
+                *[and_(getattr(NCMItem, key).like(valor + '%')) for valor in lista]
+            )
+            filtros = operador(filtros, filtro)
     if pfiltros.get('recinto'):
         conteineres_gmcis = []
         for recinto in pfiltros.get('recinto'):
@@ -131,12 +133,14 @@ def mercanterisco(session, pfiltros: dict, limit=1000, operador_ou=False):
     result = []
     for rowproxy in resultproxy:
         row_dict = OrderedDict()
-        for key in keys:
+        for key in (*keys, *keys_ncm):
             for column, value in rowproxy.items():
                 if key in column:
                     row_dict[key] = value
                     break
         result.append(row_dict)
+    print('******************')
+    print(result)
     return result, str_filtros
 
 
@@ -259,6 +263,7 @@ def le_csv(filename):
     print(df.columns)
     df['identificacaoNCM'] = df['identificacaoNCM'].astype(str)
     df = df.groupby(list(df.columns)[:-1])['identificacaoNCM'].apply(', '.join).reset_index()
+    # df = df.loc[df['identificacaoNCM'].str.len() > 4]
     with open(filename, 'r') as in_file:
         for i in range(5):
             linha = in_file.readline()

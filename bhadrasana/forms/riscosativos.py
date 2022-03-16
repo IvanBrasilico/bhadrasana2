@@ -17,7 +17,7 @@ class RiscosAtivosForm(RiscosForm):
                                  default=0)
     portoOrigemCarga = BooleanField(u'Porto de Origem',
                                     default=0)
-    ncm = BooleanField(u'NCM',
+    identificacaoNCM = BooleanField(u'NCM',
                        default=0)
     codigoConteiner = BooleanField(u'NCM',
                                    default=0)

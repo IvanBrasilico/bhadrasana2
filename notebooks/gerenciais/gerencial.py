@@ -290,3 +290,29 @@ def FigTotalInspecoes(df=df_inspecoes):
     fig.update_layout(barmode='group')
     fig.update_xaxes(categoryorder='category ascending')
     fig.show()
+
+
+SQL_RAMENTA = \
+    '''SELECT year(ovr.create_date) as Ano, month(ovr.create_date) as Mês, ovr.id as Ficha,
+    count(i.codigoConteiner) as QtdeContêiner, re.valor as ValorMultas
+      FROM ovr_ovrs ovr
+     inner join ovr_flags_ovr flags on flags.rvf_id = ovr.id
+     left join itensresumo i on i.numeroCEmercante = ovr.numeroCEmercante
+     left join ovr_resultados re on ovr.id = re.ovr_id
+     where flags.flag_id = 2438
+     group by Ano, Mês, Ficha
+     order by Ano, Mês, Ficha;'''
+
+
+def FigRamenta():
+    df_ramenta = pd.read_sql(SQL_RAMENTA, engine)
+    df_ramenta['Ano'] = df_ramenta['Ano'].astype(str)
+    df_ramenta['Mês'] = df_ramenta['Ano'].astype(str)
+    df_ramenta['Ficha'] = df_ramenta['Ficha'].astype(str)
+    df_ramenta.loc['Total'] = df_ramenta.sum(numeric_only=True)
+    df_ramenta['QtdeContêiner'] = df_ramenta['QtdeContêiner'].astype(int)
+    df_ramenta = df_ramenta.fillna('-')
+    print(df_ramenta)
+
+
+

@@ -105,3 +105,37 @@ def FigTotalApreensaoPorAnoMes():
     fig.show()
     print(df_apreensoes_sum.pivot(index='Ano', columns='Mês', values='peso').fillna(0.))
     print(df_apreensoes_sum.pivot(index='Ano', columns='Mês', values='qtde').fillna(0.))
+
+#### Tempos de demora de inspeção
+
+SQL_RVFS = '''
+select id, year(datahora) as Ano, month(datahora) as Mês, create_date, datahora
+from ovr_verificacoesfisicas 
+where datahora is not null and create_date != '0'
+'''
+
+df_rvfs_datas = pd.read_sql(SQL_RVFS, engine)
+df_rvfs_datas['dias'] = df_rvfs_datas.apply(lambda row: (row['datahora'] - row['create_date']).days + 1, axis=1)
+df_rvfs_datas['AnoMes'] = df_rvfs_datas.apply(AnoMes, axis=1)
+
+def FigDemoraInspecao():
+    # Abaixo, tempo entre a programação da RVF e a realização de Inspeção não invasiva
+    df_rvfs_datas_p = df_rvfs_datas.loc[df_rvfs_datas.dias >= 0]
+    dfp = df_rvfs_datas_p.groupby(['AnoMes']).dias.mean().reset_index()
+    fig = px.bar(dfp, x='AnoMes', y='dias', title='Média de dias: tempo entre agendamento/não invasiva e verificação')
+    fig.show()
+
+
+def FigDemoraCadastramento():
+    # Casos em que há uma demora no cadastramento, isto é, data de cadastramento é maior que a data da verificação
+    df_rvfs_datas_n = df_rvfs_datas.loc[df_rvfs_datas.dias < 0]
+    # Corrigir aqueles que foram carregados automaticamente (importação da planilha EQCOM)
+    limite_inferior = df_rvfs_datas_n['dias'].quantile(0.50)
+    df_rvfs_datas_n.loc[df_rvfs_datas_n['dias'] < limite_inferior, 'dias'] = limite_inferior
+    dfn = df_rvfs_datas_n.groupby(['AnoMes']).dias.mean().reset_index()
+    dfn = df_rvfs_datas_n.groupby(['AnoMes']).agg(
+        dias=pd.NamedAgg(column='dias', aggfunc='mean'),
+        qtde=pd.NamedAgg(column='dias', aggfunc='count')).reset_index()
+    fig = px.bar(dfn, x='AnoMes', y='dias', text='qtde',
+                 title='Média de dias: demora entre verificação e registro')
+    fig.show()
