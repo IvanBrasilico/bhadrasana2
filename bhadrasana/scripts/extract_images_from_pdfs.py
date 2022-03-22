@@ -2,7 +2,7 @@ import os
 
 import fitz
 
-caminho = r'C:\Users\25052288840\Downloads\DERLI'
+caminho = r'C:\Users\25052288840\Downloads\pdfs'
 
 filelist = os.listdir(caminho)
 for file in filelist:
