@@ -1,8 +1,26 @@
+import locale
+import os
+import sys
+
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+from pymongo import MongoClient
 
 from gerencial import engine, AnoMes, WIDTH
+
+caminho_commons = os.path.join('../..', '..', 'ajna_docs', 'commons')
+caminho_virasana = os.path.join('../..', '..', 'ajna_docs', 'virasana')
+sys.path.append('../..')
+sys.path.append(caminho_commons)
+sys.path.append(caminho_virasana)
+
+from ajna_commons.flask.conf import DATABASE, MONGODB_URI
+
+locale.setlocale(locale.LC_ALL, 'pt_BR')
+
+conn = MongoClient(host=MONGODB_URI)
+mongodb = conn[DATABASE]
 
 pd.options.display.float_format = '{:,.2f}'.format
 
@@ -23,13 +41,15 @@ df_fichas_tempos['AnoMes'] = df_fichas_tempos.apply(AnoMes, axis=1)
 
 SQL_APREENSOES = \
     '''
-    SELECT year(rvf.datahora) as Ano, month(rvf.datahora) as Mês,
-      ovr.id as Ficha, rvf.id as RVF, rvf.descricao as relato,
+    SELECT year(rvf.datahora) as Ano, month(rvf.datahora) as Mês, rvf.datahora,
+      r.nome as recinto,
+      ovr.id as Ficha, rvf.id as RVF, rvf.descricao as relato, rvf.numerolote as Conteiner,
       a.id as Apreensao, a.descricao, t.descricao, a.peso as Peso
       FROM ovr_ovrs ovr
      inner join ovr_verificacoesfisicas rvf on rvf.ovr_id = ovr.id
      inner join ovr_apreensoes_rvf a on a.rvf_id = rvf.id
      inner join ovr_tiposapreensao t on t.id = a.tipo_id
+     inner join ovr_recintos r on r.id = ovr.recinto_id
      where ovr.setor_id in (1, 2, 3)
      order by Ano, Mês, Ficha, RVF, Apreensao;'''
 
@@ -64,9 +84,33 @@ def FigFichasTemposMedia(df_=df_fichas_tempos):
     fig.show()
 
 
+def TemAlerta(row):
+    days_ = 1000
+    correto = None
+    conteiner = row['Conteiner']
+    if not conteiner:
+        return False
+    cursor = mongodb['fs.files'].find({'metadata.numeroinformado': conteiner,
+                                       'metadata.contentType': 'image/jpeg'})
+    for line in cursor:
+        metadata = line['metadata']
+        dataescaneamento = metadata['dataescaneamento']
+        days = abs((dataescaneamento - row['datahora']).days)
+        if days < days_:
+            days_ = days
+            correto = metadata
+    if correto:
+        try:
+            return correto['xml']['alerta']
+        except:
+            return False
+
+
 df_apreensoes = pd.read_sql(SQL_APREENSOES, engine)
+maxdatahora = df_apreensoes[~ df_apreensoes.Conteiner.isna()].datahora.max()
+mindatahora = df_apreensoes[~ df_apreensoes.Conteiner.isna()].datahora.min()
 df_apreensoes['AnoMes'] = df_apreensoes.apply(AnoMes, axis=1)
-df_apreensoes['AnoMes'] = df_apreensoes.apply(AnoMes, axis=1)
+df_apreensoes['Alerta'] = df_apreensoes.apply(TemAlerta, axis=1)
 df_apreensoes_ano_sum = df_apreensoes.groupby(['Ano']).agg(
     qtde=pd.NamedAgg(column='Apreensao', aggfunc='count'),
     peso=pd.NamedAgg(column='Peso', aggfunc='sum')).reset_index()
@@ -76,6 +120,53 @@ df_apreensoes_ano_mes_sum = df_apreensoes.groupby(['AnoMes']).agg(
 df_apreensoes_sum = df_apreensoes.groupby(['Ano', 'Mês']).agg(
     qtde=pd.NamedAgg(column='Apreensao', aggfunc='count'),
     peso=pd.NamedAgg(column='Peso', aggfunc='sum')).reset_index()
+
+
+def EstatisticasAlertas():
+    total_apreensoes_conteiner = (~ df_apreensoes.Conteiner.isna()).sum()
+    total_apreensoes_alerta = df_apreensoes.Alerta.sum()
+    total_imagens = mongodb['fs.files'].count_documents({
+        'metadata.contentType': 'image/jpeg',
+        'metadata.dataescaneamento': {'$gte': mindatahora, '$lt': maxdatahora}}
+    )
+    total_imagens_alerta = mongodb['fs.files'].count_documents({
+        'metadata.contentType': 'image/jpeg',
+        'metadata.dataescaneamento': {'$gte': mindatahora, '$lt': maxdatahora},
+        'metadata.xml.alerta': True}
+    )
+    print(f'Estatísticas para alertas entre {mindatahora:%d/%m/%Y} e {maxdatahora:%d/%m/%Y}.\n')
+    percent_alerta = int((total_imagens_alerta / total_imagens) * 10_000) / 100
+    print(f'Imagens: \t\t{total_imagens:n} \t{total_imagens_alerta:n} com alerta ({percent_alerta:n}%)')
+    percent_apreensoes_alerta = int((total_apreensoes_alerta / total_apreensoes_conteiner) * 10_000) / 100
+    print(
+        f'Apreensões: \t\t{total_apreensoes_conteiner:n} \t\t{total_apreensoes_alerta:n} com alerta ({percent_apreensoes_alerta:n}%)')
+    precisao_alerta = int((total_apreensoes_alerta / total_imagens_alerta) * 10_000) / 100
+    print(f'Precisão Alertas: \t{total_imagens_alerta:n} / \t{total_apreensoes_alerta:n} ({precisao_alerta:n}%)')
+
+
+def AlertasporTerminal():
+    cursor = mongodb['fs.files'].aggregate([
+        {'$match': {'metadata.contentType': 'image/jpeg',
+                    'metadata.dataescaneamento': {'$gte': mindatahora, '$lt': maxdatahora},
+                    'metadata.xml.alerta': True}},
+        {'$group': {'_id': '$metadata.recinto', 'alertas': {'$sum': 1}}}
+    ])
+    recintos_alertas = dict()
+    for row in cursor:
+        recintos_alertas[row['_id']] = {'alertas': row['alertas']}
+    cursor = mongodb['fs.files'].aggregate([
+        {'$match': {'metadata.contentType': 'image/jpeg',
+                    'metadata.dataescaneamento': {'$gte': mindatahora, '$lt': maxdatahora}}},
+        {'$group': {'_id': '$metadata.recinto', 'imagens': {'$sum': 1}}}
+    ])
+    for row in cursor:
+        try:
+            recintos_alertas[row['_id']].update({'imagens': row['imagens']})
+        except:
+            recintos_alertas[row['_id']] = {'imagens': row['imagens'], 'alertas': 0}
+    df_alertas = pd.DataFrame.from_dict(recintos_alertas, orient='index')
+    df_alertas['ratio'] = df_alertas.alertas / df_alertas.imagens
+    return df_alertas
 
 
 def FigTotalApreensaoPorAno():
@@ -106,6 +197,7 @@ def FigTotalApreensaoPorAnoMes():
     print(df_apreensoes_sum.pivot(index='Ano', columns='Mês', values='peso').fillna(0.))
     print(df_apreensoes_sum.pivot(index='Ano', columns='Mês', values='qtde').fillna(0.))
 
+
 #### Tempos de demora de inspeção
 
 SQL_RVFS = '''
@@ -117,6 +209,7 @@ where datahora is not null and create_date != '0'
 df_rvfs_datas = pd.read_sql(SQL_RVFS, engine)
 df_rvfs_datas['dias'] = df_rvfs_datas.apply(lambda row: (row['datahora'] - row['create_date']).days + 1, axis=1)
 df_rvfs_datas['AnoMes'] = df_rvfs_datas.apply(AnoMes, axis=1)
+
 
 def FigDemoraInspecao():
     # Abaixo, tempo entre a programação da RVF e a realização de Inspeção não invasiva

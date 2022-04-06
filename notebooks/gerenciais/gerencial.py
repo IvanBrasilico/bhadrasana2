@@ -15,6 +15,8 @@ sys.path.append(caminho_commons)
 sys.path.append('../..')
 sys.path.append(caminho_virasana)
 
+from ajna_commons.flask.conf import DATABASE, MONGODB_URI
+
 from bhadrasana.models import engine
 
 
