@@ -234,7 +234,8 @@ df_pendente_outlet = df_pendente_outlet.join(
 )
 df_pendente_outlet = df_pendente_outlet.rename(columns={'motivo': 'Parecer'}).fillna('--')
 tipos_eventos = {36: 'Análise',
-                 7: 'TG solicitado',
+                 7: 'Saneamento solicitado',
+                 8: 'Saneamento recebido',
                  21: 'TG recebido'}
 for tipoevento_id, descricao in tipos_eventos.items():
     df_pendente_outlet = df_pendente_outlet.join(

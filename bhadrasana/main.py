@@ -31,7 +31,9 @@ from bhadrasana.routes.ovr import ovr_app
 from bhadrasana.routes.ovr2 import ovr2_app
 from bhadrasana.routes.risco import risco_app
 from bhadrasana.routes.rvf import rvf_app
+from bhadrasana.routes.assistentetg import assistentetg_app
 from bhadrasana.views import configure_app
+
 
 # print('****************************')
 # print(MONGODB_URI)
@@ -48,6 +50,7 @@ rvf_app(app)
 ovr_app(app)
 ovr2_app(app)
 admin_app(app, db_session)
+assistentetg_app(app)
 
 
 class ForceHttpsRedirects:

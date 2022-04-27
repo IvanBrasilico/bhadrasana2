@@ -1,0 +1,74 @@
+{% extends "layout.html" %} {% block content %} {{super()}}
+<div id="main" class="container-fluid">
+    <div id="top" class="row col-sm-12">
+        <div class="form-group">
+            <form method="POST" id="filtrodescricao" action="assistente_tg">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <label for="descricao">Descrição do item</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <div class="col-sm-8">
+                            {{ oform.descricao(class='form-control') }}
+                        </div>
+                        <div class="col-sm-2">
+                            <button class="btn btn-default btn-info form-control" onclick="submit">
+                                Pesquisar
+                            </button>
+                        </div>
+                        <div class="col-sm-2">
+                            <button id="btn_importar" type="button" class="btn btn-primary form-control"
+                                    data-toggle="modal" data-target="#importa_saneamento">Importa saneamento
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <h2>Resultados</h2>
+    </div>
+    <div class="row col-sm-12">
+        {% include 'divsugestoestg.html' %}
+    </div>
+    <div id="bottom" class="row col-sm-12">
+        AJNA - Receita Federal do Brasil 2017
+    </div>
+        <div class="modal fade" id="importa_saneamento" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title" id="ModalLabel">Sugestões para planilha de saneamento</h1>
+                    Planilha de saneamento deve conter os campos "item", "descrição", "quantidade" e "unidade"
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="assistente_tg_planilha" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <input type="hidden" name="active_tab" value="{{active_tab}}">
+                        <label class="btn btn-default btn-choose" for="planilha">
+                            <input id="planilha" name="planilha" type="file" style="display:none"
+                                   onchange="$('#upload-file-info').html(this.files[0].name)"> Escolha a planilha (xls)
+                        </label>
+                        <big>
+                            <span class='label label-success' id="upload-file-info"></span>
+                        </big>
+                        &nbsp;
+                        <input class="btn btn-primary" type="submit" value="Enviar Planilha"/>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %} {% block scripts %} {{super()}}
+
+{% endblock %}

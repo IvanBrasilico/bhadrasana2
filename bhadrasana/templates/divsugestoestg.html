@@ -1,0 +1,29 @@
+<div class="table table-responsive col-sm-10">
+    <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive">
+        <thead>
+        <tr>
+            <td>NCM</td>
+            <td>Descrição</td>
+            <td>Unidade Medida</td>
+            <td>Valor</td>
+        </tr>
+        </thead>
+        {% for resultado in resultados %}
+        <tr>
+            <td width="100" style="text-align:left">
+                {{ resultado.ncm }}
+            </td>
+            <td width="300" style="text-align:left">
+                {{ resultado.descricao }}
+            </td>
+            <td width="100" style="text-align:right">
+                {{ resultado.get_unidade }}
+            </td>
+            <td width="100" style="text-align:right">
+                {{ resultado.valor }}
+            </td>
+
+        </tr>
+        {% endfor %}
+    </table>
+</div>
