@@ -381,6 +381,8 @@ def get_ovr_filtro(session,
             filtro = and_(OVR.numero.like(pfiltro.get('numero') + '%'), filtro)
         if pfiltro.get('observacoes'):
             # PEsquisa em observacoes, mas também em descrição da RVF e campos mercante e contêiner
+            # Busca por campo observações, número da declaração e número do CE Mercante na Ficha
+            # e número do Contêiner, número do CE Mercante e descrição na RVF.
             busca = '%' + pfiltro.get('observacoes').strip() + '%'
             filtro = and_(
                 or_(OVR.observacoes.like(busca),
