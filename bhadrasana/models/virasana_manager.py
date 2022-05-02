@@ -6,7 +6,7 @@ import requests
 
 from ajna_commons.flask.log import logger
 from ajna_commons.utils.sanitiza import mongo_sanitizar
-from bhadrasana.models.laudo import get_empresa, get_sats_cnpj
+from bhadrasana.models.laudo import get_empresa, get_sats_cnpj, get_pessoa
 from virasana.integracao.mercante.mercantealchemy import Item, Conhecimento, NCMItem
 
 VIRASANA_URL = 'https://localhost/virasana/'
@@ -194,7 +194,11 @@ def get_detalhe_conhecimento(session, numeroCEmercante: str) -> dict:
     if conhecimento:
         cnpj = conhecimento.consignatario
         if cnpj:
-            empresa = get_empresa(session, cnpj)
+            empresa = None
+            if len(cnpj) == 11:
+                empresa = get_pessoa(session, cnpj)
+            if not empresa:
+                empresa = get_empresa(session, cnpj)
             sats = get_sats_cnpj(session, cnpj)
             linha['empresa'] = empresa
             linha['sats'] = sats

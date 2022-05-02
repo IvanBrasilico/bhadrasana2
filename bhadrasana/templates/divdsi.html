@@ -1,0 +1,30 @@
+<div id="list_dsu" class="row col-sm-12">
+    &nbsp;<br>
+    <div class="table">
+        <table class="inlineTable table table-bordered table-hover table-responsive"
+               id="ovr_table">
+            <thead>
+            <tr>
+                <th>DSI Nº</th>
+                <th>Data Registro</th>
+                <th>Consignatario</th>
+                <th>Despachante</th>
+                <th>CE Mercante</th>
+                <th>Descrição</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for dsi in dsis %}
+            <tr>
+                <td>{{ dsi.numero }}</td>
+                <td>{{ dsi.data_registro }}</td>
+                <td>{{ dsi.consignatario }}</td>
+                <td>{{ dsi.despachante }}</td>
+                <td>{{ dsi.numeroCEmercante }}</td>
+                <td>{{ dsi.descricao }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

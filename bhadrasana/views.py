@@ -364,6 +364,7 @@ def mynavbar():
                  View('Pesquisa CE Mercante', 'consulta_ce'),
                  View('Pesquisa DUE', 'consulta_due'),
                  View('Pesquisa Empresa', 'consulta_empresa'),
+                 View('Pesquisa Pessoa', 'consulta_pessoa'),
                  View('Pesquisa Verificações físicas', 'pesquisa_rvf'),
                  Separator(),
                  View('Relatórios', 'ver_relatorios'),

@@ -1,0 +1,140 @@
+{% extends "layout.html" %} {% block content %} {{super()}}
+<div id="main" class="container-fluid">
+    <div id="top" class="row col-sm-12">
+        <h3>Preencha o nome e deixe CPF em branco para consultar uma lista de pessoas por nome</h3>
+        <h4>Preencha CPF e datas para busca mais exata</h4>
+        <div class="form-group">
+            <form method="POST" id="filtropessoa" action="consulta_pessoa">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <label for="nome">Nome</label>
+                    </div>
+                    <div class="col-sm-2">
+                        <label for="cnpj">Número do CPF</label>
+                    </div>
+                    <div class="col-sm-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <div class="col-sm-6">
+                            {{ oform.nome(class='form-control') }}
+                        </div>
+                        <div class="col-sm-2">
+                            {{ oform.cpf(class='form-control') }}
+                        </div>
+                        <div class="col-sm-4">
+                        </div>
+                    </div>
+                </div>
+                <div class="row col-sm-12">
+                    &nbsp;<br>
+                    <div class="col-sm-2">
+                        <button class="btn btn-default btn-info form-control" onclick="submit">
+                            Pesquisar
+                        </button>
+                    </div>
+                    <div class="col-sm-2">
+                        <button class="btn btn-default btn-info form-control" onclick="window.open('ovr')">
+                            Nova OVR
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        Alguns resultados são limitados a {{ limit }} linhas por desempenho.
+        &nbsp;<br>
+    </div>
+    <div class="row col-sm-12">
+        <h2>Empresas (limite de 10 resultados)</h2>
+    </div>
+    <div id="list_pessoas" class="row col-sm-12">
+        &nbsp;<br>
+        <div class="table">
+            <h4><u>Clique nos títulos da tabela para ordenar</u></h4>
+            <table class="inlineTable table table-bordered table-hover table-responsive"
+                   id="pessoas_table">
+                <thead>
+                <tr>
+                    <th style="text-align: left">CPF</th>
+                    <th style="text-align: left">Nome</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for pessoa_qtdeovrs in pessoas_qtdeovrs %}
+                <tr>
+                    <td style="text-align: left"><a href="javascript:DoPost('{{pessoa_qtdeovrs.pessoa.cpf}}')">
+                        {{pessoa_qtdeovrs.pessoa.cpf}}
+                        {% if pessoa_qtdeovrs.qtdeovrs > 0 %}({{pessoa_qtdeovrs.qtdeovrs}}){% endif %}
+                    </a></td>
+                    <td style="text-align: left">{{ pessoa_qtdeovrs.pessoa.nome }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="row">
+        &nbsp;<br>
+    </div>
+    <div class="row col-sm-12">
+        <h2>Fichas</h2>
+    </div>
+    {% include 'divovr.html' %}
+    <div class="row col-sm-12">
+        &nbsp;<br>
+    </div>
+    <div class="row col-sm-12">
+        <h2>Conhecimentos de Carga</h2>
+    </div>
+    <div id="list_infoces" class="row col-sm-12">
+        {% for numero, infoce in infoces.items() %}
+        <div class="row col-sm-12">
+            {% include 'divconhecimento.html' %}
+        </div>
+        {% endfor %}
+    </div>
+    <div class="row">
+        &nbsp;<br>
+    </div>
+    <div class="row col-sm-12">
+        <h2>DSIs</h2>
+    </div>
+    {% include 'divdsi.html' %}
+    <div class="row">
+        &nbsp;<br>
+    </div>
+    <div id="bottom" class="row col-sm-12">
+        AJNA - Receita Federal do Brasil 2017
+    </div>
+</div>
+{% endblock %} {% block scripts %} {{super()}}
+<script>
+   function DoPost(ocpf){
+      document.querySelector("#cpf").value=ocpf;
+      $('#filtropessoa').submit();
+   }
+
+
+    $('th').click(function(){
+        var table = $(this).parents('table').eq(0)
+        var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index()))
+        this.asc = !this.asc
+        if (!this.asc){rows = rows.reverse()}
+        for (var i = 0; i < rows.length; i++){table.append(rows[i])}
+    })
+    function comparer(index) {
+        return function(a, b) {
+            var valA = getCellValue(a, index), valB = getCellValue(b, index)
+            return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.toString().localeCompare(valB)
+        }
+    }
+    function getCellValue(row, index){ return $(row).children('td').eq(index).text() }
+
+
+
+</script>
+{% endblock %}

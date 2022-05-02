@@ -73,6 +73,8 @@ class FiltroOVRForm(FlaskForm):
                                    default='')
     numeroprocesso = StringField(u'Número de processo informado na Ficha',
                                  default='')
+    observacoes = StringField(u'Observações',
+                                 default='')
     setor_id = SelectField('Setores')
     responsavel_cpf = SelectField(u'CPF do Responsável Atual', default='')
     cpfauditorresponsavel = SelectField(u'CPF do Auditor designado', default='')

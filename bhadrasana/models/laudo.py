@@ -4,6 +4,7 @@ from typing import List
 
 from sqlalchemy import BigInteger, Column, VARCHAR, Integer, Date
 from sqlalchemy.ext.declarative import declarative_base
+from virasana.integracao.bagagens.viajantesalchemy import Pessoa
 
 from bhadrasana.models import BaseDumpable
 
@@ -96,6 +97,20 @@ def get_empresas_nome(session, nome: str, limit=10) -> List[Empresa]:
         Empresa.nome.like(nome + '%')).limit(limit).all()
     return [empresa for empresa in empresas]
 
+def get_pessoas_nome(session, nome: str, limit=10) -> List[Empresa]:
+    if not nome or len(nome) < 3:
+        raise ValueError('Nome deve ser informado, com mínimo de 3 dígitos.')
+    pessoas = session.query(Pessoa).filter(
+        Pessoa.nome.like('%' + nome + '%')).limit(limit).all()
+    return [pessoa for pessoa in pessoas]
+
+
+def get_pessoa(session, cpf: str) -> Pessoa:
+    """Pesquisa Pessoa por CPF.
+
+    Em caso de falha, retorna None.
+    """
+    return session.query(Pessoa).filter(Pessoa.cpf == cpf).one_or_none()
 
 def get_ncm(session, codigo: str) -> NCM:
     """Retorna NCM com o código passado

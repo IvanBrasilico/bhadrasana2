@@ -4,6 +4,7 @@ from sqlite3 import OperationalError
 
 from gridfs import GridFS
 from sqlalchemy.orm.exc import NoResultFound
+from virasana.integracao.bagagens.viajantesalchemy import DSI
 
 sys.path.append('.')
 sys.path.append('../ajna_docs/commons')
@@ -378,6 +379,19 @@ def get_ovr_filtro(session,
                 filtro)
         if pfiltro.get('numero'):
             filtro = and_(OVR.numero.like(pfiltro.get('numero') + '%'), filtro)
+        if pfiltro.get('observacoes'):
+            # PEsquisa em observacoes, mas também em descrição da RVF e campos mercante e contêiner
+            busca = '%' + pfiltro.get('observacoes').strip() + '%'
+            filtro = and_(
+                or_(OVR.observacoes.like(busca),
+                    OVR.numerodeclaracao.like(busca),
+                    OVR.numeroCEmercante.like(busca),
+                    RVF.numeroCEmercante.like(busca),
+                    RVF.numerolote.like(busca),
+                    RVF.descricao.like(busca)
+                ),
+                filtro)
+            tables.append(RVF)
         if pfiltro.get('numerodeclaracao'):
             filtro = and_(OVR.numerodeclaracao.like(
                 pfiltro.get('numerodeclaracao') + '%'), filtro)
@@ -425,8 +439,8 @@ def get_ovr_filtro(session,
         tables = filtros_ficha.tables
         filtro = filtros_ficha.filtro
         print(tables)
-    logger.info('get_ovr_filtro - pfiltro' + str(pfiltro))
-    logger.info('get_ovr_filtro - filtro' + str(filtro))
+    logger.info('get_ovr_filtro - pfiltro - ' + str(pfiltro))
+    logger.info('get_ovr_filtro - filtro - ' + str(filtro))
     q = session.query(OVR)
     if len(tables) > 0:
         already_in_join = set()
@@ -436,7 +450,7 @@ def get_ovr_filtro(session,
             q = q.join(table, isouter=True)
             already_in_join.add(table)
         # ovrs = q.filter(filtro).limit(100).all()
-    logger.info('get_ovr_filtro - query' + str(q))
+    logger.info('get_ovr_filtro - query ' + str(q))
     ovrs = q.filter(filtro).limit(limit).all()
     return [ovr for ovr in ovrs]
 
@@ -501,6 +515,43 @@ def get_ovr_empresa(session, cnpj: str,
     filtro = and_(filtro_data, OVR.cnpj_fiscalizado.like(cnpj[:8] + '%'))
     ovrs = session.query(OVR).filter(filtro).all()
     return [ovr for ovr in ovrs]
+
+
+def get_ovr_pessoa(session, cpf: str,
+                    datainicio: datetime = None,
+                    datafim: datetime = None) -> List[OVR]:
+    if not cpf or len(cpf) < 8:
+        raise ValueError('CPF deve ser informado com mínimo de 11 dígitos. '
+                         'Informou: %s' % cpf)
+    filtro_data = and_()
+    if datainicio:
+        filtro_data = and_(OVR.datahora >= datainicio, filtro_data)
+    if datafim:
+        datafim = datafim + timedelta(days=1)
+        filtro_data = and_(OVR.datahora <= datafim, filtro_data)
+    # Filtra OVRs
+    filtro = and_(filtro_data, OVR.cnpj_fiscalizado == cpf)
+    ovrs = session.query(OVR).filter(filtro).all()
+    return [ovr for ovr in ovrs]
+
+
+
+def get_dsi_pessoa(session, cpf: str,
+                    datainicio: datetime = None,
+                    datafim: datetime = None) -> List[DSI]:
+    if not cpf or len(cpf) < 11:
+        raise ValueError('CPF deve ser informado com mínimo de 11 dígitos. '
+                         'Informou: %s' % cpf)
+    filtro_data = and_()
+    if datainicio:
+        filtro_data = and_(DSI.data_registro >= datainicio, filtro_data)
+    if datafim:
+        datafim = datafim + timedelta(days=1)
+        filtro_data = and_(DSI.data_registro <= datafim, filtro_data)
+    # Filtra CPF
+    filtro = and_(filtro_data, DSI.consignatario == cpf)
+    dsis = session.query(DSI).filter(filtro).all()
+    return [dsi for dsi in dsis]
 
 
 def get_flags(session) -> List[Flag]:

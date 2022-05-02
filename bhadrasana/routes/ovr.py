@@ -15,14 +15,14 @@ from werkzeug.utils import redirect
 from bhadrasana.analises.escaneamento_operador import sorteia_GMCIs
 from bhadrasana.forms.exibicao_ovr import ExibicaoOVR, TipoExibicao, agrupa_ovrs
 from bhadrasana.forms.filtro_container import FiltroContainerForm, FiltroCEForm, FiltroDUEForm
-from bhadrasana.forms.filtro_empresa import FiltroEmpresaForm
+from bhadrasana.forms.filtro_empresa import FiltroEmpresaForm, FiltroPessoaForm
 from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
     ProcessoOVRForm, ItemTGForm, ResponsavelOVRForm, TGOVRForm, FiltroRelatorioForm, \
     FiltroMinhasOVRsForm, OKRObjectiveForm, OKRMetaForm, SetorOVRForm, EscaneamentoOperadorForm, \
     FiltroAbasForm, ResultadoOVRForm
 from bhadrasana.models import delete_objeto, get_usuario, \
     usuario_tem_perfil_nome
-from bhadrasana.models.laudo import get_empresa, get_empresas_nome, get_sats_cnpj
+from bhadrasana.models.laudo import get_empresa, get_empresas_nome, get_sats_cnpj, get_pessoas_nome, get_pessoa
 from bhadrasana.models.ovr import OVR, OKRObjective, faseOVR
 from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_ovr_filtro, gera_eventoovr, gera_processoovr, get_tipos_processo, lista_itemtg, \
@@ -47,7 +47,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_afrfb_choice, get_ovr_one, \
     libera_ovr, get_afrfb_setores_choice, \
     get_setores_unidade, calcula_tempos_por_tipoevento, encerra_ficha, gera_resultadoovr, \
-    get_resultado, excluir_resultado
+    get_resultado, excluir_resultado, get_ovr_pessoa, get_dsi_pessoa
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects, consulta_ce_objects, \
     consulta_due_objects
@@ -195,7 +195,11 @@ def ovr_app(app):
                                 flash('Alerta: Diferença entre Data de Emissão e '
                                       'Data da Entrada da Carga maior que 90 dias!')
                         try:
-                            fiscalizado = get_empresa(session, ovr.cnpj_fiscalizado)
+                            fiscalizado = None
+                            if len(ovr.cnpj_fiscalizado) == 11:
+                                fiscalizado = get_pessoa(session, ovr.cnpj_fiscalizado)
+                            if not fiscalizado:
+                                fiscalizado = get_empresa(session, ovr.cnpj_fiscalizado)
                             if fiscalizado:
                                 ovr_form.nome_fiscalizado.data = fiscalizado.nome
                         except ValueError as err:
@@ -1298,6 +1302,66 @@ def ovr_app(app):
                                dues=dues,
                                eventos=eventos,
                                imagens=imagens,
+                               limit=limit,
+                               title_page=title_page)
+
+
+    @app.route('/consulta_pessoa', methods=['GET', 'POST'])
+    @login_required
+    def consulta_pessoa():
+        """Tela para consulta única de Pessoa
+
+        Dentro do intervalo de datas, traz lista de ojetos do sistema que contenham
+        alguma referência ao CPF da Pessoa. Permite encontrar CPF através do nome.
+        """
+        session = app.config.get('dbsession')
+        mongodb = app.config['mongodb']
+        limit = 50
+        pessoas_qtdeovrs = []
+        ovrs = []
+        dsis = []
+        conhecimentos = []
+        infoces = {}
+        title_page = 'Pesquisa Pessoa Física'
+        filtro_form = FiltroPessoaForm(
+            datainicio=date.today() - timedelta(days=10),
+            datafim=date.today()
+        )
+        try:
+            if request.method == 'POST':
+                filtro_form = FiltroPessoaForm(request.form)
+                filtro_form.validate()
+                if filtro_form.nome.data and not filtro_form.cpf.data:
+                    logger.info('Consultando pessoa por nome %s' % filtro_form.nome.data)
+                    cpfs_candidatos = get_pessoas_nome(session, filtro_form.nome.data)
+                    for pessoa in cpfs_candidatos:
+                        ovrs = get_ovr_pessoa(session, pessoa.cpf)
+                        pessoas_qtdeovrs.append({'pessoa': pessoa,
+                                                  'qtdeovrs': len(ovrs)})
+                else:
+                    logger.info('Consultando pessoa %s' % filtro_form.cpf.data)
+                    pessoa = get_pessoa(session, filtro_form.cpf.data)
+                    logger.info('get Fichas')
+                    ovrs = get_ovr_pessoa(session, pessoa.cpf)
+                    logger.info('get CEs da Pessoa')
+                    conhecimentos = get_ces_empresa(session, filtro_form.cpf.data, limit=limit)
+                    listaCE = [ce.numeroCEmercante for ce in conhecimentos]
+                    logger.info('get detalhes CE Mercante')
+                    infoces = get_detalhes_mercante(session, listaCE)
+                    logger.info('get DSIs')
+                    dsis = get_dsi_pessoa(session, pessoa.cpf)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return render_template('pesquisa_pessoa.html',
+                               oform=filtro_form,
+                               pessoas_qtdeovrs=pessoas_qtdeovrs,
+                               ovrs=ovrs,
+                               conhecimentos=conhecimentos,
+                               infoces=infoces,
+                               dsis=dsis,
                                limit=limit,
                                title_page=title_page)
 
