@@ -327,6 +327,25 @@ def anexo():
     return 'Sem Anexo'
 
 
+@app.route('/anexo/<evento>/<filename>')
+def anexo_(evento, filename):
+    """Recupera aenxo do banco e serializa para stream HTTP.
+
+    """
+    db = app.config['mongo_risco']
+    filtro = {'metadata.evento': evento}
+    row = db['fs.files'].find_one(filtro)
+    if row:
+        _id = row['_id']
+        mimetype = row.get('metadata').get('contentType') or 'image/jpeg'
+        image = mongo_image(db, _id)
+        print(mimetype)
+        if image:
+            return Response(response=image, mimetype=mimetype,
+                            headers={"Content disposition":"attachment; filename=" + filename})
+    return 'Sem Anexo'
+
+
 @app.route('/tui-image-editor')
 def tui_image_editor():
     """Exibe o editor Open Source JS (licença MIT) TUI Image Editor."""
