@@ -81,7 +81,7 @@ class FiltroOVRForm(FlaskForm):
     teveevento = SelectField('tipoevento', default='')
     usuarioevento = SelectField('tipoevento', default=None)
     tipoexibicao = SelectField('Campos a serem exibidos na tela', default=1)
-    agruparpor = SelectField('tipoevento', default=None)
+    agruparpor = SelectField('agruparpor', default=None)
     temapreensao = BooleanField(default=False)
     temtg = BooleanField(default=False)
 
@@ -119,7 +119,8 @@ class FiltroOVRForm(FlaskForm):
         self.tipoexibicao.choices = [(tipo.value, tipo.name) for tipo in TipoExibicao]
         self.agruparpor.choices = ((None, 'Nenhum'), ('fase', 'Fase'),
                                    ('responsavel_cpf', 'Responsável atual'),
-                                   ('cpfauditorresponsavel', 'Auditor Responsável'),)
+                                   ('cpfauditorresponsavel', 'Auditor Responsável'),
+                                   ('recinto_id', 'Recinto'))
 
 
 class FiltroRelatorioForm(FlaskForm):

@@ -196,7 +196,7 @@ def ovr_app(app):
                                       'Data da Entrada da Carga maior que 90 dias!')
                         try:
                             fiscalizado = None
-                            if len(ovr.cnpj_fiscalizado) == 11:
+                            if ovr.cnpj_fiscalizado and len(ovr.cnpj_fiscalizado) == 11:
                                 fiscalizado = get_pessoa(session, ovr.cnpj_fiscalizado)
                             if not fiscalizado:
                                 fiscalizado = get_empresa(session, ovr.cnpj_fiscalizado)

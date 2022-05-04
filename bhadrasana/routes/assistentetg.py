@@ -47,10 +47,13 @@ class FiltroTGForm(FlaskForm):
 
 
 def monta_assistente_bm25(engine):
-    SQL = 'SELECT * FROM ovr_itenstg'
+    SQL = 'SELECT t.ovr_id as ficha, i.* FROM ovr_itenstg i INNER JOIN ovr_tgovr t on i.tg_id=t.id;'
     df = pd.read_sql(SQL, engine)
+    print('len itenstg:', len(df))
     itenstg = df.dropna(subset=['ncm'])
+    print('len itenstg dropna:', len(itenstg))
     corpus = list(itenstg.descricao.values)
+
     corpus_normalized = [tokenize(line) for line in corpus]
     bm25n = BM25Okapi(corpus_normalized)
     return bm25n, corpus, itenstg
@@ -59,7 +62,12 @@ def monta_assistente_bm25(engine):
 def monta_sugestoes(texto, n_rows=10):
     doc_scores = bm25n.get_scores(tokenize(texto))
     indices = np.flip(np.argpartition(doc_scores, doc_scores.shape[0] - 3)[-n_rows:])
-    new_df = itenstg.iloc[np.flip(indices)]
+    indices_menoszero = []
+    for indice in indices:
+        if doc_scores[indice] == 0.:
+            break
+        indices_menoszero.append(indice)
+    new_df = itenstg.iloc[indices_menoszero]
     print(new_df.columns)
     new_df['get_unidade'] = new_df.unidadedemedida.apply(Enumerado.unidadeMedida)
     return new_df.to_dict('records')
@@ -125,7 +133,7 @@ def assistentetg_app(app):
         try:
             if request.method == 'POST' and filtro_form.validate():
                 filtro_form = FiltroTGForm(request.form)
-                resultados = monta_sugestoes(filtro_form.descricao.data, 20)
+                resultados = monta_sugestoes(filtro_form.descricao.data, 50)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')

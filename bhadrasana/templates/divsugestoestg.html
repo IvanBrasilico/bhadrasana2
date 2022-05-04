@@ -2,14 +2,19 @@
     <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive">
         <thead>
         <tr>
-            <td>NCM</td>
-            <td>Descrição</td>
-            <td>Unidade Medida</td>
-            <td>Valor</td>
+            <th>Ficha</th>
+            <th>NCM</th>
+            <th>Descrição</th>
+            <th>Unidade Medida</th>
+            <th>Valor</th>
+            <th>Quantidade</th>
         </tr>
         </thead>
         {% for resultado in resultados %}
         <tr>
+            <td width="50" style="text-align:center">
+                <a href="ovr?id={{ resultado.ficha }}" target="_blank">{{resultado.ficha}}</a>
+            </td>
             <td width="100" style="text-align:left">
                 {{ resultado.ncm }}
             </td>
@@ -22,7 +27,9 @@
             <td width="100" style="text-align:right">
                 {{ resultado.valor }}
             </td>
-
+            <td width="100" style="text-align:right">
+                {{ resultado.qtde }}
+            </td>
         </tr>
         {% endfor %}
     </table>
