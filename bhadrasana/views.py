@@ -341,8 +341,7 @@ def anexo_(evento, filename):
         image = mongo_image(db, _id)
         print(mimetype)
         if image:
-            return Response(response=image, mimetype=mimetype,
-                            headers={"Content disposition":"attachment; filename=" + filename})
+            return Response(response=image, mimetype=mimetype)
     return 'Sem Anexo'
 
 
