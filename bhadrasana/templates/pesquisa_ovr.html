@@ -216,7 +216,9 @@
                 <tr class="{% if ovr[1] %}default{% else %}warning{% endif %}">
                     <td><input type="checkbox" name="rowid" class="action-checkbox" value="{{ovr[0]}}"
                                title="Selecionar linha"></td>
-                    <td><a href="ovr?id={{ovr[0]}}" target="_blank">{{ ovr[0] }}</a></td>
+                    <td><div onmouseover="showMsg(this, '{{ovr[0]}}')">
+                        <a href="ovr?id={{ovr[0]}}" target="_blank">{{ ovr[0] }}</a>
+                    </div></td>
                     {% for col in ovr[2] %}
                     <td style="text-align:left">{{ col | safe }}</td>
                     {% endfor %}
@@ -355,6 +357,23 @@ $("#abre_ovr_id").on('keyup', function (e) {
 $('#selectAll').click(function (e) {
     $(this).closest('table').find('td input:checkbox').prop('checked', this.checked);
 });
+
+   function showMsg(adiv, oid) {
+        xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4) {
+                if (this.status == 200) {
+                    adiv.title = this.responseText;
+                }
+            }
+        }
+        xhttp.open("GET", "/bhadrasana2/ficha/summary/" + oid, true);
+        xhttp.send();
+    }
+    function clearMsg(adiv) {
+        adiv.title = "";
+    }
+
 
 
 </script>
