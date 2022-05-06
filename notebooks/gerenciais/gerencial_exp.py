@@ -50,7 +50,7 @@ SQL_APREENSOES = \
      inner join ovr_apreensoes_rvf a on a.rvf_id = rvf.id
      inner join ovr_tiposapreensao t on t.id = a.tipo_id
      inner join ovr_recintos r on r.id = ovr.recinto_id
-     where ovr.setor_id in (1, 2, 3)
+     where ovr.setor_id in (1, 2, 3)  and ovr.tipooperacao != 6
      order by Ano, Mês, Ficha, RVF, Apreensao;'''
 
 
