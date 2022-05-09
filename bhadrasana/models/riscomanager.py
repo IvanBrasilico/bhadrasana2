@@ -31,7 +31,7 @@ from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, 
 CAMPOS_RISCO = {'carga':
                     [('0', 'Selecione'),
                      ('1', 'consignatario'),
-                     ('2', 'ncm'),
+                     ('2', 'identificacaoNCM'),
                      ('3', 'portoOrigemCarga'),
                      ('4', 'codigoConteiner'),
                      ('5', 'descricao'),
