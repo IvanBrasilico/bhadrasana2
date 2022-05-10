@@ -26,6 +26,8 @@ def agrupa_ovrs(ovrs, listaovrs, campo):
         for ovr, exibicao_linha in zip(ovrs, listaovrs):
             if campo == 'fase':
                 grupo = ovr.get_fase()
+            elif campo == 'recinto_id':
+                    grupo = ovr.recinto.nome
             else:
                 grupo = getattr(ovr, campo)
             listaagrupada[grupo].append(exibicao_linha)
