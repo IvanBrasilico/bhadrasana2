@@ -388,6 +388,7 @@ def get_ovr_filtro(session,
                 or_(OVR.observacoes.like(busca),
                     OVR.numerodeclaracao.like(busca),
                     OVR.numeroCEmercante.like(busca),
+                    OVR.cnpj_fiscalizado.like(busca),
                     RVF.numeroCEmercante.like(busca),
                     RVF.numerolote.like(busca),
                     RVF.descricao.like(busca)
