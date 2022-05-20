@@ -120,7 +120,7 @@ def monta_planilha(df, n_rows=5):
     return pd.DataFrame(lista_dict)
 
 
-# bm25n, corpus, itenstg = monta_assistente_bm25(engine)
+bm25n, corpus, itenstg = monta_assistente_bm25(engine)
 
 
 def assistentetg_app(app):
