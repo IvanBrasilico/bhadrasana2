@@ -330,6 +330,20 @@ def ovr_app(app):
                 exibicao = ExibicaoOVR(session, tipoexibicao, current_user.id)
                 titulos_exibicao = exibicao.get_titulos()
                 listaovrs = [exibicao.get_linha(ovr) for ovr in ovrs]
+                print(request.form)
+                if request.form.get('exportar') is not None:
+                    linhas = []
+                    # linhas.append(titulos_exibicao)
+                    for linha in listaovrs:
+                        linhas.append([linha[0], *linha[2]])
+                    print(linhas)
+                    df = pd.DataFrame(linhas)
+                    df.columns = titulos_exibicao
+                    out_filename = '{}_{}.xls'.format('PesquisaFicha_',
+                        datetime.strftime(datetime.now(), '%Y-%m-%dT%H-%M-%S')
+                    )
+                    df.to_excel(os.path.join(get_user_save_path(), out_filename), index=False)
+                    return redirect('static/%s/%s' % (current_user.name, out_filename))
                 listaagrupada = agrupa_ovrs(ovrs, listaovrs, filtro_form.agruparpor.data)
         except Exception as err:
             logger.error(err, exc_info=True)
