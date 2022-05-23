@@ -11,18 +11,25 @@
                 </div>
                 <div class="row">
                     <div class="form-group">
-                        <div class="col-sm-8">
+                        <div class="col-lg-7">
                             {{ oform.descricao(class='form-control') }}
                         </div>
-                        <div class="col-sm-2">
+                        <div class="col-lg-5">
+                        <div class="col-lg-4">
                             <button class="btn btn-default btn-info form-control" onclick="submit">
                                 Pesquisar
                             </button>
                         </div>
-                        <div class="col-sm-2">
+                        <div class="col-lg-4">
                             <button id="btn_importar" type="button" class="btn btn-primary form-control"
-                                    data-toggle="modal" data-target="#importa_saneamento">Importa saneamento
+                                    data-toggle="modal" data-target="#importa_saneamento">Saneamento
                             </button>
+                        </div>
+                        <div class="col-lg-4">
+                            <button class="btn btn-default btn-primary form-control" name="exportar" onclick="submit">
+                                Exportar itens
+                            </button>
+                        </div>
                         </div>
                     </div>
                 </div>

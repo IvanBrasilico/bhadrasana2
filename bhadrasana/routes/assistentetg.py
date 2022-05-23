@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 import nltk
 import numpy as np
@@ -15,6 +16,10 @@ from wtforms import StringField
 from bhadrasana.models import engine
 from bhadrasana.models.ovr import Enumerado
 from bhadrasana.views import get_user_save_path
+
+nltk.download('rslp')
+stemmer = nltk.stem.RSLPStemmer()
+stop_words = nltk.corpus.stopwords.words('portuguese')
 
 
 def remove_accents(input_str):
@@ -34,11 +39,11 @@ def remove_pontuacao(doc):
 
 
 def tokenize(doc):
-    stop_words = nltk.corpus.stopwords.words('portuguese')
     doc_normalized = doc.lower()
     doc_normalized = remove_pontuacao(doc_normalized)
     doc_normalized = remove_accents(doc_normalized)
-    return [word for word in doc_normalized.split() if (len(word) > 2 and word not in stop_words)]
+    return [stemmer.stem(word.decode()) for word in doc_normalized.split()
+            if (len(word) > 2 and word not in stop_words)]
 
 
 class FiltroTGForm(FlaskForm):
@@ -53,7 +58,6 @@ def monta_assistente_bm25(engine):
     itenstg = df.dropna(subset=['ncm'])
     print('len itenstg dropna:', len(itenstg))
     corpus = list(itenstg.descricao.values)
-
     corpus_normalized = [tokenize(line) for line in corpus]
     bm25n = BM25Okapi(corpus_normalized)
     return bm25n, corpus, itenstg
@@ -61,14 +65,11 @@ def monta_assistente_bm25(engine):
 
 def monta_sugestoes(texto, n_rows=10):
     doc_scores = bm25n.get_scores(tokenize(texto))
-    indices = np.flip(np.argpartition(doc_scores, doc_scores.shape[0] - 3)[-n_rows:])
-    indices_menoszero = []
-    for indice in indices:
-        if doc_scores[indice] == 0.:
-            break
-        indices_menoszero.append(indice)
-    new_df = itenstg.iloc[indices_menoszero]
-    print(new_df.columns)
+    new_df = itenstg.copy()
+    new_df['pontuação'] = doc_scores
+    new_df = new_df[new_df['pontuação'] > 0.]
+    new_df = new_df.sort_values(axis=0, ascending=False, by='pontuação').head(n_rows)
+    # print(new_df.columns)
     new_df['get_unidade'] = new_df.unidadedemedida.apply(Enumerado.unidadeMedida)
     return new_df.to_dict('records')
 
@@ -77,6 +78,7 @@ def remove_accents2(input_str):
     nfkd_form = unicodedata.normalize('NFKD', input_str.lower())
     only_ascii = nfkd_form.encode('ASCII', 'ignore')
     return only_ascii.decode('utf-8')
+
 
 def monta_planilha(df, n_rows=5):
     lista_dict = []
@@ -120,7 +122,35 @@ def monta_planilha(df, n_rows=5):
     return pd.DataFrame(lista_dict)
 
 
-bm25n, corpus, itenstg = monta_assistente_bm25(engine)
+def consulta_itens(texto):
+    print(texto)
+    SQL = 'SELECT o.id as Ficha, t.numerotg as "Número TG",' + \
+          ' DATE(o.datahora) as "Início da Ação", DATE(o.last_modified) "Fim da Ação",' + \
+          ' DATE(t.create_date) as "Data do TG",' + \
+          ' i.NCM as NCM, i.descricao as "Descrição",' + \
+          ' i.valor as "Valor Unitário", ' + \
+          ' i.qtde as  Quantidade, i.unidadedemedida' + \
+          ' FROM ovr_itenstg i' + \
+          ' INNER JOIN ovr_tgovr t on i.tg_id=t.id' + \
+          ' INNER JOIN ovr_ovrs o on o.id=t.ovr_id' + \
+          ' WHERE i.descricao like %s and ncm is not null'
+    df = pd.read_sql(SQL, engine, params=['%' + texto.strip() + '%'])
+    df['Unidade'] = df.unidadedemedida.apply(Enumerado.unidadeMedida)
+    df['Valor Total'] = df['Valor Unitário'] * df['Quantidade']
+    df.drop('unidadedemedida', axis=1, inplace=True)
+    def converte_data(x):
+        try:
+            return datetime.strftime(x, '%d/%m/%Y')
+        except:
+            return ''
+    df['Início da Ação'] = df['Início da Ação'].apply(converte_data)
+    df['Fim da Ação'] = df['Fim da Ação'].apply(converte_data)
+    df['Data do TG'] = df['Data do TG'].apply(converte_data)
+    print('len df:', len(df))
+    return df
+
+
+# bm25n, corpus, itenstg = monta_assistente_bm25(engine)
 
 
 def assistentetg_app(app):
@@ -133,6 +163,13 @@ def assistentetg_app(app):
         try:
             if request.method == 'POST' and filtro_form.validate():
                 filtro_form = FiltroTGForm(request.form)
+                if request.form.get('exportar') is not None:
+                    df = consulta_itens(filtro_form.descricao.data)
+                    out_filename = '{}_{}.xls'.format('PesquisaItens_',
+                                                      '_'.join(filtro_form.descricao.data.split())
+                                                      )
+                    df.to_excel(os.path.join(get_user_save_path(), out_filename), index=False)
+                    return redirect('static/%s/%s' % (current_user.name, out_filename))
                 resultados = monta_sugestoes(filtro_form.descricao.data, 50)
         except Exception as err:
             logger.error(err, exc_info=True)
@@ -141,7 +178,6 @@ def assistentetg_app(app):
             flash(str(err))
         return render_template('assistente_tg.html', oform=filtro_form,
                                resultados=resultados, title_page=title_page)
-
 
     @app.route('/assistente_tg_planilha', methods=['POST'])
     @login_required
@@ -158,4 +194,4 @@ def assistentetg_app(app):
             flash('Erro! Detalhes no log da aplicação.')
             flash(str(type(err)))
             flash(str(err))
-        return render_template('assistente_tg.html',oform=FiltroTGForm())
+        return render_template('assistente_tg.html', oform=FiltroTGForm())
