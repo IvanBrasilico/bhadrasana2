@@ -124,7 +124,7 @@ def monta_planilha(df, n_rows=5):
 
 def consulta_itens(texto):
     print(texto)
-    SQL = 'SELECT o.id as Ficha, t.numerotg as "Número TG",' + \
+    sql = 'SELECT o.id as Ficha, t.numerotg as "Número TG",' + \
           ' DATE(o.datahora) as "Início da Ação", DATE(o.last_modified) "Fim da Ação",' + \
           ' DATE(t.create_date) as "Data do TG",' + \
           ' i.NCM as NCM, i.descricao as "Descrição",' + \
@@ -132,17 +132,31 @@ def consulta_itens(texto):
           ' i.qtde as  Quantidade, i.unidadedemedida' + \
           ' FROM ovr_itenstg i' + \
           ' INNER JOIN ovr_tgovr t on i.tg_id=t.id' + \
-          ' INNER JOIN ovr_ovrs o on o.id=t.ovr_id' + \
-          ' WHERE i.descricao like %s and ncm is not null'
-    df = pd.read_sql(SQL, engine, params=['%' + texto.strip() + '%'])
+          ' INNER JOIN ovr_ovrs o on o.id=t.ovr_id'
+    if 'NCM' in texto:
+        ncms = texto.replace(';',' ').replace(',',' ').replace(':', ' ').split()[1:]
+        ncms = [ncm + '%' for ncm in ncms]
+        print(ncms)
+        sql = sql + ' WHERE ncm like %s'
+        for _ in ncms[1:]:
+            sql = sql + ' OR ncm like %s'
+        print(sql)
+        sql = sql + ' ORDER BY o.datahora'
+        df = pd.read_sql(sql, engine, params=ncms)
+    else:
+        sql = sql + ' WHERE i.descricao like %s and ncm is not null'
+        sql = sql + ' ORDER BY o.datahora'
+        df = pd.read_sql(sql, engine, params=['%' + texto.strip() + '%'])
     df['Unidade'] = df.unidadedemedida.apply(Enumerado.unidadeMedida)
     df['Valor Total'] = df['Valor Unitário'] * df['Quantidade']
     df.drop('unidadedemedida', axis=1, inplace=True)
+
     def converte_data(x):
         try:
             return datetime.strftime(x, '%d/%m/%Y')
         except:
             return ''
+
     df['Início da Ação'] = df['Início da Ação'].apply(converte_data)
     df['Fim da Ação'] = df['Fim da Ação'].apply(converte_data)
     df['Data do TG'] = df['Data do TG'].apply(converte_data)
