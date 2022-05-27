@@ -63,7 +63,7 @@ def monta_assistente_bm25(engine):
     return bm25n, corpus, itenstg
 
 
-def monta_sugestoes(texto, n_rows=10):
+def monta_sugestoes(texto, n_rows=10)-> pd.DataFrame:
     doc_scores = bm25n.get_scores(tokenize(texto))
     new_df = itenstg.copy()
     new_df['pontuação'] = doc_scores
@@ -71,7 +71,7 @@ def monta_sugestoes(texto, n_rows=10):
     new_df = new_df.sort_values(axis=0, ascending=False, by='pontuação').head(n_rows)
     # print(new_df.columns)
     new_df['get_unidade'] = new_df.unidadedemedida.apply(Enumerado.unidadeMedida)
-    return new_df.to_dict('records')
+    return new_df
 
 
 def remove_accents2(input_str):
@@ -80,7 +80,7 @@ def remove_accents2(input_str):
     return only_ascii.decode('utf-8')
 
 
-def monta_planilha(df, n_rows=5):
+def monta_planilha(df, n_rows=5)-> pd.DataFrame:
     lista_dict = []
     print(df.columns)
     df.rename(remove_accents2, axis='columns', inplace=True)
@@ -122,7 +122,7 @@ def monta_planilha(df, n_rows=5):
     return pd.DataFrame(lista_dict)
 
 
-def consulta_itens(texto):
+def consulta_itens(texto)-> pd.DataFrame:
     print(texto)
     sql = 'SELECT o.id as Ficha, t.numerotg as "Número TG",' + \
           ' DATE(o.datahora) as "Início da Ação", DATE(o.last_modified) "Fim da Ação",' + \
@@ -134,7 +134,7 @@ def consulta_itens(texto):
           ' INNER JOIN ovr_tgovr t on i.tg_id=t.id' + \
           ' INNER JOIN ovr_ovrs o on o.id=t.ovr_id'
     if 'NCM' in texto:
-        ncms = texto.replace(';',' ').replace(',',' ').replace(':', ' ').split()[1:]
+        ncms = texto.replace(';', ' ').replace(',', ' ').replace(':', ' ').split()[1:]
         ncms = [ncm + '%' for ncm in ncms]
         print(ncms)
         sql = sql + ' WHERE ncm like %s'
@@ -178,20 +178,25 @@ def assistentetg_app(app):
             if request.method == 'POST' and filtro_form.validate():
                 filtro_form = FiltroTGForm(request.form)
                 if request.form.get('exportar') is not None:
-                    df = consulta_itens(filtro_form.descricao.data)
+                    resultados = consulta_itens(filtro_form.descricao.data)
+                else:
+                    resultados = monta_sugestoes(filtro_form.descricao.data, 50)
+                if (request.form.get('exportar') is not None) or\
+                        (request.form.get('exportar_texto') is not None):
                     out_filename = '{}_{}.xls'.format('PesquisaItens_',
                                                       '_'.join(filtro_form.descricao.data.split())
                                                       )
-                    df.to_excel(os.path.join(get_user_save_path(), out_filename), index=False)
+                    resultados.to_excel(os.path.join(get_user_save_path(), out_filename),
+                                        index=False)
                     return redirect('static/%s/%s' % (current_user.name, out_filename))
-                resultados = monta_sugestoes(filtro_form.descricao.data, 50)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
             flash(str(type(err)))
             flash(str(err))
         return render_template('assistente_tg.html', oform=filtro_form,
-                               resultados=resultados, title_page=title_page)
+                               resultados=resultados.to_dict('records'),
+                               title_page=title_page)
 
     @app.route('/assistente_tg_planilha', methods=['POST'])
     @login_required

@@ -11,23 +11,36 @@
                 </div>
                 <div class="row">
                     <div class="form-group">
-                        <div class="col-lg-7">
+                        <div class="row">
+                        <div class="col-lg-8">
                             {{ oform.descricao(class='form-control') }}
                         </div>
-                        <div class="col-lg-5">
-                        <div class="col-lg-4">
+                        <div class="col-lg-2">
                             <button class="btn btn-default btn-info form-control" onclick="submit">
-                                Pesquisar
+                                Pesquisa texto
                             </button>
                         </div>
-                        <div class="col-lg-4">
+                        <div class="col-lg-2">
                             <button id="btn_importar" type="button" class="btn btn-primary form-control"
-                                    data-toggle="modal" data-target="#importa_saneamento">Saneamento
+                                    data-toggle="modal" data-target="#importa_saneamento">Planilha saneamento
                             </button>
                         </div>
-                        <div class="col-lg-4">
-                            <button class="btn btn-default btn-primary form-control" name="exportar" onclick="submit">
-                                Exportar itens
+                        </div>
+                        <div class="row">
+                            &nbsp;
+                        </div>
+                        <div class="row">
+                        <div class="col-lg-8">
+                            &nbsp;
+                        </div>
+                        <div class="col-lg-2">
+                            <button class="btn btn-default form-control" name="exportar_texto" onclick="submit">
+                                Exportar pesquisa texto
+                            </button>
+                        </div>
+                        <div class="col-lg-2">
+                            <button class="btn btn-default form-control" name="exportar" onclick="submit">
+                                Exportar pesquisa banco
                             </button>
                         </div>
                         </div>
