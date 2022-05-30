@@ -27,7 +27,7 @@ def agrupa_ovrs(ovrs, listaovrs, campo):
             if campo == 'fase':
                 grupo = ovr.get_fase()
             elif campo == 'recinto_id':
-                    grupo = ovr.recinto.nome
+                grupo = ovr.recinto.nome
             else:
                 grupo = getattr(ovr, campo)
             listaagrupada[grupo].append(exibicao_linha)
@@ -377,6 +377,8 @@ class ExibicaoOVR:
             valor_tgs = self.get_valor_tgs(ovr)
             if valor_tgs:
                 resumo.append(f'<b>Valor dos TGs</b>: {valor_tgs}')
+            for resultado in ovr.resultados:
+                resumo.append(f'<b>{resultado.get_tipo_resultado}:</b> {resultado.valor :,.2f}')
         if responsaveis:
             resumo.extend(self.get_responsaveis_resumo(ovr))
         if responsabilidade:

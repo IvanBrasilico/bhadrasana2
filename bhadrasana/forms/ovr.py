@@ -84,6 +84,7 @@ class FiltroOVRForm(FlaskForm):
     agruparpor = SelectField('agruparpor', default=None)
     temapreensao = BooleanField(default=False)
     temtg = BooleanField(default=False)
+    tiporesultado_id = SelectField('resultados', default=-1)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -121,6 +122,8 @@ class FiltroOVRForm(FlaskForm):
                                    ('responsavel_cpf', 'Responsável atual'),
                                    ('cpfauditorresponsavel', 'Auditor Responsável'),
                                    ('recinto_id', 'Recinto'))
+        self.tiporesultado_id.choices = [(None, 'Selecione')]
+        self.tiporesultado_id.choices.extend( [(e.value, e.name) for e in TipoResultado])
 
 
 class FiltroRelatorioForm(FlaskForm):

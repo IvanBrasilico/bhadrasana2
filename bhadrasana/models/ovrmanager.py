@@ -392,7 +392,7 @@ def get_ovr_filtro(session,
                     RVF.numeroCEmercante.like(busca),
                     RVF.numerolote.like(busca),
                     RVF.descricao.like(busca)
-                ),
+                    ),
                 filtro)
             tables.append(RVF)
         if pfiltro.get('numerodeclaracao'):
@@ -521,8 +521,8 @@ def get_ovr_empresa(session, cnpj: str,
 
 
 def get_ovr_pessoa(session, cpf: str,
-                    datainicio: datetime = None,
-                    datafim: datetime = None) -> List[OVR]:
+                   datainicio: datetime = None,
+                   datafim: datetime = None) -> List[OVR]:
     if not cpf or len(cpf) < 8:
         raise ValueError('CPF deve ser informado com mínimo de 11 dígitos. '
                          'Informou: %s' % cpf)
@@ -538,10 +538,9 @@ def get_ovr_pessoa(session, cpf: str,
     return [ovr for ovr in ovrs]
 
 
-
 def get_dsi_pessoa(session, cpf: str,
-                    datainicio: datetime = None,
-                    datafim: datetime = None) -> List[DSI]:
+                   datainicio: datetime = None,
+                   datafim: datetime = None) -> List[DSI]:
     if not cpf or len(cpf) < 11:
         raise ValueError('CPF deve ser informado com mínimo de 11 dígitos. '
                          'Informou: %s' % cpf)
@@ -888,7 +887,6 @@ def excluir_resultado(session, resultado: ResultadoOVR, user_cpf):
     except Exception as err:
         logger.error(err, exc_info=True)
         session.rollback()
-
 
 
 def get_processo(session, processo_id: int) -> ProcessoOVR:

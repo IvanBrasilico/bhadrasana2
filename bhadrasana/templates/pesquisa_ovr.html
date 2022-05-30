@@ -129,35 +129,37 @@
             <div class="row col-sm-12">
                 <div class="col-sm-2">
                     <label for="tipoexibicao">Campos a exibir</label>
+                    {{ oform.tipoexibicao(class='form-control') }}
+                </div>
+                <div class="col-sm-1">
+                    <label for="temapreensao">Com Apreensão</label>
+                </div>
+                <div class="col-sm-1">
+                    <label for="temtg">Com TG</label>
                 </div>
                 <div class="col-sm-2">
-                    <label for="agruparpor">Agrupar por</label>
+                    <label for="temtg">Com Resultado</label>
                 </div>
-                <div class="col-sm-2">
-                    <label for="temapreensao">Possui apreensão informada (drogas/armas)</label>
-                </div>
-                <div class="col-sm-2">
-                    <label for="temtg">Possui mercadoria apreendida (TG)</label>
-                </div>
-                <div class="col-sm-4">
+                <div class="col-sm-6">
                     <label for="observacoes">Observações, número da declaração, número do CE Mercante,
                         cpf/cnpj do fiscalizado, número do Contêiner ou descrição da RVF</label>
                 </div>
             </div>
             <div class="row col-sm-12">
                 <div class="col-sm-2">
-                    {{ oform.tipoexibicao(class='form-control') }}
-                </div>
-                <div class="col-sm-2">
+                    <label for="agruparpor">Agrupar por</label>
                     {{ oform.agruparpor(class='form-control') }}
                 </div>
-                <div class="col-sm-2">
+                <div class="col-sm-1">
                     {{ oform.temapreensao(class='form-control') }}
                 </div>
-                <div class="col-sm-2">
+                <div class="col-sm-1">
                     {{ oform.temtg(class='form-control') }}
                 </div>
-                <div class="col-sm-4">
+                <div class="col-sm-2">
+                    {{ oform.tiporesultado_id(class='form-control') }}
+                </div>
+                <div class="col-sm-6">
                     {{ oform.observacoes(class='form-control') }}
                 </div>
             </div>

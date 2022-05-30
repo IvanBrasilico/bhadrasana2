@@ -289,7 +289,6 @@ def ovr_app(app):
         usuario = get_usuario(session, current_user.name)
         lista_setores = get_setores_unidade_choice(session, usuario.setor.cod_unidade)
         setores = get_setores_unidade(session, usuario.setor.cod_unidade)
-        print(setores)
         usuarios = get_usuarios_setores_choice(session, setores)
         auditores = get_afrfb_setores_choice(session, setores)
         title_page = 'Pesquisa Fichas'

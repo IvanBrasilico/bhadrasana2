@@ -1,6 +1,6 @@
 from sqlalchemy import and_
 
-from bhadrasana.models.ovr import TGOVR
+from bhadrasana.models.ovr import TGOVR, ResultadoOVR
 from bhadrasana.models.rvf import ApreensaoRVF, RVF
 
 
@@ -46,3 +46,13 @@ class FiltrosFicha:
         if self.pfiltro.get('temapreensao'):
             self.filtro = and_(ApreensaoRVF.id.isnot(None), self.filtro)
             self.tables.extend([RVF, ApreensaoRVF])
+
+
+    def filtro_resultado(self):
+        print('***********************resultadofiltro',
+              self.pfiltro.get('tiporesultado_id'), type(self.pfiltro.get('tiporesultado_id')))
+        if self.pfiltro.get('tiporesultado_id') and \
+                self.pfiltro.get('tiporesultado_id') != 'None':
+            self.filtro = and_(ResultadoOVR.tipo_resultado ==
+                               int(self.pfiltro.get('tiporesultado_id')), self.filtro)
+            self.tables.extend([ResultadoOVR])
