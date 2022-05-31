@@ -178,24 +178,25 @@ def assistentetg_app(app):
             if request.method == 'POST' and filtro_form.validate():
                 filtro_form = FiltroTGForm(request.form)
                 if request.form.get('exportar') is not None:
-                    resultados = consulta_itens(filtro_form.descricao.data)
+                    df = consulta_itens(filtro_form.descricao.data)
                 else:
-                    resultados = monta_sugestoes(filtro_form.descricao.data, 50)
+                    df = monta_sugestoes(filtro_form.descricao.data, 50)
                 if (request.form.get('exportar') is not None) or\
                         (request.form.get('exportar_texto') is not None):
                     out_filename = '{}_{}.xls'.format('PesquisaItens_',
                                                       '_'.join(filtro_form.descricao.data.split())
                                                       )
-                    resultados.to_excel(os.path.join(get_user_save_path(), out_filename),
+                    df.to_excel(os.path.join(get_user_save_path(), out_filename),
                                         index=False)
                     return redirect('static/%s/%s' % (current_user.name, out_filename))
+                resultados = df.to_dict('records')
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
             flash(str(type(err)))
             flash(str(err))
         return render_template('assistente_tg.html', oform=filtro_form,
-                               resultados=resultados.to_dict('records'),
+                               resultados=resultados,
                                title_page=title_page)
 
     @app.route('/assistente_tg_planilha', methods=['POST'])
