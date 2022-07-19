@@ -107,8 +107,6 @@ def TemAlerta(row):
 
 
 df_apreensoes = pd.read_sql(SQL_APREENSOES, engine)
-maxdatahora = df_apreensoes[~ df_apreensoes.Conteiner.isna()].datahora.max()
-mindatahora = df_apreensoes[~ df_apreensoes.Conteiner.isna()].datahora.min()
 df_apreensoes['AnoMes'] = df_apreensoes.apply(AnoMes, axis=1)
 df_apreensoes['Alerta'] = df_apreensoes.apply(TemAlerta, axis=1)
 df_apreensoes_ano_sum = df_apreensoes.groupby(['Ano']).agg(
@@ -122,9 +120,23 @@ df_apreensoes_sum = df_apreensoes.groupby(['Ano', 'Mês']).agg(
     peso=pd.NamedAgg(column='Peso', aggfunc='sum')).reset_index()
 
 
-def EstatisticasAlertas():
-    total_apreensoes_conteiner = (~ df_apreensoes.Conteiner.isna()).sum()
-    total_apreensoes_alerta = df_apreensoes.Alerta.sum()
+def FiltraApreensoes(mindatahora=None, maxdatahora= None):
+    df_apreensoes_loc = df_apreensoes.copy()
+    if mindatahora is None:
+        mindatahora = df_apreensoes[~ df_apreensoes.Conteiner.isna()].datahora.min()
+    else:
+        df_apreensoes_loc = df_apreensoes_loc[df_apreensoes_loc.datahora > mindatahora]
+    if maxdatahora is None:
+        maxdatahora = df_apreensoes[~ df_apreensoes.Conteiner.isna()].datahora.max()
+    else:
+        df_apreensoes_loc = df_apreensoes_loc[df_apreensoes_loc.datahora < maxdatahora]
+    return df_apreensoes_loc, mindatahora, maxdatahora
+
+
+def EstatisticasAlertas(mindatahora=None, maxdatahora= None):
+    df_apreensoes_loc, mindatahora, maxdatahora = FiltraApreensoes(mindatahora, maxdatahora)
+    total_apreensoes_conteiner = (~ df_apreensoes_loc.Conteiner.isna()).sum()
+    total_apreensoes_alerta = df_apreensoes_loc.Alerta.sum()
     total_imagens = mongodb['fs.files'].count_documents({
         'metadata.contentType': 'image/jpeg',
         'metadata.dataescaneamento': {'$gte': mindatahora, '$lt': maxdatahora}}
@@ -142,9 +154,11 @@ def EstatisticasAlertas():
         f'Apreensões: \t\t{total_apreensoes_conteiner:n} \t\t{total_apreensoes_alerta:n} com alerta ({percent_apreensoes_alerta:n}%)')
     precisao_alerta = int((total_apreensoes_alerta / total_imagens_alerta) * 10_000) / 100
     print(f'Precisão Alertas: \t{total_imagens_alerta:n} / \t{total_apreensoes_alerta:n} ({precisao_alerta:n}%)')
+    return df_apreensoes_loc
 
 
-def AlertasporTerminal():
+def AlertasporTerminal(mindatahora=None, maxdatahora= None):
+    df_apreensoes_loc, mindatahora, maxdatahora = FiltraApreensoes(mindatahora, maxdatahora)
     cursor = mongodb['fs.files'].aggregate([
         {'$match': {'metadata.contentType': 'image/jpeg',
                     'metadata.dataescaneamento': {'$gte': mindatahora, '$lt': maxdatahora},
