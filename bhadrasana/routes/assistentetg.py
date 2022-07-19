@@ -1,3 +1,11 @@
+"""
+Módulo para facilitar classificação fiscal/montagem de TGs
+
+Fornece métodos para consulta texto em itens de TGs já cadastrados, similares
+ ao que se deseja cadastrar, para reaproveitar trabalhos de classificação e valoração
+ anteriores.
+"""
+
 import os
 from datetime import datetime
 
@@ -164,7 +172,7 @@ def consulta_itens(texto)-> pd.DataFrame:
     return df
 
 
-bm25n, corpus, itenstg = monta_assistente_bm25(engine)
+# bm25n, corpus, itenstg = monta_assistente_bm25(engine)
 
 
 def assistentetg_app(app):

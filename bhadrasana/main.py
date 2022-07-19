@@ -22,6 +22,8 @@ import sys
 
 from pymongo import MongoClient
 
+from bhadrasana.routes.assistente_ini import assistenteini_app
+
 sys.path.append('../ajna_api')
 from ajna_commons.flask.conf import DATABASE, MONGODB_URI
 from ajna_commons.flask.log import logger
@@ -51,6 +53,7 @@ ovr_app(app)
 ovr2_app(app)
 admin_app(app, db_session)
 assistentetg_app(app)
+assistenteini_app(app)
 
 
 class ForceHttpsRedirects:

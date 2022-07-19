@@ -190,18 +190,18 @@ def get_ovr_one(session, ovr_id: int = None) -> OVR:
         raise NoResultFound(f'OVR {ovr_id} não encontrada.')
 
 
-def get_ovr_responsavel(session, user_name: str, orfas=True) -> List[OVR]:
+def get_ovr_responsavel(session, user_name: str, orfas=True, arquivadas=False) -> List[OVR]:
     """Pegar OVRs que estejam com Usuário como responsável ou sem responsável nos setores"""
     usuario = get_usuario_validando(session, user_name)
     if orfas:
-        return session.query(OVR).filter(or_(
-            OVR.responsavel_cpf == user_name,
-            and_(OVR.responsavel_cpf.is_(None), OVR.setor_id == usuario.setor_id)
-        )).all()
+        filtro = or_(OVR.responsavel_cpf == user_name,
+                     and_(OVR.responsavel_cpf.is_(None), OVR.setor_id == usuario.setor_id)
+                     )
     else:
-        return session.query(OVR).filter(or_(
-            OVR.responsavel_cpf == user_name,
-        )).all()
+        filtro = or_(OVR.responsavel_cpf == user_name)
+    if not arquivadas:
+        filtro = and_(filtro, OVR.fase < 3)
+    return session.query(OVR).filter(filtro).all()
 
 
 def get_ovr_responsavel_setores(session, user_name: str, setores: List[Setor]) -> List[OVR]:

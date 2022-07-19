@@ -352,7 +352,7 @@ def swap_ordem(session, imagem_rvf: ImagemRVF, ordem_nova: int):
             raise err
 
 
-def inclui_imagemrvf(mongodb, session, image, filename, dataModificacao, rvf_id: int):
+def inclui_imagemrvf(mongodb, session, image, filename, rvf_id: int, dataModificacao=None):
     bson_img = BsonImage()
     bson_img.set_campos(filename, image, rvf_id=str(rvf_id))
     fs = GridFS(mongodb)
@@ -367,7 +367,8 @@ def inclui_imagemrvf(mongodb, session, image, filename, dataModificacao, rvf_id:
         imagem.imagem = str(_id)
         imagem.descricao = filename
         imagem.ordem = len(rvf.imagens) + 1
-        imagem.dataModificacao = dataModificacao
+        if dataModificacao:
+            imagem.dataModificacao = dataModificacao
         try:
             session.add(imagem)
             session.commit()
