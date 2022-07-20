@@ -27,7 +27,12 @@ def bar_plotly(linhas: list, nome: str) -> str:
                     linha_float.append(item)
             linhas_float.append(linha_float)
         df = pd.DataFrame(linhas_float, columns=linhas[0])
-        df['strmes'] = df['Mês'].apply(lambda x: meses[int(x)])
+        def converte_mes(mes):
+            try:
+                meses[int(mes)]
+            except:
+                return mes
+        df['strmes'] = df['Mês'].apply(converte_mes)
         df['Ano e Mês'] = df['Ano'].astype(str) + '-' + df['Mês'].astype(str).str.zfill(2) \
                           + '-' + df['strmes'].astype(str) + ' de ' + df['Ano'].astype(str)
         df = df.drop(columns=['Ano', 'Mês', 'strmes'])

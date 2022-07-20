@@ -330,7 +330,7 @@ def rvf_app(app):
                 image = base64.decodebytes(content.split(',')[1].encode())
             except IndexError:
                 image = base64.decodebytes(content.encode())
-            inclui_imagemrvf(db, session, image, filename, dataModificacao, rvf_id)
+            inclui_imagemrvf(db, session, image, filename, rvf_id, dataModificacao)
         except Exception as err:
             logger.error(str(err), exc_info=True)
             return jsonify({'msg': 'Erro: %s' % str(err)}), 500
@@ -719,7 +719,7 @@ def rvf_app(app):
                 dataModificacao = datetime.now()
                 rvf_id = new_rvf.id
                 inclui_imagemrvf(mongodb, session, content,
-                                              filename, dataModificacao, rvf_id)
+                                              filename, rvf_id, dataModificacao)
 
             return jsonify({'id': new_rvf.id}), 200
 
