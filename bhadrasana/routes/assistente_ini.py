@@ -79,10 +79,10 @@ def assistenteini_app(app):
                         rvf = get_rvf(session, umarvf.id)
                         break
             if rvf is None:
-                imagens = get_imagens_dict_container_id(mongodb, ovr.numeroCEmercante, '')
+                # imagens = get_imagens_dict_container_id(mongodb, ovr.numeroCEmercante, '')
                 rvf = programa_rvf_container(
                     mongodb, mongo_risco, session,
-                    ovr, container, imagens.get(container)
+                    ovr, container, _id
                 )
             if not rvf.descricao:
                 rvf.descricao = 'Análise de imagem de escaneamento, por rotina do COV.'
