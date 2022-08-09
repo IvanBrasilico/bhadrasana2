@@ -648,7 +648,7 @@ def atribui_responsavel_ovr(session, ovr_id: int,
                          'motivo': f'De: {responsavel_anterior} Para: {responsavel}',
                          'user_name': responsavel,  # Novo Responsável
                          'ovr_id': ovr.id,
-                         'meramente_informativo': True
+                         # 'meramente_informativo': True (como reativar a Ficha??)
                          }
         evento = gera_eventoovr(session, evento_params, commit=False,
                                 user_name=user_name, valida_usuario=False)

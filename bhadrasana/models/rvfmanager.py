@@ -88,7 +88,7 @@ def gera_evento_rvf(session, rvf, user_name) -> Optional[EventoOVR]:
         exista, o EventoEspecial.InspecaoNaoInvasiva, se não existir, mesmo sem imagens anexadas
     """
     print(rvf.inspecaonaoinvasiva)
-    if rvf.inspecaonaoinvasiva:
+    if rvf.inspecaonaoinvasiva and (len(rvf.imagens) < 5):
         tipoevento = session.query(TipoEventoOVR).filter(
             TipoEventoOVR.eventoespecial == EventoEspecial.InspecaoNaoInvasiva.value).first()
     else:
@@ -100,7 +100,7 @@ def gera_evento_rvf(session, rvf, user_name) -> Optional[EventoOVR]:
         else:
             logger.error('Tipo Evento RVF não cadastrado!!!')
         return None
-    if (not rvf.inspecaonaoinvasiva) and (len(rvf.imagens) < 3):
+    if (not rvf.inspecaonaoinvasiva) and (len(rvf.imagens) < 5):
         return None
     evento = session.query(EventoOVR).filter(EventoOVR.ovr_id == rvf.ovr_id). \
         filter(EventoOVR.motivo == 'RVF %s' % rvf.id). \
