@@ -14,7 +14,6 @@ from werkzeug.utils import redirect
 from bhadrasana.models.ovr import OVR
 from bhadrasana.models.ovrmanager import cadastra_ovr, atribui_responsavel_ovr
 from bhadrasana.models.rvfmanager import programa_rvf_container, lista_rvfovr, gera_evento_rvf, get_rvf
-from bhadrasana.models.virasana_manager import get_imagens_dict_container_id
 
 
 def assistenteini_app(app):
@@ -39,8 +38,8 @@ def assistenteini_app(app):
             metacarga = meta.get('carga')
             tipooperacao = 2
             if metacarga is None:
-                conhecimento = None
-                descricao = None
+                conhecimento = ''
+                descricao = ''
             else:
                 if metacarga.get('vazio'):
                     conhecimento = metacarga.get('manifesto')
@@ -61,6 +60,7 @@ def assistenteini_app(app):
                         'tipooperacao': tipooperacao,
                         'observacoes': f'Inspeção não invasiva {descricao} ' \
                                        f'{conhecimento} automaticamente registrada.'
+                                       f'Análise do contêiner {container}'
                         }
             ovr = None
             if conhecimento:
