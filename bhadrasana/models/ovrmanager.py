@@ -494,7 +494,8 @@ def get_ovr_container(session, numerolote: str,
     filtro = and_(filtro_data,
                   or_(
                       OVR.numeroCEmercante.in_(listaCE),
-                      OVR.numerodeclaracao.in_(lista_numeroDUEs)
+                      OVR.numerodeclaracao.in_(lista_numeroDUEs),
+                      OVR.observacoes.like('%' + numerolote + '%'),
                   ))
     q = session.query(OVR).filter(filtro)
     logger.info(f'{str(q)} - {datainicio} - {datafim} - {listaCE} - {lista_numeroDUEs}')

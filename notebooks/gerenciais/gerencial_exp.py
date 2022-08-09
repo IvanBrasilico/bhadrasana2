@@ -120,6 +120,21 @@ df_apreensoes_sum = df_apreensoes.groupby(['Ano', 'Mês']).agg(
     peso=pd.NamedAgg(column='Peso', aggfunc='sum')).reset_index()
 
 
+SQL_ABERTURAS = '''
+select year(rvf.datahora) as Ano, month(rvf.datahora) as Mês, rvf.datahora, r.nome as recinto,
+ ovr.id as Ficha, rvf.id as RVF, rvf.numerolote as Conteiner
+ from ovr_ovrs ovr
+ inner join ovr_verificacoesfisicas rvf on rvf.ovr_id = ovr.id
+ inner join ovr_recintos r on r.id = ovr.recinto_id
+ where ovr.setor_id in (1, 2, 3)  and ovr.tipooperacao = 2 
+ and ovr.fase >=3 and rvf.numerolote is not null
+ and rvf.datahora is not null and rvf.create_date != '0'
+ order by Ano, Mês, Ficha, RVF
+'''
+df_aberturas = pd.read_sql(SQL_ABERTURAS, engine)
+df_aberturas['AnoMes'] = df_aberturas.apply(AnoMes, axis=1)
+df_aberturas['Alerta'] = df_aberturas.apply(TemAlerta, axis=1)
+
 def FiltraApreensoes(mindatahora=None, maxdatahora= None):
     df_apreensoes_loc = df_apreensoes.copy()
     if mindatahora is None:
@@ -132,9 +147,21 @@ def FiltraApreensoes(mindatahora=None, maxdatahora= None):
         df_apreensoes_loc = df_apreensoes_loc[df_apreensoes_loc.datahora < maxdatahora]
     return df_apreensoes_loc, mindatahora, maxdatahora
 
+def FiltraApreensoes(mindatahora=None, maxdatahora= None):
+    df_apreensoes_loc = df_apreensoes.copy()
+    df_aberturas_loc = df_aberturas.copy()
+    if mindatahora is None:
+        mindatahora = df_aberturas[~ df_aberturas.Conteiner.isna()].datahora.min()
+    if maxdatahora is None:
+        maxdatahora = df_aberturas[~ df_aberturas.Conteiner.isna()].datahora.max()
+    df_aberturas_loc = df_aberturas_loc[df_aberturas_loc.datahora < maxdatahora]
+    df_aberturas_loc = df_aberturas_loc[df_aberturas_loc.datahora > mindatahora]
+    df_apreensoes_loc = df_apreensoes_loc[df_apreensoes_loc.datahora < maxdatahora]
+    df_apreensoes_loc = df_apreensoes_loc[df_apreensoes_loc.datahora > mindatahora]
+    return df_apreensoes_loc, df_aberturas_loc, mindatahora, maxdatahora
 
 def EstatisticasAlertas(mindatahora=None, maxdatahora= None):
-    df_apreensoes_loc, mindatahora, maxdatahora = FiltraApreensoes(mindatahora, maxdatahora)
+    df_apreensoes_loc, _, mindatahora, maxdatahora = FiltraApreensoes(mindatahora, maxdatahora)
     total_apreensoes_conteiner = (~ df_apreensoes_loc.Conteiner.isna()).sum()
     total_apreensoes_alerta = df_apreensoes_loc.Alerta.sum()
     total_imagens = mongodb['fs.files'].count_documents({
@@ -158,7 +185,7 @@ def EstatisticasAlertas(mindatahora=None, maxdatahora= None):
 
 
 def AlertasporTerminal(mindatahora=None, maxdatahora= None):
-    df_apreensoes_loc, mindatahora, maxdatahora = FiltraApreensoes(mindatahora, maxdatahora)
+    _, _, mindatahora, maxdatahora = FiltraApreensoes(mindatahora, maxdatahora)
     cursor = mongodb['fs.files'].aggregate([
         {'$match': {'metadata.contentType': 'image/jpeg',
                     'metadata.dataescaneamento': {'$gte': mindatahora, '$lt': maxdatahora},
@@ -182,6 +209,43 @@ def AlertasporTerminal(mindatahora=None, maxdatahora= None):
     df_alertas['ratio'] = df_alertas.alertas / df_alertas.imagens
     return df_alertas
 
+def AlertasAberturasApreensoes(mindatahora = None, maxdatahora = None):
+    df_apreensoes_loc, df_aberturas_loc, _, _ = FiltraApreensoes(mindatahora, maxdatahora)
+    df_aberturas_alertas = df_aberturas_loc.groupby(
+        [df_aberturas_loc.recinto, df_aberturas_loc.Alerta]).Conteiner.count().reset_index()
+    df_apreensoes_alertas = df_apreensoes_loc.groupby(['recinto', 'Alerta']).Apreensao.count().reset_index()
+    df_final = df_aberturas_alertas.merge(df_apreensoes_alertas, how='left')
+    df_final.rename(columns={'Conteiner': 'Aberturas'}, inplace=True)
+    df_final['razão'] = df_final.Apreensao / df_final.Aberturas
+    df_final = df_final.fillna(0.)
+    df_total = df_final.groupby(df_final.Alerta).sum().reset_index()
+    df_total['recinto'] = 'Total'
+    df_total['razão'] = df_total.Apreensao / df_total.Aberturas
+    df_totalgeral = df_final.sum(numeric_only=True).to_frame().transpose()
+    df_totalgeral['Alerta'] = '-'
+    df_totalgeral['razão'] = df_totalgeral.Apreensao / df_totalgeral.Aberturas
+    df_totalgeral['recinto'] = 'Total Geral'
+    df_final = df_final.append(df_total).append(df_totalgeral, ignore_index=True)
+    return df_final
+
+def FigAberturasMes(ano, recinto):
+    df_aberturas_group = df_aberturas.groupby(['Ano', 'Mês', 'recinto']).agg(
+        aberturas=pd.NamedAgg(column='RVF', aggfunc='count'),
+        alertas=pd.NamedAgg(column='Alerta', aggfunc='sum')).reset_index()
+    df_apreensoes_group = df_apreensoes.groupby(['Ano', 'Mês', 'recinto']).agg(
+        apreensao=pd.NamedAgg(column='RVF', aggfunc='count'),
+        comalerta=pd.NamedAgg(column='Alerta', aggfunc='sum')).reset_index()
+    df_abertura_apreensao_mes = df_aberturas_group.merge(df_apreensoes_group, how='left', on=['Ano', 'Mês', 'recinto'])
+    df_abertura_apreensao_mes = df_abertura_apreensao_mes.fillna(0.)
+    df_abertura_apreensao_mes['alertas'] = df_abertura_apreensao_mes.alertas.astype(int)
+    df_abertura_apreensao_mes['comalerta'] = df_abertura_apreensao_mes.comalerta.astype(int)
+    df_abertura_apreensao_mes['apreensao'] = df_abertura_apreensao_mes.apreensao.astype(int)
+    df_abertura_apreensao_mes = df_abertura_apreensao_mes[df_abertura_apreensao_mes.Ano == ano]
+    df_abertura_apreensao_mes = df_abertura_apreensao_mes[df_abertura_apreensao_mes.recinto == recinto]
+    fig = px.bar(df_abertura_apreensao_mes, x='Mês', barmode='group',
+                 y=['aberturas', 'alertas', 'apreensao', 'comalerta'],
+                title=f' Estatísticas de {ano} para o recinto {recinto}')
+    fig.show()
 
 def FigTotalApreensaoPorAno():
     df_apreensoes_ano_sum.peso = df_apreensoes_ano_sum.peso.astype(int)

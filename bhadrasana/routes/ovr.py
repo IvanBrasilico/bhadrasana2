@@ -1520,8 +1520,14 @@ def ovr_app(app):
                         if plot_type == '1':
                             plot = burndown_plotly(result)
                         else:
-                            delta = ((today - objective.inicio.date()) /
+                            try:
+                                delta = ((today - objective.inicio.date()) /
                                      (objective.fim - objective.inicio)) * result.ameta
+                            except:
+                                print(objective.fim)
+                                print(objective.inicio)
+                                print(result.ameta)
+                                delta = 0.
                             plot = gauge_plotly_plot(result.result.nome, result.ameta,
                                                      sum([row['result'] for row in result.resultados]),
                                                      delta)
