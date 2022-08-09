@@ -1909,7 +1909,7 @@ def ovr_app(app):
 
         return render_template('pesquisa_simples.html', resultado=resultado)
 
-    @app.route('/encerrar_ficha', methods=['POST'])
+    @app.route('/encerrar_ficha', methods=['GET', 'POST'])
     @login_required
     def encerrar_ficha():
         session = app.config.get('dbsession')
@@ -1923,7 +1923,7 @@ def ovr_app(app):
             logger.error('Erro ao encerrar a ficha')
             logger.error(str(err))
             flash('Ficha não encerrada. ' + str(err))
-        return redirect(url_for('index'))
+        return redirect(url_for('ovr', id=ovr_id))
 
     # telegram - Minhas Fichas
     @app.route('/api/minhas_verificacoes', methods=['GET'])
