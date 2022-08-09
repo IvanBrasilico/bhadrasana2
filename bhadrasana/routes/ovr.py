@@ -1913,7 +1913,7 @@ def ovr_app(app):
     @login_required
     def encerrar_ficha():
         session = app.config.get('dbsession')
-        ovr_id = request.form.get('ovr_id')
+        ovr_id = request.values.get('ovr_id')
         usuario = get_usuario(session, current_user.name)
         user_name = usuario.cpf
         try:
