@@ -1,6 +1,7 @@
 import locale
 import os
 import sys
+from datetime import date
 
 import pandas as pd
 import plotly.express as px
@@ -137,18 +138,6 @@ df_aberturas['Alerta'] = df_aberturas.apply(TemAlerta, axis=1)
 
 def FiltraApreensoes(mindatahora=None, maxdatahora= None):
     df_apreensoes_loc = df_apreensoes.copy()
-    if mindatahora is None:
-        mindatahora = df_apreensoes[~ df_apreensoes.Conteiner.isna()].datahora.min()
-    else:
-        df_apreensoes_loc = df_apreensoes_loc[df_apreensoes_loc.datahora > mindatahora]
-    if maxdatahora is None:
-        maxdatahora = df_apreensoes[~ df_apreensoes.Conteiner.isna()].datahora.max()
-    else:
-        df_apreensoes_loc = df_apreensoes_loc[df_apreensoes_loc.datahora < maxdatahora]
-    return df_apreensoes_loc, mindatahora, maxdatahora
-
-def FiltraApreensoes(mindatahora=None, maxdatahora= None):
-    df_apreensoes_loc = df_apreensoes.copy()
     df_aberturas_loc = df_aberturas.copy()
     if mindatahora is None:
         mindatahora = df_aberturas[~ df_aberturas.Conteiner.isna()].datahora.min()
@@ -250,14 +239,25 @@ def FigAberturasMes(ano, recinto):
 def FigTotalApreensaoPorAno():
     df_apreensoes_ano_sum.peso = df_apreensoes_ano_sum.peso.astype(int)
     fig = px.bar(df_apreensoes_ano_sum, x='Ano', y='qtde', text='peso',
-                 title='Soma dos pesos de apreensões')
+                 title='Soma dos pesos de apreensões por ano')
     fig.update_layout(width=WIDTH)
     fig.show()
     fig = px.bar(df_apreensoes, x='Ano', y='Peso', text='Ficha', barmode='group', text_auto=True,
-                 title='Pesos de apreensões empilhados')
+                 title='Pesos de apreensões empilhados por ano')
     fig.update_layout(width=WIDTH)
     fig.show()
 
+def FigTotalApreensaoPorAnoParcial():
+    mesatual = date.today().month
+    df_apreensoes_filtered = df_apreensoes[df_apreensoes['Mês'] <= mesatual]
+    df_apreensoes_ano_sum = df_apreensoes_filtered.groupby(['Ano']).agg(
+        qtde=pd.NamedAgg(column='Apreensao', aggfunc='count'),
+        peso=pd.NamedAgg(column='Peso', aggfunc='sum')).reset_index()
+    df_apreensoes_ano_sum.peso = df_apreensoes_ano_sum.peso.astype(int)
+    fig = px.bar(df_apreensoes_ano_sum, x='Ano', y='qtde', text='peso',
+                 title='Soma dos pesos de apreensões por ano até o mês atual')
+    fig.update_layout(width=WIDTH)
+    fig.show()
 
 def FigTotalApreensaoPorAnoMes():
     data = []
@@ -310,3 +310,27 @@ def FigDemoraCadastramento():
     fig = px.bar(dfn, x='AnoMes', y='dias', text='qtde',
                  title='Média de dias: demora entre verificação e registro')
     fig.show()
+
+
+SQL_PORTOBALDEACAO = '''
+select m.portoDescarregamento as Porto, count(a.id) as Qtde, sum(a.peso) as Peso
+ from ovr_apreensoes_rvf a
+ inner join ovr_verificacoesfisicas v on v.id = a.rvf_id
+ inner join ovr_ovrs o on o.id = v.ovr_id
+ inner join conhecimentosresumo c on c.numeroCEmercante = o.numeroCEmercante
+ inner join manifestosresumo m on m.numero = c.manifestoCE
+ group by m.portoDescarregamento
+'''
+SQL_PORTODESTINO = '''
+ select c.portoDestFinal as Porto, count(a.id) as Qtde, sum(a.peso) as Peso
+ from ovr_apreensoes_rvf a
+ inner join ovr_verificacoesfisicas v on v.id = a.rvf_id
+ inner join ovr_ovrs o on o.id = v.ovr_id
+ inner join conhecimentosresumo c on c.numeroCEmercante = o.numeroCEmercante
+ group by c.portoDestFinal
+'''
+df_destino = pd.read_sql(SQL_PORTODESTINO, engine)
+df_baldeacao = pd.read_sql(SQL_PORTOBALDEACAO, engine)
+df_ocorrencias = df_destino.merge(df_baldeacao, on='Porto', how='outer',
+                                  suffixes=['Destino', 'Baldeação']).fillna(0.)
+df_ocorrencias['QtdeSomada'] = df_ocorrencias['QtdeDestino'] + df_ocorrencias['QtdeBaldeação']
