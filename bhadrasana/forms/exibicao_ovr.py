@@ -92,10 +92,12 @@ class ExibicaoOVR:
              'Data Ficha',
              'CE Mercante',
              'CNPJ/Nome Fiscalizado',
+             'Descrição',
              'Infrações RVFs',
              'Marcas RVFs',
              'Peso apreensões',
              'Valor TG',
+             'Resultados informados',
              'Responsável atual',
              'Auditor Responsável'],
         TipoExibicao.Resumo:
@@ -301,14 +303,19 @@ class ExibicaoOVR:
             infracoes, marcas = self.get_infracoes_e_marcas(ovr)
             peso_apreensoes = self.get_peso_apreensoes(ovr)
             valor_tgs = self.get_valor_tgs(ovr)
+            resultados = []
+            for resultado in ovr.resultados:
+                resultados.append(f'<b>{resultado.get_tipo_resultado}:</b> {resultado.valor :,.2f}<br>')
             return ovr.id, visualizado, [
                 ovr.datahora,
                 ovr.numeroCEmercante,
                 fiscalizado,
+                ovr.observacoes,
                 ', '.join(infracoes),
                 ', '.join(marcas),
                 '{:0.2f}'.format(peso_apreensoes),
                 '{:0.2f}'.format(valor_tgs),
+                '\n'.join(resultados),
                 responsavel_descricao,
                 auditor_descricao]
         if self.tipo == TipoExibicao.Resumo:
