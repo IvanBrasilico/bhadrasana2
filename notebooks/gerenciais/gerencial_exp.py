@@ -238,7 +238,7 @@ def FigAberturasMes(ano, recinto):
 
 def FigTotalApreensaoPorAno():
     df_apreensoes_ano_sum.peso = df_apreensoes_ano_sum.peso.astype(int)
-    fig = px.bar(df_apreensoes_ano_sum, x='Ano', y='qtde', text='peso',
+    fig = px.bar(df_apreensoes_ano_sum, x='Ano', y='peso', text='qtde',
                  title='Soma dos pesos de apreensões por ano')
     fig.update_layout(width=WIDTH)
     fig.show()
