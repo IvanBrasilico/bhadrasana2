@@ -341,7 +341,7 @@ def ovr_app(app):
                             linhas.append([grupo, linha[0], *linha[2]])
                     print(linhas)
                     df = pd.DataFrame(linhas)
-                    df.columns = titulos_exibicao
+                    df.columns = ['Grupo', *titulos_exibicao]
                     out_filename = '{}_{}.xls'.format('PesquisaFicha_',
                         datetime.strftime(datetime.now(), '%Y-%m-%dT%H-%M-%S')
                     )

@@ -296,9 +296,9 @@ class ExibicaoOVR:
                 ovr.numero,
                 ovr.numeroCEmercante,
                 ', '.join(alertas),
-                ovr.observacoes,
-                'Mercadoria',
-                'Lista de NCMs']
+                str(ovr.observacoes or ''),
+                mercadoria,
+                lista_de_ncms]
         if self.tipo == TipoExibicao.Descritivo:
             return ovr.id, visualizado, [
                 ovr.datahora,
@@ -306,7 +306,7 @@ class ExibicaoOVR:
                 ovr.numeroCEmercante,
                 ovr.numerodeclaracao,
                 fiscalizado,
-                ovr.observacoes,
+                str(ovr.observacoes or ''),
                 responsavel_descricao,
                 html_ultimo_evento,
                 html_penultimo_evento]
@@ -314,7 +314,7 @@ class ExibicaoOVR:
                 self.tipo == TipoExibicao.Empresa):
             infracoes, marcas = self.get_infracoes_e_marcas(ovr)
             if self.tipo == TipoExibicao.Ocorrencias:
-                campo_comum = ovr.observacoes
+                campo_comum = str(ovr.observacoes or '')
             else:
                 campo_comum = fiscalizado
             return ovr.id, visualizado, [
@@ -337,7 +337,7 @@ class ExibicaoOVR:
                 ovr.datahora,
                 ovr.numeroCEmercante,
                 fiscalizado,
-                ovr.observacoes,
+                str(ovr.observacoes or ''),
                 ', '.join(infracoes),
                 ', '.join(marcas),
                 '{:0.2f}'.format(peso_apreensoes),
@@ -406,7 +406,7 @@ class ExibicaoOVR:
             if ovr.setor:
                 resumo.append(f'<b>Setor</b>: {ovr.setor.nome}')
             if ovr.observacoes:
-                resumo.append(ovr.observacoes)
+                resumo.append(str(ovr.observacoes or ''))
             if len(ovr.flags) > 0:
                 resumo.append(f'<b>Alertas</b>: {[str(flag) for flag in ovr.flags]}')
             if fiscalizado:
