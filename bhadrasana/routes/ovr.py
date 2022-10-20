@@ -279,6 +279,7 @@ def ovr_app(app):
     def pesquisa_ovr():
         session = app.config.get('dbsession')
         LIMIT = 200
+        LIMIT_EXPORTAR = 1_000
         titulos_exibicao = []
         listaovrs = []
         listaagrupada = {}
@@ -321,6 +322,7 @@ def ovr_app(app):
                                             responsaveis=usuarios, auditores=auditores)
                 filtro_form.validate()
                 logger.info('filtro_form data: ' + str(dict(filtro_form.data.items())))
+                limite = LIMIT_EXPORTAR if request.form.get('exportar') else LIMIT
                 ovrs = get_ovr_filtro(session,
                                       pfiltro=dict(filtro_form.data.items()),
                                       limit=LIMIT)
@@ -330,11 +332,13 @@ def ovr_app(app):
                 titulos_exibicao = exibicao.get_titulos()
                 listaovrs = [exibicao.get_linha(ovr) for ovr in ovrs]
                 print(request.form)
+                listaagrupada = agrupa_ovrs(ovrs, listaovrs, filtro_form.agruparpor.data)
                 if request.form.get('exportar') is not None:
                     linhas = []
                     # linhas.append(titulos_exibicao)
-                    for linha in listaovrs:
-                        linhas.append([linha[0], *linha[2]])
+                    for grupo, sub_listaovrs in listaagrupada.items():
+                        for linha in listaovrs:
+                            linhas.append([grupo, linha[0], *linha[2]])
                     print(linhas)
                     df = pd.DataFrame(linhas)
                     df.columns = titulos_exibicao
@@ -343,7 +347,6 @@ def ovr_app(app):
                     )
                     df.to_excel(os.path.join(get_user_save_path(), out_filename), index=False)
                     return redirect('static/%s/%s' % (current_user.name, out_filename))
-                listaagrupada = agrupa_ovrs(ovrs, listaovrs, filtro_form.agruparpor.data)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')

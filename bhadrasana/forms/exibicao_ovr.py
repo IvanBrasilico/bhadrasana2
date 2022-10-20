@@ -8,7 +8,7 @@ from bhadrasana.models.laudo import get_empresa
 from bhadrasana.models.ovr import OVR
 from bhadrasana.models.ovrmanager import get_visualizacoes, lista_tgovr
 from bhadrasana.models.rvfmanager import lista_rvfovr
-from bhadrasana.models.virasana_manager import get_conhecimento
+from bhadrasana.models.virasana_manager import get_conhecimento, get_ncms_conhecimento
 
 
 class TipoExibicao(Enum):
@@ -18,6 +18,7 @@ class TipoExibicao(Enum):
     Empresa = 4
     Resultado = 5
     Resumo = 6
+    FMA_2 = 7
 
 
 def agrupa_ovrs(ovrs, listaovrs, campo):
@@ -56,6 +57,18 @@ class ExibicaoOVR:
              'Evento Anterior',
              'Responsável atual',
              'Auditor Responsável'],
+        TipoExibicao.FMA_2:
+            ['ID',
+             'Data',
+             'Tipo Operação',
+             'Recinto',
+             'Ano',
+             'Número doc.',
+             'CE Mercante',
+             'Alertas',
+             'Observações',
+             'Mercadoria',
+             'Lista de NCMs'],
         TipoExibicao.Descritivo:
             ['ID',
              'Data Ficha',
@@ -272,6 +285,20 @@ class ExibicaoOVR:
                 html_penultimo_evento,
                 responsavel_descricao,
                 auditor_descricao]
+        if self.tipo == TipoExibicao.FMA_2:
+            alertas = [flag.nome for flag in ovr.flags]
+            mercadoria, lista_de_ncms = self.get_mercadoria_mercante(ovr)
+            return ovr.id, visualizado, [
+                ovr.datahora,
+                ovr.get_tipooperacao(),
+                recinto_nome,
+                ovr.get_ano(),
+                ovr.numero,
+                ovr.numeroCEmercante,
+                ', '.join(alertas),
+                ovr.observacoes,
+                'Mercadoria',
+                'Lista de NCMs']
         if self.tipo == TipoExibicao.Descritivo:
             return ovr.id, visualizado, [
                 ovr.datahora,
@@ -343,6 +370,16 @@ class ExibicaoOVR:
             resumo.append(f'<b>Mercadoria</b>: {conhecimento.descricao}')
             resumo.append(f'<b>M3</b>: {conhecimento.cubagem}')
         return resumo
+
+    def get_mercadoria_mercante(self, ovr) -> Tuple[str, str]:
+        mercadoria = ''
+        lista_ncms = ''
+        conhecimento = get_conhecimento(self.session, ovr.numeroCEmercante)
+        if conhecimento:
+            mercadoria = str(conhecimento.descricao)
+            ncms = get_ncms_conhecimento(self.session, ovr.numeroCEmercante)
+            lista_ncms = ', '.join([ncm.identificacaoNCM for ncm in ncms])
+        return mercadoria, lista_ncms
 
     def get_OVR_resumo_html(self, ovr, mercante=True,
                             fiscalizado=False, eventos=False,
