@@ -10,7 +10,7 @@ from bhadrasana.models import Enumerado as ModelEnumerado, usuario_tem_perfil, \
     perfilAcesso, Cargo
 from bhadrasana.models import Setor, Usuario, PerfilUsuario
 from bhadrasana.models.ovr import Marca, RoteiroOperacaoOVR, TipoEventoOVR, \
-    Enumerado, Recinto, RepresentanteMarca, Representacao, Assistente, TiposEventoAssistente
+    Enumerado, Recinto, RepresentanteMarca, Representacao, Assistente, TiposEventoAssistente, Flag
 
 
 class ProtectedModelView(ModelView):
@@ -85,6 +85,9 @@ class RecintosModel(SupervisorModelView):
     column_list = ('nome', 'descricao', 'cod_dte', 'cod_siscomex', 'cod_unidade')
     form_columns = ('nome', 'descricao', 'cod_dte', 'cod_siscomex', 'cod_unidade')
 
+
+class FlagModel(SupervisorModelView):
+    column_searchable_list = ['nome']
 
 class MarcaModel(SupervisorModelView):
     column_searchable_list = ['nome']
@@ -167,7 +170,8 @@ def admin_app(app, session):
     admin.add_view(TipoEventoModel(TipoEventoOVR, session, category='Eventos'))
     admin.add_view(RoteirosModel(RoteiroOperacaoOVR, session, category='Eventos'))
     admin.add_view(TiposEventoAssistenteModel(TiposEventoAssistente, session, category='Eventos'))
-    admin.add_view(RecintosModel(Recinto, session))
+    admin.add_view(RecintosModel(Recinto, session, category='Tabelas'))
+    admin.add_view(FlagModel(Flag, session, category='Tabelas'))
 
     admin.add_link(LogoutMenuLink(name='Janela principal',
                                   url='/bhadrasana2/', category='Ir para'))
