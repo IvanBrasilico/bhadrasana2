@@ -715,7 +715,7 @@ def ovr_app(app):
     @app.route('/api/processoovr', methods=['POST'])
     @csrf.exempt
     @login_required
-    def processoovr():
+    def processoovr_api():
         session = app.config.get('dbsession')
         try:
             ovr_id = request.form['ovr_id']
