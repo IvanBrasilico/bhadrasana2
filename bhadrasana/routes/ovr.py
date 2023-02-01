@@ -712,6 +712,22 @@ def ovr_app(app):
         # return redirect(request.referrer)
         return redirect(url_for('ovr', id=ovr_id))
 
+    @app.route('/api/processoovr', methods=['POST'])
+    @csrf.exempt
+    @login_required
+    def processoovr():
+        session = app.config.get('dbsession')
+        try:
+            ovr_id = request.form['ovr_id']
+            processo_ovr_form = ProcessoOVRForm(request.form)
+            processo_ovr_form.validate()
+            gera_processoovr(session, dict(processo_ovr_form.data.items()))
+            return jsonify({'msg': 'Sucesso!'}), 201
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            return jsonify({'msg': 'Erro: %s' % str(err)}), 500
+
+
     @app.route('/resultadoovr', methods=['POST'])
     @login_required
     def resultadoovr():
