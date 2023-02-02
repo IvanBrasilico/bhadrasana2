@@ -45,12 +45,13 @@ SQL_APREENSOES = \
     SELECT year(rvf.datahora) as Ano, month(rvf.datahora) as Mês, rvf.datahora,
       r.nome as recinto,
       ovr.id as Ficha, rvf.id as RVF, rvf.descricao as relato, rvf.numerolote as Conteiner,
-      a.id as Apreensao, a.descricao, t.descricao, a.peso as Peso
+      a.id as Apreensao, a.descricao, t.descricao, a.peso as Peso, c.PortoDestFinal as PortoDestino
       FROM ovr_ovrs ovr
      inner join ovr_verificacoesfisicas rvf on rvf.ovr_id = ovr.id
      inner join ovr_apreensoes_rvf a on a.rvf_id = rvf.id
      inner join ovr_tiposapreensao t on t.id = a.tipo_id
      inner join ovr_recintos r on r.id = ovr.recinto_id
+     left join conhecimentosresumo c on c.numeroCEmercante = ovr.numeroCEmercante
      where ovr.setor_id in (1, 2, 3)  and ovr.tipooperacao != 6
      order by Ano, Mês, Ficha, RVF, Apreensao;'''
 
