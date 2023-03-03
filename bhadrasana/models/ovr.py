@@ -61,10 +61,10 @@ tipoStatusOVR = [
 
 tipoOperacao = [
     'Mercadoria Abandonada',
-    'Análise de risco na importação',
-    'Operação / análise de risco na exportação',
-    'Denúncia na importação',
-    'Denúncia na exportação',
+    'Repressão mediante análise de risco na importação',
+    'Repressão mediante análise de risco na exportação',
+    'Pesquisa e seleção na importação',
+    'Pesquisa e seleção na exportação'
     'Demanda externa',
     'Registro de operação de outros órgãos/países',
     'Vigilância'
