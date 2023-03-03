@@ -64,7 +64,7 @@ tipoOperacao = [
     'Repressão mediante análise de risco na importação',
     'Repressão mediante análise de risco na exportação',
     'Pesquisa e seleção na importação',
-    'Pesquisa e seleção na exportação'
+    'Pesquisa e seleção na exportação',
     'Demanda externa',
     'Registro de operação de outros órgãos/países',
     'Vigilância'
