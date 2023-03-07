@@ -159,4 +159,4 @@ bhadrasana2_password.txt
 /pytest
 /notebooks/gerenciais/eqcom.txt
 /notebooks/gerenciais/importa_fichas_eqcom.ipynb
-/notebooks/data/relatorio_abertura_BTP.xlsx
+/notebooks/data/*
