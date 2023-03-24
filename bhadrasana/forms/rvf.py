@@ -25,6 +25,7 @@ class RVFForm(RastreavelForm):
     inspecaonaoinvasiva = BooleanField('Apenas inspeção não invasiva', default=False)
     marca_id = SelectField('Lista de marcas licenciadas, se existir', default=0)
     infracao_id = SelectField('Lista de possíveis infrações', default=0)
+    k9_apontou = BooleanField('K9 acusou presença de droga', default=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
