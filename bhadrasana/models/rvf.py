@@ -1,12 +1,13 @@
 import sys
 from datetime import datetime
 
-from ajna_commons.flask.conf import SQL_URI
 
 sys.path.append('.')
 sys.path.insert(0, '../ajna_docs/commons')
 sys.path.insert(0, '../virasana')
 sys.path.insert(0, '../ajna_api')
+
+from ajna_commons.flask.conf import SQL_URI
 
 from sqlalchemy import BigInteger, Column, DateTime, func, VARCHAR, Table, \
     Numeric, Integer, create_engine, Boolean
@@ -43,6 +44,12 @@ lacresverificados_table = Table('ovr_lacresverificados', metadata,
                                        ForeignKey('ovr_lacres.id')),
                                 )
 
+k9sutilizados_table = Table('ovr_k9sutilizados', metadata,
+                                Column('rvf_id', BigInteger(),
+                                       ForeignKey('ovr_verificacoesfisicas.id')),
+                                Column('k9_id', BigInteger(),
+                                       ForeignKey('ovr_k9s.id')),
+                                )
 
 class RVF(BaseRastreavel, BaseDumpable):
     __tablename__ = 'ovr_verificacoesfisicas'
@@ -52,7 +59,8 @@ class RVF(BaseRastreavel, BaseDumpable):
     ovr = relationship('OVR')
     numeroCEmercante = Column(VARCHAR(15), index=True)
     numerolote = Column(VARCHAR(20), index=True)
-    descricao = Column(VARCHAR(2000))
+    descricao = Column(VARCHAR(2000), index=True)
+    descricao_interna = Column(VARCHAR(2000), index=True)
     peso = Column(Numeric(10, 2), index=True)
     volume = Column(Numeric(10, 2), index=True)
     imagens = relationship('ImagemRVF', back_populates='rvf')
@@ -62,6 +70,9 @@ class RVF(BaseRastreavel, BaseDumpable):
                                         secondary=infracoesencontradas_table)
     lacresverificados = relationship('Lacre',
                                      secondary=lacresverificados_table)
+    k9_apontou = Column(Boolean, index=True)
+    k9sutilizados = relationship('K9',
+                                     secondary=k9sutilizados_table)
     apreensoes = relationship('ApreensaoRVF',
                               back_populates='rvf')
     datahora = Column(TIMESTAMP, index=True)
@@ -85,6 +96,8 @@ class RVF(BaseRastreavel, BaseDumpable):
                                            for lacre in self.lacresverificados]
             dumped['apreensoes'] = [apreensao.dump()
                                     for apreensao in self.apreensoes]
+            dumped['k9sutilizados'] = [k9.nome
+                                           for k9 in self.k9sutilizados]
 
         return dumped
 
@@ -94,7 +107,7 @@ class ImagemRVF(BaseRastreavel, BaseDumpable):
     id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                 primary_key=True)
     imagem = Column(VARCHAR(100))  # _id da imagem no GrifFS
-    descricao = Column(VARCHAR(200), index=True)
+    descricao = Column(VARCHAR(1000), index=True)
     tg_id = Column(BigInteger(), index=True)
     itemtg_id = Column(BigInteger(), index=True)
     marca_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
@@ -132,6 +145,13 @@ class Lacre(Base):
     id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                 primary_key=True)
     numero = Column(VARCHAR(50), index=True)
+
+
+class K9(Base):
+    __tablename__ = 'ovr_k9s'
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'),
+                primary_key=True)
+    nome = Column(VARCHAR(50), index=True)
 
 
 class TipoApreensao(Base):
@@ -193,19 +213,13 @@ if __name__ == '__main__':
         engine = create_engine(SQL_URI)
         Session = sessionmaker(bind=engine)
         session = Session()
-        sys.exit(0)
+        # sys.exit(0)
 
         # metadata.drop_all(engine, [ ])
         metadata.create_all(engine,
                             [
-                                metadata.tables['ovr_apreensoes_rvf'],
-                                metadata.tables['ovr_tiposapreensao'],
-                                metadata.tables['ovr_marcasencontradas'],
-                                metadata.tables['ovr_lacres'],
-                                metadata.tables['ovr_lacresverificados'],
-                                metadata.tables['ovr_infracoes'],
-                                metadata.tables['ovr_verificacoesfisicas'],
-                                metadata.tables['ovr_imagensrvf'],
+                                metadata.tables['ovr_k9s'],
+                                metadata.tables['ovr_k9sutilizados']
                             ])
 
-        create_infracoes(session)
+        # create_infracoes(session)

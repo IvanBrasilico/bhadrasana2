@@ -29,7 +29,7 @@ from bhadrasana.models.rvfmanager import get_rvfs_filtro, get_rvf, \
     inclui_lacre_verificado, get_imagemrvf, inclui_nova_ordem_arquivo, \
     get_anexos_ordenado, get_tiposapreensao_choice, gera_apreensao_rvf, \
     exclui_apreensao_rvf, get_peso, rvf_ordena_imagensrvf_por_data_criacao, \
-    get_anexos_mongo, get_infracoes_choice
+    get_anexos_mongo, get_infracoes_choice, get_k9s, inclui_k9_utilizada, exclui_k9_utilizada
 from bhadrasana.views import csrf, valid_file, get_user_save_path
 
 
@@ -83,6 +83,8 @@ def rvf_app(app):
         marcas_encontradas = []
         anexos = []
         lacres_verificados = []
+        k9s = []
+        k9s_utilizados = []
         arvf = None
         rvf_form = RVFForm()
         title_page = 'RVF'
@@ -108,6 +110,7 @@ def rvf_app(app):
             db = app.config['mongo_risco']
             marcas = get_marcas(session)
             infracoes = get_infracoes(session)
+            k9s = get_k9s(session)
             rvf_id = request.args.get('id')
             title_page = 'RVF ' + rvf_id
             if rvf_id is not None:
@@ -126,6 +129,7 @@ def rvf_app(app):
                 infracoes_encontradas = arvf.infracoesencontradas
                 marcas_encontradas = arvf.marcasencontradas
                 lacres_verificados = arvf.lacresverificados
+                k9s_utilizados = arvf.k9sutilizados
                 # Temporário - para recuperar imagens 'perdidas' na transição
                 ressuscita_anexos_perdidos(db, session, arvf)
                 anexos = get_ids_anexos_ordenado(arvf)
@@ -141,11 +145,13 @@ def rvf_app(app):
         return render_template('rvf.html',
                                infracoes=infracoes,
                                marcas=marcas,
+                               k9s=k9s,
                                oform=rvf_form,
                                apreensao_form=apreensao_form,
                                apreensoes=apreensoes_rvf,
                                infracoes_encontradas=infracoes_encontradas,
                                marcas_encontradas=marcas_encontradas,
+                               k9s_utilizados = k9s_utilizados,
                                lacres_verificados=lacres_verificados,
                                anexos=anexos,
                                title_page=title_page)
@@ -283,6 +289,34 @@ def rvf_app(app):
             return jsonify({'msg': str(err)}), 500
         return jsonify([{'id': marca.id, 'nome': marca.nome}
                         for marca in novas_marcas]), 201
+
+    @app.route('/inclui_k9_utilizada', methods=['GET'])
+    @login_required
+    def inclui_k9():
+        try:
+            session = app.config.get('dbsession')
+            rvf_id = request.args.get('rvf_id')
+            k9_nome = request.args.get('k9_nome')
+            k9s = inclui_k9_utilizada(session, rvf_id, k9_nome)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            return jsonify({'msg': str(err)}), 500
+        return jsonify([{'id': k9.id, 'nome': k9.nome}
+                        for k9 in k9s]), 201
+
+    @app.route('/exclui_k9_utilizada', methods=['GET'])
+    @login_required
+    def exclui_k9():
+        try:
+            session = app.config.get('dbsession')
+            rvf_id = request.args.get('rvf_id')
+            k9_id = request.args.get('k9_id')
+            k9s = exclui_k9_utilizada(session, rvf_id, k9_id)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            return jsonify({'msg': str(err)}), 500
+        return jsonify([{'id': k9.id, 'nome': k9.nome}
+                        for k9 in k9s]), 201
 
     @app.route('/rvf_imgupload', methods=['POST'])
     @login_required

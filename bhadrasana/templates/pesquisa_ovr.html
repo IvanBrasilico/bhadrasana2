@@ -128,38 +128,38 @@
             </div>
             <div class="row col-sm-12">
                 <div class="col-sm-2">
+                    <label for="agruparpor">Agrupar por</label>
+                    {{ oform.agruparpor(class='form-control') }}
+                </div>
+                <div class="col-sm-2">
                     <label for="tipoexibicao">Campos a exibir</label>
                     {{ oform.tipoexibicao(class='form-control') }}
                 </div>
                 <div class="col-sm-1">
-                    <label for="temapreensao">Com Apreensão</label>
-                </div>
-                <div class="col-sm-1">
-                    <label for="temtg">Com TG</label>
-                </div>
-                <div class="col-sm-2">
-                    <label for="temtg">Com Resultado</label>
-                </div>
-                <div class="col-sm-6">
-                    <label for="observacoes">Observações, número da declaração, número do CE Mercante,
-                        cpf/cnpj do fiscalizado, número do Contêiner ou descrição da RVF</label>
-                </div>
-            </div>
-            <div class="row col-sm-12">
-                <div class="col-sm-2">
-                    <label for="agruparpor">Agrupar por</label>
-                    {{ oform.agruparpor(class='form-control') }}
-                </div>
-                <div class="col-sm-1">
+                    <label for="temapreensao">Apreensão</label>
                     {{ oform.temapreensao(class='form-control') }}
                 </div>
                 <div class="col-sm-1">
+                    <label for="temtg">TG</label>
                     {{ oform.temtg(class='form-control') }}
                 </div>
                 <div class="col-sm-2">
+                    <label for="tiporesultado">Resultado</label>
                     {{ oform.tiporesultado_id(class='form-control') }}
                 </div>
-                <div class="col-sm-6">
+                <div class="col-sm-2">
+                    <label for="inverte_temevento">Inverter "Teve Evento"</label>
+                    {{ oform.inverte_temevento(class='form-control') }}
+                </div>
+                <div class="col-sm-2">
+                    <label for="inverte_temevento">Data modificação</label>
+                    {{ oform.data_modificacao(class='form-control') }}
+                </div>
+            </div>
+            <div class="row col-sm-12">
+                <div class="col-sm-12">
+                    <label for="observacoes">Observações, número da declaração, número do CE Mercante,
+                        cpf/cnpj do fiscalizado, número do Contêiner ou descrição da RVF</label>
                     {{ oform.observacoes(class='form-control') }}
                 </div>
             </div>

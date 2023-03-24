@@ -85,6 +85,8 @@ class FiltroOVRForm(FlaskForm):
     temapreensao = BooleanField(default=False)
     temtg = BooleanField(default=False)
     tiporesultado_id = SelectField('resultados', default=-1)
+    inverte_temevento = BooleanField(default=False)
+    data_modificacao = BooleanField(default=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -40,6 +40,10 @@
                             Descrição
                             {{ oform.descricao(class='form-control') }}
                         </div>
+                        <div class="col-sm-12">
+                            Descrição interna detalhada
+                            {{ oform.descricao_interna(class='form-control') }}
+                        </div>
                         <div class="row col-sm-12">
                             <div class="col-sm-3">
                                 <label for="peso">Peso verificado em Kg</label>
@@ -184,6 +188,28 @@
             {% endfor %}
         </div>
     </div>
+    <div class="row col-sm-12">
+        <div class="col-sm-3">
+            <h3>K9s utilizados</h3>
+        </div>
+        <div class="col-sm-9">
+            <br>
+            <div class="ui-widget">
+                <input id="k9s" class="form-control">
+            </div>
+        </div>
+    </div>
+    <div class="row col-sm-12">
+        <div class="col-sm-12" id="div_k9s_utilizadas" border="1">
+            {% for k9 in k9s_utilizados %}
+            <button type="button" class="btn btn-primary">
+                {{ k9.nome }} <span class="badge"
+                                       onclick="exclui_k9_utilizada({{oform.id.data}}, {{ k9.id }})">X</span>
+            </button>
+            {% endfor %}
+        </div>
+    </div>
+
     <div class="row col-sm-12">
         <div class="form-group">
             <h4>Selecione anexos:</h4>
@@ -414,5 +440,47 @@ $('input#marcas').bind('keydown', function(e) {
     $('input#marcas').val('');
   }
 });
+
+function mostra_k9s(k9s_utilizadas){
+    $('#div_k9s_utilizadas').empty();
+    $.each(k9s_utilizadas, function(i, k9) {
+        $('<button type="button" class="btn btn-primary">').text(k9.nome+ ' ').append(
+        $('<span class="badge" onclick="exclui_k9_utilizada({{oform.id.data}}, ' + k9.id + ')">').text('X')
+        ).appendTo('#div_k9s_utilizadas');
+    });
+}
+function exclui_k9_utilizada(rvf_id, k9_id){
+    $.getJSON('exclui_k9_utilizada', {
+      rvf_id: rvf_id, k9_id: k9_id
+    }, function(k9s_utilizadas) {
+      mostra_k9s(k9s_utilizadas);
+    });
+}
+function inclui_k9_utilizada(rvf_id, k9_nome){
+    $.getJSON('inclui_k9_utilizada', {
+      rvf_id: rvf_id, k9_nome: k9_nome
+    }, function(k9s_utilizadas) {
+      mostra_k9s(k9s_utilizadas);
+    });
+}
+$( function() {
+    var k9s = [
+    {% for k9 in k9s %}
+    "{{ k9.nome }}",
+    {% endfor %}
+    ];
+    $( "#k9s" ).autocomplete({
+      source: k9s, minLenght: 1
+    });
+} );
+$('input#k9s').bind('keydown', function(e) {
+  if (e.keyCode == 13) {
+    inclui_k9_utilizada({{oform.id.data}}, $('input#k9s').val());
+    $('input#k9s').val('');
+  }
+});
+
+
+
 </script>
 {% endblock %}

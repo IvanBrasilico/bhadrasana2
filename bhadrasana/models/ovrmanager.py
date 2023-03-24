@@ -358,11 +358,18 @@ def get_ovr_filtro(session,
         logger.info('Setores filtro:' + str(filtro))
     if pfiltro and isinstance(pfiltro, dict):
         if pfiltro.get('datainicio'):
-            filtro = and_(OVR.datahora >= pfiltro.get('datainicio'), filtro)
+            if pfiltro.get('data_modificacao'):
+                filtro = and_(OVR.last_modified >= pfiltro.get('datainicio'), filtro)
+            else:
+                filtro = and_(OVR.datahora >= pfiltro.get('datainicio'), filtro)
         datafim = pfiltro.get('datafim')
         if datafim:
             datafim = datafim + timedelta(days=1)
-            filtro = and_(OVR.datahora <= datafim, filtro)
+            if pfiltro.get('data_modificacao'):
+                print('last_modified')
+                filtro = and_(OVR.last_modified <= datafim, filtro)
+            else:
+                filtro = and_(OVR.datahora <= datafim, filtro)
         if pfiltro.get('numeroCEmercante'):
             filtro = and_(
                 or_(
@@ -407,11 +414,20 @@ def get_ovr_filtro(session,
         if pfiltro.get('teveevento') and pfiltro.get('teveevento') != 'None':
             q = session.query(EventoOVR).filter(
                 EventoOVR.tipoevento_id == int(pfiltro.get('teveevento')))
+            if pfiltro.get('datainicio'):
+               q = q.filter(EventoOVR.create_date >= pfiltro.get('datainicio'))
+            datafim = pfiltro.get('datafim')
+            if datafim:
+                datafim = datafim + timedelta(days=1)
+                q = q.filter(EventoOVR.create_date <= datafim)
             if pfiltro.get('usuarioevento') and pfiltro.get('usuarioevento') != 'None':
                 q = q.filter(EventoOVR.user_name == pfiltro.get('usuarioevento'))
             eventos = q.all()
             ids_ovrs = [evento.ovr_id for evento in eventos]
-            filtro = and_(OVR.id.in_(ids_ovrs), filtro)
+            if pfiltro.get('inverte_temevento'):
+                filtro = and_(OVR.id.notin_(ids_ovrs), filtro)
+            else:
+                filtro = and_(OVR.id.in_(ids_ovrs), filtro)
         if pfiltro.get('responsavel_cpf') and pfiltro.get('responsavel_cpf') != 'None':
             filtro = and_(OVR.responsavel_cpf == pfiltro.get('responsavel_cpf'), filtro)
         cpfauditorresponsavel = pfiltro.get('cpfauditorresponsavel')

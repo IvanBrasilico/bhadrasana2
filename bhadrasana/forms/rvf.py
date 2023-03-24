@@ -14,6 +14,9 @@ class RVFForm(RastreavelForm):
     descricao = TextAreaField(u'Descrição',
                               render_kw={'rows': 6, 'cols': 100, 'maxlength': 2000},
                               default='')
+    descricao_interna = TextAreaField(u'Descrição interna',
+                              render_kw={'rows': 6, 'cols': 100, 'maxlength': 2000},
+                              default='')
     peso = DecimalField('Peso efetivo da carga verificada em kg', places=2)
     peso_manifestado = DecimalField('Peso Manifesado no Container em kg', places=2)
     volume = DecimalField('Volume efetivo da carga verificada em m3', places=2)

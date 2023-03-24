@@ -1,19 +1,19 @@
 from datetime import timedelta
 from typing import Callable, List, Tuple, Optional
 
+from ajna_commons.flask.log import logger
+from ajna_commons.models.bsonimage import BsonImage
 from bson import ObjectId
 from gridfs import GridFS, NoFile
 from sqlalchemy import and_
+from virasana.integracao.mercante.mercantealchemy import Item
 
-from ajna_commons.flask.log import logger
-from ajna_commons.models.bsonimage import BsonImage
 from bhadrasana.models import handle_datahora, get_usuario_validando, EBloqueado, gera_objeto
 from bhadrasana.models.ovr import Marca, TipoEventoOVR, EventoEspecial, OVR, EventoOVR
 from bhadrasana.models.ovrmanager import get_ovr, gera_eventoovr, \
     valida_mesmo_responsavel_ovr_user_name
 from bhadrasana.models.rvf import RVF, Infracao, ImagemRVF, Lacre, \
-    TipoApreensao, ApreensaoRVF
-from virasana.integracao.mercante.mercantealchemy import Item
+    TipoApreensao, ApreensaoRVF, K9
 
 
 def get_peso(session, numeroCE, conteiner) -> float:
@@ -35,6 +35,11 @@ def get_peso(session, numeroCE, conteiner) -> float:
 def get_infracoes(session):
     infracoes = session.query(Infracao).all()
     return [infracao for infracao in infracoes]
+
+
+def get_k9s(session):
+    k9s = session.query(K9).all()
+    return [k9 for k9 in k9s]
 
 
 def get_infracoes_choice(session):
@@ -285,6 +290,37 @@ def inclui_marca_encontrada(session, rvf_id, marca_nome) -> List[Marca]:
 
 def exclui_marca_encontrada(session, rvf_id, marca_id) -> List[Marca]:
     return gerencia_marca_encontrada(session, rvf_id, marca_id, inclui=False)
+
+
+def gerencia_k9_utilizada(session, rvf_id, k9_id, inclui=True) -> List[K9]:
+    rvf = session.query(RVF).filter(RVF.id == rvf_id).one_or_none()
+    if rvf:
+        k9 = session.query(K9).filter(K9.id == k9_id).one_or_none()
+        if k9:
+            if inclui:
+                print('Incluindo k9 ' + k9.nome)
+                rvf.k9sutilizados.append(k9)
+            else:
+                rvf.k9sutilizados.remove(k9)
+            try:
+                session.commit()
+            except Exception as err:
+                session.rollback()
+                raise err
+            return rvf.k9sutilizados
+    return []
+
+
+def inclui_k9_utilizada(session, rvf_id, k9_nome) -> List[K9]:
+    k9 = session.query(K9).filter(K9.nome == k9_nome).one_or_none()
+    print(k9.id, k9.nome)
+    if k9:
+        return gerencia_k9_utilizada(session, rvf_id, k9.id, inclui=True)
+    return []
+
+
+def exclui_k9_utilizada(session, rvf_id, k9_id) -> List[K9]:
+    return gerencia_k9_utilizada(session, rvf_id, k9_id, inclui=False)
 
 
 def get_imagemrvf(session, rvf_id: int, _id: str):
