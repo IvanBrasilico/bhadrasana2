@@ -88,7 +88,7 @@ def gera_evento_rvf(session, rvf, user_name) -> Optional[EventoOVR]:
 
     Regras:
         - Se já existe EventoEspecial.RVF para o RVF, não cria mais
-        - Somente cria se RVF tiver ao menos 3 imagens
+        - Somente cria se RVF tiver ao menos 5 imagens
         - Pode ser uma RVF marcada como inspecaonaoinvasiva. Neste caso é criado, caso não
         exista, o EventoEspecial.InspecaoNaoInvasiva, se não existir, mesmo sem imagens anexadas
     """
@@ -110,7 +110,7 @@ def gera_evento_rvf(session, rvf, user_name) -> Optional[EventoOVR]:
     evento = session.query(EventoOVR).filter(EventoOVR.ovr_id == rvf.ovr_id). \
         filter(EventoOVR.motivo == 'RVF %s' % rvf.id). \
         filter(EventoOVR.tipoevento_id == tipoevento.id).one_or_none()
-    if not evento:
+    if evento is None:
         params = {'tipoevento_id': tipoevento.id,
                   'motivo': 'RVF %s' % rvf.id,
                   'user_name': rvf.user_name,
