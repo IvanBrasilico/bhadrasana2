@@ -12,10 +12,10 @@ class RVFForm(RastreavelForm):
     numerolote = StringField(u'Número do contêiner, ou do lote do terminal'
                              u' se não houver contêiner', default='')
     descricao = TextAreaField(u'Descrição',
-                              render_kw={'rows': 6, 'cols': 100, 'maxlength': 2000},
+                              render_kw={'rows': 6, 'cols': 100, 'maxlength': 5000},
                               default='')
     descricao_interna = TextAreaField(u'Descrição interna',
-                              render_kw={'rows': 6, 'cols': 100, 'maxlength': 2000},
+                              render_kw={'rows': 6, 'cols': 100, 'maxlength': 5000},
                               default='')
     peso = DecimalField('Peso efetivo da carga verificada em kg', places=2)
     peso_manifestado = DecimalField('Peso Manifesado no Container em kg', places=2)
