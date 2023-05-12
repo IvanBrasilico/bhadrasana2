@@ -282,3 +282,4 @@ if __name__ == '__main__':
     Base.metadata.create_all(engine, [
         Base.metadata.tables['ovr_perfis_usuarios']
     ])
+
