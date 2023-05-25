@@ -1,18 +1,110 @@
 {% extends "layout.html" %} {% block content %} {{super()}}
 <div id="main" class="container-fluid">
     <div id="top" class="row col-sm-12">
+        <form action="eovr">
+            <label for="ano_mes">Mês de pesquisa:</label>
+            <input type="month" id="ano_mes" name="ano_mes"
+                   min="2020-01" value="{{ano_mes}}">
+            <input type="submit">
+        </form>
+    </div>
+    <div class="row" id="ovrs">
+        <div class="table">
+            <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive"
+                   cellspacing="0"
+                   cellpadding="0" style="width:100%;">
+                {% if df_ovrs is not none %}
+                <tr>
+                    <th>OVR</th>
+                    <th>Quantidade de Operações</th>
+                    <th>Soma valor TGs</th>
+                    <th>Soma peso apreensões</th>
+                </tr>
+                {% for idx, row in df_ovrs.iterrows() %}
+                <tr>
+                    <td style="text-align: left">
+                        <a href="eovr?ano_mes={{ano_mes}}&nome={{row['Nome']}}">{{row['Nome']}}</a>
+                    </td>
+                    <td style="text-align: right">
+                        {{row['quantidade']}}
+                    </td>
+                    <td style="text-align: right">
+                        {{'R${:,.2f}'.format(row['perdimentos'])}}
+                    </td>
+                    <td style="text-align: right">
+                        {{row['apreensoes']}} kg
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td>Sem resultados.</td>
+                </tr>
+                {% endif %}
+            </table>
+        </div>
     </div>
     <div class="row">
-        <h2>Resultados</h2>
+        Campos OVR
     </div>
-    <div class="row col-sm-12">
+    <div class="row" id="OVR">
+        <div class="table">
+            <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive"
+                   cellspacing="0"
+                   cellpadding="0" style="width:100%;">
+                {% if df_operacoes is not none %}
+                <tr>
+                    {% for col in df_operacoes.columns[1:12] %}
+                    <th> {{ col }}</th>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    {% for col in df_operacoes.iloc[0][1:12] %}
+                    <td> {{ col }}</td>
+                    {% endfor %}
+                </tr>
+                {% else %}
+                <tr>
+                    <td>Sem resultados.</td>
+                </tr>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+    <div class="row">
+        Campos Operações
+    </div>
+    <div class="row" id="operacoes">
+        <div class="table">
+            <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive"
+                   cellspacing="0"
+                   cellpadding="0" style="width:100%;">
+                {% if df_operacoes is not none %}
+                <tr>
+                    {% for col in df_operacoes.columns[12:] %}
+                    <th> {{ col }}</th>
+                    {% endfor %}
+                </tr>
+                {% for idx, row in df_operacoes.iterrows() %}
+                <tr>
+                    {% for col in row[12:] %}
+                    <td> {{ col }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td>Sem resultados.</td>
+                </tr>
+                {% endif %}
+            </table>
+        </div>
     </div>
     <div id="bottom" class="row col-sm-12">
         AJNA - Receita Federal do Brasil 2017
     </div>
-</div>
-{% endblock %} {% block scripts %} {{super()}}
-<script>
-</script>
+    {% endblock %} {% block scripts %} {{super()}}
+    <script>
+    </script>
 
-{% endblock %}
+    {% endblock %}
