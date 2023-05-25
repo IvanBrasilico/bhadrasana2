@@ -61,7 +61,7 @@ def eovr_app(app):
         mes = int(ano_mes[5:7])
         try:
             if nome is not None:
-                df = pd.read_excel(f'{get_user_save_path()}e_ovr{ano_mes}.xlsx')
+                df = pd.read_excel(f'{get_user_save_path()}e_ovr{ano_mes}.xlsx', engine="openpyxl")
                 df_operacoes = df[df.Nome == nome]
             else:
                 df = get_fichas_portipo(session, ano, mes)
