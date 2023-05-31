@@ -97,6 +97,7 @@ def get_valor_tgs(ovr):
 
 def preenche_linha_operacao(db_session, operacao, modalidade):
     linha = OrderedDict()
+    linha['Ficha'] = operacao.id
     linha['Órgão'] = 'RFB'
     linha['Equipe'] = operacao.setor.nome
     linha['Modalidade Operação'] = modalidade
@@ -114,6 +115,10 @@ def preenche_linha_operacao(db_session, operacao, modalidade):
         nhoras = nhoras * 5
     if pesoapreensoes > 0:
         nhoras = nhoras * 2
+    flags =  ' '.join([flag.nome for flag in operacao.flags])
+    linha['K9'] = 'K9' in flags
+    linha['Lancha'] = 'Lancha' in flags
+    linha['Drone'] = 'Drone' in flags
     servidores_set = set()
     for evento in operacao.historico:
         servidores_set.add(evento.user_name)

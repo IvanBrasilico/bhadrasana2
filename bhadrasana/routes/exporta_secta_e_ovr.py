@@ -19,6 +19,22 @@ from flask_login import login_required
 from bhadrasana.views import get_user_save_path
 
 
+def monta_payload_json_ovr(df_, nome) -> dict:
+    df_operacoes = df_[df_.Nome == nome]
+    df_ovr = df_operacoes.loc[:, 'Nome':'Motivação']
+    ovr = json.loads(df_ovr.head(1).to_json(orient='records'))
+    df_operacoes = df_operacoes.loc[:, 'Órgão':'Apreensao'].drop(columns=['Servidores'])
+    operacoes = json.loads(df_operacoes.to_json(orient='records'))
+    payload = {**ovr[0], 'operacoes': operacoes}
+    return payload
+
+
+def monta_payload_json(df_, nome_ovr='') -> list:
+    if nome_ovr:
+        return [monta_payload_json_ovr(df_, nome_ovr)]
+    else:
+        return [monta_payload_json_ovr(df_, lnome) for lnome in df_.Nome.unique()]
+
 
 def eovr_app(app):
     @app.route('/eovr', methods=['POST', 'GET'])
@@ -36,25 +52,22 @@ def eovr_app(app):
         ano = int(ano_mes[:4])
         mes = int(ano_mes[5:7])
         try:
-            if nome is not None:
+            if nome:  # Exibir operações da OVR selecionada
                 df = pd.read_excel(f'{get_user_save_path()}e_ovr{ano_mes}.xlsx', engine="openpyxl")
                 df_operacoes = df[df.Nome == nome]
-                if request.values.get('json'):
-                    df_ovr = df_operacoes.loc[:, 'Nome':'Motivação']
-                    ovr = json.loads(df_ovr.head(1).to_json(orient='records'))
-                    df_operacoes = df_operacoes.loc[:, 'Órgão':'Apreensao'].drop(columns=['Servidores'])
-                    operacoes = json.loads(df_operacoes.to_json(orient='records'))
-                    payload = {**ovr[0], 'operacoes': operacoes}
-                    return jsonify(payload)
             else:
                 df = get_fichas_portipo(session, ano, mes)
                 df.to_excel(f'{get_user_save_path()}e_ovr{ano_mes}.xlsx')
-            if df is not None:
-                df_ovrs = df.groupby(df.Nome).agg(
-                    quantidade=pd.NamedAgg(column='Documentos de origem', aggfunc='count'),
-                    perdimentos=pd.NamedAgg(column='Perdimento', aggfunc='sum'),
-                    apreensoes=pd.NamedAgg(column='Apreensao', aggfunc='sum'),
-                ).reset_index()
+            if request.values.get('json'):
+                return jsonify(monta_payload_json(df, nome))
+            df_ovrs = df.groupby(df.Nome).agg(
+                quantidade=pd.NamedAgg(column='Documentos de origem', aggfunc='count'),
+                perdimentos=pd.NamedAgg(column='Perdimento', aggfunc='sum'),
+                apreensoes=pd.NamedAgg(column='Apreensao', aggfunc='sum'),
+                K9=pd.NamedAgg(column='K9', aggfunc='sum'),
+                Lancha=pd.NamedAgg(column='Lancha', aggfunc='sum'),
+                Drone=pd.NamedAgg(column='Drone', aggfunc='sum'),
+            ).reset_index()
             return render_template(f'eovr.html',
                                    ano_mes=ano_mes,
                                    title_page=title_page,
@@ -68,4 +81,5 @@ def eovr_app(app):
         return render_template('eovr.html',
                                title_page=title_page,
                                ano_mes=ano_mes,
-                               df_ovrs=df_ovrs)
+                               df_ovrs=df_ovrs,
+                               df_operacoes=df_operacoes)

@@ -6,6 +6,7 @@
             <input type="month" id="ano_mes" name="ano_mes"
                    min="2020-01" value="{{ano_mes}}">
             <input type="submit">
+            <a href="eovr?ano_mes=ano_mes&json=True">JSON geral</a>
         </form>
     </div>
     <div class="row" id="ovrs">
@@ -19,6 +20,9 @@
                     <th>Quantidade de Operações</th>
                     <th>Soma valor TGs</th>
                     <th>Soma peso apreensões</th>
+                    <th>K9</th>
+                    <th>Lancha</th>
+                    <th>Drone</th>
                     <th>JSON</th>
                 </tr>
                 {% for idx, row in df_ovrs.iterrows() %}
@@ -34,6 +38,15 @@
                     </td>
                     <td style="text-align: right">
                         {{row['apreensoes']}} kg
+                    </td>
+                    <td style="text-align: right">
+                        {{row['K9']}}
+                    </td>
+                    <td style="text-align: right">
+                        {{row['Lancha']}}
+                    </td>
+                    <td style="text-align: right">
+                        {{row['Drone']}}
                     </td>
                     <td>
                         <a href="eovr?ano_mes={{ano_mes}}&nome={{row['Nome']}}&json=True">JSON</a>
@@ -91,7 +104,8 @@
                 </tr>
                 {% for idx, row in df_operacoes.iterrows() %}
                 <tr>
-                    {% for col in row[12:] %}
+                    <td><a href="ovr?id={{row[12]}}" target="_blank">{{row[12]}}</a></td>
+                    {% for col in row[13:] %}
                     <td> {{ col }}</td>
                     {% endfor %}
                 </tr>
