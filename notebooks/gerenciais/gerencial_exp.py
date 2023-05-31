@@ -163,9 +163,9 @@ def FiltraApreensoes(mindatahora=None, maxdatahora= None):
     if maxdatahora is None:
         maxdatahora = df_aberturas[~ df_aberturas.Conteiner.isna()].datahora.max()
     df_aberturas_loc = df_aberturas_loc[df_aberturas_loc.datahora < maxdatahora]
-    df_aberturas_loc = df_aberturas_loc[df_aberturas_loc.datahora > mindatahora]
+    df_aberturas_loc = df_aberturas_loc[df_aberturas_loc.datahora >= mindatahora]
     df_apreensoes_loc = df_apreensoes_loc[df_apreensoes_loc.datahora < maxdatahora]
-    df_apreensoes_loc = df_apreensoes_loc[df_apreensoes_loc.datahora > mindatahora]
+    df_apreensoes_loc = df_apreensoes_loc[df_apreensoes_loc.datahora >= mindatahora]
     return df_apreensoes_loc, df_aberturas_loc, mindatahora, maxdatahora
 
 def EstatisticasAlertas(mindatahora=None, maxdatahora= None):
