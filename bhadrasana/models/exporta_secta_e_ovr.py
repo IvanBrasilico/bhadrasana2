@@ -1,7 +1,16 @@
 import calendar
+
+import pandas as pd
+
+pd.options.display.float_format = '{:,.2f}'.format
+
 from collections import OrderedDict
 
+from sqlalchemy import extract
+from ajna_commons.flask.log import logger
+
 from bhadrasana.models import Usuario
+from bhadrasana.models.ovr import EventoOVR, OVR
 from bhadrasana.models.rvfmanager import lista_rvfovr
 
 
@@ -116,3 +125,30 @@ def preenche_linha_operacao(db_session, operacao, modalidade):
     linha['Perdimento'] = valortgs
     linha['Apreensao'] = pesoapreensoes
     return linha
+
+
+def get_fichas_portipo(db_session, ano, mes):
+    lista_ovrs = db_session.query(OVR).join(EventoOVR) \
+        .filter(OVR.setor_id.in_((1, 2, 3))) \
+        .filter(EventoOVR.fase >= 3) \
+        .filter(extract('year', EventoOVR.create_date) == ano) \
+        .filter(extract('month', EventoOVR.create_date) == mes) \
+        .order_by(OVR.tipooperacao, OVR.id).all()
+    lista_fichas = set()
+    for ovr in lista_ovrs:
+        lista_fichas.add(ovr)
+    lista_final = []
+    for ficha in lista_fichas:
+        try:
+            linha_ovr = preenche_linha_ovr(ficha, ano, mes)
+            linha_operacao = preenche_linha_operacao(db_session, ficha, linha_ovr['Modalidade'])
+            linha_final = linha_ovr.copy()
+            linha_final.update(linha_operacao)
+            lista_final.append(linha_final)
+        except Exception as err:
+            logger.info(str(err))
+            continue
+    df = pd.DataFrame(lista_final)
+    print(df.head())
+    df = df.sort_values('Nome')
+    return df

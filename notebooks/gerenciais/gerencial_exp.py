@@ -55,6 +55,20 @@ SQL_APREENSOES = \
      where ovr.setor_id in (1, 2, 3)  and ovr.tipooperacao != 6
      order by Ano, Mês, Ficha, RVF, Apreensao;'''
 
+SQL_APREENSOES_OUTROS_ORGAOS = \
+    '''
+    SELECT year(rvf.datahora) as Ano, month(rvf.datahora) as Mês, rvf.datahora,
+      r.nome as recinto,
+      ovr.id as Ficha, rvf.id as RVF, rvf.descricao as relato, rvf.numerolote as Conteiner,
+      a.id as Apreensao, a.descricao, t.descricao, a.peso as Peso, c.PortoDestFinal as PortoDestino
+      FROM ovr_ovrs ovr
+     inner join ovr_verificacoesfisicas rvf on rvf.ovr_id = ovr.id
+     inner join ovr_apreensoes_rvf a on a.rvf_id = rvf.id
+     inner join ovr_tiposapreensao t on t.id = a.tipo_id
+     inner join ovr_recintos r on r.id = ovr.recinto_id
+     left join conhecimentosresumo c on c.numeroCEmercante = ovr.numeroCEmercante
+     where ovr.setor_id in (1, 2, 3)  and ovr.tipooperacao = 6
+     order by Ano, Mês, Ficha, RVF, Apreensao;'''
 
 def FigFichasTempoTotal(df_=df_fichas_tempos):
     df_fichas_estagio = df_.groupby(['AnoMes', 'Estágio']).Ficha.count().reset_index()
@@ -120,6 +134,10 @@ df_apreensoes_ano_mes_sum = df_apreensoes.groupby(['AnoMes']).agg(
 df_apreensoes_sum = df_apreensoes.groupby(['Ano', 'Mês']).agg(
     qtde=pd.NamedAgg(column='Apreensao', aggfunc='count'),
     peso=pd.NamedAgg(column='Peso', aggfunc='sum')).reset_index()
+
+df_apreensoes_outros_orgaos = pd.read_sql(SQL_APREENSOES_OUTROS_ORGAOS, engine)
+df_apreensoes_outros_orgaos['AnoMes'] = df_apreensoes_outros_orgaos.apply(AnoMes, axis=1)
+df_apreensoes_outros_orgaos['Alerta'] = df_apreensoes_outros_orgaos.apply(TemAlerta, axis=1)
 
 
 SQL_ABERTURAS = '''

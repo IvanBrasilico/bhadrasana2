@@ -19,6 +19,7 @@
                     <th>Quantidade de Operações</th>
                     <th>Soma valor TGs</th>
                     <th>Soma peso apreensões</th>
+                    <th>JSON</th>
                 </tr>
                 {% for idx, row in df_ovrs.iterrows() %}
                 <tr>
@@ -33,6 +34,9 @@
                     </td>
                     <td style="text-align: right">
                         {{row['apreensoes']}} kg
+                    </td>
+                    <td>
+                        <a href="eovr?ano_mes={{ano_mes}}&nome={{row['Nome']}}&json=True">JSON</a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -52,7 +56,7 @@
             <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive"
                    cellspacing="0"
                    cellpadding="0" style="width:100%;">
-                {% if df_operacoes is not none %}
+                {% if df_operacoes is not none%}
                 <tr>
                     {% for col in df_operacoes.columns[1:12] %}
                     <th> {{ col }}</th>
@@ -79,7 +83,7 @@
             <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive"
                    cellspacing="0"
                    cellpadding="0" style="width:100%;">
-                {% if df_operacoes is not none %}
+                {% if df_operacoes is not none%}
                 <tr>
                     {% for col in df_operacoes.columns[12:] %}
                     <th> {{ col }}</th>

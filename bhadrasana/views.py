@@ -28,7 +28,7 @@ import pandas as pd
 import plotly
 import plotly.graph_objs as go
 from PIL import Image
-from ajna_commons.flask.conf import ALLOWED_EXTENSIONS, SECRET, logo
+from ajna_commons.flask.conf import ALLOWED_EXTENSIONS, SECRET
 from ajna_commons.flask.log import logger
 from ajna_commons.flask.user import DBUser
 from ajna_commons.utils.images import mongo_image, PIL_tobytes
@@ -37,8 +37,6 @@ from flask import (Flask, redirect, render_template, request,
 from flask_bootstrap import Bootstrap
 # from flask_cors import CORS
 from flask_login import current_user
-from flask_nav import Nav
-from flask_nav.elements import Navbar, View, Separator, Subgroup
 from flask_wtf.csrf import CSRFProtect
 from plotly.subplots import make_subplots
 
@@ -49,14 +47,11 @@ from bhadrasana.models.ovrmanager import get_ovr_responsavel, \
     executa_okr_results
 from bhadrasana.routes.plotly_graphs import gauge_plotly
 
-
 tmpdir = tempfile.mkdtemp()
 
 app = Flask(__name__, static_url_path='/static')
 csrf = CSRFProtect(app)
 Bootstrap(app)
-nav = Nav()
-nav.init_app(app)
 
 
 def configure_app(mongodb, sqlsession, mongo_risco):
@@ -365,41 +360,3 @@ def get_cpf_telegram(telegram_user):
     if user is None:
         return jsonify({'cpf': None}), 404
     return jsonify({'cpf': user.cpf}), 200
-
-
-@nav.navigation()
-def mynavbar():
-    """Menu da aplicação."""
-    items = [View('Home', 'index'),
-             View('Risco', 'risco'),
-             View('Editar Riscos', 'edita_risco'),
-             View('Pesquisa Fichas', 'pesquisa_ovr'),
-             View('Minhas Fichas', 'minhas_ovrs'),
-             View('Kanban', 'fichas_em_abas'),
-             Subgroup(
-                 'Pesquisas/relatórios',
-                 View('Pesquisa Contêiner', 'consulta_container'),
-                 View('Pesquisa CE Mercante', 'consulta_ce'),
-                 View('Pesquisa DUE', 'consulta_due'),
-                 View('Pesquisa Empresa', 'consulta_empresa'),
-                 View('Pesquisa Pessoa', 'consulta_pessoa'),
-                 View('Pesquisa Verificações físicas', 'pesquisa_rvf'),
-                 Separator(),
-                 View('Relatórios', 'ver_relatorios'),
-                 View('Painel de OKRs', 'ver_okrs'),
-                 Separator(),
-                 View('Assistente de Contrafação', 'autos_contrafacao'),
-             ),
-             Subgroup(
-                 'Administração/exportações',
-                 View('Exporta Planilha CEN Rilo', 'exporta_cen_rilo'),
-                 View('Gerador de documentos docx', 'gera_docx'),
-                 View('Lista para escaneamento no Operador', 'escaneamento_operador'),
-                 View('Assistente de TG', 'assistente_tg'),
-                 Separator(),
-                 View('Importa planilhas recintos', 'importa_planilha_recinto'),
-                 View('Administração', 'admin.index'),
-             )]
-    if current_user.is_authenticated:
-        items.append(View('Sair (%s)' % current_user.id, 'commons.logout'))
-    return Navbar(logo, *items)

@@ -20,13 +20,11 @@ a aplicação de filtros/parâmetros de risco.
 import os
 import sys
 
+from flask_login import current_user
 from pymongo import MongoClient
 
-from bhadrasana.routes.assistente_ini import assistenteini_app
-from bhadrasana.routes.exporta_secta_e_ovr import eovr_app
-
 sys.path.append('../ajna_api')
-from ajna_commons.flask.conf import DATABASE, MONGODB_URI
+from ajna_commons.flask.conf import DATABASE, MONGODB_URI, logo
 from ajna_commons.flask.log import logger
 from bhadrasana.models import db_session
 from bhadrasana.routes.admin import admin_app
@@ -35,8 +33,11 @@ from bhadrasana.routes.ovr2 import ovr2_app
 from bhadrasana.routes.risco import risco_app
 from bhadrasana.routes.rvf import rvf_app
 from bhadrasana.routes.assistentetg import assistentetg_app
+from bhadrasana.routes.assistente_ini import assistenteini_app
+from bhadrasana.routes.exporta_secta_e_ovr import eovr_app
 from bhadrasana.views import configure_app
-
+from flask_nav import Nav
+from flask_nav.elements import Navbar, View, Separator, Subgroup
 
 # print('****************************')
 # print(MONGODB_URI)
@@ -56,6 +57,8 @@ admin_app(app, db_session)
 assistentetg_app(app)
 assistenteini_app(app)
 eovr_app(app)
+nav = Nav()
+nav.init_app(app)
 
 
 class ForceHttpsRedirects:
@@ -76,6 +79,47 @@ if os.environ.get('DEBUG') != '1':
 def shutdown_session(exception=None):
     db_session.remove()
     logger.info('db_session remove')
+
+
+
+
+@nav.navigation()
+def mynavbar():
+    """Menu da aplicação."""
+    items = [View('Home', 'index'),
+             View('Risco', 'risco'),
+             View('Editar Riscos', 'edita_risco'),
+             View('Pesquisa Fichas', 'pesquisa_ovr'),
+             View('Minhas Fichas', 'minhas_ovrs'),
+             View('Kanban', 'fichas_em_abas'),
+             Subgroup(
+                 'Pesquisas/relatórios',
+                 View('Pesquisa Contêiner', 'consulta_container'),
+                 View('Pesquisa CE Mercante', 'consulta_ce'),
+                 View('Pesquisa DUE', 'consulta_due'),
+                 View('Pesquisa Empresa', 'consulta_empresa'),
+                 View('Pesquisa Pessoa', 'consulta_pessoa'),
+                 View('Pesquisa Verificações físicas', 'pesquisa_rvf'),
+                 Separator(),
+                 View('Relatórios', 'ver_relatorios'),
+                 View('Painel de OKRs', 'ver_okrs'),
+                 Separator(),
+                 View('Assistente de Contrafação', 'autos_contrafacao'),
+             ),
+             Subgroup(
+                 'Administração/exportações',
+                 View('Exporta Planilha CEN Rilo', 'exporta_cen_rilo'),
+                 View('Gerador de documentos docx', 'gera_docx'),
+                 View('Lista para escaneamento no Operador', 'escaneamento_operador'),
+                 View('Assistente de TG', 'assistente_tg'),
+                 Separator(),
+                 View('Exporta e-OVR', 'exporta_e_ovr'),
+                 View('Importa planilhas recintos', 'importa_planilha_recinto'),
+                 View('Administração', 'admin.index'),
+             )]
+    if current_user.is_authenticated:
+        items.append(View('Sair (%s)' % current_user.id, 'commons.logout'))
+    return Navbar(logo, *items)
 
 
 if __name__ == '__main__':
