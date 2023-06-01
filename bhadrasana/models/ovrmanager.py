@@ -163,7 +163,8 @@ def cadastra_ovr(session, params: dict, user_name: str) -> OVR:
             except Exception as err:
                 logger.error(str(err), exc_info=True)
     # Elimina máscaros do CNPJ
-    ovr.cnpj_fiscalizado = ''.join([letter for letter in ovr.cnpj_fiscalizado if letter.isnumeric()])
+    if ovr.cnpj_fiscalizado:
+        ovr.cnpj_fiscalizado = ''.join([letter for letter in ovr.cnpj_fiscalizado if letter.isnumeric()])
     try:
         session.add(ovr)
         session.commit()
