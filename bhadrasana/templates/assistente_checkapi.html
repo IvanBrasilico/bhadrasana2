@@ -1,0 +1,117 @@
+{% extends "layout.html" %} {% block content %} {{super()}}
+<div id="main" class="container-fluid">
+    <div id="top" class="row">
+        <div class="row col-sm-12" id="intro">
+            <h4>Passo a passo:</h4>
+            <ol>
+                <li>Baixar planilha padrão do Evento e preencher conforme eventos fisicamente observados</li>
+                <li>Extrair arquivo de Eventos via Aniita (a integrar no Ajna)</li>
+                <li>Informar dados e arquivos (planilha e json.txt) e clicar em "Iniciar Auditoria"</li>
+            </ol>
+        </div>
+        <div class="row col-sm-12" id="arquivos">
+            {% if arquivos %}
+            <h3>Arquivos gerados no Servidor</h3>
+            <div class="table">
+                <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive">
+                    {% for arquivo in arquivos %}
+                    <tr>
+                        <td>
+                            <a href="static/{{ current_user.name }}/{{arquivo}}">{{ arquivo }}</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            {% endif %}
+        </div>
+        <div class="row col-sm-12">
+            <h3>Inserir nova planilha</h3>
+        </div>
+        <div class="col-sm-12">
+            <form method="POST" action="assistente_checkapi" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label for="tipoevento_id">Tipo de Evento</label>
+                    </div>
+                    <div class="col-sm-4">
+                        {{ checkapiform.tipoevento_id(class='form-control') }}
+                    </div>
+                    <div class="col-sm-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label for="recinto_id">Recinto Auditado</label>
+                    </div>
+                    <div class="col-sm-4">
+                        {{ checkapiform.recinto_id(class='form-control') }}
+                    </div>
+                    <div class="col-sm-4">
+                    </div>
+                </div>
+                <div class="row">
+                    &nbsp;
+                    <div class="col-sm-12">
+                        <label class="btn btn-default btn-choose" for="planilha">
+                            <input id="planilha" name="planilha" type="file" style="display:none"
+                                   onchange="change_anexo_1(this)"> Planilha de checagem física a anexar
+                        </label>
+                        <big>
+                            <span class='label label-success' id="upload-file-info-1"></span>
+                        </big>
+                    </div>
+                </div>
+                <div class="row">
+                    &nbsp;
+                    <div class="col-sm-12">
+                        <label class="btn btn-default btn-choose" for="eventos_json">
+                            <input id="eventos_json" name="eventos_json" type="file" style="display:none"
+                                   onchange="change_anexo_2(this)"> Arquivo texto (JSON) a anexar
+                        </label>
+                        <big>
+                            <span class='label label-success' id="upload-file-info-2"></span>
+                        </big>
+                    </div>
+                </div>
+                <div class="row">
+                    &nbsp;<br>
+                    <div class="col-sm-3">
+                        <input class="btn btn-primary" type="submit" name="incluir"
+                               value="Iniciar auditoria"/>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="bottom" class="row">
+        AJNA - Receita Federal do Brasil 2017
+    </div>
+</div>
+{% endblock %} {% block scripts %} {{super()}}
+
+<script>
+   function change_anexo_1(ev){
+    console.log(ev.files[0]);
+    if (ev.files[0].size > 6*5120000) {
+        alert('Arquivos devem ser menores que 12MB!!');
+        ev.preventDefault();
+    } else {
+        $("#upload-file-info-1").html(ev.files[0].name);
+    }
+   }
+
+   function change_anexo_2(ev){
+    console.log(ev.files[0]);
+    if (ev.files[0].size > 6*5120000) {
+        alert('Arquivos devem ser menores que 12MB!!');
+        ev.preventDefault();
+    } else {
+        $("#upload-file-info-2").html(ev.files[0].name);
+    }
+   }
+
+
+
+</script> {% endblock %}

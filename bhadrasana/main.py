@@ -23,6 +23,8 @@ import sys
 from flask_login import current_user
 from pymongo import MongoClient
 
+from bhadrasana.routes.assistente_checkapi import assistentecheckapi_app
+
 sys.path.append('../ajna_api')
 from ajna_commons.flask.conf import DATABASE, MONGODB_URI, logo
 from ajna_commons.flask.log import logger
@@ -56,6 +58,7 @@ ovr2_app(app)
 admin_app(app, db_session)
 assistentetg_app(app)
 assistenteini_app(app)
+assistentecheckapi_app(app)
 eovr_app(app)
 nav = Nav()
 nav.init_app(app)
