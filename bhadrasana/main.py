@@ -106,19 +106,21 @@ def mynavbar():
                  Separator(),
                  View('Relatórios', 'ver_relatorios'),
                  View('Painel de OKRs', 'ver_okrs'),
-                 Separator(),
-                 View('Assistente de Contrafação', 'autos_contrafacao'),
              ),
              Subgroup(
-                 'Administração/exportações',
-                 View('Exporta Planilha CEN Rilo', 'exporta_cen_rilo'),
+                 'Adm - assistentes - integração',
+                 View('Administração', 'admin.index'),
+                 Separator(),
                  View('Gerador de documentos docx', 'gera_docx'),
                  View('Lista para escaneamento no Operador', 'escaneamento_operador'),
-                 View('Assistente de TG', 'assistente_tg'),
                  Separator(),
-                 View('Exporta e-OVR', 'exporta_e_ovr'),
+                 View('Assistente de exportação para e-OVR', 'exporta_e_ovr'),
+                 View('Assistente de Contrafação', 'autos_contrafacao'),
+                 View('Assistente de TG', 'assistente_tg'),
+                 View('Assistente de Auditoria API Recintos', 'assistente_checkapi'),
+                 Separator(),
+                 View('Exporta Planilha CEN Rilo', 'exporta_cen_rilo'),
                  View('Importa planilhas recintos', 'importa_planilha_recinto'),
-                 View('Administração', 'admin.index'),
              )]
     if current_user.is_authenticated:
         items.append(View('Sair (%s)' % current_user.id, 'commons.logout'))

@@ -1,8 +1,7 @@
 {% extends "layout.html" %} {% block content %} {{super()}}
-<div id="main" class="container-fluid">
+<div id="main" class="container-fluid" xmlns="http://www.w3.org/1999/html">
     <div id="top" class="row">
         <div class="row col-sm-12" id="intro">
-            <h4>Passo a passo:</h4>
             <ol>
                 <li>Baixar planilha padrão do Evento e preencher conforme eventos fisicamente observados</li>
                 <li>Extrair arquivo de Eventos via Aniita (a integrar no Ajna)</li>
@@ -26,7 +25,7 @@
             {% endif %}
         </div>
         <div class="row col-sm-12">
-            <h3>Inserir nova planilha</h3>
+            <h4>Dados para auditoria</h4>
         </div>
         <div class="col-sm-12">
             <form method="POST" action="assistente_checkapi" enctype="multipart/form-data">
@@ -51,28 +50,27 @@
                     <div class="col-sm-4">
                     </div>
                 </div>
-                <div class="row">
-                    &nbsp;
-                    <div class="col-sm-12">
-                        <label class="btn btn-default btn-choose" for="planilha">
-                            <input id="planilha" name="planilha" type="file" style="display:none"
-                                   onchange="change_anexo_1(this)"> Planilha de checagem física a anexar
-                        </label>
-                        <big>
-                            <span class='label label-success' id="upload-file-info-1"></span>
-                        </big>
-                    </div>
-                </div>
-                <div class="row">
-                    &nbsp;
-                    <div class="col-sm-12">
-                        <label class="btn btn-default btn-choose" for="eventos_json">
-                            <input id="eventos_json" name="eventos_json" type="file" style="display:none"
-                                   onchange="change_anexo_2(this)"> Arquivo texto (JSON) a anexar
-                        </label>
-                        <big>
-                            <span class='label label-success' id="upload-file-info-2"></span>
-                        </big>
+                <div class="row col-sm-12">
+                    <label>Arquivos da auditoria:</label>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <label class="btn btn-default btn-choose" for="planilha">
+                                <input id="planilha" name="planilha" type="file" style="display:none"
+                                       onchange="change_anexo_1(this)"> Planilha de checagem física a anexar
+                            </label>
+                            <big>
+                                <span class='label label-success' id="upload-file-info-1"></span>
+                            </big>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="btn btn-default btn-choose" for="eventos_json">
+                                <input id="eventos_json" name="eventos_json" type="file" style="display:none"
+                                       onchange="change_anexo_2(this)"> Arquivo texto (JSON) a anexar
+                            </label>
+                            <big>
+                                <span class='label label-success' id="upload-file-info-2"></span>
+                            </big>
+                        </div>
                     </div>
                 </div>
                 <div class="row">
@@ -83,6 +81,40 @@
                     </div>
                 </div>
             </form>
+        </div>
+        <div class="row" id="rodape">
+            <div class="col-sm-12">
+                <h3>Resultados</h3>
+                {% for msg in mensagens %}
+                {{ msg }}<br>
+                {% endfor %}
+                <div class="table">
+                    {% if eventos_fisico is not none%}
+                    <h4>Tabela de checagem física/real</h4>
+                    <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive"
+                           cellspacing="0"
+                           cellpadding="0" style="width:100%;">
+                        <tr>
+                            {% for col in eventos_fisico.columns %}
+                            <th> {{ col }}</th>
+                            {% endfor %}
+                        </tr>
+                        {% for row in eventos_fisico.iterrows() %}
+                        <tr>
+                            <td>{{row[0]}}</td>
+                            {% for col in row[1] %}
+                            <td> {{ col }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </table>
+                    {% endif %}
+                </div>
+                <h4>Divergências:</h4>
+                {% for linha in linhas_divergentes %}
+                {{ linha }}<br>
+                {% endfor %}
+            </div>
         </div>
     </div>
     <div id="bottom" class="row">
@@ -114,4 +146,11 @@
 
 
 
-</script> {% endblock %}
+
+
+
+
+
+
+</script>
+{% endblock %}

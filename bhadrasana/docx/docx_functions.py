@@ -38,3 +38,10 @@ def gera_comunicado_contrafacao(ovr: dict, user_name: str, termo=False):
         document = docx.Document(os.path.join(basepath, 'comunicado_contrafacao.docx'))
     docx_replacein(document, conteudo, user_name)
     return document
+
+def gera_relatorio_apirecintos(dados: dict, user_name: str):
+    conteudo = {'unidade': 'ALFSTS', **dados}
+    basepath = os.path.dirname(__file__)
+    document = docx.Document(os.path.join(basepath, 'relatorio_apirecintos.docx'))
+    docx_replacein(document, conteudo, user_name)
+    return document
