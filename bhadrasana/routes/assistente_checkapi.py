@@ -14,19 +14,30 @@ from werkzeug.utils import redirect
 
 from bhadrasana.docx.docx_functions import gera_relatorio_apirecintos
 from bhadrasana.forms.assistente_checkapi import CheckApiForm
-from bhadrasana.models import get_usuario
+from bhadrasana.models import get_usuario, Usuario
 from bhadrasana.models.assistente_checkapi import processa_auditoria
 from bhadrasana.models.ovrmanager import cadastra_ovr, atribui_responsavel_ovr, get_recintos_unidade
 from bhadrasana.views import get_user_save_path
 
 
-def gerar_relatorio_docx(dados, recinto, evento, user_name):
-    out_filename = 'apirecintos_{}_{}.docx'.format(
+def gerar_relatorio_docx(eventos_fisico,
+                         mensagens: list,
+                         linhas_divergentes: list,
+                         recinto: str,
+                         evento: str,
+                         usuario: Usuario):
+    dados = {'eventos_fisico': eventos_fisico,
+             'mensagens': ' '.join(mensagens),
+             'linhas_divergentes': linhas_divergentes,
+             'nome_fiscalizado': recinto,
+             'setor': usuario.setor.nome
+             }
+    out_filename = 'apirecintos_{}_{}_{}.docx'.format(
         recinto,
         evento,
         datetime.strftime(datetime.now(), '%Y-%m-%dT%H-%M-%S')
     )
-    document = gera_relatorio_apirecintos(dados, user_name)
+    document = gera_relatorio_apirecintos(dados, usuario.cpf)
     document.save(os.path.join(get_user_save_path(), out_filename))
     return [out_filename]
 
@@ -51,18 +62,13 @@ def assistentecheckapi_app(app):
                 stream_json = request.files.get('eventos_json')
                 eventos_fisico, mensagens, linhas_divergentes = \
                     processa_auditoria(stream_planilha, stream_json, 'MARIMEX', 'GATE')
-                dados = {'eventos_fisico': eventos_fisico,
-                         'mensagens': mensagens,
-                         'linhas_divergentes': linhas_divergentes,
-                         'nome_fiscalizado': checkapiform.recinto_id,
-                         'setor': usuario.setor.nome
-                         }
-                arquivos = gerar_relatorio_docx(dados,
+                arquivos = gerar_relatorio_docx(eventos_fisico, mensagens,
+                                                linhas_divergentes,
                                                 checkapiform.recinto_id.data,
                                                 checkapiform.tipoevento_id.data,
-                                                current_user.name)
+                                                usuario)
                 return render_template('assistente_checkapi.html',
-                                       eventos_fisico = eventos_fisico,
+                                       eventos_fisico=eventos_fisico,
                                        mensagens=mensagens,
                                        linhas_divergentes=linhas_divergentes,
                                        checkapiform=checkapiform,
