@@ -296,6 +296,7 @@ class Recinto(Base):
     nome = Column(VARCHAR(50), index=True)
     descricao = Column(VARCHAR(100), index=True)
     cod_dte = Column(Integer())
+    cnpj = Column(VARCHAR(15), index=True)
     cod_siscomex = Column(VARCHAR(20), index=True)
     cod_unidade = Column(VARCHAR(20), index=True)
     cod_carga = Column(VARCHAR(20), index=True)

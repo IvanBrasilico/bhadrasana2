@@ -49,7 +49,7 @@ def get_eventos_api(stream):
     return json.loads(stream.read())
 
 
-def processa_auditoria(planilha, stream_json, recinto_nome: str, tipoevento: str):
+def processa_auditoria(planilha, stream_json):
     eventos_fisico = get_eventos_fisico(planilha)
     eventos_fisico['dataHoraOcorrencia'] = eventos_fisico.apply(
         lambda x: datetime.combine(x['Data'], x['Hora']), axis=1)
