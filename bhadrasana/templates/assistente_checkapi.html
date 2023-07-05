@@ -53,7 +53,7 @@
                 <div class="row col-sm-12">
                     <label>Arquivos da auditoria:</label>
                     <div class="row">
-                        <div class="col-sm-6">
+                        <div class="col-sm-4">
                             <label class="btn btn-default btn-choose" for="planilha">
                                 <input id="planilha" name="planilha" type="file" style="display:none"
                                        onchange="change_anexo_1(this)"> Planilha de checagem física a anexar
@@ -62,7 +62,7 @@
                                 <span class='label label-success' id="upload-file-info-1"></span>
                             </big>
                         </div>
-                        <div class="col-sm-6">
+                        <div class="col-sm-4">
                             <label class="btn btn-default btn-choose" for="eventos_json">
                                 <input id="eventos_json" name="eventos_json" type="file" style="display:none"
                                        onchange="change_anexo_2(this)"> Arquivo texto (JSON) a anexar
@@ -71,19 +71,20 @@
                                 <span class='label label-success' id="upload-file-info-2"></span>
                             </big>
                         </div>
+                        <div class="col-sm-4"></div>
                     </div>
                 </div>
                 <div class="row col-sm-12">
                     &nbsp;&nbsp;<br>
-                    <div class="col-sm-3">
+                    <div class="col-sm-4">
                         <input class="btn btn-primary" type="submit" name="iniciar"
                                value="Iniciar auditoria"/>
                     </div>
-                    <div class="col-sm-3">
+                    <div class="col-sm-4">
                         <input class="btn btn-primary" type="submit" name="finalizar"
                                value="Gerar Ficha de Auditoria"/>
                     </div>
-                    <div class="col-sm-6"></div>
+                    <div class="col-sm-4"></div>
                 </div>
             </form>
         </div>

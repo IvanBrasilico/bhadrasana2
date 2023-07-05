@@ -761,10 +761,11 @@
         <div class="modal-content">
             <div class="modal-body">
                 <span>
+                    <a href="anexo/{{historico.id}}/{{historico.anexo_filename}}">Download</a><br>
                     {% if historico.anexo_filename[-3:] in ['jpg', 'png'] %}
                     <img src="anexo/{{historico.id}}/{{historico.anexo_filename}}" height="100%" width="100%"/>
-                    {% elif historico.anexo_filename[-3:] in ['xls', 'xlsx', 'doc', 'docx', 'ods', 'odt'] %}
-                    <embed src="anexo?evento={{historico.id}}"/>
+                    <!--{% elif historico.anexo_filename[-3:] in ['xls', 'xlsx', 'doc', 'docx', 'ods', 'odt'] %}
+                    <embed src="anexo?evento={{historico.id}}"/> -->
                     {% else %}
                     <embed src="anexo/{{historico.id}}/{{historico.anexo_filename}}" height="800px" width="800px"/>
                     {% endif %}

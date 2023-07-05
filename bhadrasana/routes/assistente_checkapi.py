@@ -8,7 +8,7 @@ import os
 from datetime import datetime
 
 from ajna_commons.flask.log import logger
-from flask import render_template, flash, url_for, request
+from flask import render_template, flash, request, url_for
 from flask_login import login_required, current_user
 from gridfs import GridFS
 from werkzeug.utils import redirect
@@ -18,16 +18,18 @@ from bhadrasana.forms.assistente_checkapi import CheckApiForm
 from bhadrasana.models import get_usuario, Usuario
 from bhadrasana.models.assistente_checkapi import processa_auditoria
 from bhadrasana.models.ovr import Recinto, EventoOVR, TipoEventoOVR
-from bhadrasana.models.ovrmanager import cadastra_ovr, atribui_responsavel_ovr, get_recintos_unidade, inclui_flag_ovr, \
-    gera_eventoovr
+from bhadrasana.models.ovrmanager import cadastra_ovr, atribui_responsavel_ovr, get_recintos_unidade, inclui_flag_ovr
+from bhadrasana.models.rvf import RVF
 from bhadrasana.views import get_user_save_path
 
 
-def registra_ovr(session, recinto, evento_nome):
+def registra_ovr(session, recinto, evento_nome, texto_rvf=None):
     ovr_data = {
         'tipooperacao': 7,  # Vigilância
         'observacoes': f'Auditoria API Recintos {recinto.nome} automaticamente registrada.' + \
-                       f'Análise do evento {evento_nome}'
+                       f'Análise do evento {evento_nome}.',
+        'cnpj_fiscalizado': recinto.cnpj,
+        'recinto_id': recinto.id
     }
     ovr = cadastra_ovr(session,
                        params=ovr_data,
@@ -35,13 +37,36 @@ def registra_ovr(session, recinto, evento_nome):
     atribui_responsavel_ovr(session, ovr.id, current_user.name, current_user.name)
     inclui_flag_ovr(session, ovr.id, 'API Recintos - checagem', current_user.name)
     inclui_flag_ovr(session, ovr.id, 'Conformidade', current_user.name)
+    if texto_rvf:
+        rvf = RVF()
+        rvf.ovr_id = ovr.id
+        rvf.descricao = texto_rvf
+        session.add(rvf)
+        try:
+            session.commit()
+        except:
+            session.rollback()
     return ovr
 
 
-def inclui_evento_ovr(db,  session, ovr, filename, user_name):
+def inclui_evento_ovr(db, session, ovr, motivo: str, file=None, filename=None):
+    if file is None and filename is None:
+        raise Exception('inclui_evento_ovr precisa de ao menos um parâmetro file ou filename')
+    if file:
+        filename = file.filename
+        content = file.read()
+        mimetype = file.mimetype
+    else:
+        with open(os.path.join(get_user_save_path(), filename), 'rb') as file_in:
+            content = file_in.read()
+            if 'docx' in filename:
+                mimetype = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            else:
+                mimetype = 'text/xml'
     evento = EventoOVR()
     evento.ovr_id = ovr.id
-    evento.user_name = user_name
+    evento.user_name = current_user.name
+    evento.motivo = motivo
     tipoevento = session.query(TipoEventoOVR).filter(
         TipoEventoOVR.id == 20
     ).one()
@@ -53,12 +78,10 @@ def inclui_evento_ovr(db,  session, ovr, filename, user_name):
         session.commit()
         session.refresh(evento)
         fs = GridFS(db)
-        with open(filename, 'rb') as file_in:
-            content = file_in.read()
         fs.put(content, filename=filename,
                metadata={'ovr': str(ovr.id),
                          'evento': str(evento.id),
-                         'contentType': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'})
+                         'contentType': mimetype})
     except Exception as err:
         session.rollback()
         raise err
@@ -70,7 +93,7 @@ def gerar_relatorio_docx(eventos_fisico,
                          recinto: Recinto,
                          evento_nome: str,
                          usuario: Usuario,
-                         ovr = None):
+                         ovr=None):
     dados = {'eventos_fisico': eventos_fisico,
              'mensagens': ' '.join(mensagens),
              'linhas_divergentes': linhas_divergentes,
@@ -98,8 +121,8 @@ def assistentecheckapi_app(app):
     def assistente_checkapi():
         title_page = 'Assistente de Auditoria API Recintos'
         session = app.config.get('dbsession')
+        mongo_risco = app.config['mongo_risco']
         checkapiform = CheckApiForm()
-        arquivos = []
         try:
             usuario = get_usuario(session, current_user.name)
             recintos = get_recintos_unidade(session, usuario.setor.cod_unidade)
@@ -116,20 +139,28 @@ def assistentecheckapi_app(app):
                     processa_auditoria(stream_planilha, stream_json)
                 ovr = None
                 if request.values.get('finalizar'):
-                    ovr = cadastra_ovr(session, recinto, evento_nome)
-                arquivos = [gerar_relatorio_docx(eventos_fisico, mensagens,
-                                                linhas_divergentes,
-                                                recinto,
-                                                evento_nome,
-                                                usuario, ovr)]
-
+                    texto_rvf = '\n'.join([*mensagens, 'Divergências:', *linhas_divergentes])
+                    ovr = registra_ovr(session, recinto, evento_nome, texto_rvf)
+                    inclui_evento_ovr(mongo_risco, session, ovr,
+                                      motivo='Assistente API Recintos - planilha checagem',
+                                      file=stream_planilha)
+                arquivo = gerar_relatorio_docx(eventos_fisico, mensagens,
+                                               linhas_divergentes,
+                                               recinto,
+                                               evento_nome,
+                                               usuario, ovr)
+                if request.values.get('finalizar'):
+                    inclui_evento_ovr(mongo_risco, session, ovr,
+                                      motivo='Assistente API Recintos - Termo de constatações',
+                                      filename=arquivo)
+                    return redirect(url_for('ovr', id=ovr.id))
                 return render_template('assistente_checkapi.html',
                                        eventos_fisico=eventos_fisico,
                                        mensagens=mensagens,
                                        linhas_divergentes=linhas_divergentes,
                                        checkapiform=checkapiform,
                                        title_page=title_page,
-                                       arquivos=arquivos)
+                                       arquivos=[arquivo])
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
@@ -138,9 +169,6 @@ def assistentecheckapi_app(app):
         return render_template('assistente_checkapi.html',
                                checkapiform=checkapiform,
                                title_page=title_page,
-                               arquivos=arquivos,
+                               arquivos=[],
                                linhas_diferentes=[],
                                eventos_fisico=None)
-
-
-
