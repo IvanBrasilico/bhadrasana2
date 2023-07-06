@@ -40,20 +40,26 @@ def compara_linha(linha_api, linha_fisico) -> list:  # Retorna texto com as dife
 
 
 def get_eventos_fisico(planilha):
-    #lfilename = planilha.filename
+    # lfilename = planilha.filename
     df = pd.read_excel(planilha, engine='openpyxl', header=0)
+    print(len(df))
+    df = df[~df['Data'].isna()]
+    print(len(df))
     return df.replace({np.nan: None})
 
 
 def get_eventos_api(stream):
     return json.loads(stream.read())
 
+def monta_data(row):
+    pass
+
 
 def processa_auditoria(planilha, stream_json):
     eventos_fisico = get_eventos_fisico(planilha)
     print(eventos_fisico.head())
-    eventos_fisico['dataHoraOcorrencia'] = eventos_fisico.apply(
-        lambda x: datetime.combine(x['Data'], x['Hora']), axis=1)
+    eventos_fisico['dataHoraOcorrencia'] = eventos_fisico.apply(lambda x: datetime.combine(x['Data'], x['Hora']),
+                                                                axis=1)
     json_raw = get_eventos_api(stream_json)
     eventos = [get_campos_gate(evento) for evento in json_raw]
     eventos_api = pd.DataFrame(eventos)
