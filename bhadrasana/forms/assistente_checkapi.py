@@ -1,10 +1,12 @@
 from flask_wtf import FlaskForm
-from wtforms import SelectField
+from wtforms import SelectField, FileField
 
 
 class CheckApiForm(FlaskForm):
     tipoevento_id = SelectField('Tipo de Evento', default=-1)
     recinto_id = SelectField('Tipo de fonte', default=-1)
+    planilha = FileField('Planilha de checagem física')
+    eventos_json = FileField('Arquivo de eventos JSON extraído da API Recintos')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -40,8 +40,8 @@ def compara_linha(linha_api, linha_fisico) -> list:  # Retorna texto com as dife
 
 
 def get_eventos_fisico(planilha):
-    lfilename = planilha.filename
-    df = pd.read_excel(planilha, engine='openpyxl', header=1)
+    #lfilename = planilha.filename
+    df = pd.read_excel(planilha, engine='openpyxl', header=0)
     return df.replace({np.nan: None})
 
 

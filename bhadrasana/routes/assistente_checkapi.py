@@ -123,16 +123,19 @@ def assistentecheckapi_app(app):
         session = app.config.get('dbsession')
         mongo_risco = app.config['mongo_risco']
         checkapiform = CheckApiForm()
+        lista_planilhas = os.listdir('bhadrasana/static/check_api')
+        print(lista_planilhas)
         try:
             usuario = get_usuario(session, current_user.name)
             recintos = get_recintos_unidade(session, usuario.setor.cod_unidade)
-            tiposevento = [['1', 'AgendamentoAcessoVeiculo']]
+            tiposevento = [['1', 'AgendamentoAcessoVeiculo'], ['2', 'PesagemVeiculo']]
             checkapiform = CheckApiForm(recintos=recintos, tiposevento=tiposevento)
             if request.method == 'POST':
                 checkapiform = CheckApiForm(request.form, recintos=recintos, tiposevento=tiposevento)
                 checkapiform.validate()
-                stream_planilha = request.files.get('planilha')
-                stream_json = request.files.get('eventos_json')
+                stream_planilha = request.files[checkapiform.planilha.name]
+                # request.files.get('planilha')
+                stream_json = request.files[checkapiform.eventos_json.name]
                 recinto = session.query(Recinto).filter(Recinto.id == checkapiform.recinto_id.data).one()
                 evento_nome = dict(checkapiform.tipoevento_id.choices).get(checkapiform.tipoevento_id.data)
                 eventos_fisico, mensagens, linhas_divergentes = \
@@ -160,7 +163,8 @@ def assistentecheckapi_app(app):
                                        linhas_divergentes=linhas_divergentes,
                                        checkapiform=checkapiform,
                                        title_page=title_page,
-                                       arquivos=[arquivo])
+                                       arquivos=[arquivo],
+                                       lista_planilhas=lista_planilhas)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
@@ -171,4 +175,5 @@ def assistentecheckapi_app(app):
                                title_page=title_page,
                                arquivos=[],
                                linhas_diferentes=[],
-                               eventos_fisico=None)
+                               eventos_fisico=None,
+                               lista_planilhas=lista_planilhas)
