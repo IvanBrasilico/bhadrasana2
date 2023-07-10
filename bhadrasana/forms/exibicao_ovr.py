@@ -251,7 +251,7 @@ class ExibicaoOVR:
                 pass
         return valor
 
-    def get_linha(self, ovr: OVR) -> Tuple[int, bool, List]:
+    def get_linha(self, ovr: OVR) -> Tuple[int, bool, List, bool]:
         recinto_nome = self.get_recinto_nome(ovr)
         evento_user, tipo_evento_nome, data_evento, motivo, ind = self.evento_campos(ovr)
         campos_ultimo_evento = [f'<b>{tipo_evento_nome}</b>', evento_user,
@@ -273,6 +273,8 @@ class ExibicaoOVR:
             responsavel_descricao = ovr.responsavel.nome
         if self.tipo == TipoExibicao.FMA:
             alertas = [flag.nome for flag in ovr.flags]
+            e_perecivel = 'perecível' in ''.join(alertas).lower()
+            print(alertas, e_perecivel)
             return ovr.id, visualizado, [
                 ovr.datahora,
                 ovr.get_tipooperacao(),
@@ -284,7 +286,7 @@ class ExibicaoOVR:
                 html_ultimo_evento,
                 html_penultimo_evento,
                 responsavel_descricao,
-                auditor_descricao]
+                auditor_descricao], e_perecivel
         if self.tipo == TipoExibicao.FMA_2:
             alertas = [flag.nome for flag in ovr.flags]
             mercadoria, lista_de_ncms = self.get_mercadoria_mercante(ovr)
