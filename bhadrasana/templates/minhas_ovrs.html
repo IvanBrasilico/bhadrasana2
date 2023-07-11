@@ -98,7 +98,7 @@
                     <td><input type="checkbox" name="rowid" class="action-checkbox" value="{{ovr[0]}}" title="Selecionar linha"></td>
                     <td><a href="ovr?id={{ovr[0]}}" target="_blank">{{ ovr[0] }}</a></td>
                     {% for col in ovr[2] %}
-                    <td style="text-align:left" {% if ovr[3] %}class="text-danger"{% endif %}>{{ col | safe }}</td>
+                    <td style="text-align:left" {% if ovr[3] %}class="text-danger font-weight-bold"{% endif %}>{{ col | safe }}</td>
                     {% endfor %}
                 </tr>
                 {% endfor %}
