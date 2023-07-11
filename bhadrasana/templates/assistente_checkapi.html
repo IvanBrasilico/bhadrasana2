@@ -10,7 +10,7 @@
         </div>
         <div class="row col-sm-12" id="planilhas">
             {% for planilha in lista_planilhas %}
-            <a href="/static/check_api/{{planilha}}">{{planilha[:-5]}}</a>
+            <a href="static/check_api/{{planilha}}">{{planilha[:-5]}}</a>
             {% endfor %}
         </div>
         <div class="row col-sm-12" id="arquivos">
@@ -96,6 +96,7 @@
                            cellspacing="0"
                            cellpadding="0" style="width:100%;">
                         <tr>
+                            <th>Linha</th>
                             {% for col in eventos_fisico.columns %}
                             <th> {{ col }}</th>
                             {% endfor %}

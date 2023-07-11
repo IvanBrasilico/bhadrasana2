@@ -139,7 +139,7 @@ def assistentecheckapi_app(app):
                 recinto = session.query(Recinto).filter(Recinto.id == checkapiform.recinto_id.data).one()
                 evento_nome = dict(checkapiform.tipoevento_id.choices).get(checkapiform.tipoevento_id.data)
                 eventos_fisico, mensagens, linhas_divergentes = \
-                    processa_auditoria(stream_planilha, stream_json)
+                    processa_auditoria(stream_planilha, stream_json, evento_nome)
                 ovr = None
                 if request.values.get('finalizar'):
                     texto_rvf = '\n'.join([*mensagens, 'Divergências:', *linhas_divergentes])
