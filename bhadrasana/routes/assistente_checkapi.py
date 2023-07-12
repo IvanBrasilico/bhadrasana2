@@ -128,7 +128,8 @@ def assistentecheckapi_app(app):
         try:
             usuario = get_usuario(session, current_user.name)
             recintos = get_recintos_unidade(session, usuario.setor.cod_unidade)
-            tiposevento = [['1', 'AgendamentoAcessoVeiculo'], ['2', 'PesagemVeiculo']]
+            tiposevento = [['1', 'AgendamentoAcessoVeiculo'], ['2', 'PesagemVeiculo'],
+                           ['3', 'InspecaoNaoInvasiva']]
             checkapiform = CheckApiForm(recintos=recintos, tiposevento=tiposevento)
             if request.method == 'POST':
                 checkapiform = CheckApiForm(request.form, recintos=recintos, tiposevento=tiposevento)

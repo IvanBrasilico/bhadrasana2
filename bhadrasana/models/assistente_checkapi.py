@@ -1,8 +1,12 @@
+import base64
 import json
 from datetime import datetime
+from io import BytesIO
+from typing import Tuple
 
 import numpy as np
 import pandas as pd
+from PIL import Image
 from dateutil import parser
 
 
@@ -12,24 +16,24 @@ def converte_datetime(str_datetime: str):
     # return datetime.datetime.strptime(str_datetime, '%Y-%m-%dT%H:%M:%S.000-%Z')
 
 
-
-def get_campos_comum(evento):
+def get_campos_comum(evento) -> Tuple[dict, dict]:
     campos = {}
     campos['dataHoraTransmissao'] = converte_datetime(evento['dadosTransmissao']['dataHoraTransmissao'])
     sub_evento = evento['jsonOriginal']
     campos['dataHoraOcorrencia'] = converte_datetime(sub_evento['dataHoraOcorrencia'])
     return campos, sub_evento
 
-def get_campos_gate(evento):
+
+def get_campos_gate(evento) -> dict:
     campos, sub_evento = get_campos_comum(evento)
-    campos['operacao'] = sub_evento['operacao'] # G - A*g*endamento C - A*c*esso  -> Filtrar acesso
+    campos['operacao'] = sub_evento['operacao']  # G - A*g*endamento C - A*c*esso  -> Filtrar acesso
     campos['direcao'] = sub_evento['direcao']
     campos['placa'] = sub_evento['placa']
     campos['ocrPlaca'] = sub_evento['ocrPlaca']
     try:
-        campos['container'] = sub_evento['listaConteineresUld'][0]['numeroConteiner']
+        campos['numeroConteiner'] = sub_evento['listaConteineresUld'][0]['numeroConteiner']
     except:
-        campos['container'] = None
+        campos['numeroConteiner'] = None
     try:
         campos['motorista.cpf'] = sub_evento['motorista']['cpf']
     except:
@@ -37,27 +41,53 @@ def get_campos_gate(evento):
     return campos
 
 
-def get_campos_pesagem(evento):
+def get_campos_pesagem(evento) -> dict:
     campos, sub_evento = get_campos_comum(evento)
     campos['placa'] = sub_evento['placa']
     # campos['ocrPlaca'] = sub_evento['ocrPlaca'] ERRO??? (não tem ocrPlaca no Evento??)
-    campos['tara'] = sub_evento['tara']
+    print(evento)
+    print(sub_evento)
+    campos['tara'] = sub_evento.get('tara', 'Campo não existente!')
     campos['capturaAutoPeso'] = sub_evento['capturaAutoPeso']
-    campos['pesoBrutoManifesto'] = sub_evento['pesoBrutoManifesto']
-    campos['pesoBrutoBalanca'] = sub_evento['pesoBrutoBalanca']
+    campos['pesoBrutoManifesto'] = sub_evento.get('pesoBrutoManifesto', 'Campo não existente!')
+    campos['pesoBrutoBalanca'] = sub_evento.get('pesoBrutoBalanca', 'Campo não existente!')
     try:
-        campos['container'] = sub_evento['listaConteineresUld'][0]['numeroConteiner']
+        campos['numeroConteiner'] = sub_evento['listaConteineresUld'][0]['numeroConteiner']
     except:
-        campos['container'] = None
+        campos['numeroConteiner'] = None
+    return campos
+
+
+def get_campos_inspecaonaoinvasiva(evento) -> dict:
+    campos, sub_evento = get_campos_comum(evento)
+    # campos['ocrPlaca'] = sub_evento['ocrPlaca'] ERRO??? (não tem ocrPlaca no Evento??)
+    try:
+        campos['numeroConteiner'] = sub_evento['listaConteineresUld'][0]['numeroConteiner']
+    except:
+        campos['numeroConteiner'] = None
+    try:
+        campos['dataHoraScaneamento'] = converte_datetime(sub_evento['imagemScanner']['dataHoraScaneamento'])
+    except:
+        campos['dataHoraScaneamento'] = None
+    try:
+        campos['arquivoImagem'] = sub_evento['imagemScanner']['arquivoImagem']
+    except:
+        campos['arquivoImagem'] = None
+    return campos
+
 
 _depara_campos = {
-    'PesagemVeiculo':
-        {'dataHoraOcorrencia': 'dataHoraOcorrencia', 'NúmeroContêiner': 'container',
-         'Peso': 'pesoBrutoBalanca'},
     'AgendamentoAcessoVeiculo':
-        {'dataHoraOcorrencia': 'dataHoraOcorrencia', 'NúmeroContêiner': 'container',
-         'CPF': 'motorista.cpf', 'OCR': 'ocrPlaca'}
+        {'dataHoraOcorrencia': 'dataHoraOcorrencia', 'NúmeroContêiner': 'numeroConteiner',
+         'CPF': 'motorista.cpf', 'OCR': 'ocrPlaca'},
+    'PesagemVeiculo':
+        {'dataHoraOcorrencia': 'dataHoraOcorrencia', 'NúmeroContêiner': 'numeroConteiner',
+         'Peso': 'pesoBrutoBalanca'},
+    'InspecaoNaoInvasiva':
+        {'dataHoraOcorrencia': 'dataHoraOcorrencia', 'NúmeroContêiner': 'numeroConteiner',
+         'dataHoraScaneamento': 'dataHoraScaneamento'},
 }
+
 
 def campos_sao_diferentes(val_fisico, val_api):
     if isinstance(val_fisico, datetime):
@@ -66,12 +96,12 @@ def campos_sao_diferentes(val_fisico, val_api):
     else:
         return val_fisico != val_api
 
+
 def compara_linha(linha_api, linha_fisico, depara_campos: dict) -> list:  # Retorna texto com as diferenças
     diferencas = []
     for campo_fisico, campo_api in depara_campos.items():
         val_fisico = linha_fisico[1][campo_fisico]
         val_api = linha_api[campo_api].iloc[0]
-
         if campos_sao_diferentes(val_fisico, val_api):
             diferencas.append(f'{campo_fisico} diferente. Checagem física: {val_fisico} Conteúdo API: {val_api}')
     return diferencas
@@ -94,9 +124,22 @@ def monta_data(row):
     pass
 
 
+def checa_imagens(eventos_api):
+    contador = 0
+    for row in eventos_api.iterrows():
+        imagem_base64 = row[1]['arquivoImagem']
+        im = Image.open(BytesIO(base64.b64decode(imagem_base64)))
+        print(row[1]['numeroConteiner'], im.size)
+        if im.size[1] < 800:
+            contador += 1
+    return f'Observação: arquivo possui {contador} imagens com menos de 800 linhas,' \
+           f' de um total de {len(eventos_api)} imagens.'
 
-def processa_auditoria(planilha, stream_json, evento_nome:str):
-    _get_campos = {'AgendamentoAcessoVeiculo': get_campos_gate, 'PesagemVeiculo': get_campos_pesagem}
+
+def processa_auditoria(planilha, stream_json, evento_nome: str):
+    _get_campos = {'AgendamentoAcessoVeiculo': get_campos_gate,
+                   'PesagemVeiculo': get_campos_pesagem,
+                   'InspecaoNaoInvasiva': get_campos_inspecaonaoinvasiva}
     eventos_fisico = get_eventos_fisico(planilha)
     print(eventos_fisico.head())
     eventos_fisico['dataHoraOcorrencia'] = eventos_fisico.apply(lambda x: datetime.combine(x['Data'], x['Hora']),
@@ -104,26 +147,46 @@ def processa_auditoria(planilha, stream_json, evento_nome:str):
     json_raw = get_eventos_api(stream_json)
     eventos = [_get_campos[evento_nome](evento) for evento in json_raw]
     eventos_api = pd.DataFrame(eventos)
+    chave_api = 'placa'
+    chave_fisico = 'PlacaVeiculo'
     if evento_nome == 'AgendamentoAcessoVeiculo':  # Filtrar somente Eventos tipo 'C' de A*c*esso
         eventos_api = eventos_api[eventos_api['operacao'] == 'C']
-    placas_nao_encontradas = eventos_fisico[~ eventos_fisico['PlacaVeiculo'].isin(eventos_api['placa'])]
-    placas_encontradas = eventos_fisico[eventos_fisico['PlacaVeiculo'].isin(eventos_api['placa'])]
+    if evento_nome == 'InspecaoNaoInvasiva':  # Copiar data da ocorrência para data do escaneamento
+        eventos_fisico['dataHoraScaneamento'] = eventos_fisico['dataHoraOcorrencia']
+        chave_api = 'numeroConteiner'
+        chave_fisico = 'NúmeroContêiner'
+    print('eventos_api')
+    print(eventos_api.head())
+    print('eventos_fisico')
+    print(eventos_fisico.head())
+    placas_nao_encontradas = eventos_fisico[~ eventos_fisico[chave_fisico].isin(eventos_api[chave_api])]
+    placas_encontradas = eventos_fisico[eventos_fisico[chave_fisico].isin(eventos_api[chave_api])]
+    print('placas_enc')
+    print(placas_encontradas.head())
+    print('placas_naoenc')
+    print(placas_nao_encontradas.head())
+    print(placas_nao_encontradas[chave_fisico].values)
     linhas_divergentes = []
     for linha_fisico in placas_encontradas.iterrows():
-        linha_api = eventos_api[eventos_api['placa'] == linha_fisico[1]['PlacaVeiculo']]
+        linha_api = eventos_api[eventos_api[chave_api] == linha_fisico[1][chave_fisico]]
         if evento_nome == 'AgendamentoAcessoVeiculo':  # Filtrar também por sentido
             linha_api = linha_api[eventos_api['direcao'] == linha_fisico[1]['FluxoOperacional']]
         diferencas = compara_linha(linha_api, linha_fisico, _depara_campos[evento_nome])
         if len(diferencas) > 0:
-            descricao = f'Linha: {linha_fisico[0]} Placa: {linha_fisico[1]["PlacaVeiculo"]} | '
+            descricao = f'Linha: {linha_fisico[0]} {chave_fisico}: ' + linha_fisico[1][chave_fisico] + ' | '
             descricao = descricao + '; '.join(diferencas)
             linhas_divergentes.append(descricao)
+    chaves_nao_encontradas = [chave for chave in placas_nao_encontradas[chave_fisico].values if isinstance(chave, str)]
     mensagens = [
         f'Eventos físicos foram coletados de {eventos_fisico.dataHoraOcorrencia.min()} ' + \
         f'a {eventos_fisico.dataHoraOcorrencia.max()}',
         f'Eventos extraídos baixados desde   {eventos_api.dataHoraOcorrencia.min()} a ' + \
         f'{eventos_api.dataHoraOcorrencia.max()}',
-        f'NÃO foram encontradas {len(placas_nao_encontradas)} de {len(eventos_fisico)} placas: ' + \
-        ', '.join(list(placas_nao_encontradas['PlacaVeiculo'].values))
+        f'NÃO foram encontradas {len(placas_nao_encontradas)} de {len(eventos_fisico)} chaves {chave_fisico}: ' + \
+        ', '.join(chaves_nao_encontradas),
+        f'Campos conferidos no arquivo JSON: {list(_depara_campos[evento_nome].values())}'
     ]
+    if evento_nome == 'InspecaoNaoInvasiva':  # Verificar imagens
+        erros_imagens = checa_imagens(eventos_api)
+        mensagens.append(erros_imagens)
     return eventos_fisico, mensagens, linhas_divergentes
