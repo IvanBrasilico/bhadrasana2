@@ -39,6 +39,9 @@
                         </button>
                     </div>
                     <div class="col-sm-4">
+                        <button class="btn btn-default form-control" name="exportar" onclick="submit">
+                            Exportar resultado do relatório
+                        </button>
                     </div>
                     <div class="col-sm-3">
                         <button onclick="exporta_planilhaovr()" id="btn_exportar"
@@ -69,15 +72,15 @@
                 <tr>
                     <td>{{loop.index}}</td>
                     {% for coluna in linha %}
-                        {% if linhas[0][loop.index - 1] == 'Ficha' %}
-                            <td onmouseover="showMsg(this, '{{coluna}}')" onmouseout="clearMsg(this)">
-                                <a href="ovr?id={{coluna}}" target="_blank">{{ coluna }}</a>
-                            </td>
-                        {% elif linhas[0][loop.index - 1] in ('Verificacao', 'RVF') %}
-                            <td><a href="rvf?id={{coluna}}" target="_blank">{{ coluna }}</a></td>
-                        {% else %}
-                            <td>{{ coluna }}</td>
-                        {% endif %}
+                    {% if linhas[0][loop.index - 1] == 'Ficha' %}
+                    <td onmouseover="showMsg(this, '{{coluna}}')" onmouseout="clearMsg(this)">
+                        <a href="ovr?id={{coluna}}" target="_blank">{{ coluna }}</a>
+                    </td>
+                    {% elif linhas[0][loop.index - 1] in ('Verificacao', 'RVF') %}
+                    <td><a href="rvf?id={{coluna}}" target="_blank">{{ coluna }}</a></td>
+                    {% else %}
+                    <td>{{ coluna }}</td>
+                    {% endif %}
                     {% endfor %}
                 </tr>
                 {% endfor %}
@@ -131,6 +134,7 @@
     function clearMsg(obj) {
         obj.title = "";
     }
+
 
 </script>
 {% endblock %}

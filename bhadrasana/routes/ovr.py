@@ -21,7 +21,7 @@ from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
     FiltroMinhasOVRsForm, OKRObjectiveForm, OKRMetaForm, SetorOVRForm, EscaneamentoOperadorForm, \
     FiltroAbasForm, ResultadoOVRForm
 from bhadrasana.models import delete_objeto, get_usuario, \
-    usuario_tem_perfil_nome
+    usuario_tem_perfil_nome, get_filename_valido
 from bhadrasana.models.laudo import get_empresa, get_empresas_nome, get_sats_cnpj, get_pessoas_nome, get_pessoa
 from bhadrasana.models.ovr import OVR, OKRObjective, faseOVR
 from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
@@ -504,6 +504,14 @@ def ovr_app(app):
                                            filtro_form.datainicio.data,
                                            filtro_form.datafim.data,
                                            setor_id=filtro_form.setor_id.data)
+                if request.form.get('exportar') is not None:
+                    df = pd.DataFrame(linhas[1:], columns=linhas[0])
+                    out_filename = '{}_{}.xlsx'.format(f'Relatorios_{relatorio.nome}',
+                        datetime.strftime(datetime.now(), '%Y-%m-%dT%H-%M-%S')
+                    )
+                    out_filename = get_filename_valido(out_filename)
+                    df.to_excel(os.path.join(get_user_save_path(), out_filename), index=False)
+                    return redirect('static/%s/%s' % (current_user.name, out_filename))
                 plot = bar_plotly(linhas, relatorio.nome)
                 linhas_formatadas = formata_linhas_relatorio(linhas)
         except Exception as err:

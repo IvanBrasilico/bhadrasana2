@@ -1,3 +1,4 @@
+import re
 import sys
 from enum import Enum
 from typing import Tuple, List
@@ -27,6 +28,17 @@ db_session = scoped_session(sessionmaker(autocommit=False,
                                          bind=engine))
 Base = declarative_base()
 Base.query = db_session.query_property()
+
+
+def get_filename_valido(filename: str) -> str:
+    """
+    Retorna a string formatada como nome de arquivo válido
+    """
+    s = str(filename).strip().replace(" ", "_")
+    s = re.sub(r"(?u)[^-\w.]", "", s)
+    if s in {"", ".", ".."}:
+        raise Exception(" '%s' não é um nome de arquivo válido e seguro" % filename)
+    return s
 
 
 class BaseDumpable(Base):
@@ -282,4 +294,3 @@ if __name__ == '__main__':
     Base.metadata.create_all(engine, [
         Base.metadata.tables['ovr_perfis_usuarios']
     ])
-
