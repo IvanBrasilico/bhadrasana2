@@ -126,14 +126,22 @@ def monta_data(row):
 
 def checa_imagens(eventos_api):
     contador = 0
+    largura_total = 0
+    altura_total = 0
     for row in eventos_api.iterrows():
         imagem_base64 = row[1]['arquivoImagem']
         im = Image.open(BytesIO(base64.b64decode(imagem_base64)))
         print(row[1]['numeroConteiner'], im.size)
         if im.size[1] < 800:
             contador += 1
+        largura_total += im.size[0]
+        altura_total += im.size[1]
+    total_imagens = len(eventos_api)
+    largura_media = largura_total // total_imagens
+    altura_media = altura_total // total_imagens
     return f'Observação: arquivo possui {contador} imagens com menos de 800 linhas,' \
-           f' de um total de {len(eventos_api)} imagens.'
+           f' de um total de {total_imagens} imagens. ' \
+           f'Média de resoluçao: ({largura_media} x {altura_media}).'
 
 
 def processa_auditoria(planilha, stream_json, evento_nome: str):
