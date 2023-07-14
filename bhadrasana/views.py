@@ -240,8 +240,13 @@ def index():
             for result in results[:5]:
                 delta = ((date.today() - objective.inicio.date()) /
                          (objective.fim - objective.inicio)) * result.ameta
+                try:
+                    soma_resultados = sum([row['result'] for row in result.resultados])
+                except Exception as err:
+                    logger.error(err)
+                    soma_resultados = 0.
                 indicator = gauge_plotly(result.result.nome, result.ameta,
-                                         sum([row['result'] for row in result.resultados]),
+                                         soma_resultados,
                                          delta)
                 col += 1
                 if col > 3:
