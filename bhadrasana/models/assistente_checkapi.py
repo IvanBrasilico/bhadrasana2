@@ -16,6 +16,13 @@ def converte_datetime(str_datetime: str):
     # return datetime.datetime.strptime(str_datetime, '%Y-%m-%dT%H:%M:%S.000-%Z')
 
 
+def converte_cpf(campo_cpf):
+    if not isinstance(campo_cpf, str):
+        campo_cpf = str(int(campo_cpf))
+    campo_cpf = campo_cpf.zfill(11)
+    return campo_cpf
+
+
 def get_campos_comum(evento) -> Tuple[dict, dict]:
     campos = {}
     campos['dataHoraTransmissao'] = converte_datetime(evento['dadosTransmissao']['dataHoraTransmissao'])
@@ -35,7 +42,7 @@ def get_campos_gate(evento) -> dict:
     except:
         campos['numeroConteiner'] = None
     try:
-        campos['motorista.cpf'] = sub_evento['motorista']['cpf']
+        campos['motorista.cpf'] = converte_cpf(sub_evento['motorista']['cpf'])
     except:
         campos['motorista.cpf'] = None
     return campos
@@ -45,9 +52,9 @@ def get_campos_pesagem(evento) -> dict:
     campos, sub_evento = get_campos_comum(evento)
     campos['placa'] = sub_evento['placa']
     # campos['ocrPlaca'] = sub_evento['ocrPlaca'] ERRO??? (não tem ocrPlaca no Evento??)
-    print(evento)
-    print(sub_evento)
-    campos['tara'] = sub_evento.get('tara', 'Campo não existente!')
+    # print(evento)
+    # print(sub_evento)
+    campos['tara'] = sub_evento.get('taraConjunto', 'Campo não existente!')
     campos['capturaAutoPeso'] = sub_evento['capturaAutoPeso']
     campos['pesoBrutoManifesto'] = sub_evento.get('pesoBrutoManifesto', 'Campo não existente!')
     campos['pesoBrutoBalanca'] = sub_evento.get('pesoBrutoBalanca', 'Campo não existente!')
@@ -55,12 +62,15 @@ def get_campos_pesagem(evento) -> dict:
         campos['numeroConteiner'] = sub_evento['listaConteineresUld'][0]['numeroConteiner']
     except:
         campos['numeroConteiner'] = None
+    try:
+        campos['placaReboque'] = sub_evento['listaSemirreboque'][0]['placa']
+    except:
+        campos['placaReboque'] = None
     return campos
 
 
 def get_campos_inspecaonaoinvasiva(evento) -> dict:
     campos, sub_evento = get_campos_comum(evento)
-    # campos['ocrPlaca'] = sub_evento['ocrPlaca'] ERRO??? (não tem ocrPlaca no Evento??)
     try:
         campos['numeroConteiner'] = sub_evento['listaConteineresUld'][0]['numeroConteiner']
     except:
@@ -110,18 +120,17 @@ def compara_linha(linha_api, linha_fisico, depara_campos: dict) -> list:  # Reto
 def get_eventos_fisico(planilha):
     # lfilename = planilha.filename
     df = pd.read_excel(planilha, engine='openpyxl', header=0)
-    print(len(df))
+    # print(len(df))
     df = df[~df['Data'].isna()]
-    print(len(df))
-    return df.replace({np.nan: None})
+    # print(len(df))
+    df = df.replace({np.nan: ''})
+    if 'CPF' in df.columns:
+        df['CPF'] = df['CPF'].apply(converte_cpf)
+    return df
 
 
 def get_eventos_api(stream):
     return json.loads(stream.read())
-
-
-def monta_data(row):
-    pass
 
 
 def checa_imagens(eventos_api):
@@ -149,6 +158,7 @@ def processa_auditoria(planilha, stream_json, evento_nome: str):
                    'PesagemVeiculo': get_campos_pesagem,
                    'InspecaoNaoInvasiva': get_campos_inspecaonaoinvasiva}
     eventos_fisico = get_eventos_fisico(planilha)
+    print('#####################--- eventos_fisico')
     print(eventos_fisico.head())
     eventos_fisico['dataHoraOcorrencia'] = eventos_fisico.apply(lambda x: datetime.combine(x['Data'], x['Hora']),
                                                                 axis=1)
@@ -163,15 +173,13 @@ def processa_auditoria(planilha, stream_json, evento_nome: str):
         eventos_fisico['dataHoraScaneamento'] = eventos_fisico['dataHoraOcorrencia']
         chave_api = 'numeroConteiner'
         chave_fisico = 'NúmeroContêiner'
-    print('eventos_api')
+    print('#####################--- eventos_api')
     print(eventos_api.head())
-    print('eventos_fisico')
-    print(eventos_fisico.head())
     placas_nao_encontradas = eventos_fisico[~ eventos_fisico[chave_fisico].isin(eventos_api[chave_api])]
     placas_encontradas = eventos_fisico[eventos_fisico[chave_fisico].isin(eventos_api[chave_api])]
-    print('placas_enc')
+    print('#####################--- placas_encontradas')
     print(placas_encontradas.head())
-    print('placas_naoenc')
+    print('#####################--- placas_nao_encontradas')
     print(placas_nao_encontradas.head())
     print(placas_nao_encontradas[chave_fisico].values)
     linhas_divergentes = []
@@ -197,4 +205,4 @@ def processa_auditoria(planilha, stream_json, evento_nome: str):
     if evento_nome == 'InspecaoNaoInvasiva':  # Verificar imagens
         erros_imagens = checa_imagens(eventos_api)
         mensagens.append(erros_imagens)
-    return eventos_fisico, mensagens, linhas_divergentes
+    return eventos_fisico, eventos_api.head(), mensagens, linhas_divergentes

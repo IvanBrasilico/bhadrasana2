@@ -24,7 +24,7 @@ function upload_files(ev){
         console.log(i);
 
         let file = filesToUpload[i];
-        //console.log(`Data criacao do arquivo: ${file.lastModifiedDate}`);
+        console.log(`Data criacao do arquivo: ${file.lastModifiedDate}`);
         // listaNomeImagens.push(file.name);
         listaDataModificacao.push(file.lastModifiedDate.toISOString());
         var reader = new FileReader();

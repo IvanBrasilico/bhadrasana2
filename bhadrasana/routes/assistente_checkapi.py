@@ -88,6 +88,7 @@ def inclui_evento_ovr(db, session, ovr, motivo: str, file=None, filename=None):
 
 
 def gerar_relatorio_docx(eventos_fisico,
+                         amostra_eventos_api,
                          mensagens: list,
                          linhas_divergentes: list,
                          recinto: Recinto,
@@ -95,6 +96,7 @@ def gerar_relatorio_docx(eventos_fisico,
                          usuario: Usuario,
                          ovr=None):
     dados = {'eventos_fisico': eventos_fisico,
+             'amostra_eventos_api': amostra_eventos_api,
              'mensagens': ' '.join(mensagens),
              'linhas_divergentes': linhas_divergentes,
              'cnpj_fiscalizado': recinto.cnpj,
@@ -139,7 +141,7 @@ def assistentecheckapi_app(app):
                 stream_json = request.files[checkapiform.eventos_json.name]
                 recinto = session.query(Recinto).filter(Recinto.id == checkapiform.recinto_id.data).one()
                 evento_nome = dict(checkapiform.tipoevento_id.choices).get(checkapiform.tipoevento_id.data)
-                eventos_fisico, mensagens, linhas_divergentes = \
+                eventos_fisico, amostra_eventos_api, mensagens, linhas_divergentes = \
                     processa_auditoria(stream_planilha, stream_json, evento_nome)
                 ovr = None
                 if request.values.get('finalizar'):
@@ -148,7 +150,9 @@ def assistentecheckapi_app(app):
                     inclui_evento_ovr(mongo_risco, session, ovr,
                                       motivo='Assistente API Recintos - planilha checagem',
                                       file=stream_planilha)
-                arquivo = gerar_relatorio_docx(eventos_fisico, mensagens,
+                arquivo = gerar_relatorio_docx(eventos_fisico,
+                                               amostra_eventos_api,
+                                               mensagens,
                                                linhas_divergentes,
                                                recinto,
                                                evento_nome,
@@ -160,6 +164,7 @@ def assistentecheckapi_app(app):
                     return redirect(url_for('ovr', id=ovr.id))
                 return render_template('assistente_checkapi.html',
                                        eventos_fisico=eventos_fisico,
+                                       amostra_eventos_api=amostra_eventos_api,
                                        mensagens=mensagens,
                                        linhas_divergentes=linhas_divergentes,
                                        checkapiform=checkapiform,
@@ -177,4 +182,5 @@ def assistentecheckapi_app(app):
                                arquivos=[],
                                linhas_diferentes=[],
                                eventos_fisico=None,
+                               amostra_eventos_api=None,
                                lista_planilhas=lista_planilhas)
