@@ -205,4 +205,4 @@ def processa_auditoria(planilha, stream_json, evento_nome: str):
     if evento_nome == 'InspecaoNaoInvasiva':  # Verificar imagens
         erros_imagens = checa_imagens(eventos_api)
         mensagens.append(erros_imagens)
-    return eventos_fisico, eventos_api.head(), mensagens, linhas_divergentes
+    return eventos_fisico, eventos_api.head(10), mensagens, linhas_divergentes
