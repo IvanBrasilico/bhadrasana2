@@ -592,7 +592,8 @@ def get_ids_flags_contrafacao(session) -> List[int]:
 
 
 def inclui_flag_ovr(session, ovr_id, flag_nome, user_name) -> List[Flag]:
-    valida_mesmo_responsavel_user_name(session, ovr_id, user_name)
+    # TODO: Retornar restrição de responsável
+    # valida_mesmo_responsavel_user_name(session, ovr_id, user_name)
     flag = session.query(Flag).filter(
         Flag.nome == flag_nome).one_or_none()
     # logger.info(flag, flag_nome)
