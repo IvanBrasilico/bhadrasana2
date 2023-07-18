@@ -52,6 +52,10 @@ class BaseDumpable(Base):
                     dump.pop(key)
         return dump
 
+    @classmethod
+    def get_campos(cls):
+        return [k for k, v in vars(cls).items() if '_' not in k]
+
 
 class ENaoAutorizado(Exception):
     def __init__(self, msg='Usuário não autorizado.'):
@@ -121,7 +125,7 @@ class BaseRastreavel(Base):
                          server_default=func.current_timestamp())
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__()
         if self.user_name is None and kwargs.get('user_name'):
             self.user_name = kwargs['user_name']
 
