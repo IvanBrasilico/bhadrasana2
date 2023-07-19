@@ -1,6 +1,8 @@
 import json
 import sys
+from typing import Type
 
+import pandas as pd
 from dateutil import parser
 from sqlalchemy import BigInteger, Column, DateTime, Boolean, String, UniqueConstraint, exists
 
@@ -8,6 +10,7 @@ sys.path.append('.')
 sys.path.insert(0, '../ajna_docs/commons')
 sys.path.insert(0, '../virasana')
 
+from ajna_commons.flask.log import logger
 from bhadrasana.models import Base, BaseRastreavel, BaseDumpable
 
 metadata = Base.metadata
@@ -64,6 +67,41 @@ class AcessoVeiculo(BaseRastreavel, BaseDumpable):
             AcessoVeiculo.dataHoraOcorrencia == self.dataHoraOcorrencia)).scalar()
 
 
+def le_json(caminho_json: str, classeevento: Type[BaseDumpable], chave_unica: list) -> pd.DataFrame:
+    with open(caminho_json) as json_in:
+        texto = json_in.readlines()
+    json_raw = json.loads(''.join(texto))
+    eventos = []
+    for evento_json in json_raw:
+        json_original = evento_json['jsonOriginal']
+        instancia = classeevento(**json_original)
+        eventos.append(instancia.dump())
+    df_eventos = pd.DataFrame(eventos)
+    df_eventos = df_eventos.drop_duplicates(subset=chave_unica)
+    logger.info(f'Recuperados {len(json_raw)} eventos. Mantidos {len(df_eventos)} '
+                f'após remoção de duplicatas de chave primária.')
+    if classeevento == AcessoVeiculo:
+        df_eventos = df_eventos[df_eventos['operacao'] == 'C']
+    logger.info(f'Mantidos {len(df_eventos)} após filtragem de Eventos de A*c*esso (Operação=C).')
+    return df_eventos
+
+
+def persiste_df(df_eventos: pd.DataFrame, classeevento: Type[BaseDumpable]):
+    cont_sucesso = 0
+    ind = 0
+    for ind, evento_dict in enumerate(df_eventos.to_dict('records'), 1):
+        evento = classeevento(**evento_dict)
+        session.add(evento)
+        session.flush()
+        cont_sucesso += 1
+    try:
+        session.commit()
+        logger.info(f'{ind} Eventos lidos, {cont_sucesso} inseridos')
+    except Exception as err:
+        session.rollback()
+        logger.error(err, exc_info=True)
+
+
 if __name__ == '__main__':  # pragma: no-cover
     confirma = input('Revisar o código... '
                      'Esta ação pode apagar TODAS as tabelas. Confirma??')
@@ -77,24 +115,8 @@ if __name__ == '__main__':  # pragma: no-cover
         session = Session()
         # Sair por segurança. Comentar linha abaixo para funcionar
         # sys.exit(0)
-        # metadata.drop_all(engine, [metadata.tables['apirecintos_acessosveiculo'], ])
+        metadata.drop_all(engine, [metadata.tables['apirecintos_acessosveiculo'], ])
         metadata.create_all(engine, [metadata.tables['apirecintos_acessosveiculo'], ])
-        with open('notebooks/data/consultaGenerica/json.txt') as json_in:
-            texto = json_in.readlines()
-        json_raw = json.loads(''.join(texto))
-        cont_sucesso = 0
-        for ind, evento in enumerate(json_raw, 1):
-            json_original = evento['jsonOriginal']
-            # print(json_original)
-            acessoveiculo = AcessoVeiculo(**json_original)
-            # print(acessoveiculo.dump())
-            if acessoveiculo.isduplicate(session):
-                continue
-            session.add(acessoveiculo)
-            session.flush()
-            cont_sucesso += 1
-        try:
-            session.commit()
-        except Exception as err:
-            session.rollback()
-        print(f'{ind} Eventos lidos, {cont_sucesso} inseridos')
+        df_eventos = le_json(r'C:\Users\25052288840\Downloads\api_recintos\DPW_ev1_20230727\json.txt',
+                             AcessoVeiculo, ['placa', 'operacao', 'dataHoraOcorrencia'])
+        persiste_df(df_eventos, AcessoVeiculo)
