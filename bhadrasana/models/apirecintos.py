@@ -201,9 +201,9 @@ if __name__ == '__main__':  # pragma: no-cover
         session = Session()
         # Sair por segurança. Comentar linha abaixo para funcionar
         # sys.exit(0)
-        metadata.drop_all(engine, [metadata.tables['apirecintos_acessosveiculo'],
-                                   metadata.tables['apirecintos_pesagensveiculo'],
-                                   metadata.tables['apirecintos_inspecoesnaoinvasivas'], ])
+        # metadata.drop_all(engine, [metadata.tables['apirecintos_acessosveiculo'],
+        #                           metadata.tables['apirecintos_pesagensveiculo'],
+        #                           metadata.tables['apirecintos_inspecoesnaoinvasivas'], ])
         metadata.create_all(engine, [metadata.tables['apirecintos_acessosveiculo'],
                                      metadata.tables['apirecintos_pesagensveiculo'],
                                      metadata.tables['apirecintos_inspecoesnaoinvasivas'], ])
