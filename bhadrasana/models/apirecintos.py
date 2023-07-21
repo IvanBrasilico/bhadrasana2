@@ -1,6 +1,6 @@
 import json
 import sys
-from typing import Type
+from typing import Type, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -55,6 +55,37 @@ class EventoAPIBase(BaseRastreavel, BaseDumpable):
             setattr(self, k, kwargs.get(k))
 
 
+def get_listaConteineresUld(o_kwargs: dict) -> Union[Tuple[str, bool, str], Tuple[None, bool, None]]:
+    """
+    "estoura" objeto listaConteineresUld
+
+       Returns: numeroConteiner, ocrNumero, tipo
+    """
+    listaConteineresUld = o_kwargs.get('listaConteineresUld')
+    if listaConteineresUld and isinstance(listaConteineresUld, list) and len(listaConteineresUld) > 0:
+        return listaConteineresUld[0].get('numeroConteiner'), \
+               listaConteineresUld[0].get('ocrNumero', False), \
+               listaConteineresUld[0].get('tipo')
+    else:
+        return None, False, None
+
+
+def get_listaSemirreboque(o_kwargs: dict) -> Union[Tuple[str, bool, bool, float], Tuple[None, bool, bool, None]]:
+    """
+    "estoura" objeto listaSemirreboque
+
+       Returns: placa, ocrPlaca, vazio, tara
+    """
+    listaSemirreboque = o_kwargs.get('listaSemirreboque')
+    if listaSemirreboque and isinstance(listaSemirreboque, list) and len(listaSemirreboque) > 0:
+        return listaSemirreboque[0].get('placa'), \
+               listaSemirreboque[0].get('ocrPlaca', False), \
+               listaSemirreboque[0].get('vazio', True), \
+               listaSemirreboque[0].get('tara'),
+    else:
+        return None, False, False, None
+
+
 class AcessoVeiculo(EventoAPIBase):
     __tablename__ = 'apirecintos_acessosveiculo'
     __table_args__ = (UniqueConstraint('placa', 'operacao', 'dataHoraOcorrencia'),
@@ -70,6 +101,10 @@ class AcessoVeiculo(EventoAPIBase):
     listaConteineresUld = Column(String(1))  # Placeholder
     numeroConteiner = Column(String(11), index=True)
     ocrNumero = Column(Boolean(), index=True)
+    listaSemirreboque = Column(String(1))  # Placeholder
+    placaSemirreboque = Column(String(7), index=True)
+    ocrPlacaSemirreboque = Column(Boolean(), index=True)
+    vazioSemirreboque = Column(Boolean(), index=True)
 
     def _mapeia(self, *args, **kwargs):
         super()._mapeia(**kwargs)
@@ -84,10 +119,9 @@ class AcessoVeiculo(EventoAPIBase):
             cpf = motorista.get('cpf')
             self.cpfMotorista = ''.join([c for c in cpf if c.isnumeric()])
             self.nomeMotorista = motorista.get('nome')
-        listaConteineresUld = kwargs.get('listaConteineresUld')
-        if listaConteineresUld and isinstance(listaConteineresUld, list) and len(listaConteineresUld) > 0:
-            self.numeroConteiner = listaConteineresUld[0]['numeroConteiner']
-            self.ocrNumero = listaConteineresUld[0]['ocrNumero']
+        self.numeroConteiner, self.ocrNumero, _ = get_listaConteineresUld(kwargs)
+        self.placaSemirreboque, self.ocrPlacaSemirreboque, self.vazioSemirreboque, _ = \
+            get_listaSemirreboque(kwargs)
 
     def is_duplicate(self, session):
         return session.query(exists().where(
@@ -106,6 +140,9 @@ class PesagemVeiculo(EventoAPIBase):
     placa = Column(String(7), index=True)
     listaConteineresUld = Column(String(1))  # Placeholder
     numeroConteiner = Column(String(11), index=True)
+    listaSemirreboque = Column(String(1))  # Placeholder
+    placaSemirreboque = Column(String(7), index=True)
+    taraSemirreboque = Column(Numeric(7, 2))
 
     def _mapeia(self, *args, **kwargs):
         super()._mapeia(**kwargs)
@@ -114,10 +151,8 @@ class PesagemVeiculo(EventoAPIBase):
         self.capturaAutoPeso = kwargs.get('capturaAutoPeso')
         self.placa = kwargs.get('placa')
         # self.ocrPlaca == kwargs.get('ocrPlaca']
-        listaConteineresUld = kwargs.get('listaConteineresUld')
-        if listaConteineresUld and isinstance(listaConteineresUld, list) and len(listaConteineresUld) > 0:
-            self.numeroConteiner = listaConteineresUld[0]['numeroConteiner']
-            # self.ocrNumero == kwargs.get('listaConteineresUld[0]['ocrNumero']
+        self.numeroConteiner, _, _ = get_listaConteineresUld(kwargs)
+        self.placaSemirreboque, _, _, self.taraSemirreboque = get_listaSemirreboque(kwargs)
 
     def is_duplicate(self, session):
         return session.query(exists().where(
@@ -134,16 +169,16 @@ class InspecaoNaoInvasiva(EventoAPIBase):
     tipoConteiner = Column(String(4), index=True)
     numeroConteiner = Column(String(11), index=True)
     ocrNumero = Column(Boolean(), index=True)
+    listaSemirreboque = Column(String(1))  # Placeholder
+    placaSemirreboque = Column(String(7), index=True)
+    ocrPlacaSemirreboque = Column(Boolean(), index=True)
 
     def _mapeia(self, *args, **kwargs):
         super()._mapeia(**kwargs)
         self.vazio = kwargs.get('vazio')
         self.placa = kwargs.get('placa')
-        listaConteineresUld = kwargs.get('listaConteineresUld')
-        if listaConteineresUld and isinstance(listaConteineresUld, list) and len(listaConteineresUld) > 0:
-            self.tipoConteiner = listaConteineresUld[0]['tipo']
-            self.numeroConteiner = listaConteineresUld[0]['numeroConteiner']
-            self.ocrNumero = listaConteineresUld[0]['ocrNumero']
+        self.numeroConteiner, self.ocrNumero, self.tipoConteiner = get_listaConteineresUld(kwargs)
+        self.placaSemirreboque, self.ocrPlacaSemirreboque, _, _ = get_listaSemirreboque(kwargs)
 
     def is_duplicate(self, session):
         return session.query(exists().where(
@@ -176,7 +211,6 @@ def persiste_df(df_eventos: pd.DataFrame, classeevento: Type[BaseDumpable]):
     ind = 0
     for ind, evento_dict in enumerate(df_eventos.to_dict('records'), 1):
         evento = classeevento(**evento_dict)
-        # print(evento.dump())
         session.add(evento)
         session.flush()
         cont_sucesso += 1
@@ -201,12 +235,14 @@ if __name__ == '__main__':  # pragma: no-cover
         session = Session()
         # Sair por segurança. Comentar linha abaixo para funcionar
         # sys.exit(0)
-        # metadata.drop_all(engine, [metadata.tables['apirecintos_acessosveiculo'],
-        #                           metadata.tables['apirecintos_pesagensveiculo'],
-        #                           metadata.tables['apirecintos_inspecoesnaoinvasivas'], ])
+        '''
+        metadata.drop_all(engine, [metadata.tables['apirecintos_acessosveiculo'],
+                                   metadata.tables['apirecintos_pesagensveiculo'],
+                                   metadata.tables['apirecintos_inspecoesnaoinvasivas'], ])
         metadata.create_all(engine, [metadata.tables['apirecintos_acessosveiculo'],
                                      metadata.tables['apirecintos_pesagensveiculo'],
                                      metadata.tables['apirecintos_inspecoesnaoinvasivas'], ])
+                                    '''
         df_eventos = le_json(r'C:\Users\25052288840\Downloads\api_recintos\DPW_ev1_20230727\json.txt',
                              AcessoVeiculo, ['placa', 'operacao', 'dataHoraOcorrencia'])
         persiste_df(df_eventos, AcessoVeiculo)

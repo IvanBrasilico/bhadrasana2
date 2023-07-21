@@ -174,6 +174,9 @@ def ovr_app(app):
                         processos = ovr.processos
                         resultados = ovr.resultados
                         flags_ovr = ovr.flags
+                        if flags_ovr is not None and len(flags_ovr) <= 0:
+                            flash('Dica: adicione um "flag" em Alertas/Observações importantes,'
+                                  ' especialmente o motivo de seleção. Isto facilitará as buscas e estatísticas!')
                         itens_roteiro = get_itens_roteiro_checked(session, ovr)
                         rvfs = lista_rvfovr(session, ovr_id)
                         qtdervfs = len(rvfs)
