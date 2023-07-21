@@ -175,7 +175,9 @@ class InspecaoNaoInvasiva(EventoAPIBase):
 
     def _mapeia(self, *args, **kwargs):
         super()._mapeia(**kwargs)
-        self.vazio = kwargs.get('vazio')
+        self.vazio = kwargs.get('vazio', False)
+        if not isinstance(self.vazio, bool):
+            self.vazio = False
         self.placa = kwargs.get('placa')
         self.numeroConteiner, self.ocrNumero, self.tipoConteiner = get_listaConteineresUld(kwargs)
         self.placaSemirreboque, self.ocrPlacaSemirreboque, _, _ = get_listaSemirreboque(kwargs)
@@ -194,6 +196,8 @@ def le_json(caminho_json: str, classeevento: Type[BaseDumpable], chave_unica: li
     for evento_json in json_raw:
         instancia = classeevento()
         instancia.processa_json(evento_json)
+        if (instancia.placa is None) and ('placa' in chave_unica):
+                continue
         eventos.append(instancia.dump())
     df_eventos = pd.DataFrame(eventos)
     df_eventos = df_eventos.drop_duplicates(subset=chave_unica)
@@ -211,6 +215,7 @@ def persiste_df(df_eventos: pd.DataFrame, classeevento: Type[BaseDumpable]):
     ind = 0
     for ind, evento_dict in enumerate(df_eventos.to_dict('records'), 1):
         evento = classeevento(**evento_dict)
+        # print(evento.dump())
         session.add(evento)
         session.flush()
         cont_sucesso += 1
@@ -242,13 +247,13 @@ if __name__ == '__main__':  # pragma: no-cover
         metadata.create_all(engine, [metadata.tables['apirecintos_acessosveiculo'],
                                      metadata.tables['apirecintos_pesagensveiculo'],
                                      metadata.tables['apirecintos_inspecoesnaoinvasivas'], ])
-                                    '''
-        df_eventos = le_json(r'C:\Users\25052288840\Downloads\api_recintos\DPW_ev1_20230727\json.txt',
+        '''
+        df_eventos = le_json('C:\\Users\\25052288840\\Downloads\\api_recintos\\DPW_ev1_20230718\\json.txt',
                              AcessoVeiculo, ['placa', 'operacao', 'dataHoraOcorrencia'])
         persiste_df(df_eventos, AcessoVeiculo)
-        df_eventos = le_json(r'C:\Users\25052288840\Downloads\api_recintos\DPW_ev2_20230727\json.txt',
+        df_eventos = le_json(r'C:\Users\25052288840\Downloads\api_recintos\DPW_ev2_20230718\json.txt',
                              PesagemVeiculo, ['placa', 'dataHoraOcorrencia'])
         persiste_df(df_eventos, PesagemVeiculo)
-        df_eventos = le_json(r'C:\Users\25052288840\Downloads\api_recintos\DPW_ev3_20230727\json.txt',
+        df_eventos = le_json(r'C:\Users\25052288840\Downloads\api_recintos\DPW_ev3_20230718\json.txt',
                              InspecaoNaoInvasiva, ['numeroConteiner', 'dataHoraOcorrencia'])
         persiste_df(df_eventos, InspecaoNaoInvasiva)
