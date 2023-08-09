@@ -19,6 +19,8 @@ def converte_datetime(str_datetime: str):
 def converte_cpf(campo_cpf):
     if not isinstance(campo_cpf, str):
         campo_cpf = str(int(campo_cpf))
+    if campo_cpf.strip() == '':
+        return ''
     campo_cpf = campo_cpf.zfill(11)
     return campo_cpf
 
@@ -112,6 +114,9 @@ def campos_sao_diferentes(val_fisico, val_api):
         dif = val_api - val_fisico
         return dif.total_seconds() > 300  # Datas com diferenca de 5 minutos
     else:
+        if isinstance(val_fisico, str):
+            if str(val_fisico).strip() == '':  # Ignora campo vazio
+                return False
         return val_fisico != val_api
 
 
@@ -211,9 +216,10 @@ def processa_auditoria(planilha, stream_json, evento_nome: str):
         f'{eventos_api.dataHoraOcorrencia.max()}',
         f'NÃO foram encontradas {len(placas_nao_encontradas)} de {len(eventos_fisico)} chaves {chave_fisico}: ' + \
         ', '.join(chaves_nao_encontradas),
-        f'Campos conferidos no arquivo JSON: {list(_depara_campos[evento_nome].values())}'
+        f'Campos conferidos no arquivo JSON: {list(_depara_campos[evento_nome].values())}',
+        'Obs: deixe o campo em branco na planilha para ignorar a checagem deste'
     ]
     if evento_nome == 'InspecaoNaoInvasiva':  # Verificar imagens
         erros_imagens = checa_imagens(eventos_api)
         mensagens.append(erros_imagens)
-    return eventos_fisico, eventos_api.head(10), mensagens, linhas_divergentes
+    return eventos_fisico, placas_encontradas, mensagens, linhas_divergentes
