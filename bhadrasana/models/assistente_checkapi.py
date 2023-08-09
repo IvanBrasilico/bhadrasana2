@@ -131,13 +131,8 @@ def compara_linha(linhas_api, linha_fisico, depara_campos: dict) -> list:  # Ret
     )]
     for campo_fisico, campo_api in depara_campos.items():
         val_fisico = linha_fisico[1][campo_fisico]
-        diferente = False
-        val_api = None
-        for linha_comparada in range(len(linhas_api)):
-            val_api = linhas_api[campo_api].iloc[linha_comparada]
-            diferente = campos_sao_diferentes(val_fisico, val_api)
-            if not diferente:
-                break
+        val_api = linhas_api[campo_api].iloc[0]
+        diferente = campos_sao_diferentes(val_fisico, val_api)
         if diferente:
             diferencas.append(f'{campo_fisico} diferente. Checagem física: {val_fisico} Conteúdo API: {val_api}')
     return diferencas
