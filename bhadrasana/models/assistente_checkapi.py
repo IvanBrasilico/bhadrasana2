@@ -126,12 +126,14 @@ def compara_linha(linhas_api, linha_fisico, depara_campos: dict) -> list:  # Ret
     # pois placa pode ter passado várias vezes no período
     # Filtrar por data ocorrência mais próxima
     linha_api = linhas_api[linhas_api['dataHoraOcorrencia'].between(
-        linha_fisico['dataHoraOcorrencia'] - timedelta(hours=0, minutes=30),
-        linha_fisico['dataHoraOcorrencia'] + timedelta(hours=0, minutes=30),
+        linha_fisico[1]['dataHoraOcorrencia'] - timedelta(hours=0, minutes=50),
+        linha_fisico[1]['dataHoraOcorrencia'] + timedelta(hours=0, minutes=50),
     )]
+    if len(linha_api) == 0:
+        return ['Não encontrado registro no intervalo de 50 minutos antes e depois!']
     for campo_fisico, campo_api in depara_campos.items():
         val_fisico = linha_fisico[1][campo_fisico]
-        val_api = linhas_api[campo_api].iloc[0]
+        val_api = linha_api[campo_api].iloc[0]
         diferente = campos_sao_diferentes(val_fisico, val_api)
         if diferente:
             diferencas.append(f'{campo_fisico} diferente. Checagem física: {val_fisico} Conteúdo API: {val_api}')
