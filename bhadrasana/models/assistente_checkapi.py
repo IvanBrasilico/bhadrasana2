@@ -1,6 +1,6 @@
 import base64
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from io import BytesIO
 from typing import Tuple
 
@@ -120,12 +120,25 @@ def campos_sao_diferentes(val_fisico, val_api):
         return val_fisico != val_api
 
 
-def compara_linha(linha_api, linha_fisico, depara_campos: dict) -> list:  # Retorna texto com as diferenças
+def compara_linha(linhas_api, linha_fisico, depara_campos: dict) -> list:  # Retorna texto com as diferenças
     diferencas = []
+    # Código precisa comparar várias linhas,
+    # pois placa pode ter passado várias vezes no período
+    # Filtrar por data ocorrência mais próxima
+    linha_api = linhas_api[linhas_api['dataHoraOcorrencia'].between(
+        linha_fisico['dataHoraOcorrencia'] - timedelta(hours=0, minutes=30),
+        linha_fisico['dataHoraOcorrencia'] + timedelta(hours=0, minutes=30),
+    )]
     for campo_fisico, campo_api in depara_campos.items():
         val_fisico = linha_fisico[1][campo_fisico]
-        val_api = linha_api[campo_api].iloc[0]
-        if campos_sao_diferentes(val_fisico, val_api):
+        diferente = False
+        val_api = None
+        for linha_comparada in range(len(linhas_api)):
+            val_api = linhas_api[campo_api].iloc[linha_comparada]
+            diferente = campos_sao_diferentes(val_fisico, val_api)
+            if not diferente:
+                break
+        if diferente:
             diferencas.append(f'{campo_fisico} diferente. Checagem física: {val_fisico} Conteúdo API: {val_api}')
     return diferencas
 
@@ -193,6 +206,7 @@ def processa_auditoria(planilha, stream_json, evento_nome: str):
     print(eventos_api.head())
     placas_nao_encontradas = eventos_fisico[~ eventos_fisico[chave_fisico].isin(eventos_api[chave_api])]
     placas_encontradas = eventos_fisico[eventos_fisico[chave_fisico].isin(eventos_api[chave_api])]
+    api_filtrado = eventos_api[eventos_api[chave_api].isin(eventos_fisico[chave_fisico])]
     print('#####################--- placas_encontradas')
     print(placas_encontradas.head())
     print('#####################--- placas_nao_encontradas')
@@ -222,4 +236,4 @@ def processa_auditoria(planilha, stream_json, evento_nome: str):
     if evento_nome == 'InspecaoNaoInvasiva':  # Verificar imagens
         erros_imagens = checa_imagens(eventos_api)
         mensagens.append(erros_imagens)
-    return eventos_fisico, placas_encontradas, mensagens, linhas_divergentes
+    return eventos_fisico, api_filtrado, mensagens, linhas_divergentes
