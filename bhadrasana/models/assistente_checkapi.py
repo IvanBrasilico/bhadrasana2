@@ -35,10 +35,10 @@ def get_campos_gate(evento) -> dict:
     campos, sub_evento = get_campos_comum(evento)
     campos['operacao'] = sub_evento['operacao']  # G - A*g*endamento C - A*c*esso  -> Filtrar acesso
     campos['direcao'] = sub_evento['direcao']
-    campos['placa'] = sub_evento['placa']
+    campos['placa'] = letras_e_numeros(sub_evento['placa'])
     campos['ocrPlaca'] = sub_evento['ocrPlaca']
     try:
-        campos['numeroConteiner'] = sub_evento['listaConteineresUld'][0]['numeroConteiner']
+        campos['numeroConteiner'] = letras_e_numeros(sub_evento['listaConteineresUld'][0]['numeroConteiner'])
     except:
         campos['numeroConteiner'] = None
     try:
@@ -50,7 +50,7 @@ def get_campos_gate(evento) -> dict:
 
 def get_campos_pesagem(evento) -> dict:
     campos, sub_evento = get_campos_comum(evento)
-    campos['placa'] = sub_evento['placa']
+    campos['placa'] = letras_e_numeros(sub_evento['placa'])
     # campos['ocrPlaca'] = sub_evento['ocrPlaca'] ERRO??? (não tem ocrPlaca no Evento??)
     # print(evento)
     # print(sub_evento)
@@ -59,20 +59,28 @@ def get_campos_pesagem(evento) -> dict:
     campos['pesoBrutoManifesto'] = sub_evento.get('pesoBrutoManifesto', 'Campo não existente!')
     campos['pesoBrutoBalanca'] = sub_evento.get('pesoBrutoBalanca', 'Campo não existente!')
     try:
-        campos['numeroConteiner'] = sub_evento['listaConteineresUld'][0]['numeroConteiner']
+        campos['numeroConteiner'] = letras_e_numeros(sub_evento['listaConteineresUld'][0]['numeroConteiner'])
     except:
         campos['numeroConteiner'] = None
     try:
-        campos['placaReboque'] = sub_evento['listaSemirreboque'][0]['placa']
+        campos['placaReboque'] = letras_e_numeros(sub_evento['listaSemirreboque'][0]['placa'])
     except:
         campos['placaReboque'] = None
     return campos
 
 
+def letras_e_numeros(texto: str):
+    return ''.join([c for c in texto if c.isalpha() or c.isnumeric()])
+
+
 def get_campos_inspecaonaoinvasiva(evento) -> dict:
     campos, sub_evento = get_campos_comum(evento)
     try:
-        campos['numeroConteiner'] = sub_evento['listaConteineresUld'][0]['numeroConteiner']
+        campos['placa'] = letras_e_numeros(sub_evento['placa'])
+    except:
+        campos['placa'] = None
+    try:
+        campos['numeroConteiner'] = letras_e_numeros(sub_evento['listaConteineresUld'][0]['numeroConteiner'])
     except:
         campos['numeroConteiner'] = None
     try:
@@ -102,7 +110,7 @@ _depara_campos = {
 def campos_sao_diferentes(val_fisico, val_api):
     if isinstance(val_fisico, datetime):
         dif = val_api - val_fisico
-        return dif.total_seconds() > 60
+        return dif.total_seconds() > 300  # Datas com diferenca de 5 minutos
     else:
         return val_fisico != val_api
 
