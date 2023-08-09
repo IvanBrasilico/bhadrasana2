@@ -134,6 +134,9 @@ def get_eventos_fisico(planilha):
     df = df.replace({np.nan: ''})
     if 'CPF' in df.columns:
         df['CPF'] = df['CPF'].apply(converte_cpf)
+    for column_name in df.columns:
+        if 'placa' in column_name.lower() or 'contêiner' in column_name.lower():
+            df[column_name] = df[column_name].apply(letras_e_numeros)
     return df
 
 
