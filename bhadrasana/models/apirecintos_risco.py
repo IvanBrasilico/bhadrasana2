@@ -17,6 +17,8 @@ RiscoMotorista = {
     'BANDIDO': '3'
 }
 
+DescricaoRiscoMotorista = dict([(v, k) for k, v in RiscoMotorista.items()])
+
 
 class Motorista(Base):
     __tablename__ = 'risco_motoristas'
@@ -30,6 +32,8 @@ class Motorista(Base):
     carga_qtde = Column(Integer())
     descricao_transportadora = Column(String(100))
     observacoes = Column(String(200))
+    def get_risco(self):
+        return f'{DescricaoRiscoMotorista[self.classificacao]} - {self.carga} - {self.carga_qtde} ocorrências'
 
 
 if __name__ == '__main__':  # pragma: no-cover
