@@ -66,8 +66,7 @@ def get_listaConteineresUld(o_kwargs: dict) -> Union[Tuple[str, bool, str], Tupl
         return listaConteineresUld[0].get('numeroConteiner'), \
                listaConteineresUld[0].get('ocrNumero', False), \
                listaConteineresUld[0].get('tipo')
-    else:
-        return None, False, None
+    return None, False, None
 
 
 def get_listaSemirreboque(o_kwargs: dict) -> Union[Tuple[str, bool, bool, float], Tuple[None, bool, bool, None]]:
@@ -82,8 +81,37 @@ def get_listaSemirreboque(o_kwargs: dict) -> Union[Tuple[str, bool, bool, float]
                listaSemirreboque[0].get('ocrPlaca', False), \
                listaSemirreboque[0].get('vazio', True), \
                listaSemirreboque[0].get('tara'),
-    else:
-        return None, False, False, None
+    return None, False, False, None
+
+
+def get_listaDeclaracaoAduaneira(o_kwargs: dict) -> Union[Tuple[str, str], Tuple[None, None]]:
+    """
+    "estoura" objeto listaDeclaracaoAduaneira
+
+       Returns: tipo, numeroDeclaracao
+    """
+    listaDeclaracaoAduaneira = o_kwargs.get('listaDeclaracaoAduaneira')
+    if listaDeclaracaoAduaneira and isinstance(listaDeclaracaoAduaneira, list) and \
+            len(listaDeclaracaoAduaneira) > 0:
+        return listaDeclaracaoAduaneira[0].get('tipo'), \
+               listaDeclaracaoAduaneira[0].get('numeroDeclaracao')
+    return None, None
+
+def get_listaManifestos(o_kwargs: dict) -> Union[Tuple[str, str], Tuple[None, None]]:
+    """
+    "estoura" objeto listaManifestos
+
+       Returns: tipo, numero (listaConhecimentos)
+    """
+    listaManifestos = o_kwargs.get('listaManifestos')
+    if listaManifestos and isinstance(listaManifestos, list) and \
+            len(listaManifestos) > 0:
+        listaConhecimentos = listaManifestos[0].get('listaConhecimentos')
+        if listaConhecimentos and isinstance(listaConhecimentos, list) and \
+                len(listaConhecimentos) > 0:
+            return listaConhecimentos[0].get('tipo'), \
+                   listaConhecimentos[0].get('numero')
+    return None, None
 
 
 class AcessoVeiculo(EventoAPIBase):
@@ -105,6 +133,12 @@ class AcessoVeiculo(EventoAPIBase):
     placaSemirreboque = Column(String(7), index=True)
     ocrPlacaSemirreboque = Column(Boolean(), index=True)
     vazioSemirreboque = Column(Boolean(), index=True)
+    listaDeclaracaoAduaneira = Column(String(1))  # Placeholder
+    tipoDeclaracao = Column(String(3))
+    numeroDeclaracao = Column(String(15), index=True)
+    listaManifestos = Column(String(1))  # Placeholder
+    tipoConhecimento = Column(String(15))
+    numeroConhecimento = Column(String(15), index=True)
 
     def _mapeia(self, *args, **kwargs):
         super()._mapeia(**kwargs)
@@ -113,15 +147,19 @@ class AcessoVeiculo(EventoAPIBase):
         self.placa = kwargs.get('placa')
         self.ocrPlaca = kwargs.get('ocrPlaca')
         cnpjTransportador = kwargs.get('cnpjTransportador')
-        self.cnpjTransportador = ''.join([c for c in cnpjTransportador if c.isnumeric()])
+        if cnpjTransportador:
+            self.cnpjTransportador = ''.join([c for c in cnpjTransportador if c.isnumeric()])
         motorista = kwargs.get('motorista')
         if motorista and isinstance(motorista, dict):
             cpf = motorista.get('cpf')
-            self.cpfMotorista = ''.join([c for c in cpf if c.isnumeric()])
+            if cpf:
+                self.cpfMotorista = ''.join([c for c in cpf if c.isnumeric()])
             self.nomeMotorista = motorista.get('nome')
         self.numeroConteiner, self.ocrNumero, _ = get_listaConteineresUld(kwargs)
         self.placaSemirreboque, self.ocrPlacaSemirreboque, self.vazioSemirreboque, _ = \
             get_listaSemirreboque(kwargs)
+        self.tipoDeclaracao, self.numeroDeclaracao = get_listaDeclaracaoAduaneira(kwargs)
+        self.tipoConhecimento, self.numeroConhecimento = get_listaManifestos(kwargs)
 
     def is_duplicate(self, session):
         return session.query(exists().where(
@@ -148,7 +186,7 @@ class PesagemVeiculo(EventoAPIBase):
         super()._mapeia(**kwargs)
         self.pesoBrutoBalanca = kwargs.get('pesoBrutoBalanca')
         self.pesoBrutoManifesto = kwargs.get('pesoBrutoManifesto')
-        self.capturaAutoPeso = kwargs.get('capturaAutoPeso')
+        self.capturaAutoPeso = kwargs.get('capturaAutoPeso', False)
         self.placa = kwargs.get('placa')
         # self.ocrPlaca == kwargs.get('ocrPlaca']
         self.numeroConteiner, _, _ = get_listaConteineresUld(kwargs)
@@ -188,16 +226,20 @@ class InspecaoNaoInvasiva(EventoAPIBase):
             PesagemVeiculo.dataHoraOcorrencia == self.dataHoraOcorrencia)).scalar()
 
 
+
 def le_json(caminho_json: str, classeevento: Type[BaseDumpable], chave_unica: list) -> pd.DataFrame:
     with open(caminho_json) as json_in:
         texto = json_in.readlines()
+    return processa_json(texto, classeevento, chave_unica)
+
+def processa_json(texto: str, classeevento: Type[BaseDumpable], chave_unica: list) -> pd.DataFrame:
     json_raw = json.loads(''.join(texto))
     eventos = []
     for evento_json in json_raw:
         instancia = classeevento()
         instancia.processa_json(evento_json)
         if (instancia.placa is None) and ('placa' in chave_unica):
-                continue
+            continue
         eventos.append(instancia.dump())
     df_eventos = pd.DataFrame(eventos)
     df_eventos = df_eventos.drop_duplicates(subset=chave_unica)
@@ -228,9 +270,11 @@ def persiste_df(df_eventos: pd.DataFrame, classeevento: Type[BaseDumpable]):
 
 
 if __name__ == '__main__':  # pragma: no-cover
-    confirma = input('Revisar o código... '
-                     'Esta ação pode apagar TODAS as tabelas. Confirma??')
+    confirma = 'S'
+    # input('Revisar o código... Esta ação pode apagar TODAS as tabelas. Confirma??')
     if confirma == 'S':
+        import os
+        import zipfile
         from ajna_commons.flask.conf import SQL_URI
         from sqlalchemy import create_engine
         from sqlalchemy.orm import sessionmaker
@@ -238,8 +282,28 @@ if __name__ == '__main__':  # pragma: no-cover
         engine = create_engine(SQL_URI)
         Session = sessionmaker(bind=engine)
         session = Session()
+        caminho = 'C:\\Users\\25052288840\\Downloads\\api_recintos\\'
+        arquivos = os.listdir(caminho)
+        for arquivo in arquivos:
+            if '.zip' in arquivo:
+                print(arquivo)
+                zip_file = zipfile.ZipFile(caminho + arquivo, 'r')
+                tipoevento = zip_file.read('tipoEvento.txt').decode()
+                print(tipoevento)
+                classes = {'1': AcessoVeiculo,
+                           '3': PesagemVeiculo,
+                           '25': InspecaoNaoInvasiva}
+                indices = {AcessoVeiculo: ['placa', 'operacao', 'dataHoraOcorrencia'],
+                             PesagemVeiculo: ['placa', 'dataHoraOcorrencia'],
+                             InspecaoNaoInvasiva: ['numeroConteiner', 'dataHoraOcorrencia']}
+                classe = classes[tipoevento]
+                indice = indices[classe]
+                print(classe, indice)
+                json_texto = zip_file.read('json.txt').decode()
+                df_eventos = processa_json(json_texto, classe, indice)
+                persiste_df(df_eventos, classe)
         # Sair por segurança. Comentar linha abaixo para funcionar
-        # sys.exit(0)
+        sys.exit(0)
         '''
         metadata.drop_all(engine, [metadata.tables['apirecintos_acessosveiculo'],
                                    metadata.tables['apirecintos_pesagensveiculo'],
@@ -248,12 +312,12 @@ if __name__ == '__main__':  # pragma: no-cover
                                      metadata.tables['apirecintos_pesagensveiculo'],
                                      metadata.tables['apirecintos_inspecoesnaoinvasivas'], ])
         '''
-        df_eventos = le_json('C:\\Users\\25052288840\\Downloads\\api_recintos\\DPW_ev1_20230718\\json.txt',
+        df_eventos = le_json('C:\\Users\\25052288840\\Downloads\\api_recintos\\SBT_ev1_20230810\\json.txt',
                              AcessoVeiculo, ['placa', 'operacao', 'dataHoraOcorrencia'])
         persiste_df(df_eventos, AcessoVeiculo)
-        df_eventos = le_json(r'C:\Users\25052288840\Downloads\api_recintos\DPW_ev2_20230718\json.txt',
+        df_eventos = le_json(r'C:\Users\25052288840\Downloads\api_recintos\SBT_ev2_20230810\json.txt',
                              PesagemVeiculo, ['placa', 'dataHoraOcorrencia'])
         persiste_df(df_eventos, PesagemVeiculo)
-        df_eventos = le_json(r'C:\Users\25052288840\Downloads\api_recintos\DPW_ev3_20230718\json.txt',
+        df_eventos = le_json(r'C:\Users\25052288840\Downloads\api_recintos\SBT_ev3_20230810\json.txt',
                              InspecaoNaoInvasiva, ['numeroConteiner', 'dataHoraOcorrencia'])
         persiste_df(df_eventos, InspecaoNaoInvasiva)
