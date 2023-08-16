@@ -60,6 +60,12 @@ def get_recintos_dte(session) -> List[Tuple[int, str]]:
                      for recinto in recintos]
     return sorted(recintos_list, key=lambda x: x[1])
 
+def get_recintos_api(session) -> List[Tuple[int, str]]:
+    recintos = session.query(Recinto).filter(Recinto.cod_siscomex.isnot(None)).all()
+    recintos_list = [(recinto.cod_siscomex, f'{recinto.nome} - {recinto.cod_siscomex}')
+                     for recinto in recintos]
+    return sorted(recintos_list, key=lambda x: x[1])
+
 
 def get_tipos_evento(session) -> List[Tuple[int, str]]:
     tiposeventos = session.query(TipoEventoOVR).filter(
