@@ -1,11 +1,13 @@
 import json
+import os
 import sys
+import zipfile
 from typing import Type, Tuple, Union
 
 import numpy as np
 import pandas as pd
 from dateutil import parser
-from sqlalchemy import BigInteger, Column, DateTime, Boolean, String, UniqueConstraint, exists, Numeric
+from sqlalchemy import BigInteger, Column, DateTime, Boolean, String, UniqueConstraint, Numeric
 
 sys.path.append('.')
 sys.path.insert(0, '../ajna_docs/commons')
@@ -97,6 +99,7 @@ def get_listaDeclaracaoAduaneira(o_kwargs: dict) -> Union[Tuple[str, str], Tuple
                listaDeclaracaoAduaneira[0].get('numeroDeclaracao')
     return None, None
 
+
 def get_listaManifestos(o_kwargs: dict) -> Union[Tuple[str, str], Tuple[None, None]]:
     """
     "estoura" objeto listaManifestos
@@ -112,6 +115,24 @@ def get_listaManifestos(o_kwargs: dict) -> Union[Tuple[str, str], Tuple[None, No
             return listaConhecimentos[0].get('tipo'), \
                    listaConhecimentos[0].get('numero')
     return None, None
+
+
+def get_listaNfe(o_kwargs: dict) -> Union[str, None]:
+    """
+    Pega objeto listaNfe e faz "listão" separado por ,
+
+       Returns: listaChaveNfe separado por vírgula
+    """
+    listaNfe = o_kwargs.get('listaNfe')
+    if listaNfe and isinstance(listaNfe, list) and \
+            len(listaNfe) > 0:
+        # print(listaNfe)
+        Nfes = []
+        for row in listaNfe:
+            chave = row.get('chaveNfe')
+            if chave:
+                Nfes.append(chave)
+        return ', '.join(Nfes)
 
 
 class AcessoVeiculo(EventoAPIBase):
@@ -139,6 +160,7 @@ class AcessoVeiculo(EventoAPIBase):
     listaManifestos = Column(String(1))  # Placeholder
     tipoConhecimento = Column(String(15))
     numeroConhecimento = Column(String(15), index=True)
+    listaNfe = Column(String(200), index=True)
 
     def _mapeia(self, *args, **kwargs):
         super()._mapeia(**kwargs)
@@ -160,12 +182,12 @@ class AcessoVeiculo(EventoAPIBase):
             get_listaSemirreboque(kwargs)
         self.tipoDeclaracao, self.numeroDeclaracao = get_listaDeclaracaoAduaneira(kwargs)
         self.tipoConhecimento, self.numeroConhecimento = get_listaManifestos(kwargs)
+        self.listaNfe = get_listaNfe(kwargs)
 
     def is_duplicate(self, session):
-        return session.query(exists().where(
-            AcessoVeiculo.placa == self.placa and
-            AcessoVeiculo.operacao == self.operacao and
-            AcessoVeiculo.dataHoraOcorrencia == self.dataHoraOcorrencia)).scalar()
+        return session.query(AcessoVeiculo).filter(AcessoVeiculo.placa == self.placa). \
+                   filter(AcessoVeiculo.operacao == self.operacao). \
+                   filter(AcessoVeiculo.dataHoraOcorrencia == self.dataHoraOcorrencia).one_or_none() is not None
 
 
 class PesagemVeiculo(EventoAPIBase):
@@ -188,14 +210,13 @@ class PesagemVeiculo(EventoAPIBase):
         self.pesoBrutoManifesto = kwargs.get('pesoBrutoManifesto')
         self.capturaAutoPeso = kwargs.get('capturaAutoPeso', False)
         self.placa = kwargs.get('placa')
-        # self.ocrPlaca == kwargs.get('ocrPlaca']
+        # self.ocrPlaca == kwargs.get('ocrPlaca')
         self.numeroConteiner, _, _ = get_listaConteineresUld(kwargs)
         self.placaSemirreboque, _, _, self.taraSemirreboque = get_listaSemirreboque(kwargs)
 
     def is_duplicate(self, session):
-        return session.query(exists().where(
-            PesagemVeiculo.placa == self.placa and
-            PesagemVeiculo.dataHoraOcorrencia == self.dataHoraOcorrencia)).scalar()
+        return session.query(PesagemVeiculo).filter(PesagemVeiculo.placa == self.placa). \
+                   filter(PesagemVeiculo.dataHoraOcorrencia == self.dataHoraOcorrencia).one_or_none() is not None
 
 
 class InspecaoNaoInvasiva(EventoAPIBase):
@@ -221,16 +242,15 @@ class InspecaoNaoInvasiva(EventoAPIBase):
         self.placaSemirreboque, self.ocrPlacaSemirreboque, _, _ = get_listaSemirreboque(kwargs)
 
     def is_duplicate(self, session):
-        return session.query(exists().where(
-            PesagemVeiculo.placa == self.placa and
-            PesagemVeiculo.dataHoraOcorrencia == self.dataHoraOcorrencia)).scalar()
-
+        return session.query(InspecaoNaoInvasiva).filter(InspecaoNaoInvasiva.placa == self.placa). \
+                   filter(InspecaoNaoInvasiva.dataHoraOcorrencia == self.dataHoraOcorrencia).one_or_none() is not None
 
 
 def le_json(caminho_json: str, classeevento: Type[BaseDumpable], chave_unica: list) -> pd.DataFrame:
     with open(caminho_json) as json_in:
-        texto = json_in.readlines()
+        texto = ''.join(json_in.readlines())
     return processa_json(texto, classeevento, chave_unica)
+
 
 def processa_json(texto: str, classeevento: Type[BaseDumpable], chave_unica: list) -> pd.DataFrame:
     json_raw = json.loads(''.join(texto))
@@ -258,23 +278,22 @@ def persiste_df(df_eventos: pd.DataFrame, classeevento: Type[BaseDumpable]):
     for ind, evento_dict in enumerate(df_eventos.to_dict('records'), 1):
         evento = classeevento(**evento_dict)
         # print(evento.dump())
+        if evento.is_duplicate(session):
+            continue
         session.add(evento)
-        session.flush()
         cont_sucesso += 1
     try:
         session.commit()
-        logger.info(f'{ind} Eventos lidos, {cont_sucesso} inseridos')
     except Exception as err:
         session.rollback()
         logger.error(err, exc_info=True)
+    logger.info(f'{ind} Eventos lidos, {cont_sucesso} inseridos')
 
 
 if __name__ == '__main__':  # pragma: no-cover
     confirma = 'S'
     # input('Revisar o código... Esta ação pode apagar TODAS as tabelas. Confirma??')
     if confirma == 'S':
-        import os
-        import zipfile
         from ajna_commons.flask.conf import SQL_URI
         from sqlalchemy import create_engine
         from sqlalchemy.orm import sessionmaker
@@ -294,8 +313,8 @@ if __name__ == '__main__':  # pragma: no-cover
                            '3': PesagemVeiculo,
                            '25': InspecaoNaoInvasiva}
                 indices = {AcessoVeiculo: ['placa', 'operacao', 'dataHoraOcorrencia'],
-                             PesagemVeiculo: ['placa', 'dataHoraOcorrencia'],
-                             InspecaoNaoInvasiva: ['numeroConteiner', 'dataHoraOcorrencia']}
+                           PesagemVeiculo: ['placa', 'dataHoraOcorrencia'],
+                           InspecaoNaoInvasiva: ['numeroConteiner', 'dataHoraOcorrencia']}
                 classe = classes[tipoevento]
                 indice = indices[classe]
                 print(classe, indice)
