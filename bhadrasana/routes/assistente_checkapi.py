@@ -11,7 +11,7 @@ from ajna_commons.flask.log import logger
 from flask import render_template, flash, request, url_for
 from flask_login import login_required, current_user
 from gridfs import GridFS
-from werkzeug.utils import redirect
+from werkzeug.utils import redirect, secure_filename
 
 from bhadrasana.docx.docx_functions import gera_relatorio_apirecintos
 from bhadrasana.forms.assistente_checkapi import CheckApiForm
@@ -107,11 +107,11 @@ def gerar_relatorio_docx(eventos_fisico,
     if ovr:
         dados['ovr_id'] = ovr.id
         dados['datahora'] = ovr.datahora
-    out_filename = 'apirecintos_{}_{}_{}.docx'.format(
+    out_filename = secure_filename('apirecintos_{}_{}_{}.docx'.format(
         recinto.nome,
         evento_nome,
         datetime.strftime(datetime.now(), '%Y-%m-%dT%H-%M-%S')
-    )
+    ))
     document = gera_relatorio_apirecintos(dados, usuario.cpf)
     document.save(os.path.join(get_user_save_path(), out_filename))
     return out_filename

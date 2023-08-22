@@ -184,6 +184,17 @@ class AcessoVeiculo(EventoAPIBase):
         self.tipoConhecimento, self.numeroConhecimento = get_listaManifestos(kwargs)
         self.listaNfe = get_listaNfe(kwargs)
 
+    def get_tipoDeclaracao(self):
+        if self.tipoDeclaracao:
+            return self.tipoDeclaracao
+        return 'Declaração'
+
+    def get_tipoConhecimento(self):
+        if self.tipoConhecimento:
+            return self.tipoConhecimento
+        return 'Declaração'
+
+
     def is_duplicate(self, session):
         return session.query(AcessoVeiculo).filter(AcessoVeiculo.placa == self.placa). \
                    filter(AcessoVeiculo.operacao == self.operacao). \
