@@ -7,14 +7,16 @@
             <div class="row">
                 <!-- ID -->
                 <div class="col-sm-1">
-                    <label for="id">ID</label>
+                    <a aria-label="Postar no WhatsApp" target="_blank" href="https://web.whatsapp.com/send/?text={{whatsapp_text}}">
+                        ID <img alt="Postar no WhatsApp" src="static/whatsapp.png" width="25" height="20"/>
+                    </a>
                     <div class="form-control">
                         <span>{{ oform.id.data }}</span>
                     </div>
                 </div>
                 <!-- Número DOC -->
                 <div class="col-sm-1">
-                    <label for="numero">Número doc</label>
+                    <label for="numero">N° doc</label>
                     {{ oform.numero(class='form-control')}}
                 </div>
                 <!-- Tipo operação -->
@@ -64,7 +66,7 @@
                     {{ oform.numeroCEmercante(class='form-control')}}
                 </div>
                 <!-- Responsavel -->
-                 <div class="col-sm-2">
+                <div class="col-sm-2">
                     <label for="responsavel">Responsável</label>
                     <div class="form-control">
                         <span id="responsavel_nome">{{ ovr.responsavel.nome }}</span>
@@ -86,10 +88,10 @@
                 </div>
             </div>
             <div class="row">
-            &nbsp;
+                &nbsp;
             </div>
             <div class="row col-sm-12">
-            {% include 'divconhecimento.html' %}
+                {% include 'divconhecimento.html' %}
             </div>
             <!-- DUE/Declaração -->
             <div class="row col-sm-12">
@@ -97,7 +99,7 @@
                 {{ oform.numerodeclaracao(class='form-control')}}
             </div>
             <div class="row col-sm-12">
-            {% include 'divdue.html' %}
+                {% include 'divdue.html' %}
             </div>
             <div class="row col-sm-12">
                 CNPJ ou CPF Fiscalizado
@@ -174,16 +176,16 @@
                         Liberar Ficha
                     </button>
                     {% else %}
-                        {% if oform.id.data %}
+                    {% if oform.id.data %}
 
-                        &nbsp;
+                    &nbsp;
 
 
-                        <button id="btn_" type="button" class="btn btn-default form-control"
-                                onclick="location.href='libera_ficha?ovr_id={{ oform.id.data }}'">
-                            Liberar Ficha
-                        </button>
-                        {% endif %}
+                    <button id="btn_" type="button" class="btn btn-default form-control"
+                            onclick="location.href='libera_ficha?ovr_id={{ oform.id.data }}'">
+                        Liberar Ficha
+                    </button>
+                    {% endif %}
                     {% endif %}
                 </div>
             </div>
@@ -235,17 +237,18 @@
                 </div>
                 <div class="col-sm-2">
                     {% if ovr.fase > 0 and ovr.fase < 3 %}
-                        <a href="encerramento_ovr?ovr_id={{ovr.id}}" class="btn btn-warning form-control">Conferir e encerrar</a>
+                    <a href="encerramento_ovr?ovr_id={{ovr.id}}" class="btn btn-warning form-control">Conferir e
+                        encerrar</a>
                     {% endif %}
                 </div>
                 <div class="col-sm-2">
                     {% if ovr.fase < 3 %}
-                          <a href="encerrar_ficha?ovr_id={{ovr.id}}"
-                           class="btn btn-danger form-control">Encerrar ficha</a>
+                    <a href="encerrar_ficha?ovr_id={{ovr.id}}"
+                       class="btn btn-danger form-control">Encerrar ficha</a>
                     {% endif %}
 
+                </div>
             </div>
-        </div>
     </form>
 </div>
 <div class="row col-sm-12">
@@ -289,9 +292,9 @@
                 </td>
                 <td align="center">
                     {% if 'Meramente informativo' in historico.motivo%}
-                        <p style="color:red;">{{ historico.motivo }}</p>
+                    <p style="color:red;">{{ historico.motivo }}</p>
                     {% else %}
-                        {{ historico.motivo }}
+                    {{ historico.motivo }}
                     {% endif %}
                 </td>
                 <td align="center">
@@ -313,8 +316,9 @@
             </tr>
 
             <!--Modal deleta evento-->
-            <div class="modal fade" id="modalDeletaEvento{{historico.id}}" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
-            aria-hidden="true">
+            <div class="modal fade" id="modalDeletaEvento{{historico.id}}" tabindex="-1" role="dialog"
+                 aria-labelledby="ModalLabel"
+                 aria-hidden="true">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -325,7 +329,8 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                            <a type="button" class="btn btn-danger" href="exclui_evento?evento_id={{historico.id}}&ovr_id={{ovr.id}}">Excluir</a>
+                            <a type="button" class="btn btn-danger"
+                               href="exclui_evento?evento_id={{historico.id}}&ovr_id={{ovr.id}}">Excluir</a>
                         </div>
                     </div>
                 </div>
@@ -379,23 +384,25 @@
                     <a href="#" data-toggle="modal" data-target="#modalDeletaProcesso{{processo.id}}">&times;</a>
                 </td>
                 <!--Modal exclui processo-->
-                <div class="modal fade" id="modalDeletaProcesso{{processo.id}}" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
-            aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h1 class="modal-title" id="ModalLabel3">Excluir processo</h1>
-                        </div>
-                        <div class="modal-body">
-                            <p>Deseja realmente excluir o processo?</p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                            <a type="button" class="btn btn-danger" href="exclui_processo?processo_id={{processo.id}}">Excluir</a>
+                <div class="modal fade" id="modalDeletaProcesso{{processo.id}}" tabindex="-1" role="dialog"
+                     aria-labelledby="ModalLabel"
+                     aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h1 class="modal-title" id="ModalLabel3">Excluir processo</h1>
+                            </div>
+                            <div class="modal-body">
+                                <p>Deseja realmente excluir o processo?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                <a type="button" class="btn btn-danger"
+                                   href="exclui_processo?processo_id={{processo.id}}">Excluir</a>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
             </tr>
 
             {% endfor %}
@@ -447,23 +454,25 @@
                     <a href="#" data-toggle="modal" data-target="#modalDeletaresultado{{resultado.id}}">&times;</a>
                 </td>
                 <!--Modal exclui resultado-->
-                <div class="modal fade" id="modalDeletaresultado{{resultado.id}}" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
-            aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h1 class="modal-title" id="ModalLabel3r">Excluir resultado</h1>
-                        </div>
-                        <div class="modal-body">
-                            <p>Deseja realmente excluir o resultado?</p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                            <a type="button" class="btn btn-danger" href="exclui_resultado?resultado_id={{resultado.id}}">Excluir</a>
+                <div class="modal fade" id="modalDeletaresultado{{resultado.id}}" tabindex="-1" role="dialog"
+                     aria-labelledby="ModalLabel"
+                     aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h1 class="modal-title" id="ModalLabel3r">Excluir resultado</h1>
+                            </div>
+                            <div class="modal-body">
+                                <p>Deseja realmente excluir o resultado?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                <a type="button" class="btn btn-danger"
+                                   href="exclui_resultado?resultado_id={{resultado.id}}">Excluir</a>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
             </tr>
 
             {% endfor %}
@@ -751,7 +760,6 @@
 </div>
 
 
-
 {% for historico in listahistorico %}
 {% if historico.anexo_filename %}
 <div class="modal fade modal-lg" id="anexomodal{{historico.id}}" tabindex="-1" role="dialog"
@@ -875,6 +883,8 @@
             removeMaskOnSubmit: false
         });
     });
+
+
 
 
 

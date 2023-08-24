@@ -1,5 +1,6 @@
 import os
 import re
+import urllib
 from _collections import defaultdict
 from datetime import datetime, date, timedelta
 from decimal import Decimal
@@ -52,7 +53,7 @@ from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects, consulta_ce_objects, \
     consulta_due_objects
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
-    get_infracoes_choice
+    get_infracoes_choice, get_ids_anexos_ordenado
 from bhadrasana.models.virasana_manager import get_conhecimento, \
     get_containers_conhecimento, get_ncms_conhecimento, get_imagens_dict_container_id, \
     get_imagens_container, get_dues_empresa, get_ces_empresa, \
@@ -106,6 +107,7 @@ def ovr_app(app):
         qtdervfs = 0
         qtdeimagens = 0
         flags = []
+        whatsapp_text = ''
         ovr_form = OVRForm()
         historico_form = HistoricoOVRForm()
         processo_form = ProcessoOVRForm()
@@ -210,6 +212,17 @@ def ovr_app(app):
                         if ovr.fase > 3:
                             historico_form.meramente_informativo.data = True
                             historico_form.meramente_informativo.render_kw = {'read_only': ''}
+                        whatsapp_text = f'Ficha {ovr.id}\n{ovr.observacoes}\n' + \
+                                        f'https://ajna1.rfoc.srf/bhadrasana2/ovr?id={ovr.id} \n'
+                        rvfs = lista_rvfovr(session, ovr.id)
+                        if rvfs and len(rvfs) > 0:
+                            primeira_rvf = rvfs[0]
+                            anexos = get_ids_anexos_ordenado(primeira_rvf)
+                            if anexos and len(anexos) > 0:
+                                primeiro_anexo = anexos[0]
+                                whatsapp_text = whatsapp_text + \
+                                                f'https://ajna1.rfoc.srf/bhadrasana2/image/{primeiro_anexo}'
+                        whatsapp_text = urllib.parse.quote(whatsapp_text)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
@@ -235,7 +248,8 @@ def ovr_app(app):
                                itens_roteiro=itens_roteiro,
                                due=due,
                                setor_ovr_form=setor_ovr_form,
-                               title_page=title_page)
+                               title_page=title_page,
+                               whatsapp_text=whatsapp_text)
 
     @app.route('/ovr/<id>', methods=['POST', 'GET'])
     @login_required
@@ -346,8 +360,8 @@ def ovr_app(app):
                     df = pd.DataFrame(linhas)
                     df.columns = ['Grupo', *titulos_exibicao]
                     out_filename = '{}_{}.xls'.format('PesquisaFicha_',
-                        datetime.strftime(datetime.now(), '%Y-%m-%dT%H-%M-%S')
-                    )
+                                                      datetime.strftime(datetime.now(), '%Y-%m-%dT%H-%M-%S')
+                                                      )
                     df.to_excel(os.path.join(get_user_save_path(), out_filename), index=False)
                     return redirect('static/%s/%s' % (current_user.name, out_filename))
         except Exception as err:
@@ -510,8 +524,8 @@ def ovr_app(app):
                 if request.form.get('exportar') is not None:
                     df = pd.DataFrame(linhas[1:], columns=linhas[0])
                     out_filename = '{}_{}.xlsx'.format(f'Relatorios_{relatorio.nome}',
-                        datetime.strftime(datetime.now(), '%Y-%m-%dT%H-%M-%S')
-                    )
+                                                       datetime.strftime(datetime.now(), '%Y-%m-%dT%H-%M-%S')
+                                                       )
                     out_filename = get_filename_valido(out_filename)
                     df.to_excel(os.path.join(get_user_save_path(), out_filename), index=False)
                     return redirect('static/%s/%s' % (current_user.name, out_filename))
@@ -737,7 +751,6 @@ def ovr_app(app):
         except Exception as err:
             logger.error(err, exc_info=True)
             return jsonify({'msg': 'Erro: %s' % str(err)}), 500
-
 
     @app.route('/resultadoovr', methods=['POST'])
     @login_required
@@ -1348,7 +1361,6 @@ def ovr_app(app):
                                limit=limit,
                                title_page=title_page)
 
-
     @app.route('/consulta_pessoa', methods=['GET', 'POST'])
     @login_required
     def consulta_pessoa():
@@ -1380,7 +1392,7 @@ def ovr_app(app):
                     for pessoa in cpfs_candidatos:
                         ovrs = get_ovr_pessoa(session, pessoa.cpf)
                         pessoas_qtdeovrs.append({'pessoa': pessoa,
-                                                  'qtdeovrs': len(ovrs)})
+                                                 'qtdeovrs': len(ovrs)})
                 else:
                     logger.info('Consultando pessoa %s' % filtro_form.cpf.data)
                     pessoa = get_pessoa(session, filtro_form.cpf.data)
@@ -1552,7 +1564,7 @@ def ovr_app(app):
                         else:
                             try:
                                 delta = ((today - objective.inicio.date()) /
-                                     (objective.fim - objective.inicio)) * result.ameta
+                                         (objective.fim - objective.inicio)) * result.ameta
                             except:
                                 print(objective.fim)
                                 print(objective.inicio)
