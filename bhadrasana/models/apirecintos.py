@@ -68,7 +68,7 @@ def get_listaConteineresUld(o_kwargs: dict) -> Union[Tuple[str, bool, str, bool]
         return listaConteineresUld[0].get('numeroConteiner'), \
                listaConteineresUld[0].get('ocrNumero', False), \
                listaConteineresUld[0].get('tipo'), \
-               listaConteineresUld[0].get('vazio')
+               listaConteineresUld[0].get('vazio', False)
     return None, False, None, False
 
 
@@ -82,7 +82,7 @@ def get_listaSemirreboque(o_kwargs: dict) -> Union[Tuple[str, bool, bool, float]
     if listaSemirreboque and isinstance(listaSemirreboque, list) and len(listaSemirreboque) > 0:
         return listaSemirreboque[0].get('placa'), \
                listaSemirreboque[0].get('ocrPlaca', False), \
-               listaSemirreboque[0].get('vazio', True), \
+               listaSemirreboque[0].get('vazio', False), \
                listaSemirreboque[0].get('tara')
     return None, False, False, None
 
@@ -346,12 +346,4 @@ if __name__ == '__main__':  # pragma: no-cover
                                      metadata.tables['apirecintos_pesagensveiculo'],
                                      metadata.tables['apirecintos_inspecoesnaoinvasivas'], ])
         '''
-        df_eventos = le_json('C:\\Users\\25052288840\\Downloads\\api_recintos\\SBT_ev1_20230810\\json.txt',
-                             AcessoVeiculo, ['placa', 'operacao', 'dataHoraOcorrencia'])
-        persiste_df(df_eventos, AcessoVeiculo)
-        df_eventos = le_json(r'C:\Users\25052288840\Downloads\api_recintos\SBT_ev2_20230810\json.txt',
-                             PesagemVeiculo, ['placa', 'dataHoraOcorrencia'])
-        persiste_df(df_eventos, PesagemVeiculo)
-        df_eventos = le_json(r'C:\Users\25052288840\Downloads\api_recintos\SBT_ev3_20230810\json.txt',
-                             InspecaoNaoInvasiva, ['numeroConteiner', 'dataHoraOcorrencia'])
-        persiste_df(df_eventos, InspecaoNaoInvasiva)
+
