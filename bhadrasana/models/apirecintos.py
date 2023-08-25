@@ -57,18 +57,19 @@ class EventoAPIBase(BaseRastreavel, BaseDumpable):
             setattr(self, k, kwargs.get(k))
 
 
-def get_listaConteineresUld(o_kwargs: dict) -> Union[Tuple[str, bool, str], Tuple[None, bool, None]]:
+def get_listaConteineresUld(o_kwargs: dict) -> Union[Tuple[str, bool, str, bool], Tuple[None, bool, None, bool]]:
     """
     "estoura" objeto listaConteineresUld
 
-       Returns: numeroConteiner, ocrNumero, tipo
+       Returns: numeroConteiner, ocrNumero, tipo, vazio
     """
     listaConteineresUld = o_kwargs.get('listaConteineresUld')
     if listaConteineresUld and isinstance(listaConteineresUld, list) and len(listaConteineresUld) > 0:
         return listaConteineresUld[0].get('numeroConteiner'), \
                listaConteineresUld[0].get('ocrNumero', False), \
-               listaConteineresUld[0].get('tipo')
-    return None, False, None
+               listaConteineresUld[0].get('tipo'), \
+               listaConteineresUld[0].get('vazio')
+    return None, False, None, False
 
 
 def get_listaSemirreboque(o_kwargs: dict) -> Union[Tuple[str, bool, bool, float], Tuple[None, bool, bool, None]]:
@@ -82,7 +83,7 @@ def get_listaSemirreboque(o_kwargs: dict) -> Union[Tuple[str, bool, bool, float]
         return listaSemirreboque[0].get('placa'), \
                listaSemirreboque[0].get('ocrPlaca', False), \
                listaSemirreboque[0].get('vazio', True), \
-               listaSemirreboque[0].get('tara'),
+               listaSemirreboque[0].get('tara')
     return None, False, False, None
 
 
@@ -150,6 +151,8 @@ class AcessoVeiculo(EventoAPIBase):
     listaConteineresUld = Column(String(1))  # Placeholder
     numeroConteiner = Column(String(11), index=True)
     ocrNumero = Column(Boolean(), index=True)
+    tipoConteiner = Column(String(4), index=True)
+    vazioConteiner = Column(Boolean(), index=True)
     listaSemirreboque = Column(String(1))  # Placeholder
     placaSemirreboque = Column(String(7), index=True)
     ocrPlacaSemirreboque = Column(Boolean(), index=True)
@@ -177,7 +180,8 @@ class AcessoVeiculo(EventoAPIBase):
             if cpf:
                 self.cpfMotorista = ''.join([c for c in cpf if c.isnumeric()])
             self.nomeMotorista = motorista.get('nome')
-        self.numeroConteiner, self.ocrNumero, _ = get_listaConteineresUld(kwargs)
+        self.numeroConteiner, self.ocrNumero, self.tipoConteiner, self.vazioConteiner = \
+            get_listaConteineresUld(kwargs)
         self.placaSemirreboque, self.ocrPlacaSemirreboque, self.vazioSemirreboque, _ = \
             get_listaSemirreboque(kwargs)
         self.tipoDeclaracao, self.numeroDeclaracao = get_listaDeclaracaoAduaneira(kwargs)
@@ -222,7 +226,7 @@ class PesagemVeiculo(EventoAPIBase):
         self.capturaAutoPeso = kwargs.get('capturaAutoPeso', False)
         self.placa = kwargs.get('placa')
         # self.ocrPlaca == kwargs.get('ocrPlaca')
-        self.numeroConteiner, _, _ = get_listaConteineresUld(kwargs)
+        self.numeroConteiner, _, _, _ = get_listaConteineresUld(kwargs)
         self.placaSemirreboque, _, _, self.taraSemirreboque = get_listaSemirreboque(kwargs)
 
     def is_duplicate(self, session):
@@ -249,7 +253,7 @@ class InspecaoNaoInvasiva(EventoAPIBase):
         if not isinstance(self.vazio, bool):
             self.vazio = False
         self.placa = kwargs.get('placa')
-        self.numeroConteiner, self.ocrNumero, self.tipoConteiner = get_listaConteineresUld(kwargs)
+        self.numeroConteiner, self.ocrNumero, self.tipoConteiner, _ = get_listaConteineresUld(kwargs)
         self.placaSemirreboque, self.ocrPlacaSemirreboque, _, _ = get_listaSemirreboque(kwargs)
 
     def is_duplicate(self, session):
