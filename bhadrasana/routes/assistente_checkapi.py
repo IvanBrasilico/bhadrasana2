@@ -5,6 +5,7 @@ Permite registrar rapidamente Auditorias de API Recintos, montar termos de const
 
 """
 import os
+import pandas as pd
 from datetime import datetime
 
 from ajna_commons.flask.log import logger
@@ -150,6 +151,12 @@ def assistentecheckapi_app(app):
                     inclui_evento_ovr(mongo_risco, session, ovr,
                                       motivo='Assistente API Recintos - planilha checagem',
                                       file=stream_planilha)
+                pd.reset_option('display.max_columns')
+                print('**********', checkapiform.mostrar_colunas.data,
+                      type(checkapiform.mostrar_colunas.data))
+                if checkapiform.mostrar_colunas.data is True:
+                    print('*********** %%% Colocando None em max_colums')
+                    pd.set_option('display.max_columns', None)
                 arquivo = gerar_relatorio_docx(eventos_fisico,
                                                amostra_eventos_api,
                                                mensagens,

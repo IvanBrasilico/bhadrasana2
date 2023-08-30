@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import SelectField, FileField
+from wtforms import SelectField, FileField, BooleanField
 
 
 class CheckApiForm(FlaskForm):
@@ -7,6 +7,7 @@ class CheckApiForm(FlaskForm):
     recinto_id = SelectField('Tipo de fonte', default=-1)
     planilha = FileField('Planilha de checagem física')
     eventos_json = FileField('Arquivo de eventos JSON extraído da API Recintos')
+    mostrar_colunas = BooleanField('Mostrar todas as colunas das planilhas', default=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
