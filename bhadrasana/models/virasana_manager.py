@@ -194,11 +194,13 @@ def get_detalhe_conhecimento(session, numeroCEmercante: str) -> dict:
     if conhecimento:
         cnpj = conhecimento.consignatario
         if cnpj:
-            empresa = None
-            if len(cnpj) == 11:
-                empresa = get_pessoa(session, cnpj)
-            if not empresa:
-                empresa = get_empresa(session, cnpj)
+            try:
+                if len(cnpj) == 11:
+                    empresa = get_pessoa(session, cnpj)
+                if not empresa:
+                    empresa = get_empresa(session, cnpj)
+            except ValueError:
+                empresa = None
             sats = get_sats_cnpj(session, cnpj)
             linha['empresa'] = empresa
             linha['sats'] = sats
