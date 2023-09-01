@@ -32,6 +32,7 @@ class Motorista(Base):
     carga_qtde = Column(Integer())
     descricao_transportadora = Column(String(100))
     observacoes = Column(String(200))
+
     def get_risco(self):
         return f'{DescricaoRiscoMotorista[self.classificacao]} - {self.carga} - {self.carga_qtde} ocorrências'
 
