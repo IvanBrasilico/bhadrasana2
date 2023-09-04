@@ -1,7 +1,7 @@
 import sys
 
 import pandas as pd
-from sqlalchemy import BigInteger, Column, String, Integer
+from sqlalchemy import BigInteger, Column, String, Integer, Boolean
 
 sys.path.append('.')
 sys.path.insert(0, '../ajna_docs/commons')
@@ -35,6 +35,13 @@ class Motorista(Base):
 
     def get_risco(self):
         return f'{DescricaoRiscoMotorista[self.classificacao]} - {self.carga} - {self.carga_qtde} ocorrências'
+
+
+class Pais(Base):
+    __tablename__ = 'risco_paises'
+    sigla = Column(String(2), primary_key=True)
+    nome = Column(String(50))
+    escaneamento = Column(Boolean())
 
 
 if __name__ == '__main__':  # pragma: no-cover
