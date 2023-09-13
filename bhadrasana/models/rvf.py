@@ -84,7 +84,10 @@ class RVF(BaseRastreavel, BaseDumpable):
         dumped = super().dump(exclude)
         dumped['peso'] = str(dumped['peso'])
         dumped['volume'] = str(dumped['volume'])
-        dumped['datahora'] = datetime.strftime(self.datahora, '%d-%m-%Y %H:%M:%S')
+        if self.datahora is None:
+            dumped['datahora'] = datetime.strftime(self.create_date, '%d-%m-%Y %H:%M:%S')
+        else:
+            dumped['datahora'] = datetime.strftime(self.datahora, '%d-%m-%Y %H:%M:%S')
         if explode:
             if imagens:
                 dumped['imagens'] = [imagem.dump(explode=True) for imagem in self.imagens]
