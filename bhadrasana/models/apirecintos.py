@@ -136,6 +136,9 @@ def get_listaNfe(o_kwargs: dict) -> Union[str, None]:
         return ', '.join(Nfes)
 
 
+def numeric_c(texto):
+    return ''.join([c for c in texto if c.isnumeric()])
+
 class AcessoVeiculo(EventoAPIBase):
     __tablename__ = 'apirecintos_acessosveiculo'
     __table_args__ = (UniqueConstraint('placa', 'operacao', 'dataHoraOcorrencia'),
@@ -169,7 +172,9 @@ class AcessoVeiculo(EventoAPIBase):
         super()._mapeia(**kwargs)
         self.operacao = kwargs.get('operacao')
         self.direcao = kwargs.get('direcao')
-        self.placa = kwargs.get('placa')
+        placa = kwargs.get('placa')
+        if placa:
+            self.placa = numeric_c(placa)
         self.ocrPlaca = kwargs.get('ocrPlaca')
         cnpjTransportador = kwargs.get('cnpjTransportador')
         if cnpjTransportador:
@@ -182,8 +187,10 @@ class AcessoVeiculo(EventoAPIBase):
             self.nomeMotorista = motorista.get('nome')
         self.numeroConteiner, self.ocrNumero, self.tipoConteiner, self.vazioConteiner = \
             get_listaConteineresUld(kwargs)
-        self.placaSemirreboque, self.ocrPlacaSemirreboque, self.vazioSemirreboque, _ = \
+        placaSemirreboque, self.ocrPlacaSemirreboque, self.vazioSemirreboque, _ = \
             get_listaSemirreboque(kwargs)
+        if placaSemirreboque:
+            self.placaSemirreboque = numeric_c(placaSemirreboque)
         self.tipoDeclaracao, self.numeroDeclaracao = get_listaDeclaracaoAduaneira(kwargs)
         self.tipoConhecimento, self.numeroConhecimento = get_listaManifestos(kwargs)
         self.listaNfe = get_listaNfe(kwargs)
@@ -197,7 +204,6 @@ class AcessoVeiculo(EventoAPIBase):
         if self.tipoConhecimento:
             return self.tipoConhecimento
         return 'Declaração'
-
 
     def is_duplicate(self, session):
         return session.query(AcessoVeiculo).filter(AcessoVeiculo.placa == self.placa). \
@@ -224,10 +230,14 @@ class PesagemVeiculo(EventoAPIBase):
         self.pesoBrutoBalanca = kwargs.get('pesoBrutoBalanca')
         self.pesoBrutoManifesto = kwargs.get('pesoBrutoManifesto')
         self.capturaAutoPeso = kwargs.get('capturaAutoPeso', False)
-        self.placa = kwargs.get('placa')
+        placa = kwargs.get('placa')
+        if placa:
+            self.placa = numeric_c(placa)
         # self.ocrPlaca == kwargs.get('ocrPlaca')
         self.numeroConteiner, _, _, _ = get_listaConteineresUld(kwargs)
-        self.placaSemirreboque, _, _, self.taraSemirreboque = get_listaSemirreboque(kwargs)
+        placaSemirreboque, _, _, self.taraSemirreboque = get_listaSemirreboque(kwargs)
+        if placaSemirreboque:
+            self.placaSemirreboque = numeric_c(placaSemirreboque)
 
     def is_duplicate(self, session):
         return session.query(PesagemVeiculo).filter(PesagemVeiculo.placa == self.placa). \
@@ -252,13 +262,19 @@ class InspecaoNaoInvasiva(EventoAPIBase):
         self.vazio = kwargs.get('vazio', False)
         if not isinstance(self.vazio, bool):
             self.vazio = False
-        self.placa = kwargs.get('placa')
+        placa = kwargs.get('placa')
+        if placa:
+            self.placa = numeric_c(placa)
         self.numeroConteiner, self.ocrNumero, self.tipoConteiner, _ = get_listaConteineresUld(kwargs)
-        self.placaSemirreboque, self.ocrPlacaSemirreboque, _, _ = get_listaSemirreboque(kwargs)
+        placaSemirreboque, self.ocrPlacaSemirreboque, _, _ = get_listaSemirreboque(kwargs)
+        if placaSemirreboque:
+            self.placaSemirreboque = numeric_c(placaSemirreboque)
 
     def is_duplicate(self, session):
-        return session.query(InspecaoNaoInvasiva).filter(InspecaoNaoInvasiva.placa == self.placa). \
-                   filter(InspecaoNaoInvasiva.dataHoraOcorrencia == self.dataHoraOcorrencia).one_or_none() is not None
+        return session.query(InspecaoNaoInvasiva). \
+                   filter(InspecaoNaoInvasiva.numeroConteiner == self.numeroConteiner). \
+                   filter(InspecaoNaoInvasiva.dataHoraOcorrencia == self.dataHoraOcorrencia).\
+                   one_or_none() is not None
 
 
 def le_json(caminho_json: str, classeevento: Type[BaseDumpable], chave_unica: list) -> pd.DataFrame:
@@ -346,4 +362,3 @@ if __name__ == '__main__':  # pragma: no-cover
                                      metadata.tables['apirecintos_pesagensveiculo'],
                                      metadata.tables['apirecintos_inspecoesnaoinvasivas'], ])
         '''
-
