@@ -139,6 +139,9 @@ def get_listaNfe(o_kwargs: dict) -> Union[str, None]:
 def numeric_c(texto):
     return ''.join([c for c in texto if c.isnumeric()])
 
+def alfanumeric_c(texto):
+    return ''.join([c for c in texto if c.isalnum()])
+
 class AcessoVeiculo(EventoAPIBase):
     __tablename__ = 'apirecintos_acessosveiculo'
     __table_args__ = (UniqueConstraint('placa', 'operacao', 'dataHoraOcorrencia'),
@@ -174,7 +177,7 @@ class AcessoVeiculo(EventoAPIBase):
         self.direcao = kwargs.get('direcao')
         placa = kwargs.get('placa')
         if placa:
-            self.placa = numeric_c(placa)
+            self.placa = alfanumeric_c(placa)
         self.ocrPlaca = kwargs.get('ocrPlaca')
         cnpjTransportador = kwargs.get('cnpjTransportador')
         if cnpjTransportador:
@@ -190,7 +193,7 @@ class AcessoVeiculo(EventoAPIBase):
         placaSemirreboque, self.ocrPlacaSemirreboque, self.vazioSemirreboque, _ = \
             get_listaSemirreboque(kwargs)
         if placaSemirreboque:
-            self.placaSemirreboque = numeric_c(placaSemirreboque)
+            self.placaSemirreboque = alfanumeric_c(placaSemirreboque)
         self.tipoDeclaracao, self.numeroDeclaracao = get_listaDeclaracaoAduaneira(kwargs)
         self.tipoConhecimento, self.numeroConhecimento = get_listaManifestos(kwargs)
         self.listaNfe = get_listaNfe(kwargs)
@@ -232,12 +235,12 @@ class PesagemVeiculo(EventoAPIBase):
         self.capturaAutoPeso = kwargs.get('capturaAutoPeso', False)
         placa = kwargs.get('placa')
         if placa:
-            self.placa = numeric_c(placa)
+            self.placa = alfanumeric_c(placa)
         # self.ocrPlaca == kwargs.get('ocrPlaca')
         self.numeroConteiner, _, _, _ = get_listaConteineresUld(kwargs)
         placaSemirreboque, _, _, self.taraSemirreboque = get_listaSemirreboque(kwargs)
         if placaSemirreboque:
-            self.placaSemirreboque = numeric_c(placaSemirreboque)
+            self.placaSemirreboque = alfanumeric_c(placaSemirreboque)
 
     def is_duplicate(self, session):
         return session.query(PesagemVeiculo).filter(PesagemVeiculo.placa == self.placa). \
@@ -264,11 +267,11 @@ class InspecaoNaoInvasiva(EventoAPIBase):
             self.vazio = False
         placa = kwargs.get('placa')
         if placa:
-            self.placa = numeric_c(placa)
+            self.placa = alfanumeric_c(placa)
         self.numeroConteiner, self.ocrNumero, self.tipoConteiner, _ = get_listaConteineresUld(kwargs)
         placaSemirreboque, self.ocrPlacaSemirreboque, _, _ = get_listaSemirreboque(kwargs)
         if placaSemirreboque:
-            self.placaSemirreboque = numeric_c(placaSemirreboque)
+            self.placaSemirreboque = alfanumeric_c(placaSemirreboque)
 
     def is_duplicate(self, session):
         return session.query(InspecaoNaoInvasiva). \
