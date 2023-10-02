@@ -70,6 +70,7 @@ SQL_APREENSOES_OUTROS_ORGAOS = \
      where ovr.setor_id in (1, 2, 3)  and ovr.tipooperacao = 6
      order by Ano, Mês, Ficha, RVF, Apreensao;'''
 
+
 def FigFichasTempoTotal(df_=df_fichas_tempos):
     df_fichas_estagio = df_.groupby(['AnoMes', 'Estágio']).Ficha.count().reset_index()
     print(f'{df_fichas_estagio.Ficha.sum()} Fichas de controle no total, com os seguintes status:')
@@ -139,7 +140,6 @@ df_apreensoes_outros_orgaos = pd.read_sql(SQL_APREENSOES_OUTROS_ORGAOS, engine)
 df_apreensoes_outros_orgaos['AnoMes'] = df_apreensoes_outros_orgaos.apply(AnoMes, axis=1)
 df_apreensoes_outros_orgaos['Alerta'] = df_apreensoes_outros_orgaos.apply(TemAlerta, axis=1)
 
-
 SQL_ABERTURAS = '''
 select year(rvf.datahora) as Ano, month(rvf.datahora) as Mês, rvf.datahora, r.nome as recinto,
  ovr.id as Ficha, rvf.id as RVF, rvf.numerolote as Conteiner
@@ -155,7 +155,8 @@ df_aberturas = pd.read_sql(SQL_ABERTURAS, engine)
 df_aberturas['AnoMes'] = df_aberturas.apply(AnoMes, axis=1)
 df_aberturas['Alerta'] = df_aberturas.apply(TemAlerta, axis=1)
 
-def FiltraApreensoes(mindatahora=None, maxdatahora= None):
+
+def FiltraApreensoes(mindatahora=None, maxdatahora=None):
     df_apreensoes_loc = df_apreensoes.copy()
     df_aberturas_loc = df_aberturas.copy()
     if mindatahora is None:
@@ -168,7 +169,8 @@ def FiltraApreensoes(mindatahora=None, maxdatahora= None):
     df_apreensoes_loc = df_apreensoes_loc[df_apreensoes_loc.datahora >= mindatahora]
     return df_apreensoes_loc, df_aberturas_loc, mindatahora, maxdatahora
 
-def EstatisticasAlertas(mindatahora=None, maxdatahora= None):
+
+def EstatisticasAlertas(mindatahora=None, maxdatahora=None):
     df_apreensoes_loc, _, mindatahora, maxdatahora = FiltraApreensoes(mindatahora, maxdatahora)
     total_apreensoes_conteiner = (~ df_apreensoes_loc.Conteiner.isna()).sum()
     total_apreensoes_alerta = df_apreensoes_loc.Alerta.sum()
@@ -192,7 +194,7 @@ def EstatisticasAlertas(mindatahora=None, maxdatahora= None):
     return df_apreensoes_loc
 
 
-def AlertasporTerminal(mindatahora=None, maxdatahora= None):
+def AlertasporTerminal(mindatahora=None, maxdatahora=None):
     _, _, mindatahora, maxdatahora = FiltraApreensoes(mindatahora, maxdatahora)
     cursor = mongodb['fs.files'].aggregate([
         {'$match': {'metadata.contentType': 'image/jpeg',
@@ -217,7 +219,8 @@ def AlertasporTerminal(mindatahora=None, maxdatahora= None):
     df_alertas['ratio'] = df_alertas.alertas / df_alertas.imagens
     return df_alertas
 
-def AlertasAberturasApreensoes(mindatahora = None, maxdatahora = None):
+
+def AlertasAberturasApreensoes(mindatahora=None, maxdatahora=None):
     df_apreensoes_loc, df_aberturas_loc, _, _ = FiltraApreensoes(mindatahora, maxdatahora)
     df_aberturas_alertas = df_aberturas_loc.groupby(
         [df_aberturas_loc.recinto, df_aberturas_loc.Alerta]).Conteiner.count().reset_index()
@@ -236,6 +239,7 @@ def AlertasAberturasApreensoes(mindatahora = None, maxdatahora = None):
     df_final = df_final.append(df_total).append(df_totalgeral, ignore_index=True)
     return df_final
 
+
 def FigAberturasMes(ano, recinto):
     df_aberturas_group = df_aberturas.groupby(['Ano', 'Mês', 'recinto']).agg(
         aberturas=pd.NamedAgg(column='RVF', aggfunc='count'),
@@ -252,8 +256,9 @@ def FigAberturasMes(ano, recinto):
     df_abertura_apreensao_mes = df_abertura_apreensao_mes[df_abertura_apreensao_mes.recinto == recinto]
     fig = px.bar(df_abertura_apreensao_mes, x='Mês', barmode='group',
                  y=['aberturas', 'alertas', 'apreensao', 'comalerta'],
-                title=f' Estatísticas de {ano} para o recinto {recinto}')
+                 title=f' Estatísticas de {ano} para o recinto {recinto}')
     fig.show()
+
 
 def FigTotalApreensaoPorAno():
     df_apreensoes_ano_sum.peso = df_apreensoes_ano_sum.peso.astype(int)
@@ -266,6 +271,7 @@ def FigTotalApreensaoPorAno():
     fig.update_layout(width=WIDTH)
     fig.show()
 
+
 def FigTotalApreensaoPorAnoParcial():
     mesatual = date.today().month
     df_apreensoes_filtered = df_apreensoes[df_apreensoes['Mês'] <= mesatual]
@@ -277,6 +283,7 @@ def FigTotalApreensaoPorAnoParcial():
                  title='Soma dos pesos de apreensões por ano até o mês atual')
     fig.update_layout(width=WIDTH)
     fig.show()
+
 
 def FigTotalApreensaoPorAnoMes():
     data = []
@@ -353,3 +360,37 @@ df_baldeacao = pd.read_sql(SQL_PORTOBALDEACAO, engine)
 df_ocorrencias = df_destino.merge(df_baldeacao, on='Porto', how='outer',
                                   suffixes=['Destino', 'Baldeação']).fillna(0.)
 df_ocorrencias['QtdeSomada'] = df_ocorrencias['QtdeDestino'] + df_ocorrencias['QtdeBaldeação']
+
+
+def FigTipoOcultacao():
+    SQL_TIPO_OCULTACAO = '''
+    SELECT year(rvf.datahora) as Ano, month(rvf.datahora) as Mês, 
+    rvf.datahora, a.ID as Apreensao, a.peso as Peso, 
+    ovr.tipooperacao, ovr.id as Ficha, flagd.nome as "Tipo de ocultação"
+    FROM ovr_ovrs ovr
+    inner join ovr_verificacoesfisicas rvf on rvf.ovr_id = ovr.id
+    inner join ovr_apreensoes_rvf a on a.rvf_id = rvf.id
+    left join ovr_flags_ovr flag on flag.rvf_id = ovr.id
+    left join ovr_flags flagd on flagd.id = flag.flag_id
+    where ovr.setor_id in (1, 2, 3)  and ovr.tipooperacao != 6
+    and flagd.nome like 'Tipo de ocultação:%' or flagd.nome is null
+    order by Ano, Mês
+    '''
+    df_tipo_ocultacao = pd.read_sql(SQL_TIPO_OCULTACAO, engine)
+
+    def descreve_tipo_ocultacao(texto):
+        if texto is None:
+            return 'Não informado'
+        return texto[19:]
+
+    df_tipo_ocultacao['Tipo de ocultação'] = df_tipo_ocultacao['Tipo de ocultação'].apply(descreve_tipo_ocultacao)
+
+    df_tipo_ocultacao_ano_mes_sum = df_tipo_ocultacao.groupby(['Ano', 'Tipo de ocultação']).agg(
+        peso=pd.NamedAgg(column='Peso', aggfunc='sum')).reset_index()
+
+    fig = px.bar(df_tipo_ocultacao_ano_mes_sum,
+                 x='Ano', y='peso', color='Tipo de ocultação',
+                 title='Peso de apreensões por tipo de ocultação no ano')
+    fig.update_layout(width=WIDTH)
+    fig.update_xaxes(categoryorder='category ascending')
+    fig.show()
