@@ -1404,18 +1404,21 @@ def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
         df = pd.read_csv(afile, sep=';',
                          header=1, encoding='windows-1252')
     elif '.xlsx' in lfilename:
-        df = pd.read_excel(afile, engine='openpyxl')
+        df = pd.read_excel(afile, engine='openpyxl', keep_default_na=False)
     elif '.xls' in lfilename:
         df = pd.read_excel(afile)
     elif '.ods' in lfilename:
         df = pd.read_excel(afile, engine='odf')
     else:
         raise Exception('Extensão de arquivo desconhecida! Conheço .csv, .ods e .xls')
+    df.replace('', np.nan, inplace=True)
+    df = df.dropna(how='all')
     print(df.head())
     df = df.replace({np.nan: None})
     alertas = dict()
     index = 0
     try:
+        conta_linhas_puladas = 0
         for index, original_row in df.iterrows():
             row = muda_chaves(original_row)
             if index == 0:
@@ -1427,6 +1430,9 @@ def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
             if row.get('descricao') is None:
                 logger.info('Abortando linha {} da planilha {}'
                             'devido descrição vazia'.format(index, lfilename))
+                conta_linhas_puladas +=1
+                if conta_linhas_puladas > 10:
+                    break
                 continue
             numero = row.get('numero')
             if numero:
@@ -1445,7 +1451,7 @@ def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
             itemtg.descricao = row['descricao'].strip()
             itemtg.qtde = row['qtde']
             try:
-                unidade = row['unidadedemedida'].strip()
+                unidade = row.get('unidadedemedida', '').strip()
                 itemtg.unidadedemedida = Enumerado. \
                     index_unidadeMedida(row['unidadedemedida'].strip().upper())
                 print(itemtg.unidadedemedida)
