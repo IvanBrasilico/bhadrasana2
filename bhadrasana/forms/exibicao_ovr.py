@@ -52,6 +52,7 @@ class ExibicaoOVR:
              'Ano',
              'Número doc.',
              'CE Mercante',
+             'Fiscalizado',
              'Alertas',
              'Último Evento',
              'Evento Anterior',
@@ -271,10 +272,9 @@ class ExibicaoOVR:
         responsavel_descricao = 'Nenhum'
         if ovr.responsavel:
             responsavel_descricao = ovr.responsavel.nome
+        alertas = [flag.nome for flag in ovr.flags]
+        e_perecivel = 'perecível' in ''.join(alertas).lower()
         if self.tipo == TipoExibicao.FMA:
-            alertas = [flag.nome for flag in ovr.flags]
-            e_perecivel = 'perecível' in ''.join(alertas).lower()
-            print(alertas, e_perecivel)
             return ovr.id, visualizado, [
                 ovr.datahora,
                 ovr.get_tipooperacao(),
@@ -282,13 +282,13 @@ class ExibicaoOVR:
                 ovr.get_ano(),
                 ovr.numero,
                 ovr.numeroCEmercante,
+                fiscalizado,
                 ', '.join(alertas),
                 html_ultimo_evento,
                 html_penultimo_evento,
                 responsavel_descricao,
                 auditor_descricao], e_perecivel
         if self.tipo == TipoExibicao.FMA_2:
-            alertas = [flag.nome for flag in ovr.flags]
             mercadoria, lista_de_ncms = self.get_mercadoria_mercante(ovr)
             return ovr.id, visualizado, [
                 ovr.datahora,
@@ -300,7 +300,7 @@ class ExibicaoOVR:
                 ', '.join(alertas),
                 str(ovr.observacoes or ''),
                 mercadoria,
-                lista_de_ncms]
+                lista_de_ncms], e_perecivel
         if self.tipo == TipoExibicao.Descritivo:
             return ovr.id, visualizado, [
                 ovr.datahora,
@@ -311,7 +311,7 @@ class ExibicaoOVR:
                 str(ovr.observacoes or ''),
                 responsavel_descricao,
                 html_ultimo_evento,
-                html_penultimo_evento]
+                html_penultimo_evento], e_perecivel
         if (self.tipo == TipoExibicao.Ocorrencias or
                 self.tipo == TipoExibicao.Empresa):
             infracoes, marcas = self.get_infracoes_e_marcas(ovr)
@@ -327,7 +327,7 @@ class ExibicaoOVR:
                 ', '.join(marcas),
                 responsavel_descricao,
                 html_ultimo_evento,
-                html_penultimo_evento]
+                html_penultimo_evento], e_perecivel
         if self.tipo == TipoExibicao.Resultado:
             infracoes, marcas = self.get_infracoes_e_marcas(ovr)
             peso_apreensoes = self.get_peso_apreensoes(ovr)
@@ -346,7 +346,7 @@ class ExibicaoOVR:
                 '{:0.2f}'.format(valor_tgs),
                 '\n'.join(resultados),
                 responsavel_descricao,
-                auditor_descricao]
+                auditor_descricao], e_perecivel
         if self.tipo == TipoExibicao.Resumo:
             resumo = self.get_OVR_resumo_html(ovr)
             return ovr.id, visualizado, [
@@ -355,7 +355,7 @@ class ExibicaoOVR:
                 html_ultimo_evento,
                 html_penultimo_evento,
                 fiscalizado,
-                resumo]
+                resumo], e_perecivel
 
     def get_mercante_resumo(self, ovr) -> list:
         resumo = []
