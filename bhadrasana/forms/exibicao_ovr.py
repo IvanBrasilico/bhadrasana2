@@ -52,7 +52,8 @@ class ExibicaoOVR:
              'Ano',
              'Número doc.',
              'CE Mercante',
-             'Fiscalizado',
+             'CNPJ Fiscalizado',
+             'Nome Fiscalizado',
              'Alertas',
              'Último Evento',
              'Evento Anterior',
@@ -206,6 +207,18 @@ class ExibicaoOVR:
                 pass
         return fiscalizado
 
+    def get_fiscalizado_cnpj_nome(self, ovr):
+        fiscalizado_cnpj = ''
+        fiscalizado_nome = ''
+        if ovr.cnpj_fiscalizado:
+            fiscalizado_cnpj = ovr.cnpj_fiscalizado
+            try:
+                empresa = get_empresa(self.session, ovr.cnpj_fiscalizado)
+                if empresa:
+                    fiscalizado_nome = empresa.nome
+            except ValueError:
+                pass
+        return fiscalizado_cnpj, fiscalizado_nome
     def get_recinto_nome(self, ovr):
         recinto_nome = ''
         if ovr.recinto:
@@ -275,6 +288,7 @@ class ExibicaoOVR:
         alertas = [flag.nome for flag in ovr.flags]
         e_perecivel = 'perecível' in ''.join(alertas).lower()
         if self.tipo == TipoExibicao.FMA:
+            fiscalizado_cnpj, fiscalizado_nome = self.get_fiscalizado_cnpj_nome(ovr)
             return ovr.id, visualizado, [
                 ovr.datahora,
                 ovr.get_tipooperacao(),
@@ -282,7 +296,8 @@ class ExibicaoOVR:
                 ovr.get_ano(),
                 ovr.numero,
                 ovr.numeroCEmercante,
-                fiscalizado,
+                fiscalizado_cnpj,
+                fiscalizado_nome,
                 ', '.join(alertas),
                 html_ultimo_evento,
                 html_penultimo_evento,
