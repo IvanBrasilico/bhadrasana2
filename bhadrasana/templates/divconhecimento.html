@@ -21,9 +21,8 @@
         <br>
         Número BL: {{ conhecimento.numConhecimento }}<br>
         Embarcador: {{ conhecimento.embarcador }}<br>
-        Consignatário: {{ conhecimento.consignatario }} -
-        {% if empresa %}{{ empresa.nome }} {% endif %}
-        <br>
+        Consignatário: {{ conhecimento.consignatario }}<br>
+        {% if empresa %}{{ empresa.cnpj }} - {{ empresa.nome }}   <br> {% endif %}
         Data de emissão: {{ conhecimento.dataEmissao }}
         Porto de Origem: {{ conhecimento.portoOrigemCarga }}
         Porto de destino final: {{ conhecimento.portoDestFinal }}

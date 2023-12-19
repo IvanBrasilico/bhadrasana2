@@ -192,7 +192,15 @@ def get_detalhe_conhecimento(session, numeroCEmercante: str) -> dict:
     linha['ncms'] = get_ncms_conhecimento(session, numeroCEmercante)
     logger.info('get_laudos')
     if conhecimento:
-        cnpj = conhecimento.consignatario
+        if conhecimento.tipoTrafego == '7':
+            cnpj = conhecimento.embarcador
+        else:
+            cnpj = conhecimento.consignatario
+        print(cnpj)
+        print(conhecimento.tipoBLConhecimento)
+        print(conhecimento.tipoTrafego, type(conhecimento.tipoTrafego))
+        print(conhecimento.get_tipoTrafego())
+        empresa = None
         if cnpj:
             try:
                 if len(cnpj) == 11:
