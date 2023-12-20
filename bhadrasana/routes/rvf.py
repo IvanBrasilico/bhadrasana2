@@ -191,8 +191,9 @@ def rvf_app(app):
             if rvf is None:
                 flash('rvf %s não encontrado.' % rvf_id)
                 return redirect(url_for('pesquisa_rvf'))
-            OVR_out_filename = '{}_FCC{}-{}.docx'.format(
-                tipo, rvf_id,
+            ovr_id = rvf.ovr_id
+            OVR_out_filename = '{}_FCC{}_RVF{}_datahora{}.docx'.format(
+                tipo, ovr_id, rvf_id,
                 datetime.strftime(datetime.now(), '%Y-%m%dT%H%M%S'))
             rvf_dump = OVRDict(1).monta_rvf_dict(mongodb, session, rvf_id)
             if tipo == 'OVR':
