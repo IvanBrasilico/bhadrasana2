@@ -188,7 +188,8 @@ def assistentetg_app(app):
                 if request.form.get('exportar') is not None:
                     df = consulta_itens(filtro_form.descricao.data)
                 else:
-                    df = monta_sugestoes(filtro_form.descricao.data, 50)
+                    limit = 500 if (request.form.get('exportar_texto') is not None) else 100
+                    df = monta_sugestoes(filtro_form.descricao.data, limit)
                 if (request.form.get('exportar') is not None) or\
                         (request.form.get('exportar_texto') is not None):
                     out_filename = '{}_{}.xls'.format('PesquisaItens_',
