@@ -52,7 +52,7 @@ SQL_APREENSOES = \
      inner join ovr_tiposapreensao t on t.id = a.tipo_id
      inner join ovr_recintos r on r.id = ovr.recinto_id
      left join conhecimentosresumo c on c.numeroCEmercante = ovr.numeroCEmercante
-     where ovr.setor_id in (1, 2, 3)  and ovr.tipooperacao != 6
+     where ovr.setor_id in (1, 2, 3)  and ovr.tipooperacao not in (6, 8)
      order by Ano, Mês, Ficha, RVF, Apreensao;'''
 
 SQL_APREENSOES_OUTROS_ORGAOS = \
@@ -67,7 +67,7 @@ SQL_APREENSOES_OUTROS_ORGAOS = \
      inner join ovr_tiposapreensao t on t.id = a.tipo_id
      inner join ovr_recintos r on r.id = ovr.recinto_id
      left join conhecimentosresumo c on c.numeroCEmercante = ovr.numeroCEmercante
-     where ovr.setor_id in (1, 2, 3)  and ovr.tipooperacao = 6
+     where ovr.setor_id in (1, 2, 3)  and ovr.tipooperacao in (6, 8)
      order by Ano, Mês, Ficha, RVF, Apreensao;'''
 
 
@@ -272,9 +272,29 @@ def FigTotalApreensaoPorAno():
     fig.show()
 
 
+
+
+def FigTotalApreensaoPorAnoParcialExterior(tipo=(6)):
+    mesatual = date.today().month
+    df_apreensoes_filtered = df_apreensoes_outros_orgaos[df_apreensoes_outros_orgaos['Mês'] <= mesatual]
+    df_apreensoes_filtered = df_apreensoes_filtered[df_apreensoes_filtered.tipooperacao.isin(tipo)]
+    df_apreensoes_ano_sum = df_apreensoes_filtered.groupby(['Ano']).agg(
+        qtde=pd.NamedAgg(column='Apreensao', aggfunc='count'),
+        peso=pd.NamedAgg(column='Peso', aggfunc='sum')).reset_index()
+    df_apreensoes_ano_sum.peso = df_apreensoes_ano_sum.peso.astype(int)
+    fig = px.bar(df_apreensoes_ano_sum, x='Ano', y='qtde', text='peso',
+                 title='Soma dos pesos de apreensões por ano até o mês atual')
+    fig.update_layout(width=WIDTH)
+    fig.show()
+
+def FigTotalApreensaoPorAnoParcialOutros():
+    FigTotalApreensaoPorAnoParcialExterior(tipo=(8))
+
+
 def FigTotalApreensaoPorAnoParcial():
     mesatual = date.today().month
     df_apreensoes_filtered = df_apreensoes[df_apreensoes['Mês'] <= mesatual]
+    df_apreensoes_filtered = df_apreensoes_filtered[df_apreensoes_filtered.tipooperacao.isin(tipo)]
     df_apreensoes_ano_sum = df_apreensoes_filtered.groupby(['Ano']).agg(
         qtde=pd.NamedAgg(column='Apreensao', aggfunc='count'),
         peso=pd.NamedAgg(column='Peso', aggfunc='sum')).reset_index()

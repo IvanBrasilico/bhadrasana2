@@ -1516,6 +1516,7 @@ def exporta_planilha_tg(tg: TGOVR, filename: str,
         print(dumped_item_titulospadrao)
         if formato == TipoPlanilha.Secta:
             dumped_item_titulospadrao['VALOR'] = dumped_item_titulospadrao['VALOR'] + 'R'
+            dumped_item_titulospadrao['TIPO'] = dumped_item_titulospadrao['TIPO'][0:119]
     # print(itens)
     df = pd.DataFrame(itens)
     df.index = pd.RangeIndex(start=1, stop=len(df) + 1, step=1)
