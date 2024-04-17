@@ -60,7 +60,8 @@ SQL_APREENSOES_OUTROS_ORGAOS = \
     SELECT year(rvf.datahora) as Ano, month(rvf.datahora) as Mês, rvf.datahora,
       r.nome as recinto,
       ovr.id as Ficha, rvf.id as RVF, rvf.descricao as relato, rvf.numerolote as Conteiner,
-      a.id as Apreensao, a.descricao, t.descricao, a.peso as Peso, c.PortoDestFinal as PortoDestino
+      a.id as Apreensao, a.descricao, t.descricao, a.peso as Peso, c.PortoDestFinal as PortoDestino,
+      ovr.tipooperacao
       FROM ovr_ovrs ovr
      inner join ovr_verificacoesfisicas rvf on rvf.ovr_id = ovr.id
      inner join ovr_apreensoes_rvf a on a.rvf_id = rvf.id
@@ -136,9 +137,9 @@ df_apreensoes_sum = df_apreensoes.groupby(['Ano', 'Mês']).agg(
     qtde=pd.NamedAgg(column='Apreensao', aggfunc='count'),
     peso=pd.NamedAgg(column='Peso', aggfunc='sum')).reset_index()
 
-df_apreensoes_outros_orgaos = pd.read_sql(SQL_APREENSOES_OUTROS_ORGAOS, engine)
-df_apreensoes_outros_orgaos['AnoMes'] = df_apreensoes_outros_orgaos.apply(AnoMes, axis=1)
-df_apreensoes_outros_orgaos['Alerta'] = df_apreensoes_outros_orgaos.apply(TemAlerta, axis=1)
+df_apreensoes_outros_orgaos_exterior = pd.read_sql(SQL_APREENSOES_OUTROS_ORGAOS, engine)
+df_apreensoes_outros_orgaos_exterior['AnoMes'] = df_apreensoes_outros_orgaos_exterior.apply(AnoMes, axis=1)
+df_apreensoes_outros_orgaos_exterior['Alerta'] = df_apreensoes_outros_orgaos_exterior.apply(TemAlerta, axis=1)
 
 SQL_ABERTURAS = '''
 select year(rvf.datahora) as Ano, month(rvf.datahora) as Mês, rvf.datahora, r.nome as recinto,
@@ -276,7 +277,7 @@ def FigTotalApreensaoPorAno():
 
 def FigTotalApreensaoPorAnoParcialExterior(tipo=(6)):
     mesatual = date.today().month
-    df_apreensoes_filtered = df_apreensoes_outros_orgaos[df_apreensoes_outros_orgaos['Mês'] <= mesatual]
+    df_apreensoes_filtered = df_apreensoes_outros_orgaos_exterior[df_apreensoes_outros_orgaos_exterior['Mês'] <= mesatual]
     df_apreensoes_filtered = df_apreensoes_filtered[df_apreensoes_filtered.tipooperacao.isin(tipo)]
     df_apreensoes_ano_sum = df_apreensoes_filtered.groupby(['Ano']).agg(
         qtde=pd.NamedAgg(column='Apreensao', aggfunc='count'),
