@@ -275,10 +275,10 @@ def FigTotalApreensaoPorAno():
 
 
 
-def FigTotalApreensaoPorAnoParcialExterior(tipo=(6)):
+def FigTotalApreensaoPorAnoParcialExterior(tipo=6):
     mesatual = date.today().month
     df_apreensoes_filtered = df_apreensoes_outros_orgaos_exterior[df_apreensoes_outros_orgaos_exterior['Mês'] <= mesatual]
-    df_apreensoes_filtered = df_apreensoes_filtered[df_apreensoes_filtered.tipooperacao.isin(tipo)]
+    df_apreensoes_filtered = df_apreensoes_filtered[df_apreensoes_filtered.tipooperacao == tipo]
     df_apreensoes_ano_sum = df_apreensoes_filtered.groupby(['Ano']).agg(
         qtde=pd.NamedAgg(column='Apreensao', aggfunc='count'),
         peso=pd.NamedAgg(column='Peso', aggfunc='sum')).reset_index()
@@ -289,13 +289,12 @@ def FigTotalApreensaoPorAnoParcialExterior(tipo=(6)):
     fig.show()
 
 def FigTotalApreensaoPorAnoParcialOutros():
-    FigTotalApreensaoPorAnoParcialExterior(tipo=(8))
+    FigTotalApreensaoPorAnoParcialExterior(tipo=8)
 
 
 def FigTotalApreensaoPorAnoParcial():
     mesatual = date.today().month
     df_apreensoes_filtered = df_apreensoes[df_apreensoes['Mês'] <= mesatual]
-    df_apreensoes_filtered = df_apreensoes_filtered[df_apreensoes_filtered.tipooperacao.isin(tipo)]
     df_apreensoes_ano_sum = df_apreensoes_filtered.groupby(['Ano']).agg(
         qtde=pd.NamedAgg(column='Apreensao', aggfunc='count'),
         peso=pd.NamedAgg(column='Peso', aggfunc='sum')).reset_index()
