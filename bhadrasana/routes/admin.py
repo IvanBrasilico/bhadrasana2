@@ -9,6 +9,7 @@ from werkzeug.utils import redirect
 from bhadrasana.models import Enumerado as ModelEnumerado, usuario_tem_perfil, \
     perfilAcesso, Cargo
 from bhadrasana.models import Setor, Usuario, PerfilUsuario
+from bhadrasana.models.apirecintos_risco import Motorista
 from bhadrasana.models.ovr import Marca, RoteiroOperacaoOVR, TipoEventoOVR, \
     Enumerado, Recinto, RepresentanteMarca, Representacao, Assistente, TiposEventoAssistente, Flag
 
@@ -37,6 +38,14 @@ class SupervisorModelView(ProtectedModelView):
                                       ModelEnumerado.get_id(perfilAcesso, 'Supervisor'))
         return False
 
+
+class MotoristaModel(CadastradorModelView):
+    can_delete = False
+    column_hide_backrefs = False
+    column_searchable_list = ['nome', 'cpf']
+    column_filters = ['classificacao']
+    column_list = ('cpf', 'cnh', 'nome', 'nome_da_mae', 'classificacao', 'carga', 'carga_qtde')
+    form_columns = ('cpf', 'cnh', 'nome', 'nome_da_mae', 'classificacao', 'carga', 'carga_qtde')
 
 class UsuarioModel(CadastradorModelView):
     can_delete = False
@@ -172,6 +181,7 @@ def admin_app(app, session):
     admin.add_view(TiposEventoAssistenteModel(TiposEventoAssistente, session, category='Eventos'))
     admin.add_view(RecintosModel(Recinto, session, category='Tabelas'))
     admin.add_view(FlagModel(Flag, session, category='Tabelas'))
+    admin.add_view(MotoristaModel(Motorista, session, category='Tabelas'))
 
     admin.add_link(LogoutMenuLink(name='Janela principal',
                                   url='/bhadrasana2/', category='Ir para'))
