@@ -4,7 +4,7 @@ from enum import Enum
 from typing import Tuple, List
 
 from bhadrasana.models import get_usuario
-from bhadrasana.models.laudo import get_empresa
+from bhadrasana.models.laudo import get_empresa, get_pessoa
 from bhadrasana.models.ovr import OVR
 from bhadrasana.models.ovrmanager import get_visualizacoes, lista_tgovr
 from bhadrasana.models.rvfmanager import lista_rvfovr
@@ -213,9 +213,13 @@ class ExibicaoOVR:
         if ovr.cnpj_fiscalizado:
             fiscalizado_cnpj = ovr.cnpj_fiscalizado
             try:
-                empresa = get_empresa(self.session, ovr.cnpj_fiscalizado)
-                if empresa:
-                    fiscalizado_nome = empresa.nome
+                fiscalizado = None
+                if ovr.cnpj_fiscalizado and len(ovr.cnpj_fiscalizado) == 11:
+                    fiscalizado = get_pessoa(self.session, ovr.cnpj_fiscalizado)
+                if not fiscalizado:
+                    fiscalizado = get_empresa(self.session, ovr.cnpj_fiscalizado)
+                if fiscalizado:
+                    fiscalizado_nome = fiscalizado.nome
             except ValueError:
                 pass
         return fiscalizado_cnpj, fiscalizado_nome
