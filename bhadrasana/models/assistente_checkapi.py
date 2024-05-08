@@ -204,6 +204,7 @@ def processa_auditoria(planilha, stream_json, evento_nome: str):
     placas_nao_encontradas = eventos_fisico[~ eventos_fisico[chave_fisico].isin(eventos_api[chave_api])]
     placas_encontradas = eventos_fisico[eventos_fisico[chave_fisico].isin(eventos_api[chave_api])]
     api_filtrado = eventos_api[eventos_api[chave_api].isin(eventos_fisico[chave_fisico])]
+    amostra5_api = eventos_api.head(5)
     print('#####################--- placas_encontradas')
     print(placas_encontradas.head())
     print('#####################--- placas_nao_encontradas')
@@ -233,4 +234,4 @@ def processa_auditoria(planilha, stream_json, evento_nome: str):
     if evento_nome == 'InspecaoNaoInvasiva':  # Verificar imagens
         erros_imagens = checa_imagens(eventos_api)
         mensagens.append(erros_imagens)
-    return eventos_fisico, api_filtrado, mensagens, linhas_divergentes
+    return eventos_fisico, api_filtrado, amostra5_api, mensagens, linhas_divergentes

@@ -141,6 +141,27 @@
                         {% endfor %}
                     </table>
                     {% endif %}
+                    {% if amostra2_eventos_api is not none%}
+                    <h4>Amostra - primeiros 5 eventos extraídos da API</h4>
+                    <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive"
+                           cellspacing="0"
+                           cellpadding="0" style="width:100%;">
+                        <tr>
+                            <th>Linha</th>
+                            {% for col in amostra2_eventos_api.columns %}
+                            <th> {{ col }}</th>
+                            {% endfor %}
+                        </tr>
+                        {% for row in amostra2_eventos_api.iterrows() %}
+                        <tr>
+                            <td>{{row[0]}}</td>
+                            {% for col in row[1] %}
+                            <td> {{ col }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </table>
+                    {% endif %}
                 </div>
             </div>
         </div>

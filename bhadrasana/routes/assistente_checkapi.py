@@ -142,7 +142,7 @@ def assistentecheckapi_app(app):
                 stream_json = request.files[checkapiform.eventos_json.name]
                 recinto = session.query(Recinto).filter(Recinto.id == checkapiform.recinto_id.data).one()
                 evento_nome = dict(checkapiform.tipoevento_id.choices).get(checkapiform.tipoevento_id.data)
-                eventos_fisico, amostra_eventos_api, mensagens, linhas_divergentes = \
+                eventos_fisico, amostra_eventos_api, amostra2_eventos_api, mensagens, linhas_divergentes = \
                     processa_auditoria(stream_planilha, stream_json, evento_nome)
                 ovr = None
                 if request.values.get('finalizar'):
