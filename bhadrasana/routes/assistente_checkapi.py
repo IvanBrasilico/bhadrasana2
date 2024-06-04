@@ -90,6 +90,7 @@ def inclui_evento_ovr(db, session, ovr, motivo: str, file=None, filename=None):
 
 def gerar_relatorio_docx(eventos_fisico,
                          amostra_eventos_api,
+                         amostra2_eventos_api,
                          mensagens: list,
                          linhas_divergentes: list,
                          recinto: Recinto,
@@ -98,6 +99,7 @@ def gerar_relatorio_docx(eventos_fisico,
                          ovr=None):
     dados = {'eventos_fisico': eventos_fisico,
              'amostra_eventos_api': amostra_eventos_api,
+             'amostra2_eventos_api': amostra2_eventos_api,
              'mensagens': ' '.join(mensagens),
              'linhas_divergentes': linhas_divergentes,
              'cnpj_fiscalizado': recinto.cnpj,
@@ -159,6 +161,7 @@ def assistentecheckapi_app(app):
                     pd.set_option('display.max_columns', None)
                 arquivo = gerar_relatorio_docx(eventos_fisico,
                                                amostra_eventos_api,
+                                               amostra2_eventos_api,
                                                mensagens,
                                                linhas_divergentes,
                                                recinto,
@@ -172,6 +175,7 @@ def assistentecheckapi_app(app):
                 return render_template('assistente_checkapi.html',
                                        eventos_fisico=eventos_fisico,
                                        amostra_eventos_api=amostra_eventos_api,
+                                       amostra2_eventos_api=amostra2_eventos_api,
                                        mensagens=mensagens,
                                        linhas_divergentes=linhas_divergentes,
                                        checkapiform=checkapiform,
@@ -190,4 +194,5 @@ def assistentecheckapi_app(app):
                                linhas_diferentes=[],
                                eventos_fisico=None,
                                amostra_eventos_api=None,
+                               amostra2_eventos_api=None,
                                lista_planilhas=lista_planilhas)

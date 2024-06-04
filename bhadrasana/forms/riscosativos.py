@@ -11,6 +11,9 @@ class RiscosForm(FlaskForm):
 
 
 class RiscosAtivosForm(RiscosForm):
+    # Campos ativadores são campos sem valores específicos a alimentar, simplesmente "ligam"
+    # um filtro pré-especificado (Ex. Filtrar somente BLs de tipo Master e único (tipoBL in (10, 12, 15))
+    campos_ativadores = ['matriz_corad', 'sem_matriz_corad', 'house_unico']
     portoDestFinal = BooleanField(u'Porto de Destino Final',
                                   default=1)
     consignatario = BooleanField(u'Consignatario',
@@ -18,7 +21,7 @@ class RiscosAtivosForm(RiscosForm):
     portoOrigemCarga = BooleanField(u'Porto de Origem',
                                     default=0)
     identificacaoNCM = BooleanField(u'NCM',
-                       default=0)
+                                    default=0)
     codigoConteiner = BooleanField(u'NCM',
                                    default=0)
     descricao = BooleanField(u'NCM',
@@ -26,10 +29,19 @@ class RiscosAtivosForm(RiscosForm):
     embarcador = BooleanField(u'Embarcador',
                               default=0)
     recinto = BooleanField(u'Recinto',
-                              default=0)
+                           default=0)
+    matriz_corad = BooleanField(u'Alto Risco Matriz CORAD',
+                                default=0)
+    sem_matriz_corad = BooleanField(u'Não consta da Matriz CORAD',
+                                    default=0)
+    house_unico = BooleanField(u'Somente BLs House ou únicos',
+                               default=1)
 
 
 class RecintoRiscosAtivosForm(RiscosForm):
+    # Campos ativadores são campos sem valores específicos a alimentar, simplesmente "ligam"
+    # um filtro pré-especificado (Ex. Filtrar somente BLs de tipo Master e único (tipoBL in (10, 12, 15))
+    campos_ativadores = []
     cnpjTransportador = BooleanField(u'CNPJ do Transportador',
                                      default=0)
     motorista_cpf = BooleanField(u'CPF do Motorista',

@@ -2,6 +2,10 @@ import json
 import os
 import sys
 
+import chardet
+
+from bhadrasana.models.riscocorad import MatrizCorad
+
 sys.path.append('.')
 sys.path.insert(0, '../ajna_docs/commons')
 sys.path.insert(0, '../virasana')
@@ -16,7 +20,7 @@ from datetime import date, datetime
 from typing import List
 
 import pandas as pd
-from sqlalchemy import select, and_, join, or_, create_engine
+from sqlalchemy import select, and_, join, or_, create_engine, func
 
 from ajna_commons.flask.log import logger
 from ajnaapi.recintosapi.models import AcessoVeiculo, ConteinerUld, PesagemVeiculo, \
@@ -115,6 +119,14 @@ def mercanterisco(session, pfiltros: dict, limit=1000, operador_ou=False):
         Conhecimento, NCMItem,
         Conhecimento.numeroCEmercante == NCMItem.numeroCEMercante
     )
+    matriz_corad = pfiltros.get('matriz_corad')
+    if matriz_corad:
+        j = j.join(MatrizCorad, func.substr(Conhecimento.consignatario, 1, 8) == MatrizCorad.cod_emp_interv_rad)
+        filtros = and_(filtros, MatrizCorad.classificacao_aniita_imp == 1)
+    sem_matriz_corad = pfiltros.get('sem_matriz_corad')
+    house_unico = pfiltros.get('house_unico')
+    if house_unico:
+        filtros = and_(filtros, Conhecimento.tipoBLConhecimento.in_([10, 12, 15]))
     filtros = and_(filtros_data, filtros)
     # ncm_item = aliased(NCMItem)
     keys_sql = [Conhecimento.numeroCEmercante, Conhecimento.descricao,
@@ -258,8 +270,9 @@ def exclui_riscos(session):
 
 
 def le_csv(filename):
-    df = pd.read_csv(filename, sep=';',
-                     header=5)
+    with open(filename, 'rb') as f:
+        result = chardet.detect(f.read())
+    df = pd.read_csv(filename, sep=';', header=5, encoding=result['encoding'])
     print(df.columns)
     df['identificacaoNCM'] = df['identificacaoNCM'].astype(str)
     df = df.groupby(list(df.columns)[:-1])['identificacaoNCM'].apply(', '.join).reset_index()

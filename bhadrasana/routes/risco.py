@@ -111,9 +111,12 @@ def risco_app(app):
                 filtros['datafim'] = riscos_ativos_form.datafim.data
                 for fieldname, value in riscos_ativos_form.data.items():
                     if value is True:
-                        riscos_ativos_campo = [risco.valor for risco in riscos_ativos
-                                               if risco.campo == fieldname]
-                        filtros[fieldname] = riscos_ativos_campo
+                        if fieldname in riscos_ativos_form.campos_ativadores: # Filtros booleanos simples
+                            filtros[fieldname] = True
+                        else:  # Filtros ativodos, carregar valor específico
+                            riscos_ativos_campo = [risco.valor for risco in riscos_ativos
+                                                   if risco.campo == fieldname]
+                            filtros[fieldname] = riscos_ativos_campo
                 lista_risco, str_filtros = risco_function(
                     dbsession, filtros, operador_ou=riscos_ativos_form.operadorOU.data)
                 # print('***********', lista_risco)

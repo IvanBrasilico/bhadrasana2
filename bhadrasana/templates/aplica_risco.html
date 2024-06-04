@@ -51,7 +51,8 @@
                             Consignatário
                         </div>
                         <div class="col-sm-2">
-                            <input type="checkbox" name="identificacaoNCM" {% if oform.identificacaoNCM.data %} checked {% endif %}/>
+                            <input type="checkbox" name="identificacaoNCM" {% if oform.identificacaoNCM.data %} checked
+                                   {% endif %}/>
                             NCM
                         </div>
                         <div class="col-sm-2">
@@ -85,6 +86,24 @@
                             <input type="checkbox" name="recinto" {% if oform.recinto.data %} checked
                                    {% endif %}/>
                             Recinto
+                        </div>
+                        <div class="col-sm-2">
+                            <input type="checkbox" name="matriz_corad" {% if oform.matriz_corad.data %} checked
+                                   {% endif %}/>
+                            Alto Risco CORAD
+                        </div>
+                        <div class="col-sm-2">
+                            <input type="checkbox" name="sem_matriz_corad" {% if oform.sem_matriz_corad.data %} checked
+                                   {% endif %}/>
+                            Não consta na matriz CORAD
+                        </div>
+                        <div class="col-sm-2">
+                            <input type="checkbox" name="house_unico" {% if oform.house_unico.data %} checked
+                                   {% endif %}/>
+                            Só BL House ou único
+                        </div>
+                        <div class="col-sm-2">
+                            &nbsp;
                         </div>
                     </div>
                     {% endif %}
@@ -181,43 +200,47 @@
                        cellpadding="0" style="width:100%;">
                     {% if lista_risco is defined and lista_risco|length > 0 %}
                     <tr>
-                        {% for key, value in lista_risco[0].items() %}
-                        <th>{{ key }}</th>
-                        {% endfor %}
+                        <th>CE Mercante</th>
+                        <th>Dados</th>
+                        <th>Imagem</th>
                     </tr>
                     {% endif %}
                     {% for row in lista_risco %}
                     <tr>
-                        {% for key, value in row.items() %}
+                        {% if 'numeroCEmercante' in row %}
                         <td align="center" style="word-wrap: break-word; max-width: 150px;">
-                            {% if key=='numeroCEmercante' %}
-                            <a href="/virasana/cemercante/{{value}}" target="_BLANK">
-                                {{value}}
+
+                            <a href="/virasana/cemercante/{{row['numeroCEmercante']}}" target="_BLANK">
+                                {{row['numeroCEmercante']}}
                             </a><br>
-                            <a href="ovr?numeroCEmercante={{value}}" target="_BLANK">
+                            <a href="ovr?numeroCEmercante={{row['numeroCEmercante']}}" target="_BLANK">
                                 Criar OVR
                             </a>
-                            {% elif key=='codigoConteiner' %}
-                            <a href="/virasana/files?numero={{value}}" target="_BLANK">
+                        </td>
+                        {% endif %}
+                        <td align="left">
+                            {% for key, value in row.items() %}
+                            <strong>{{key}}:</strong>
+                            {% if key == 'codigoConteiner' %}
+                            <a href="/virasana/files?numero={{row['codigoConteiner']}}" target="_BLANK">
                                 {{value}}
                             </a>
-                            {% elif key=='num' %}
-                            <a href="/virasana/files?numero={{value}}" target="_BLANK">
-                                {{value}}
-                            </a>
-                            {% elif key=='Imagem' %}
-                            {% if value %}
-                            <a href="/virasana/file?_id={{value}}" target="_BLANK">
-                                <img src="/virasana/mini1/{{ value}}" width="150px"/>
-                            </a>
-                            {% endif %}
                             {% else %}
                             {{value}}
                             {% endif %}
+                            <br>
+                            {% endfor %}
                         </td>
-                        {% endfor %}
+                        {% if 'Imagem' in row %}
+                        <td align="center">
+                            <a href="/virasana/file?_id={{value}}" target="_BLANK">
+                                <img src="/virasana/mini1/{{ value}}" width="150px"/>
+                            </a>
+                        </td>
+                        {% endif %}
                     </tr>
-                    {% endfor %} {% if not lista_risco %}
+                    {% endfor %}
+                    {% if not lista_risco %}
                     <tr>
                         <td>Sem resultados.</td>
                     </tr>

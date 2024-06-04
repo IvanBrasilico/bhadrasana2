@@ -7,6 +7,7 @@ from typing import Tuple
 import numpy as np
 import pandas as pd
 from PIL import Image
+from ajna_commons.flask.log import logger
 from dateutil import parser
 
 
@@ -52,22 +53,30 @@ def get_campos_gate(evento) -> dict:
 
 def get_campos_pesagem(evento) -> dict:
     campos, sub_evento = get_campos_comum(evento)
-    campos['placa'] = letras_e_numeros(sub_evento['placa'])
-    # campos['ocrPlaca'] = sub_evento['ocrPlaca'] ERRO??? (não tem ocrPlaca no Evento??)
-    # print(evento)
-    # print(sub_evento)
-    campos['tara'] = sub_evento.get('taraConjunto', 'Campo não existente!')
-    campos['capturaAutoPeso'] = sub_evento['capturaAutoPeso']
-    campos['pesoBrutoManifesto'] = sub_evento.get('pesoBrutoManifesto', 'Campo não existente!')
-    campos['pesoBrutoBalanca'] = sub_evento.get('pesoBrutoBalanca', 'Campo não existente!')
     try:
-        campos['numeroConteiner'] = letras_e_numeros(sub_evento['listaConteineresUld'][0]['numeroConteiner'])
-    except:
-        campos['numeroConteiner'] = None
-    try:
-        campos['placaReboque'] = letras_e_numeros(sub_evento['listaSemirreboque'][0]['placa'])
-    except:
-        campos['placaReboque'] = None
+        try:
+            campos['placa'] = letras_e_numeros(sub_evento['placa'])
+        except:
+            campos['placa'] = None
+        # campos['ocrPlaca'] = sub_evento['ocrPlaca'] ERRO??? (não tem ocrPlaca no Evento??)
+        # print(evento)
+        # print(sub_evento)
+        campos['tara'] = sub_evento.get('taraConjunto', 'Campo não existente!')
+        campos['capturaAutoPeso'] = sub_evento['capturaAutoPeso']
+        campos['pesoBrutoManifesto'] = sub_evento.get('pesoBrutoManifesto', 'Campo não existente!')
+        campos['pesoBrutoBalanca'] = sub_evento.get('pesoBrutoBalanca', 'Campo não existente!')
+        try:
+            campos['numeroConteiner'] = letras_e_numeros(sub_evento['listaConteineresUld'][0]['numeroConteiner'])
+        except:
+            campos['numeroConteiner'] = None
+        try:
+            campos['placaReboque'] = letras_e_numeros(sub_evento['listaSemirreboque'][0]['placa'])
+        except:
+            campos['placaReboque'] = None
+    except Exception as err:
+        logger.error(f'Dados comum: {evento}')
+        logger.error(f'jsonOriginal: {sub_evento}')
+        raise err
     return campos
 
 
