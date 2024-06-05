@@ -152,9 +152,14 @@ def compara_linha(linhas_api, linha_fisico, depara_campos: dict) -> list:  # Ret
 def get_eventos_fisico(planilha):
     # lfilename = planilha.filename
     df = pd.read_excel(planilha, engine='openpyxl', header=0)
-    # print(len(df))
+    df['Data'] = pd.to_datetime(df.Data.astype(str), errors='coerce')
+    df['Hora'] = pd.to_datetime(df.Hora.astype(str), errors='coerce').dt.time
+    print(len(df))
     df = df[~df['Data'].isna()]
-    # print(len(df))
+    df = df[~df['Hora'].isna()]
+    print(len(df))
+    print(df.head())
+    print(df.columns)
     df = df.replace({np.nan: ''})
     if 'CPF' in df.columns:
         df['CPF'] = df['CPF'].apply(converte_cpf)
