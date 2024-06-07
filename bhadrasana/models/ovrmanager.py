@@ -1404,13 +1404,16 @@ def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
         df = pd.read_csv(afile, sep=';',
                          header=1, encoding='windows-1252')
     elif '.xlsx' in lfilename:
-        df = pd.read_excel(afile, engine='openpyxl', keep_default_na=False)
+        # Retirado openpyxl, está "dando pau" e travando
+        df = pd.read_excel(afile, keep_default_na=False)
     elif '.xls' in lfilename:
         df = pd.read_excel(afile)
     elif '.ods' in lfilename:
         df = pd.read_excel(afile, engine='odf')
     else:
         raise Exception('Extensão de arquivo desconhecida! Conheço .csv, .ods e .xls')
+    logger.info('Planilha aberta!!!')
+    print(df)
     df.replace('', np.nan, inplace=True)
     df = df.dropna(how='all')
     print(df.head())
@@ -1421,6 +1424,7 @@ def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
         conta_linhas_puladas = 0
         for index, original_row in df.iterrows():
             row = muda_chaves(original_row)
+            logger.info(row)
             if index == 0:
                 campos_faltantes = set(de_para.keys()) - set(row.keys())
                 if campos_faltantes:
