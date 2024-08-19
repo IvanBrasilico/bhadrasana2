@@ -24,10 +24,11 @@ setup(
         'Flask-wtf',
         'gunicorn',
         'lxml',
-        'Pillow',   # Centralizar acesso imagens no virasana??
-        'plotly', # Ver como retirar necessidade
+        'nltk',
         'odfpy',
         'openpyxl',
+        'Pillow',   # Centralizar acesso imagens no virasana??
+        'plotly', # Ver como retirar necessidade
         'pandas',
         'pymongo',
         'pymysql',
