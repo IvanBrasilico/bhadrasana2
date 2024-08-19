@@ -13,7 +13,7 @@ setup(
         'chardet',
         'dominate',
         'defusedxml',
-        'Flask==1.1.4',
+        'Flask==2.2.5',
         'flask-admin',
         'flask-babelex',
         'Flask-BootStrap',
