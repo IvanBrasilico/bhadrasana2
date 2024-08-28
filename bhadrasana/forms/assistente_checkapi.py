@@ -17,3 +17,7 @@ class CheckApiForm(FlaskForm):
         self.tipoevento_id.choices = [[0, 'Selecione']]
         if kwargs.get('tiposevento'):
             self.tipoevento_id.choices.extend(kwargs.get('tiposevento'))
+
+
+class ArquivoApiForm(FlaskForm):
+    arquivo = FileField('Arquivo de eventos ZIP extraído da API Recintos')

@@ -36,6 +36,8 @@ setup(
         'redis', # Ver como retirar necessidade
         'requests', # Ver como retirar necessidade
         'sqlalchemy==1.3.24',
+        'wtforms==2.2.3',
+        'markupsafe==1.1.1'
         'xlrd',
         'xlwt',
     ],
