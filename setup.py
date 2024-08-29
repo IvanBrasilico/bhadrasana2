@@ -26,17 +26,23 @@ setup(
         'Flask-wtf',
         'gunicorn',
         'lxml',
+        'nltk',
+        'odfpy',
+        'openpyxl',
         'Pillow',   # Centralizar acesso imagens no virasana??
         'plotly', # Ver como retirar necessidade
         'odfpy',
         'openpyxl',
         'pandas==1.1.5',
+        'pandas',
         'pymongo',
         'pymysql',
         'python-docx',
         'redis', # Ver como retirar necessidade
         'requests', # Ver como retirar necessidade
         'sqlalchemy==1.3.24',
+        'wtforms==2.2.3',
+        'markupsafe==1.1.1'
         'xlrd',
         'xlwt',
     ],

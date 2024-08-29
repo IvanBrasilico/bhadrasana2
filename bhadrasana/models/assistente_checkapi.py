@@ -139,7 +139,8 @@ def compara_linha(linhas_api, linha_fisico, depara_campos: dict) -> list:  # Ret
         linha_fisico[1]['dataHoraOcorrencia'] + timedelta(hours=0, minutes=50),
     )]
     if len(linha_api) == 0:
-        return ['Não encontrado registro no intervalo de 50 minutos antes e depois!']
+        return ['Não encontrado registro no intervalo de 50 minutos antes e depois da Data de ' +
+                'ocorrência informada! Existe informação, mas provavelmente relativa a outro Evento.']
     for campo_fisico, campo_api in depara_campos.items():
         val_fisico = linha_fisico[1][campo_fisico]
         val_api = linha_api[campo_api].iloc[0]
@@ -197,14 +198,18 @@ def processa_auditoria(planilha, stream_json, evento_nome: str):
     _get_campos = {'AgendamentoAcessoVeiculo': get_campos_gate,
                    'PesagemVeiculo': get_campos_pesagem,
                    'InspecaoNaoInvasiva': get_campos_inspecaonaoinvasiva}
+    # Lê planilha, tratando os campos
     eventos_fisico = get_eventos_fisico(planilha)
     print('#####################--- eventos_fisico')
     print(eventos_fisico.head())
     eventos_fisico['dataHoraOcorrencia'] = eventos_fisico.apply(lambda x: datetime.combine(x['Data'], x['Hora']),
                                                                 axis=1)
+    # Lê JSON, extraindo e tratando os campos a comparar
     json_raw = get_eventos_api(stream_json)
     eventos = [_get_campos[evento_nome](evento) for evento in json_raw]
     eventos_api = pd.DataFrame(eventos)
+
+    # Faz configurações específicas para cada tipo de Evento
     chave_api = 'placa'
     chave_fisico = 'PlacaVeiculo'
     if evento_nome == 'AgendamentoAcessoVeiculo':  # Filtrar somente Eventos tipo 'C' de A*c*esso
@@ -215,8 +220,14 @@ def processa_auditoria(planilha, stream_json, evento_nome: str):
         chave_fisico = 'NúmeroContêiner'
     print('#####################--- eventos_api')
     print(eventos_api.head())
-    placas_nao_encontradas = eventos_fisico[~ eventos_fisico[chave_fisico].isin(eventos_api[chave_api])]
-    placas_encontradas = eventos_fisico[eventos_fisico[chave_fisico].isin(eventos_api[chave_api])]
+    # Filtra somente 'chaves' (PlacaVeículo ou Número Contêiner, etc) que:
+    # ESTÃO na planilha E foram encontradas no JSON
+    chaves_encontradas = eventos_fisico[chave_fisico].isin(eventos_api[chave_api])
+    placas_encontradas = eventos_fisico[chaves_encontradas]
+    # ESTÃO na planilha E NÃO foram encontradas no JSON
+    placas_nao_encontradas = eventos_fisico[~ chaves_encontradas]
+    # ESTÃO no JSON E foram encontradas na planilha - filtrar somente Eventos do JSON que
+    # pertençam ao universo de análise da planilha (chaves estão contidas nas da planilha)
     api_filtrado = eventos_api[eventos_api[chave_api].isin(eventos_fisico[chave_fisico])]
     amostra5_api = eventos_api.head(5)
     print('#####################--- placas_encontradas')
@@ -225,7 +236,10 @@ def processa_auditoria(planilha, stream_json, evento_nome: str):
     print(placas_nao_encontradas.head())
     print(placas_nao_encontradas[chave_fisico].values)
     linhas_divergentes = []
+    # Agora compara cada linha da planilha para saber se realmente há um Evento correspondente
+    # no JSON
     for linha_fisico in placas_encontradas.iterrows():
+        # Extrai linhas do JSON com chave igual à da linha da planilha atualmente analisada
         linha_api = eventos_api[eventos_api[chave_api] == linha_fisico[1][chave_fisico]]
         if evento_nome == 'AgendamentoAcessoVeiculo':  # Filtrar também por sentido
             linha_api = linha_api[eventos_api['direcao'] == linha_fisico[1]['FluxoOperacional']]
