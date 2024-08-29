@@ -1,3 +1,5 @@
+#USAR SEMPRE O PYTHON 3.8
+
 from setuptools import find_packages, setup
 
 setup(
@@ -28,7 +30,7 @@ setup(
         'plotly', # Ver como retirar necessidade
         'odfpy',
         'openpyxl',
-        'pandas',
+        'pandas==1.1.5',
         'pymongo',
         'pymysql',
         'python-docx',

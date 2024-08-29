@@ -161,3 +161,6 @@ bhadrasana2_password.txt
 /notebooks/gerenciais/importa_fichas_eqcom.ipynb
 /notebooks/data/*
 /notebooks/teste.xlsx
+.vscode/*
+ajna_mari/*
+meu_ambiente38/*

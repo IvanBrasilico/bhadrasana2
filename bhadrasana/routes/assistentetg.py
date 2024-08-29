@@ -172,7 +172,7 @@ def consulta_itens(texto)-> pd.DataFrame:
     return df
 
 
-bm25n, corpus, itenstg = monta_assistente_bm25(engine)
+#bm25n, corpus, itenstg = monta_assistente_bm25(engine)
 
 
 def assistentetg_app(app):
