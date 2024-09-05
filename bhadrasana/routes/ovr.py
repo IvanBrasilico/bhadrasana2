@@ -1151,7 +1151,7 @@ def ovr_app(app):
         session = app.config.get('dbsession')
         mongodb = app.config['mongodb']
         # Limitar resultados de todas as pesquisas (exceto OVRs) em 40 linhas
-        limit = 40
+        limit = 20
         ovrs = []
         rvfs = []
         infoces = {}

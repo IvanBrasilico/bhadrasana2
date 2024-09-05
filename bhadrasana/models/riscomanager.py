@@ -4,6 +4,7 @@ import sys
 
 import chardet
 
+from bhadrasana.models.apirecintos import EventoAPIBase, AcessoVeiculo, PesagemVeiculo, InspecaoNaoInvasiva
 from bhadrasana.models.riscocorad import MatrizCorad
 
 sys.path.append('.')
@@ -23,8 +24,6 @@ import pandas as pd
 from sqlalchemy import select, and_, join, or_, create_engine, func
 
 from ajna_commons.flask.log import logger
-from ajnaapi.recintosapi.models import AcessoVeiculo, ConteinerUld, PesagemVeiculo, \
-    EventoBase, Semirreboque
 from bhadrasana.models.ovrmanager import get_ovr_container, get_ovr_filtro
 from bhadrasana.models.rvfmanager import get_rvfs_filtro, lista_rvfovr
 from bhadrasana.models.virasana_manager import get_dues_container, get_detalhes_mercante, \
@@ -310,45 +309,57 @@ def get_lista_csv(csvpath):
 def get_eventos_conteiner(session, numero: str,
                           datainicio: datetime,
                           datafim: datetime,
-                          limit=40
+                          limit=20
                           ) -> List[dict]:
     Atributo = namedtuple('Atributo', ['descricao', 'campo'])
 
-    def lista_eventos(peventos: List[EventoBase],
+    def lista_eventos(peventos: List[EventoAPIBase],
                       atributos_info: List[Atributo]) -> List[dict]:
         result = []
         for evento in peventos:
-            linha = {'id': evento.idEvento, 'tipo': 'AcessoVeiculo',
-                     'data': datetime.strftime(evento.dtHrOcorrencia, '%d/%m/%Y %H:%M'),
-                     'recinto': evento.recinto,
-                     'cpf': evento.cpfOperOcor}
+            linha = {'id': evento.id, 'tipo': evento.__class__.__name__,
+                     'data': datetime.strftime(evento.dataHoraOcorrencia, '%d/%m/%Y %H:%M'),
+                     'recinto': evento.codigoRecinto}
             info = ['%s: %s  ' % (atributo.descricao, getattr(evento, atributo.campo))
                     for atributo in atributos_info]
             linha['info'] = ' '.join(info)
             result.append(linha)
         return result
 
-    eventos = session.query(AcessoVeiculo).join(ConteinerUld).filter(
-        ConteinerUld.num == numero
+    acessos_ = session.query(AcessoVeiculo).filter(
+        AcessoVeiculo.numeroConteiner == numero
     ).filter(
-        AcessoVeiculo.dtHrOcorrencia >= datainicio
+        AcessoVeiculo.dataHoraOcorrencia >= datainicio
     ).filter(
-        AcessoVeiculo.dtHrOcorrencia <= datafim
-    ).order_by(AcessoVeiculo.dtHrOcorrencia.desc()).limit(limit).all()
-    acessos = lista_eventos(eventos, [Atributo('Placa', 'placa'),
-                                      Atributo('Motorista', 'motorista_nome')])
-    eventos = session.query(PesagemVeiculo).join(Semirreboque).filter(
-        PesagemVeiculo.numConteinerUld == numero
+        AcessoVeiculo.dataHoraOcorrencia <= datafim
+    ).order_by(AcessoVeiculo.dataHoraOcorrencia.desc()).limit(limit).all()
+    acessos = lista_eventos(acessos_, [Atributo('Placa', 'placa'),
+                                       Atributo('Nome motorista', 'nomeMotorista')])
+    # print('***************************** ' + numero)
+    # print(acessos)
+    pesagens_ = session.query(PesagemVeiculo).filter(
+        PesagemVeiculo.numeroConteiner == numero
     ).filter(
-        PesagemVeiculo.dtHrOcorrencia >= datainicio
+        PesagemVeiculo.dataHoraOcorrencia >= datainicio
     ).filter(
-        PesagemVeiculo.dtHrOcorrencia <= datafim
-    ).order_by(PesagemVeiculo.dtHrOcorrencia.desc()).limit(limit).all()
-    pesagens = lista_eventos(eventos, [Atributo('Placa', 'placa'),
-                                       Atributo('Peso', 'pesoBrutoBalanca'),
-                                       Atributo('Tara', 'taraConjunto'), ])
-
-    return [*acessos, *pesagens]
+        PesagemVeiculo.dataHoraOcorrencia <= datafim
+    ).order_by(PesagemVeiculo.dataHoraOcorrencia.desc()).limit(limit).all()
+    pesagens = lista_eventos(pesagens_, [Atributo('Placa', 'placa'),
+                                         Atributo('Peso', 'pesoBrutoBalanca'),
+                                         Atributo('Tara', 'taraConjunto'), ])
+    inspecoes_ = session.query(InspecaoNaoInvasiva).filter(
+        InspecaoNaoInvasiva.numeroConteiner == numero
+    ).filter(
+        InspecaoNaoInvasiva.dataHoraOcorrencia >= datainicio
+    ).filter(
+        InspecaoNaoInvasiva.dataHoraOcorrencia <= datafim
+    ).order_by(InspecaoNaoInvasiva.dataHoraOcorrencia.desc()).limit(limit).all()
+    inspecoes = lista_eventos(inspecoes_, [Atributo('Placa', 'placa'),
+                                           Atributo('Peso', 'pesoBrutoBalanca'),
+                                           Atributo('Tara', 'taraConjunto'), ])
+    todos_eventos = [*acessos, *pesagens, *inspecoes]
+    todos_eventos.sort(reverse=True, key=lambda x: x['data'])
+    return todos_eventos
 
 
 def consulta_container_objects(values: dict, session, mongodb, limit=40):
