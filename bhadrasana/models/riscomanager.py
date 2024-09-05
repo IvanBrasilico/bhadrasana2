@@ -337,7 +337,7 @@ def get_eventos_conteiner(session, numero: str,
                                       Atributo('Nome motorista', 'nomeMotorista')])
     #print('***************************** ' + numero)
     #print(acessos)
-    """pesagens_ = session.query(PesagemVeiculo).join(Semirreboque).filter(
+    """pesagens_ = session.query(PesagemVeiculo).filter(
         PesagemVeiculo.numConteinerUld == numero
     ).filter(
         PesagemVeiculo.dtHrOcorrencia >= datainicio
