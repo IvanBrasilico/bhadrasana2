@@ -4,7 +4,7 @@ import sys
 
 import chardet
 
-from bhadrasana.models.apirecintos import EventoAPIBase, AcessoVeiculo
+from bhadrasana.models.apirecintos import EventoAPIBase, AcessoVeiculo, PesagemVeiculo
 from bhadrasana.models.riscocorad import MatrizCorad
 
 sys.path.append('.')
@@ -337,18 +337,17 @@ def get_eventos_conteiner(session, numero: str,
                                       Atributo('Nome motorista', 'nomeMotorista')])
     #print('***************************** ' + numero)
     #print(acessos)
-    """pesagens_ = session.query(PesagemVeiculo).filter(
-        PesagemVeiculo.numConteinerUld == numero
+    pesagens_ = session.query(PesagemVeiculo).filter(
+        PesagemVeiculo.numeroConteiner == numero
     ).filter(
-        PesagemVeiculo.dtHrOcorrencia >= datainicio
+        PesagemVeiculo.dataHoraOcorrencia >= datainicio
     ).filter(
-        PesagemVeiculo.dtHrOcorrencia <= datafim
-    ).order_by(PesagemVeiculo.dtHrOcorrencia.desc()).limit(limit).all()
+        PesagemVeiculo.dataHoraOcorrencia <= datafim
+    ).order_by(PesagemVeiculo.dataHoraOcorrencia.desc()).limit(limit).all()
     pesagens = lista_eventos(pesagens_, [Atributo('Placa', 'placa'),
                                        Atributo('Peso', 'pesoBrutoBalanca'),
                                        Atributo('Tara', 'taraConjunto'), ])
-    """
-    return [*acessos] #, *pesagens]
+    return [*acessos, *pesagens]
 
 
 def consulta_container_objects(values: dict, session, mongodb, limit=40):
