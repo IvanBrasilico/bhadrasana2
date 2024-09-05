@@ -309,7 +309,7 @@ def get_lista_csv(csvpath):
 def get_eventos_conteiner(session, numero: str,
                           datainicio: datetime,
                           datafim: datetime,
-                          limit=40
+                          limit=20
                           ) -> List[dict]:
     Atributo = namedtuple('Atributo', ['descricao', 'campo'])
 
