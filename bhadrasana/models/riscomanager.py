@@ -358,6 +358,7 @@ def get_eventos_conteiner(session, numero: str,
                                            Atributo('Peso', 'pesoBrutoBalanca'),
                                            Atributo('Tara', 'taraConjunto'), ])
     todos_eventos = [*acessos, *pesagens, *inspecoes]
+    todos_eventos.sort(reverse=True, key=lambda x: x['data'])
     return todos_eventos
 
 
