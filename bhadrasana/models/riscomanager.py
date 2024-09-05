@@ -4,7 +4,7 @@ import sys
 
 import chardet
 
-from bhadrasana.models.apirecintos import EventoAPIBase, AcessoVeiculo, PesagemVeiculo
+from bhadrasana.models.apirecintos import EventoAPIBase, AcessoVeiculo, PesagemVeiculo, InspecaoNaoInvasiva
 from bhadrasana.models.riscocorad import MatrizCorad
 
 sys.path.append('.')
@@ -317,7 +317,7 @@ def get_eventos_conteiner(session, numero: str,
                       atributos_info: List[Atributo]) -> List[dict]:
         result = []
         for evento in peventos:
-            linha = {'id': evento.id, 'tipo': evento.__classname__,
+            linha = {'id': evento.id, 'tipo': evento.__class__.__name__,
                      'data': datetime.strftime(evento.dataHoraOcorrencia, '%d/%m/%Y %H:%M'),
                      'recinto': evento.codigoRecinto}
             info = ['%s: %s  ' % (atributo.descricao, getattr(evento, atributo.campo))
@@ -334,9 +334,9 @@ def get_eventos_conteiner(session, numero: str,
         AcessoVeiculo.dataHoraOcorrencia <= datafim
     ).order_by(AcessoVeiculo.dataHoraOcorrencia.desc()).limit(limit).all()
     acessos = lista_eventos(acessos_, [Atributo('Placa', 'placa'),
-                                      Atributo('Nome motorista', 'nomeMotorista')])
-    #print('***************************** ' + numero)
-    #print(acessos)
+                                       Atributo('Nome motorista', 'nomeMotorista')])
+    # print('***************************** ' + numero)
+    # print(acessos)
     pesagens_ = session.query(PesagemVeiculo).filter(
         PesagemVeiculo.numeroConteiner == numero
     ).filter(
@@ -345,9 +345,20 @@ def get_eventos_conteiner(session, numero: str,
         PesagemVeiculo.dataHoraOcorrencia <= datafim
     ).order_by(PesagemVeiculo.dataHoraOcorrencia.desc()).limit(limit).all()
     pesagens = lista_eventos(pesagens_, [Atributo('Placa', 'placa'),
-                                       Atributo('Peso', 'pesoBrutoBalanca'),
-                                       Atributo('Tara', 'taraConjunto'), ])
-    return [*acessos, *pesagens]
+                                         Atributo('Peso', 'pesoBrutoBalanca'),
+                                         Atributo('Tara', 'taraConjunto'), ])
+    inspecoes_ = session.query(InspecaoNaoInvasiva).filter(
+        InspecaoNaoInvasiva.numeroConteiner == numero
+    ).filter(
+        InspecaoNaoInvasiva.dataHoraOcorrencia >= datainicio
+    ).filter(
+        InspecaoNaoInvasiva.dataHoraOcorrencia <= datafim
+    ).order_by(InspecaoNaoInvasiva.dataHoraOcorrencia.desc()).limit(limit).all()
+    inspecoes = lista_eventos(inspecoes_, [Atributo('Placa', 'placa'),
+                                           Atributo('Peso', 'pesoBrutoBalanca'),
+                                           Atributo('Tara', 'taraConjunto'), ])
+    todos_eventos = [*acessos, *pesagens, *inspecoes]
+    return todos_eventos
 
 
 def consulta_container_objects(values: dict, session, mongodb, limit=40):
