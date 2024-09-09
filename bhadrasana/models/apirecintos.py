@@ -287,6 +287,22 @@ def le_json(caminho_json: str, classeevento: Type[BaseDumpable], chave_unica: li
 
 
 def processa_json(texto: str, classeevento: Type[BaseDumpable], chave_unica: list) -> pd.DataFrame:
+    """ Lê Eventos do Arquivo um a um, tratar e retorna em um dataframe com o dump dos Eventos
+
+    Faz também os tratamentos:
+      eliminar linhas duplicadas de acordo com a chave passada
+      tratar nan
+      filtrar de acordo com regras de negócio
+
+
+    Args:
+        texto: RAW do arquivo JSON recebido
+        classeevento: Classe do Evento (ver classes SQLALchemy do arquivo models/apirecintos.py)
+        chave_unica: lista de campos que compõem a chave única do Evento
+
+    Returns:
+
+    """
     json_raw = json.loads(''.join(texto))
     eventos = []
     for evento_json in json_raw:
@@ -306,7 +322,8 @@ def processa_json(texto: str, classeevento: Type[BaseDumpable], chave_unica: lis
     return df_eventos
 
 
-def persiste_df(df_eventos: pd.DataFrame, classeevento: Type[BaseDumpable]):
+def persiste_df(df_eventos: pd.DataFrame, classeevento: Type[BaseDumpable], session):
+    """Percorre dataframe, instanciando Eventos e adicionando à sessão, finalizando com commit no banco"""
     cont_sucesso = 0
     ind = 0
     for ind, evento_dict in enumerate(df_eventos.to_dict('records'), 1):
@@ -354,7 +371,7 @@ if __name__ == '__main__':  # pragma: no-cover
                 print(classe, indice)
                 json_texto = zip_file.read('json.txt').decode()
                 df_eventos = processa_json(json_texto, classe, indice)
-                persiste_df(df_eventos, classe)
+                persiste_df(df_eventos, classe, session)
         # Sair por segurança. Comentar linha abaixo para funcionar
         sys.exit(0)
         '''
