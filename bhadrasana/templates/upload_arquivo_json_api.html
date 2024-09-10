@@ -3,14 +3,14 @@
     <div id="top" class="row">
         <h4>
             <big>
-                <b>Este formulário permite o UPLOAD de imagens para busca similar</b>
+                <b>Este formulário permite o UPLOAD de arquivos ZIP, extrações da API Recintos</b>
             </big>
         </h4>
         <div class="col-sm-6">
-            <form action="similar_file" method="post" enctype="multipart/form-data" id="frmrisco">
+            <form action="upload_arquivo_json_api" method="post" enctype="multipart/form-data" id="frmrisco">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                 <h3>
-                    <i>Informe um arquivo de imagem</i>
+                    <i>Informe um arquivo ZIP</i>
                 </h3>
                 <div class="input-group col-sm-5">
                     <label class="btn btn-default" for="txtimagem">

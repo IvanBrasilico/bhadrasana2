@@ -23,6 +23,7 @@ import sys
 from flask_login import current_user
 from pymongo import MongoClient
 
+from bhadrasana.routes.apirecintos import apirecintos_app
 from bhadrasana.routes.assistente_checkapi import assistentecheckapi_app
 
 sys.path.append('../ajna_api')
@@ -60,6 +61,8 @@ assistentetg_app(app)
 assistenteini_app(app)
 assistentecheckapi_app(app)
 eovr_app(app)
+apirecintos_app(app)
+
 nav = Nav()
 nav.init_app(app)
 
