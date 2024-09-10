@@ -1,0 +1,36 @@
+{% extends "layout.html" %} {% block content %}{{super()}}
+<div id="main" class="container-fluid">
+    <div id="top" class="row">
+        <h4>
+            <big>
+                <b>Este formulário permite o UPLOAD de imagens para busca similar</b>
+            </big>
+        </h4>
+        <div class="col-sm-6">
+            <form action="similar_file" method="post" enctype="multipart/form-data" id="frmrisco">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <h3>
+                    <i>Informe um arquivo de imagem</i>
+                </h3>
+                <div class="input-group col-sm-5">
+                    <label class="btn btn-default" for="txtimagem">
+                        <input id="txtimagem" name="file" type="file" style="display:none" onchange="$('#upload-file-info').html(this.files[0].name)"> Arquivo de imagem
+                    </label>
+                    <div class="input-group-btn">
+                        <input class="btn btn-primary" type="submit" value="Submeter">
+                    </div>
+                </div>
+                <big>
+                    <span class='label label-success' id="upload-file-info"></span>
+                </big>
+            </form>
+        </div>
+    </div>
+    <div id="bottom" class="row">
+        AJNA - Receita Federal do Brasil 2017
+    </div>
+</div>
+<!-- /#main -->
+{% endblock %}
+{% block scripts %} {{super()}}
+{% endblock %}

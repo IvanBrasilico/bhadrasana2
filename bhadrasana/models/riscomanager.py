@@ -355,8 +355,8 @@ def get_eventos_conteiner(session, numero: str,
         InspecaoNaoInvasiva.dataHoraOcorrencia <= datafim
     ).order_by(InspecaoNaoInvasiva.dataHoraOcorrencia.desc()).limit(limit).all()
     inspecoes = lista_eventos(inspecoes_, [Atributo('Placa', 'placa'),
-                                           Atributo('Peso', 'pesoBrutoBalanca'),
-                                           Atributo('Tara', 'taraConjunto'), ])
+                                           Atributo('Tipo de contêiner', 'tipoConteiner'),
+                                           Atributo('Vazio?', 'vazio'), ])
     todos_eventos = [*acessos, *pesagens, *inspecoes]
     todos_eventos.sort(reverse=True, key=lambda x: x['data'])
     return todos_eventos
