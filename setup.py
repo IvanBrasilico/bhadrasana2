@@ -1,3 +1,5 @@
+#USAR SEMPRE O PYTHON 3.8
+
 from setuptools import find_packages, setup
 
 setup(
@@ -29,6 +31,9 @@ setup(
         'openpyxl',
         'Pillow',   # Centralizar acesso imagens no virasana??
         'plotly', # Ver como retirar necessidade
+        'odfpy',
+        'openpyxl',
+        'pandas==1.1.5',
         'pandas',
         'pymongo',
         'pymysql',

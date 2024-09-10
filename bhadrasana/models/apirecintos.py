@@ -352,7 +352,7 @@ if __name__ == '__main__':  # pragma: no-cover
         engine = create_engine(SQL_URI)
         Session = sessionmaker(bind=engine)
         session = Session()
-        caminho = 'C:\\Users\\25052288840\\Downloads\\api_recintos\\'
+        caminho = 'C:\\Users\\11913225640\\Downloads\\api_recintos\\'
         arquivos = os.listdir(caminho)
         for arquivo in arquivos:
             if '.zip' in arquivo:
