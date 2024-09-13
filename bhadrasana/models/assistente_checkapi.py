@@ -253,12 +253,15 @@ def processa_auditoria(planilha, stream_json, evento_nome: str):
         f'Eventos físicos foram coletados de {eventos_fisico.dataHoraOcorrencia.min()} ' + \
         f'a {eventos_fisico.dataHoraOcorrencia.max()}',
         f'Eventos extraídos baixados desde   {eventos_api.dataHoraOcorrencia.min()} a ' + \
-        f'{eventos_api.dataHoraOcorrencia.max()}',
-        f'NÃO foram encontradas {len(placas_nao_encontradas)} de {len(eventos_fisico)} chaves {chave_fisico}: ' + \
-        ', '.join(chaves_nao_encontradas),
-        f'Campos conferidos no arquivo JSON: {list(_depara_campos[evento_nome].values())}',
-        'Obs: deixe o campo em branco na planilha para ignorar a checagem deste'
-    ]
+        f'{eventos_api.dataHoraOcorrencia.max()}']
+    if len(placas_nao_encontradas) == 0:
+        mensagens.append(f'Todas as chaves "{chave_fisico}" foram encontradas')
+    else:
+        mensagens.append(
+            f'NÃO foram encontradas {len(placas_nao_encontradas)} de {len(eventos_fisico)} chaves {chave_fisico}: ' + \
+            ', '.join(chaves_nao_encontradas))
+    mensagens.append(f'Campos conferidos no arquivo JSON: {list(_depara_campos[evento_nome].values())}')
+    mensagens.append('Obs: deixe o campo em branco na planilha para ignorar a checagem deste')
     if evento_nome == 'InspecaoNaoInvasiva':  # Verificar imagens
         erros_imagens = checa_imagens(eventos_api)
         mensagens.append(erros_imagens)
