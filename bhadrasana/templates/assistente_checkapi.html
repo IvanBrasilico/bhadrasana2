@@ -118,6 +118,8 @@
                 <h4>Divergências:</h4>
                 {% for linha in linhas_divergentes %}
                 {{ linha }}<br>
+                {% else %}
+                <h3>Não foram encontradas divergências</h3>
                 {% endfor %}
                 <div class="table">
                     {% if amostra_eventos_api is not none%}
