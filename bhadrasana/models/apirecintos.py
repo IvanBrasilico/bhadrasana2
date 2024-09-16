@@ -3,11 +3,15 @@ import os
 import sys
 import zipfile
 from typing import Type, Tuple, Union
+from dotenv import load_dotenv
+
 
 import numpy as np
 import pandas as pd
 from dateutil import parser
 from sqlalchemy import BigInteger, Column, DateTime, Boolean, String, UniqueConstraint, Numeric
+
+load_dotenv()
 
 sys.path.append('.')
 sys.path.insert(0, '../ajna_docs/commons')
