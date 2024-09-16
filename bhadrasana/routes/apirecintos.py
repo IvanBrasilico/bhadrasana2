@@ -6,7 +6,7 @@ Módulo para consultas simples da API Recintos e para upload de arquivos
 import zipfile
 
 from ajna_commons.flask.log import logger
-from flask import render_template, flash, request, redirect
+from flask import render_template, flash, request, redirect, jsonify
 from flask_login import login_required
 
 from bhadrasana.forms.assistente_checkapi import ArquivoApiForm
@@ -45,7 +45,6 @@ def apirecintos_app(app):
                 if not validfile:
                     flash(mensagem)
                     return redirect(request.url)
-                # content = file.read()
                 # TODO: Retornar resultado, hoje o resultado está somente no log
                 processa_zip(file, session)
         except Exception as err:
@@ -56,5 +55,18 @@ def apirecintos_app(app):
         return render_template('upload_arquivo_json_api.html',
                                title_page=title_page)
 
-
-  
+    @app.route('/upload_arquivo_json_api/api', methods=['POST'])
+    @login_required
+    def upload_arquivo_json_api_api():
+        # Upload de arquivo API Recintos - JSON API Friendly
+        session = app.config.get('dbsession')
+        try:
+            file = request.files.get('file')
+            validfile, mensagem = valid_file(file, extensions=['zip'])
+            if not validfile:
+                return jsonify({'msg': 'Arquivo "file" vazio ou não incluído no POST'}, 404)
+            processa_zip(file, session)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            return jsonify({'msg:': str(err)}, 500)
+        return jsonify({'msg': 'Arquivo integrado com sucesso!!'}, 200)

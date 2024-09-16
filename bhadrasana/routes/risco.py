@@ -295,7 +295,7 @@ def risco_app(app):
                     save_name = os.path.join(tmpdir, filename)
                     csvf.save(save_name)
                     logger.info('CSV RECEBIDO: %s' % save_name)
-                    with open(save_name) as in_csv:
+                    with open(save_name, errors='replace') as in_csv:
                         lines = in_csv.readlines()
                     user_name = current_user.name
                     for line in lines:
@@ -317,7 +317,7 @@ def risco_app(app):
                                     valor=valor,
                                     motivo=motivo)
             except Exception as err:
-                logger.log(err, exc_info=True)
+                logger.error(err, exc_info=True)
                 flash(str(err))
         return redirect(url_for('edita_risco'))
 
