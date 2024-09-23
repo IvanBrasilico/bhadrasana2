@@ -38,6 +38,7 @@ setup(
         'pymongo',
         'pymysql',
         'python-docx',
+        'python-dotenv',
         'rank_bm25',
         'redis', # Ver como retirar necessidade
         'requests', # Ver como retirar necessidade
