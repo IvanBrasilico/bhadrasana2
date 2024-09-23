@@ -11,7 +11,7 @@ from flask_login import login_required
 
 from bhadrasana.forms.assistente_checkapi import ArquivoApiForm
 from bhadrasana.models.apirecintos import AcessoVeiculo, PesagemVeiculo, InspecaoNaoInvasiva, processa_json, persiste_df
-from bhadrasana.views import valid_file
+from bhadrasana.views import valid_file, csrf
 
 
 def processa_zip(arquivo, session):
@@ -40,6 +40,7 @@ def apirecintos_app(app):
         session = app.config.get('dbsession')
         try:
             if request.method == 'POST':
+                print(request)
                 file = request.files.get('file')
                 validfile, mensagem = valid_file(file, extensions=['zip'])
                 if not validfile:
@@ -56,7 +57,9 @@ def apirecintos_app(app):
                                title_page=title_page)
 
     @app.route('/upload_arquivo_json_api/api', methods=['POST'])
-    @login_required
+    #TODO: ativar login e mover para api ajna
+    # @login_required
+    @csrf.exempt
     def upload_arquivo_json_api_api():
         # Upload de arquivo API Recintos - JSON API Friendly
         session = app.config.get('dbsession')
