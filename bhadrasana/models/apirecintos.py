@@ -218,6 +218,20 @@ class AcessoVeiculo(EventoAPIBase):
                    filter(AcessoVeiculo.dataHoraOcorrencia == self.dataHoraOcorrencia).one_or_none() is not None
 
 
+    def to_sivana(self) -> dict:
+        info = f'Contêiner:{self.numeroConteiner} - ' + \
+        f'Motorista: {self.cpfMotorista} - ' + \
+        f'CE: {self.numeroConhecimento}'
+        dict_sivana = {
+            'placa': self.placa,
+            'ponto': self.codigoRecinto,
+            'sentido': self.direcao,
+            'dataHora': self.dataHoraOcorrencia.strftime('%Y-%m-%dT%H:%M:%S'),
+            'info': info
+        }
+ 
+        return dict_sivana
+
 class PesagemVeiculo(EventoAPIBase):
     __tablename__ = 'apirecintos_pesagensveiculo'
     __table_args__ = (UniqueConstraint('placa', 'dataHoraOcorrencia'),)
@@ -343,6 +357,9 @@ def persiste_df(df_eventos: pd.DataFrame, classeevento: Type[BaseDumpable], sess
         session.rollback()
         logger.error(err, exc_info=True)
     logger.info(f'{ind} Eventos lidos, {cont_sucesso} inseridos')
+
+
+
 
 
 if __name__ == '__main__':  # pragma: no-cover
