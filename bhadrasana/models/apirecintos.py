@@ -228,7 +228,7 @@ class AcessoVeiculo(EventoAPIBase):
             'sentido': self.direcao,
             'dataHora': self.dataHoraOcorrencia.strftime('%Y-%m-%dT%H:%M:%S'),
             'info': info
-        }
+        } 
  
         return dict_sivana
 
