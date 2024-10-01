@@ -4,7 +4,8 @@ import sys
 
 import chardet
 
-from bhadrasana.models.apirecintos import EventoAPIBase, AcessoVeiculo, PesagemVeiculo, InspecaoNaoInvasiva
+from bhadrasana.models.apirecintos import (EventoAPIBase, AcessoVeiculo, PesagemVeiculo,
+                                           InspecaoNaoInvasiva, EmbarqueDesembarque)
 from bhadrasana.models.riscocorad import MatrizCorad
 
 sys.path.append('.')
@@ -357,7 +358,19 @@ def get_eventos_conteiner(session, numero: str,
     inspecoes = lista_eventos(inspecoes_, [Atributo('Placa', 'placa'),
                                            Atributo('Tipo de contêiner', 'tipoConteiner'),
                                            Atributo('Vazio?', 'vazio'), ])
-    todos_eventos = [*acessos, *pesagens, *inspecoes]
+    embarques_ = session.query(EmbarqueDesembarque).filter(
+        EmbarqueDesembarque.numeroConteiner == numero
+    ).filter(
+        EmbarqueDesembarque.dataHoraOcorrencia >= datainicio
+    ).filter(
+        EmbarqueDesembarque.dataHoraOcorrencia <= datafim
+    ).order_by(EmbarqueDesembarque.dataHoraOcorrencia.desc()).limit(limit).all()
+    embarques = lista_eventos(embarques_, [Atributo('Conteiner', 'numeroConteiner'),
+                                           Atributo('IMO Viagem Navio', 'viagem'),
+                                           Atributo('Escala do Navio', 'escala'),
+                                           Atributo('Peso balança', 'pesoBrutoBalanca')])
+
+    todos_eventos = [*acessos, *pesagens, *inspecoes, *embarques]
     todos_eventos.sort(reverse=True, key=lambda x: x['data'])
     return todos_eventos
 
