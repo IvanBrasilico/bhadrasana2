@@ -231,6 +231,52 @@ class AcessoVeiculo(EventoAPIBase):
         } 
  
         return dict_sivana
+    
+
+
+
+class EmbarqueDesembarque(EventoAPIBase):
+    __tablename__ = 'apirecintos_embarquedesembarque'
+    __table_args__ = (UniqueConstraint('numeroConteiner', 'dataHoraOcorrencia'),
+                      )
+    placa = None
+    viagem  = Column(String(9), index=True)
+    pesoBrutoManifesto = Column(Numeric(7, 2))
+    escala = Column(String(11))
+    embarqueDesembarque  = Column(String(1)) # E - Embarque D - Desembarque
+    cargaSolta = Column(String(5), index=True)
+    pesoBrutoBalanca = Column(Numeric(7, 2))
+    numeroConteiner = Column(String(11), index=True)
+    taraConteiner = Column(Numeric(7, 2))
+    tipoConteiner = Column(String(4), index=True)
+    listaManifestos = Column(String(1))  # Placeholder
+    listaDeclaracaoAduaneira = Column(String(1))  # Placeholder
+    listaNfe =  Column(String(200), index=True)
+
+
+    def _mapeia(self, *args, **kwargs):
+        super()._mapeia(**kwargs)
+        self.viagem = kwargs.get('viagem')
+        self.pesoBrutoManifesto = kwargs.get('pesoBrutoManifesto')
+        self.escala = kwargs.get('escala')
+        self.embarqueDesembarque = kwargs.get('embarqueDesembarque')
+        self.numeroConteiner = kwargs.get('numeroConteiner')
+        self.taraConteiner = kwargs.get('taraConteiner')
+        self.tipoConteiner = kwargs.get('tipoConteiner')
+        self.tipoDeclaracao, self.numeroDeclaracao = get_listaDeclaracaoAduaneira(kwargs)
+        self.tipoConhecimento, self.numeroConhecimento = get_listaManifestos(kwargs)
+        self.listaNfe = get_listaNfe(kwargs)
+
+
+    def is_duplicate(self, session):
+        return session.query(EmbarqueDesembarque). \
+                   filter(EmbarqueDesembarque.numeroConteiner == self.numeroConteiner). \
+                   filter(EmbarqueDesembarque.dataHoraOcorrencia == self.dataHoraOcorrencia).\
+                   one_or_none() is not None
+
+
+
+
 
 class PesagemVeiculo(EventoAPIBase):
     __tablename__ = 'apirecintos_pesagensveiculo'
@@ -375,6 +421,7 @@ if __name__ == '__main__':  # pragma: no-cover
         session = Session()
         caminho = 'C:\\Users\\11913225640\\Downloads\\api_recintos\\'
         arquivos = os.listdir(caminho)
+
         for arquivo in arquivos:
             if '.zip' in arquivo:
                 print(arquivo)
@@ -383,9 +430,11 @@ if __name__ == '__main__':  # pragma: no-cover
                 print(tipoevento)
                 classes = {'1': AcessoVeiculo,
                            '3': PesagemVeiculo,
+                           '4': EmbarqueDesembarque,
                            '25': InspecaoNaoInvasiva}
                 indices = {AcessoVeiculo: ['placa', 'operacao', 'dataHoraOcorrencia'],
                            PesagemVeiculo: ['placa', 'dataHoraOcorrencia'],
+                           EmbarqueDesembarque: ['numeroConteiner', 'dataHoraOcorrencia'],
                            InspecaoNaoInvasiva: ['numeroConteiner', 'dataHoraOcorrencia']}
                 classe = classes[tipoevento]
                 indice = indices[classe]
@@ -395,11 +444,16 @@ if __name__ == '__main__':  # pragma: no-cover
                 persiste_df(df_eventos, classe, session)
         # Sair por segurança. Comentar linha abaixo para funcionar
         sys.exit(0)
+
+
+
         '''
         metadata.drop_all(engine, [metadata.tables['apirecintos_acessosveiculo'],
                                    metadata.tables['apirecintos_pesagensveiculo'],
+                                   [metadata.tables['apirecintos_embarquedesembarque']])
                                    metadata.tables['apirecintos_inspecoesnaoinvasivas'], ])
         metadata.create_all(engine, [metadata.tables['apirecintos_acessosveiculo'],
                                      metadata.tables['apirecintos_pesagensveiculo'],
+                                     [metadata.tables['apirecintos_embarquedesembarque']])
                                      metadata.tables['apirecintos_inspecoesnaoinvasivas'], ])
         '''
