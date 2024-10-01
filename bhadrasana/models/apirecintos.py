@@ -3,12 +3,11 @@ import os
 import sys
 import zipfile
 from typing import Type, Tuple, Union
-from dotenv import load_dotenv
-
 
 import numpy as np
 import pandas as pd
 from dateutil import parser
+from dotenv import load_dotenv
 from sqlalchemy import BigInteger, Column, DateTime, Boolean, String, UniqueConstraint, Numeric
 
 load_dotenv()
@@ -70,9 +69,9 @@ def get_listaConteineresUld(o_kwargs: dict) -> Union[Tuple[str, bool, str, bool]
     listaConteineresUld = o_kwargs.get('listaConteineresUld')
     if listaConteineresUld and isinstance(listaConteineresUld, list) and len(listaConteineresUld) > 0:
         return listaConteineresUld[0].get('numeroConteiner'), \
-               listaConteineresUld[0].get('ocrNumero', False), \
-               listaConteineresUld[0].get('tipo'), \
-               listaConteineresUld[0].get('vazio', False)
+            listaConteineresUld[0].get('ocrNumero', False), \
+            listaConteineresUld[0].get('tipo'), \
+            listaConteineresUld[0].get('vazio', False)
     return None, False, None, False
 
 
@@ -85,9 +84,9 @@ def get_listaSemirreboque(o_kwargs: dict) -> Union[Tuple[str, bool, bool, float]
     listaSemirreboque = o_kwargs.get('listaSemirreboque')
     if listaSemirreboque and isinstance(listaSemirreboque, list) and len(listaSemirreboque) > 0:
         return listaSemirreboque[0].get('placa'), \
-               listaSemirreboque[0].get('ocrPlaca', False), \
-               listaSemirreboque[0].get('vazio', False), \
-               listaSemirreboque[0].get('tara')
+            listaSemirreboque[0].get('ocrPlaca', False), \
+            listaSemirreboque[0].get('vazio', False), \
+            listaSemirreboque[0].get('tara')
     return None, False, False, None
 
 
@@ -101,7 +100,7 @@ def get_listaDeclaracaoAduaneira(o_kwargs: dict) -> Union[Tuple[str, str], Tuple
     if listaDeclaracaoAduaneira and isinstance(listaDeclaracaoAduaneira, list) and \
             len(listaDeclaracaoAduaneira) > 0:
         return listaDeclaracaoAduaneira[0].get('tipo'), \
-               listaDeclaracaoAduaneira[0].get('numeroDeclaracao')
+            listaDeclaracaoAduaneira[0].get('numeroDeclaracao')
     return None, None
 
 
@@ -118,7 +117,7 @@ def get_listaManifestos(o_kwargs: dict) -> Union[Tuple[str, str], Tuple[None, No
         if listaConhecimentos and isinstance(listaConhecimentos, list) and \
                 len(listaConhecimentos) > 0:
             return listaConhecimentos[0].get('tipo'), \
-                   listaConhecimentos[0].get('numero')
+                listaConhecimentos[0].get('numero')
     return None, None
 
 
@@ -143,8 +142,10 @@ def get_listaNfe(o_kwargs: dict) -> Union[str, None]:
 def numeric_c(texto):
     return ''.join([c for c in texto if c.isnumeric()])
 
+
 def alfanumeric_c(texto):
     return ''.join([c for c in texto if c.isalnum()])
+
 
 class AcessoVeiculo(EventoAPIBase):
     __tablename__ = 'apirecintos_acessosveiculo'
@@ -214,8 +215,21 @@ class AcessoVeiculo(EventoAPIBase):
 
     def is_duplicate(self, session):
         return session.query(AcessoVeiculo).filter(AcessoVeiculo.placa == self.placa). \
-                   filter(AcessoVeiculo.operacao == self.operacao). \
-                   filter(AcessoVeiculo.dataHoraOcorrencia == self.dataHoraOcorrencia).one_or_none() is not None
+            filter(AcessoVeiculo.operacao == self.operacao). \
+            filter(AcessoVeiculo.dataHoraOcorrencia == self.dataHoraOcorrencia).one_or_none() is not None
+
+    def to_sivana(self) -> dict:
+        info = f'Contêiner:{self.numeroConteiner} - ' + \
+               f'Motorista: {self.cpfMotorista} - ' + \
+               f'CE: {self.numeroConhecimento}'
+        dict_sivana = {
+            'placa': self.placa,
+            'ponto': self.codigoRecinto,
+            'sentido': self.direcao,
+            'dataHora': self.dataHoraOcorrencia.strftime('%Y-%m-%dT%H:%M:%S'),
+            'info': info
+        }
+        return dict_sivana
 
 
     def to_sivana(self) -> dict:
@@ -308,7 +322,7 @@ class PesagemVeiculo(EventoAPIBase):
 
     def is_duplicate(self, session):
         return session.query(PesagemVeiculo).filter(PesagemVeiculo.placa == self.placa). \
-                   filter(PesagemVeiculo.dataHoraOcorrencia == self.dataHoraOcorrencia).one_or_none() is not None
+            filter(PesagemVeiculo.dataHoraOcorrencia == self.dataHoraOcorrencia).one_or_none() is not None
 
 
 class InspecaoNaoInvasiva(EventoAPIBase):
@@ -339,9 +353,9 @@ class InspecaoNaoInvasiva(EventoAPIBase):
 
     def is_duplicate(self, session):
         return session.query(InspecaoNaoInvasiva). \
-                   filter(InspecaoNaoInvasiva.numeroConteiner == self.numeroConteiner). \
-                   filter(InspecaoNaoInvasiva.dataHoraOcorrencia == self.dataHoraOcorrencia).\
-                   one_or_none() is not None
+            filter(InspecaoNaoInvasiva.numeroConteiner == self.numeroConteiner). \
+            filter(InspecaoNaoInvasiva.dataHoraOcorrencia == self.dataHoraOcorrencia). \
+            one_or_none() is not None
 
 
 def le_json(caminho_json: str, classeevento: Type[BaseDumpable], chave_unica: list) -> pd.DataFrame:
