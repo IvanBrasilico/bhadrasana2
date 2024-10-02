@@ -10,7 +10,7 @@ from flask import render_template, flash, request, redirect, jsonify
 from flask_login import login_required
 
 from bhadrasana.forms.assistente_checkapi import ArquivoApiForm
-from bhadrasana.models.apirecintos import AcessoVeiculo, PesagemVeiculo, InspecaoNaoInvasiva, processa_json, persiste_df
+from bhadrasana.models.apirecintos import AcessoVeiculo, PesagemVeiculo, EmbarqueDesembarque, InspecaoNaoInvasiva, processa_json, persiste_df
 from bhadrasana.views import valid_file, csrf
 
 
@@ -20,9 +20,11 @@ def processa_zip(arquivo, session):
     print(tipoevento)
     classes = {'1': AcessoVeiculo,
                '3': PesagemVeiculo,
+               '4': EmbarqueDesembarque,
                '25': InspecaoNaoInvasiva}
     indices = {AcessoVeiculo: ['placa', 'operacao', 'dataHoraOcorrencia'],
                PesagemVeiculo: ['placa', 'dataHoraOcorrencia'],
+               EmbarqueDesembarque: ['numeroConteiner', 'dataHoraOcorrencia'],
                InspecaoNaoInvasiva: ['numeroConteiner', 'dataHoraOcorrencia']}
     classe = classes[tipoevento]
     indice = indices[classe]

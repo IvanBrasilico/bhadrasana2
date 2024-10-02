@@ -253,6 +253,8 @@ class EmbarqueDesembarque(EventoAPIBase):
     __tablename__ = 'apirecintos_embarquedesembarque'
     __table_args__ = (UniqueConstraint('numeroConteiner', 'dataHoraOcorrencia'),
                       )
+
+                      
     placa = None
     viagem  = Column(String(9), index=True)
     pesoBrutoManifesto = Column(Numeric(7, 2))
@@ -386,7 +388,7 @@ def processa_json(texto: str, classeevento: Type[BaseDumpable], chave_unica: lis
     for evento_json in json_raw:
         instancia = classeevento()
         instancia.processa_json(evento_json)
-        if (instancia.placa is None) and ('placa' in chave_unica):
+        if ('placa' in chave_unica) and (instancia.placa is None):
             continue
         eventos.append(instancia.dump())
     df_eventos = pd.DataFrame(eventos)
