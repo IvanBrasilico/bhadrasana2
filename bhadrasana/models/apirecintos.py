@@ -254,8 +254,6 @@ class EmbarqueDesembarque(EventoAPIBase):
     __table_args__ = (UniqueConstraint('numeroConteiner', 'dataHoraOcorrencia'),
                       )
 
-                      
-    placa = None
     viagem  = Column(String(9), index=True)
     pesoBrutoManifesto = Column(Numeric(7, 2))
     escala = Column(String(11))
