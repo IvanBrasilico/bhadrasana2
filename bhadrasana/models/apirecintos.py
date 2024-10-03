@@ -260,7 +260,7 @@ class EmbarqueDesembarque(EventoAPIBase):
     embarqueDesembarque  = Column(String(1)) # E - Embarque D - Desembarque
     cargaSolta = Column(String(5), index=True)
     pesoBrutoBalanca = Column(Numeric(7, 2))
-    numeroConteiner = Column(String(12), index=True)
+    numeroConteiner = Column(String(11), index=True)
     taraConteiner = Column(Numeric(7, 2))
     tipoConteiner = Column(String(4), index=True)
     listaManifestos = Column(String(1))  # Placeholder
