@@ -260,7 +260,7 @@ class EmbarqueDesembarque(EventoAPIBase):
     embarqueDesembarque  = Column(String(1)) # E - Embarque D - Desembarque
     cargaSolta = Column(String(5), index=True)
     pesoBrutoBalanca = Column(Numeric(7, 2))
-    numeroConteiner = Column(String(11), index=True)
+    numeroConteiner = Column(String(12), index=True)
     taraConteiner = Column(Numeric(7, 2))
     tipoConteiner = Column(String(4), index=True)
     listaManifestos = Column(String(1))  # Placeholder
@@ -274,7 +274,9 @@ class EmbarqueDesembarque(EventoAPIBase):
         self.pesoBrutoManifesto = kwargs.get('pesoBrutoManifesto')
         self.escala = kwargs.get('escala')
         self.embarqueDesembarque = kwargs.get('embarqueDesembarque')
-        self.numeroConteiner = kwargs.get('numeroConteiner')
+        numeroConteiner = kwargs.get('numeroConteiner')
+        if numeroConteiner:
+            self.numeroConteiner = ''.join([c for c in numeroConteiner if c.isalnum()])
         self.taraConteiner = kwargs.get('taraConteiner')
         self.tipoConteiner = kwargs.get('tipoConteiner')
         self.tipoDeclaracao, self.numeroDeclaracao = get_listaDeclaracaoAduaneira(kwargs)
