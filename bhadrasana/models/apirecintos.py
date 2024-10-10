@@ -274,7 +274,9 @@ class EmbarqueDesembarque(EventoAPIBase):
         self.pesoBrutoManifesto = kwargs.get('pesoBrutoManifesto')
         self.escala = kwargs.get('escala')
         self.embarqueDesembarque = kwargs.get('embarqueDesembarque')
-        self.numeroConteiner = kwargs.get('numeroConteiner')
+        numeroConteiner = kwargs.get('numeroConteiner')
+        if numeroConteiner:
+            self.numeroConteiner = ''.join([c for c in numeroConteiner if c.isalnum()])
         self.taraConteiner = kwargs.get('taraConteiner')
         self.tipoConteiner = kwargs.get('tipoConteiner')
         self.tipoDeclaracao, self.numeroDeclaracao = get_listaDeclaracaoAduaneira(kwargs)
