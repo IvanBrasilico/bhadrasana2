@@ -1475,6 +1475,7 @@ def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
             valor = row.get('valor')
             if valor:
                 if isinstance(valor, str):
+                    valor = ''.join([c for c in valor if c in '0123456709.'])
                     valor = float(valor)
                 itemtg.valor = valor * recupera_taxa_cambio(row)
             else:
