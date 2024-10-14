@@ -25,6 +25,7 @@ setup(
         'Flask-session',
         'Flask-wtf',
         'gunicorn',
+        'jupyter',
         'lxml',
         'nltk',
         'odfpy',

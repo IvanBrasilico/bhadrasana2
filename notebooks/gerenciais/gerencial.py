@@ -204,45 +204,45 @@ SQL_PENDENTE_OUTLET = \
      ORDER BY r.nome, rvf.datahora'''
 
 df_pendente_outlet = pd.read_sql(SQL_PENDENTE_OUTLET, engine)
-today_ = datetime.today()
-df_pendente_outlet['Dias sem conclusão'] = \
-    df_pendente_outlet.apply(lambda x: (today_ - x['Data de Abertura']).days, axis=1)
-lista_ovr = ', '.join([str(i) for i in df_pendente_outlet.Ficha.values])
+if len(df_pendente_outlet) > 0:
+    today_ = datetime.today()
+    df_pendente_outlet['Dias sem conclusão'] = \
+        df_pendente_outlet.apply(lambda x: (today_ - x['Data de Abertura']).days, axis=1)
+    lista_ovr = ', '.join([str(i) for i in df_pendente_outlet.Ficha.values])
+    SQL_EVENTOS = \
+        '''SELECT ovr_id as Ficha, tipoevento_id, t.nome, e.create_date, motivo FROM ovr_eventos e
+        inner join ovr_tiposevento t on e.tipoevento_id = t.id  where ovr_id in (%s)
+        ORDER BY ovr_id;'''
 
-SQL_EVENTOS = \
-    '''SELECT ovr_id as Ficha, tipoevento_id, t.nome, e.create_date, motivo FROM ovr_eventos e
-    inner join ovr_tiposevento t on e.tipoevento_id = t.id  where ovr_id in (%s)
-    ORDER BY ovr_id;'''
+    df_eventos = pd.read_sql(SQL_EVENTOS % lista_ovr, engine)
 
-df_eventos = pd.read_sql(SQL_EVENTOS % lista_ovr, engine)
+    SQL_PROCESSOS = \
+        '''SELECT ovr_id, numero, tipoprocesso_id, tipoProcesso, create_date FROM ovr_processos p
+        inner join Enumerado e on e.id = p.tipoprocesso_id where ovr_id in (%s)
+        ORDER BY ovr_id;'''
 
-SQL_PROCESSOS = \
-    '''SELECT ovr_id, numero, tipoprocesso_id, tipoProcesso, create_date FROM ovr_processos p
-    inner join Enumerado e on e.id = p.tipoprocesso_id where ovr_id in (%s)
-    ORDER BY ovr_id;'''
+    df_processos = pd.read_sql(SQL_PROCESSOS % lista_ovr, engine)
 
-df_processos = pd.read_sql(SQL_PROCESSOS % lista_ovr, engine)
-
-# Tipos de Evento : 36 Em análise da Fiscalização
-#                    7 Aguardando quantificação do Recinto
-#                   21 Termo de Guarda informado
-#                   8 Recebimento de quantificação do Recinto
-df_pendente_outlet = df_pendente_outlet.set_index('Ficha')
-df_pendente_outlet = df_pendente_outlet.join(
-    df_eventos[df_eventos.tipoevento_id == 36].drop_duplicates(
-        ('Ficha', 'tipoevento_id'))[['Ficha', 'motivo']].set_index('Ficha')
-)
-df_pendente_outlet = df_pendente_outlet.rename(columns={'motivo': 'Parecer'}).fillna('--')
-tipos_eventos = {36: 'Análise',
-                 7: 'Saneamento solicitado',
-                 8: 'Saneamento recebido',
-                 21: 'TG recebido'}
-for tipoevento_id, descricao in tipos_eventos.items():
+    # Tipos de Evento : 36 Em análise da Fiscalização
+    #                    7 Aguardando quantificação do Recinto
+    #                   21 Termo de Guarda informado
+    #                   8 Recebimento de quantificação do Recinto
+    df_pendente_outlet = df_pendente_outlet.set_index('Ficha')
     df_pendente_outlet = df_pendente_outlet.join(
-        df_eventos[df_eventos.tipoevento_id == tipoevento_id].drop_duplicates(
-            ('Ficha', 'tipoevento_id'))[['Ficha', 'create_date']].set_index('Ficha')
+        df_eventos[df_eventos.tipoevento_id == 36].drop_duplicates(
+            ('Ficha', 'tipoevento_id'))[['Ficha', 'motivo']].set_index('Ficha')
     )
-    df_pendente_outlet = df_pendente_outlet.rename(columns={'create_date': descricao}).fillna('Sem evento')
+    df_pendente_outlet = df_pendente_outlet.rename(columns={'motivo': 'Parecer'}).fillna('--')
+    tipos_eventos = {36: 'Análise',
+                     7: 'Saneamento solicitado',
+                     8: 'Saneamento recebido',
+                     21: 'TG recebido'}
+    for tipoevento_id, descricao in tipos_eventos.items():
+        df_pendente_outlet = df_pendente_outlet.join(
+            df_eventos[df_eventos.tipoevento_id == tipoevento_id].drop_duplicates(
+                ('Ficha', 'tipoevento_id'))[['Ficha', 'create_date']].set_index('Ficha')
+        )
+        df_pendente_outlet = df_pendente_outlet.rename(columns={'create_date': descricao}).fillna('Sem evento')
 
 df_autos_recinto = df_fichas_tempos[df_fichas_tempos['Estágio'] == 'Concluída']. \
     groupby('Recinto').agg(
