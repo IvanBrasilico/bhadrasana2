@@ -44,6 +44,7 @@ setup(
         'redis', # Ver como retirar necessidade
         'requests', # Ver como retirar necessidade
         'sqlalchemy==1.3.24',
+        'statsmodels',
         'wtforms==2.3.3',
         'markupsafe==1.1.1',
         'xlrd',
