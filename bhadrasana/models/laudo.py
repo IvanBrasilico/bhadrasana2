@@ -66,8 +66,8 @@ def get_empresa(session, cnpj: str) -> Empresa:
     # Se CNPJ não é numérico, não tenta buscar dados da empresa.
     if not cnpj or len(cnpj) < 8:
         raise ValueError('CNPJ deve ser informado com mínimo de 8 dígitos.')
-    if not cnpj.isnumeric():
-        raise ValueError('CNPJ deve ser informado somente com números.')
+    #if not cnpj.isnumeric():
+    #    raise ValueError('CNPJ deve ser informado somente com números.')
     empresa = session.query(Empresa).filter(
         Empresa.cnpj == cnpj).first()
     if not empresa:

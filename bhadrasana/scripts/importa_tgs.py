@@ -71,7 +71,7 @@ def processa_dirs():
                         if not ovr:
                             ovr = OVR()
                             ovr.numeroCEmercante = ce
-                            ovr.cnpj_fiscalizado = ''.join([s for s in cnpj if s.isnumeric()])
+                            ovr.cnpj_fiscalizado = ''.join([s for s in cnpj if s not in '-./'])
                             db_session.add(ovr)
                             create_time = datetime.fromtimestamp(os.path.getmtime(
                                 os.path.join(caminho_tg, pdf)))

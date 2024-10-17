@@ -186,7 +186,7 @@ class AcessoVeiculo(EventoAPIBase):
         self.ocrPlaca = kwargs.get('ocrPlaca')
         cnpjTransportador = kwargs.get('cnpjTransportador')
         if cnpjTransportador:
-            self.cnpjTransportador = ''.join([c for c in cnpjTransportador if c.isnumeric()])
+            self.cnpjTransportador = ''.join([c for c in cnpjTransportador if c not in '.-/'])
         motorista = kwargs.get('motorista')
         if motorista and isinstance(motorista, dict):
             cpf = motorista.get('cpf')
