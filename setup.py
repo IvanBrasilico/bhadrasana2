@@ -1,4 +1,4 @@
-#USAR SEMPRE O PYTHON 3.8
+# USAR SEMPRE O PYTHON 3.8
 
 from setuptools import find_packages, setup
 
@@ -13,6 +13,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         'chardet',
+        'click==7.1.2',
         'dominate',
         'defusedxml',
         'Flask==1.1.4',
@@ -22,7 +23,7 @@ setup(
         'Flask-Login',
         'Flask-cors',
         'Flask-nav',
-        'Flask-session',
+        'Flask-session==0.4.1',
         'Flask-wtf',
         'gunicorn',
         'jupyter',
@@ -30,8 +31,8 @@ setup(
         'nltk',
         'odfpy',
         'openpyxl',
-        'Pillow',   # Centralizar acesso imagens no virasana??
-        'plotly', # Ver como retirar necessidade
+        'Pillow',  # Centralizar acesso imagens no virasana??
+        'plotly',  # Ver como retirar necessidade
         'odfpy',
         'openpyxl',
         'pandas==1.1.5',
@@ -41,10 +42,11 @@ setup(
         'python-docx',
         'python-dotenv',
         'rank_bm25',
-        'redis', # Ver como retirar necessidade
-        'requests', # Ver como retirar necessidade
+        'redis',  # Ver como retirar necessidade
+        'requests',  # Ver como retirar necessidade
         'sqlalchemy==1.3.24',
         'statsmodels',
+        'urllib==1.26.6',
         'wtforms==2.3.3',
         'markupsafe==1.1.1',
         'xlrd',
