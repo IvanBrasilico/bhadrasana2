@@ -421,14 +421,14 @@ def get_ovr_filtro(session,
         if pfiltro.get('tipoevento_id') and pfiltro.get('tipoevento_id') != 'None':
             filtro = and_(OVR.tipoevento_id == int(pfiltro.get('tipoevento_id')), filtro)
         if pfiltro.get('teveevento') and pfiltro.get('teveevento') != 'None':
-            q = session.query(EventoOVR).filter(
+            q = session.query(EventoOVR).join(OVR).filter(
                 EventoOVR.tipoevento_id == int(pfiltro.get('teveevento')))
             if pfiltro.get('datainicio'):
-               q = q.filter(EventoOVR.create_date >= pfiltro.get('datainicio'))
+               q = q.filter(OVR.datahora >= pfiltro.get('datainicio'))
             datafim = pfiltro.get('datafim')
             if datafim:
                 datafim = datafim + timedelta(days=1)
-                q = q.filter(EventoOVR.create_date <= datafim)
+                q = q.filter(OVR.datahora <= datafim)
             if pfiltro.get('usuarioevento') and pfiltro.get('usuarioevento') != 'None':
                 q = q.filter(EventoOVR.user_name == pfiltro.get('usuarioevento'))
             eventos = q.all()
