@@ -46,7 +46,7 @@ setup(
         'requests',  # Ver como retirar necessidade
         'sqlalchemy==1.3.24',
         'statsmodels',
-        'urllib==1.26.6',
+        # 'urllib==1.26.6',
         'wtforms==2.3.3',
         'markupsafe==1.1.1',
         'xlrd',
