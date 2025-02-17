@@ -232,32 +232,15 @@ class AcessoVeiculo(EventoAPIBase):
         return dict_sivana
 
 
-    def to_sivana(self) -> dict:
-        info = f'Contêiner:{self.numeroConteiner} - ' + \
-        f'Motorista: {self.cpfMotorista} - ' + \
-        f'CE: {self.numeroConhecimento}'
-        dict_sivana = {
-            'placa': self.placa,
-            'ponto': self.codigoRecinto,
-            'sentido': self.direcao,
-            'dataHora': self.dataHoraOcorrencia.strftime('%Y-%m-%dT%H:%M:%S'),
-            'info': info
-        } 
- 
-        return dict_sivana
-    
-
-
-
 class EmbarqueDesembarque(EventoAPIBase):
     __tablename__ = 'apirecintos_embarquedesembarque'
     __table_args__ = (UniqueConstraint('numeroConteiner', 'dataHoraOcorrencia'),
                       )
 
-    viagem  = Column(String(9), index=True)
+    viagem = Column(String(9), index=True)
     pesoBrutoManifesto = Column(Numeric(7, 2))
     escala = Column(String(11))
-    embarqueDesembarque  = Column(String(1)) # E - Embarque D - Desembarque
+    embarqueDesembarque = Column(String(1))  # E - Embarque D - Desembarque
     cargaSolta = Column(String(5), index=True)
     pesoBrutoBalanca = Column(Numeric(7, 2))
     numeroConteiner = Column(String(11), index=True)
@@ -265,8 +248,7 @@ class EmbarqueDesembarque(EventoAPIBase):
     tipoConteiner = Column(String(4), index=True)
     listaManifestos = Column(String(1))  # Placeholder
     listaDeclaracaoAduaneira = Column(String(1))  # Placeholder
-    listaNfe =  Column(String(200), index=True)
-
+    listaNfe = Column(String(200), index=True)
 
     def _mapeia(self, *args, **kwargs):
         super()._mapeia(**kwargs)
@@ -283,15 +265,11 @@ class EmbarqueDesembarque(EventoAPIBase):
         self.tipoConhecimento, self.numeroConhecimento = get_listaManifestos(kwargs)
         self.listaNfe = get_listaNfe(kwargs)
 
-
     def is_duplicate(self, session):
         return session.query(EmbarqueDesembarque). \
-                   filter(EmbarqueDesembarque.numeroConteiner == self.numeroConteiner). \
-                   filter(EmbarqueDesembarque.dataHoraOcorrencia == self.dataHoraOcorrencia).\
-                   one_or_none() is not None
-
-
-
+            filter(EmbarqueDesembarque.numeroConteiner == self.numeroConteiner). \
+            filter(EmbarqueDesembarque.dataHoraOcorrencia == self.dataHoraOcorrencia). \
+            one_or_none() is not None
 
 
 class PesagemVeiculo(EventoAPIBase):
@@ -421,9 +399,6 @@ def persiste_df(df_eventos: pd.DataFrame, classeevento: Type[BaseDumpable], sess
     logger.info(f'{ind} Eventos lidos, {cont_sucesso} inseridos')
 
 
-
-
-
 if __name__ == '__main__':  # pragma: no-cover
     confirma = 'S'
     # input('Revisar o código... Esta ação pode apagar TODAS as tabelas. Confirma??')
@@ -460,8 +435,6 @@ if __name__ == '__main__':  # pragma: no-cover
                 persiste_df(df_eventos, classe, session)
         # Sair por segurança. Comentar linha abaixo para funcionar
         sys.exit(0)
-
-
 
         '''
         metadata.drop_all(engine, [metadata.tables['apirecintos_acessosveiculo'],
