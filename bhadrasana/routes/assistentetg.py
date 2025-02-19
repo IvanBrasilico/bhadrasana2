@@ -171,7 +171,8 @@ def consulta_itens(texto)-> pd.DataFrame:
     print('len df:', len(df))
     return df
 
-
+#TODO: Implementar checagem se é ambiente de desenvolvimento ou de produção
+# Por enquanto, comentar no desenvolvimento mas não publicar no git
 bm25n, corpus, itenstg = monta_assistente_bm25(engine)
 
 
