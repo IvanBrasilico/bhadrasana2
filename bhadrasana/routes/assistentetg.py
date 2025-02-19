@@ -173,7 +173,7 @@ def consulta_itens(texto)-> pd.DataFrame:
 
 #TODO: Implementar checagem se é ambiente de desenvolvimento ou de produção
 # Por enquanto, comentar no desenvolvimento mas não publicar no git
-bm25n, corpus, itenstg = monta_assistente_bm25(engine)
+# bm25n, corpus, itenstg = monta_assistente_bm25(engine)
 
 
 def assistentetg_app(app):
