@@ -318,7 +318,8 @@ def get_eventos_conteiner(session, numero: str,
                       atributos_info: List[Atributo]) -> List[dict]:
         result = []
         for evento in peventos:
-            linha = {'id': evento.id, 'tipo': evento.__class__.__name__,
+            linha = {'id': evento.id,
+                     'tipo': evento.__class__.__name__,
                      'data': datetime.strftime(evento.dataHoraOcorrencia, '%d/%m/%Y %H:%M'),
                      'recinto': evento.codigoRecinto}
             info = ['%s: %s  ' % (atributo.descricao, getattr(evento, atributo.campo))
@@ -335,7 +336,9 @@ def get_eventos_conteiner(session, numero: str,
         AcessoVeiculo.dataHoraOcorrencia <= datafim
     ).order_by(AcessoVeiculo.dataHoraOcorrencia.desc()).limit(limit).all()
     acessos = lista_eventos(acessos_, [Atributo('Placa', 'placa'),
-                                       Atributo('Nome motorista', 'nomeMotorista')])
+                                       Atributo('Nome motorista', 'nomeMotorista'),
+                                       Atributo('Declaração - Tipo:', 'tipoDeclaracao'),
+                                       Atributo('Número:', 'numeroDeclaracao')])
     # print('***************************** ' + numero)
     # print(acessos)
     pesagens_ = session.query(PesagemVeiculo).filter(
