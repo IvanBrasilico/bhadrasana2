@@ -375,7 +375,7 @@ def get_eventos_conteiner(session, numero: str,
         Atributo('Peso balança', 'pesoBrutoBalanca')])
 
     todos_eventos = [*acessos, *pesagens, *inspecoes, *embarques]
-    todos_eventos.sort(reverse=True, key=lambda x: x['data'])
+    todos_eventos.sort(reverse=True, key=lambda x: datetime.strptime(x['data'], '%d/%m/%Y %H:%M'))
     return todos_eventos
 
 
