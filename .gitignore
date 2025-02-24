@@ -92,6 +92,9 @@ celerybeat-schedule
 venv*/
 ENV/
 
+ajna_api/
+notebooks/gerenciais/Gerencial Paraguai.ipynb
+
 
 
 # Spyder project settings
