@@ -211,7 +211,7 @@ class AcessoVeiculo(EventoAPIBase):
     def get_tipoConhecimento(self):
         if self.tipoConhecimento:
             return self.tipoConhecimento
-        return 'Declaração'
+        return 'Conhecimento'
 
     def is_duplicate(self, session):
         return session.query(AcessoVeiculo).filter(AcessoVeiculo.placa == self.placa). \
