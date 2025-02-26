@@ -39,14 +39,14 @@ Empresa possui pedidos de Laudo Técnico (SAT/LAB):
 DUEs
 {% for due in dues %}
     {% if due %}
-    Número: {{ due.numero }}
-    País Importador: {{ due.get('PaisImportador') }} Canal: {{ due.get('canal') }} Data Processamento:
-    {{ due.get('dataProcessamentoTa') }}
-    Exportador: {{ due.get('Declarante') }} - {{ due.get('Nome Declarante') }}
-    Recinto: {% if due.get('recintoAduaneiroDespacho') %} {{ due.recintoAduaneiroDespacho.nome }}
+    Número: {{ due.numero_due }}
+    País Importador: {{ due.nome_pais_importador') }} Canal: 'Não implementado' Data Registro:
+    {{ due.data_registro_due }}
+    Exportador: {{ due.ni_declarante }} - 'Implementar nome declarante'
+    Recinto: {% if due %} 'Implementar recintoAduaneiroDespacho.nome'
     {% endif %}
-    {% if due.get('itens') %}
-    Itens: {% for item in due.get('itens') %}{{ item.get('descricaoMercadoria') }} {% endfor %}
+    {% if due.itens %}
+    Itens: {% for item in dueitens %}{{ item.descricao_item }} {% endfor %}
     {% endif %}
     {% endif %}
 {% endfor %}

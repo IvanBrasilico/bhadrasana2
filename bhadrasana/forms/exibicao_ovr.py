@@ -8,7 +8,7 @@ from bhadrasana.models.laudo import get_empresa, get_pessoa
 from bhadrasana.models.ovr import OVR
 from bhadrasana.models.ovrmanager import get_visualizacoes, lista_tgovr
 from bhadrasana.models.rvfmanager import lista_rvfovr
-from bhadrasana.models.virasana_manager import get_conhecimento, get_ncms_conhecimento
+from bhadrasana.models.virasana_manager import get_conhecimento, get_ncms_conhecimento, get_due, get_itens_due
 
 
 class TipoExibicao(Enum):
@@ -223,6 +223,7 @@ class ExibicaoOVR:
             except ValueError:
                 pass
         return fiscalizado_cnpj, fiscalizado_nome
+
     def get_recinto_nome(self, ovr):
         recinto_nome = ''
         if ovr.recinto:
@@ -392,6 +393,22 @@ class ExibicaoOVR:
             resumo.append(f'<b>M3</b>: {conhecimento.cubagem}')
         return resumo
 
+    def get_due_resumo(self, ovr) -> list:
+        resumo = []
+        due = get_due(self.session,
+                      ovr.numerodeclaracao)
+        if due:
+            resumo.append(f'<b>Declarante</b>: {due.ni_declarante}')
+            resumo.append(f'<b>Exportador</b>: {due.cnpj_estabelecimento_exportador}')
+            resumo.append(f'<b>Recinto Despacho</b>: {due.codigo_recinto_despacho}')
+            resumo.append(f'<b>Recinto Embarque</b>: {due.codigo_recinto_embarque}')
+            resumo.append(f'<b>País Importador</b>: {due.nome_pais_importador}')
+            itens = get_itens_due(self.session, due.numero_due)
+            for item in itens:
+                resumo.append(f'<b>Mercadoria</b>: {item.due_nr_item} - '
+                              f'{item.pais_destino_item} - {item.descricao_item}')
+        return resumo
+
     def get_mercadoria_mercante(self, ovr) -> Tuple[str, str]:
         mercadoria = ''
         lista_ncms = ''
@@ -419,13 +436,15 @@ class ExibicaoOVR:
     def get_OVR_resumo(self, ovr, mostra_ovr=True, mercante=True,
                        fiscalizado=False, eventos=False,
                        responsaveis=False, trabalho=False,
-                       responsabilidade=False) -> list:
+                       responsabilidade=False, due=True) -> list:
         datahora = ovr.datahora.strftime('%d/%m/%Y') if ovr.datahora else ''
         resumo = [f'<h4><a href="ovr?id={ovr.id}" style="color: orange" target="_blank">' +
                   f'{ovr.id} - {datahora}</a></h4>{ovr.get_tipooperacao()}']
         if mostra_ovr:
             if ovr.setor:
                 resumo.append(f'<b>Setor</b>: {ovr.setor.nome}')
+            if ovr.numerodeclaracao:
+                resumo.append(f'<b>Número Declaração</b>: {ovr.numerodeclaracao}')
             if ovr.observacoes:
                 resumo.append(str(ovr.observacoes or ''))
             if len(ovr.flags) > 0:
@@ -455,8 +474,11 @@ class ExibicaoOVR:
             resumo.extend(self.get_trabalho(ovr))
         if mercante:
             resumo.extend(self.get_mercante_resumo(ovr))
+        if due:
+            resumo.extend(self.get_due_resumo(ovr))
         if eventos:
             resumo.extend(self.get_eventos_resumo(ovr))
+
         return resumo
 
     def get_titulos(self):

@@ -2,23 +2,23 @@
     <div class="panel panel-info rounded-pill">
         <div class="panel-heading rounded-pill">
             {% if due %}
-            Número: {{ due.numero }}
+            DUE: {{ due.numero_due }} <br>
             {% if ovr %}
             <font size="+1"><b>&nbsp;&nbsp; - &nbsp;
                 <a href="programa_rvf_ajna?ovr_id={{ovr.id}}" target="_blank">
                     Ver imagens e mais informações / programar verificação física</a></b> </font>
             {% endif %}
+            País Importador: {{ due.nome_pais_importador }} Canal: 'Não implementado' Data Registro:
+            {{ due.data_registro_due }}
             <br>
-            País Importador: {{ due.get('PaisImportador') }} Canal: {{ due.get('canal') }} Data Processamento:
-            {{ due.get('dataProcessamentoTa') }}
+            Exportador: {{ due.ni_declarante }} - 'Implementar nome declarante'
             <br>
-            Exportador: {{ due.get('Declarante') }} - {{ due.get('Nome Declarante') }}
+            Recinto despacho: {{ due.codigo_recinto_despacho }} 'Implementar recintoAduaneiroDespacho.nome'
             <br>
-            Recinto: {% if due.get('recintoAduaneiroDespacho') %} {{ due.recintoAduaneiroDespacho.nome }} {%
-            endif %}
+            Recinto embarque: {{ due.codigo_recinto_embarque }} 'Implementar recintoAduaneiroembarque.nome'
             <br>
-            {% if due.get('itens') %}
-            Itens: {% for item in due.get('itens') %}{{ item.get('descricaoMercadoria') }} {% endfor %}
+            {% if due.itens %}
+            Itens: {% for item in dueitens %}{{ item.descricao_item }} {% endfor %}
             {% endif %}
             {% endif %}
         </div>
