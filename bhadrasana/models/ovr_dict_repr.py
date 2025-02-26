@@ -97,11 +97,9 @@ class OVRDict():
             rvf_dump['setor'] = ovr.setor.nome
         exibicao = ExibicaoOVR(session, 1, '')
         if ovr.numerodeclaracao:
-            due = get_due(db, ovr.numerodeclaracao)
-            due_str = ''
-            for k, v in due.items():
-                due_str = f'{k}: {v}\n'
-            rvf_dump['resumo_due'] = due_str
+            due = get_due(session, ovr.numerodeclaracao)
+            if due:
+                rvf_dump['resumo_due'] = due.__repr__()
         if ovr.numeroCEmercante:
             if exibicao.get_mercante_resumo(ovr):
                 porto_origem = exibicao.get_mercante_resumo(ovr)[2][24:]

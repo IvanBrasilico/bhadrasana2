@@ -11,17 +11,18 @@
             {% endif %}
             <h4>Dados da due</h4>
             {% if due %}
-            DUE: {{ due.numero }} <br>
-            País Importador: {{ due.get('PaisImportador') }} Canal: {{ due.get('canal') }} Data
-            Processamento: {{ due.get('dataProcessamentoTa') }}
+            DUE: {{ due.numero_due }} <br>
+            País Importador: {{ due.nome_pais_importador }} Canal: 'Não implementado' Data Registro:
+            {{ due.data_registro_due }}
             <br>
-            Exportador: {{ due.get('Declarante') }} - {{ due.get('Nome Declarante') }}
+            Exportador: {{ due.ni_declarante }} - 'Implementar nome declarante'
             <br>
-            Recinto: {% if due.get('recintoAduaneiroDespacho') %} {{ due.recintoAduaneiroDespacho.nome }} {%
-            endif %}
+            Recinto despacho: {% due.codigo_recinto_despacho %} 'Implementar recintoAduaneiroDespacho.nome'
             <br>
-            {% if due.get('itens') %}
-            Itens: {% for item in due.get('itens') %}{{ item.get('descricaoMercadoria') }} {% endfor %}
+            Recinto embarque: {% due.codigo_recinto_embarque %} 'Implementar recintoAduaneiroembarque.nome'
+            <br>
+            {% if due.itens %}
+            Itens: {% for item in dueitens %}{{ item.descricao_item }} {% endfor %}
             {% endif %}
             {% endif %}
         </div>

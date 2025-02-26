@@ -400,7 +400,7 @@ def consulta_container_objects(values: dict, session, mongodb, limit=40):
                                      'datafim': datafim})
     logger.info('get_dues_container')
     dues = get_dues_container(mongodb, numero, datainicio, datafim, limit=limit)
-    lista_numeroDUEs = [due['numero'] for due in dues]
+    lista_numeroDUEs = [due.numero_due for due in dues]
     logger.info('get_ovr_container')
     ces, ovrs = get_ovr_container(session, numero, datainicio, datafim,
                                   lista_numeroDUEs, limit=limit)
@@ -438,8 +438,9 @@ def consulta_due_objects(due: str, session, mongodb):
         rvfs_ovr = lista_rvfovr(session, ovr.id)
         rvfs.extend(rvfs_ovr)
     logger.info('get detalhes DUE')
-    infoce = get_due(mongodb, due)
-    return rvfs, ovrs, infoce
+    infodue = ''
+    due = get_due(session, due)
+    return rvfs, ovrs, due
 
 
 if __name__ == '__main__':

@@ -61,6 +61,7 @@ from bhadrasana.models.virasana_manager import get_conhecimento, \
 from bhadrasana.routes.plotly_graphs import bar_plotly, burndown_plotly, gauge_plotly_plot
 from bhadrasana.scripts.gera_planilha_rilo import monta_planilha_rilo
 from bhadrasana.views import get_user_save_path, valid_file, csrf
+from virasana.integracao.due.due_alchemy import Due
 
 
 def do_flash(ovrs, descricao):
@@ -102,7 +103,7 @@ def ovr_app(app):
         containers = []
         flags_ovr = []
         itens_roteiro = []
-        due = {}
+        due = Due()
         ovr = OVR()
         qtdervfs = 0
         qtdeimagens = 0
@@ -170,7 +171,7 @@ def ovr_app(app):
                                 logger.info(err)
                                 pass
                         if ovr.numerodeclaracao:
-                            due = get_due(mongodb, ovr.numerodeclaracao)
+                            due = get_due(session, ovr.numerodeclaracao)
                         ovr_form.id.data = ovr.id
                         listahistorico = ovr.historico
                         processos = ovr.processos
@@ -1102,7 +1103,7 @@ def ovr_app(app):
         containers = []
         containers_com_rvf = {}
         imagens = {}
-        due = {}
+        due = None
         try:
             ovr_id = request.args.get('ovr_id')
             ovr = get_ovr(session, ovr_id)
@@ -1118,7 +1119,7 @@ def ovr_app(app):
                 )
                 return redirect(url_for('programa_rvf_ajna', ovr_id=ovr_id))
             conhecimento = get_conhecimento(session, ovr.numeroCEmercante)
-            due = get_due(mongodb, ovr.numerodeclaracao)
+            due = get_due(session, ovr.numerodeclaracao)
             containers = get_containers_conhecimento(session, ovr.numeroCEmercante)
             lista_rvf = lista_rvfovr(session, ovr_id)
             if lista_rvf:
@@ -1239,7 +1240,7 @@ def ovr_app(app):
         mongodb = app.config['mongodb']
         ovrs = []
         rvfs = []
-        infodue = {}
+        due = None
         imagens = []
         filtro_form = FiltroDUEForm()
         title_page = 'Pesquisa DUE'
@@ -1247,7 +1248,7 @@ def ovr_app(app):
             if request.method == 'POST':
                 filtro_form = FiltroDUEForm(request.form)
                 filtro_form.validate()
-                rvfs, ovrs, infodue = \
+                rvfs, ovrs, due = \
                     consulta_due_objects(filtro_form.numero.data, session, mongodb)
                 imagens = get_imagens_due(mongodb, filtro_form.numero.data)
         except Exception as err:
@@ -1259,7 +1260,7 @@ def ovr_app(app):
                                oform=filtro_form,
                                rvfs=rvfs,
                                ovrs=ovrs,
-                               due=infodue,
+                               due=due,
                                imagens=imagens,
                                title_page=title_page)
 
