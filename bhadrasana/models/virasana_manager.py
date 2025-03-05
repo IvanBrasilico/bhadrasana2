@@ -6,7 +6,7 @@ import requests
 from ajna_commons.flask.log import logger
 from ajna_commons.utils.sanitiza import mongo_sanitizar
 from bhadrasana.models.laudo import get_empresa, get_sats_cnpj, get_pessoa
-from virasana.integracao.due.due_alchemy import Due, DueItem
+from virasana.integracao.due.due_alchemy import Due, DueItem, DueConteiner
 from virasana.integracao.mercante.mercantealchemy import Item, Conhecimento, NCMItem
 
 VIRASANA_URL = 'https://localhost/virasana/'
@@ -180,11 +180,11 @@ def get_dues_container(session, numero: str,
                        ) -> List[Due]:
     if numero is None or numero == '':
         raise ValueError('get_dues_container: Informe o número do contêiner!')
-    # TODO: Ver como criar índice ou tabela à parte para otimizar a consulta
-    dues = session.query(Due).filter(
-        Due.data_criacao_due.between(datainicio, datafim),
-        Due.lista_id_conteiner.like('%' + numero + '%')
-                                     ).limit(limit).all()
+    dues = session.query(Due).join(DueConteiner, DueConteiner.numero_conteiner == numero). \
+            filter(Due.data_criacao_due.between(datainicio, datafim)).limit(limit).all()
+    #dues = session.query(Due).filter(
+    #    Due.data_criacao_due.between(datainicio, datafim),
+    #    Due.lista_id_conteiner.like('%' + numero + '%')).limit(limit).all()
     return dues
 
 
