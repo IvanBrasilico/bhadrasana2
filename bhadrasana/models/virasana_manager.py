@@ -180,8 +180,9 @@ def get_dues_container(session, numero: str,
                        ) -> List[Due]:
     if numero is None or numero == '':
         raise ValueError('get_dues_container: Informe o número do contêiner!')
-    dues = session.query(Due).join(DueConteiner, DueConteiner.numero_conteiner == numero). \
-            filter(Due.data_criacao_due.between(datainicio, datafim)).limit(limit).all()
+    dues = session.query(Due).join(DueConteiner, Due.numero_due == DueConteiner.numero_due). \
+            filter( DueConteiner.numero_conteiner == numero,
+                    Due.data_criacao_due.between(datainicio, datafim)).limit(limit).all()
     #dues = session.query(Due).filter(
     #    Due.data_criacao_due.between(datainicio, datafim),
     #    Due.lista_id_conteiner.like('%' + numero + '%')).limit(limit).all()

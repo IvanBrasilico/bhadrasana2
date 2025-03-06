@@ -17,11 +17,11 @@
             <br>
             Exportador: {{ due.ni_declarante }} - 'Implementar nome declarante'
             <br>
-            Recinto despacho: {% due.codigo_recinto_despacho %} 'Implementar recintoAduaneiroDespacho.nome'
+            Recinto despacho: {{ due.codigo_recinto_despacho }} 'Implementar recintoAduaneiroDespacho.nome'
             <br>
-            Recinto embarque: {% due.codigo_recinto_embarque %} 'Implementar recintoAduaneiroembarque.nome'
+            Recinto embarque: {{ due.codigo_recinto_embarque }} 'Implementar recintoAduaneiroembarque.nome'
             <br>
-            {% if due.itens %}
+            {% if dueitens %}
             Itens: {% for item in dueitens %}{{ item.descricao_item }} {% endfor %}
             {% endif %}
             {% endif %}

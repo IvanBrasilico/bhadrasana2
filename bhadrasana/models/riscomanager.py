@@ -399,7 +399,7 @@ def consulta_container_objects(values: dict, session, mongodb, limit=40):
                                      'datainicio': datainicio,
                                      'datafim': datafim})
     logger.info('get_dues_container')
-    dues = get_dues_container(mongodb, numero, datainicio, datafim, limit=limit)
+    dues = get_dues_container(session, numero, datainicio, datafim, limit=limit)
     lista_numeroDUEs = [due.numero_due for due in dues]
     logger.info('get_ovr_container')
     ces, ovrs = get_ovr_container(session, numero, datainicio, datafim,
