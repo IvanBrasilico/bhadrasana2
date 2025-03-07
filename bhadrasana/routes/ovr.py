@@ -7,12 +7,12 @@ from decimal import Decimal
 from typing import Tuple
 
 import pandas as pd
-from ajna_commons.flask.log import logger
 from flask import request, flash, render_template, url_for, jsonify
 from flask_login import login_required, current_user
 from gridfs import GridFS
 from werkzeug.utils import redirect
 
+from ajna_commons.flask.log import logger
 from bhadrasana.analises.escaneamento_operador import sorteia_GMCIs
 from bhadrasana.forms.exibicao_ovr import ExibicaoOVR, TipoExibicao, agrupa_ovrs
 from bhadrasana.forms.filtro_container import FiltroContainerForm, FiltroCEForm, FiltroDUEForm
@@ -51,7 +51,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_resultado, excluir_resultado, get_ovr_pessoa, get_dsi_pessoa
 from bhadrasana.models.ovrmanager import get_marcas_choice
 from bhadrasana.models.riscomanager import consulta_container_objects, consulta_ce_objects, \
-    consulta_due_objects
+    consulta_due_objects, get_eventos_conteiner
 from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
     get_infracoes_choice, get_ids_anexos_ordenado
 from bhadrasana.models.virasana_manager import get_conhecimento, \
@@ -1159,17 +1159,17 @@ def ovr_app(app):
         dues = []
         eventos = []
         imagens = []
-        filtro_form = FiltroContainerForm(
-            datainicio=date.today() - timedelta(days=360),
-            datafim=date.today()
-        )
+        filtro_form = FiltroContainerForm()
         title_page = 'Pesquisa Contêiner'
         try:
-            if request.method == 'POST':
-                filtro_form = FiltroContainerForm(request.form)
-                filtro_form.validate()
+            filtro_form = FiltroContainerForm(request.values)
+            if filtro_form.numerolote.data:
                 rvfs, ovrs, infoces, dues, eventos = \
-                    consulta_container_objects(request.form, session, mongodb, limit=limit)
+                    consulta_container_objects(session,
+                                               filtro_form.numerolote.data,
+                                               filtro_form.datainicio.data,
+                                               filtro_form.datafim.data,
+                                               limit=limit)
                 imagens = get_imagens_container(mongodb,
                                                 filtro_form.numerolote.data)
         except Exception as err:
@@ -1992,3 +1992,48 @@ def ovr_app(app):
             logger.error(err, exc_info=True)
             return 'Erro! Detalhes no log da aplicação.' + str(err)
         return jsonify(result), 200
+
+    def get_eventos_resumo(session, request):
+        numero = request.args['numero']
+        data = request.args['data']
+        fim = datetime.strptime(data, '%Y-%m-%d %H:%M:%S') + timedelta(days=5)
+        inicio = fim - timedelta(days=30)
+        logger.info(f'get_eventos_resumo numero:{numero}, inicio:{inicio}, fim:{fim}')
+        return get_eventos_conteiner(session, numero, inicio, fim)
+
+    # Resumo de Eventos da API próximos de um escaneamento
+    @app.route('/eventos_resumo', methods=['GET'])
+    def eventos_resumo():
+        session = app.config.get('dbsession')
+        eventos = []
+        try:
+            eventos = get_eventos_resumo(session, request)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash('Erro! Detalhes no log da aplicação.')
+            flash(str(type(err)))
+            flash(str(err))
+        return render_template('diveventos.html', eventos=eventos)
+
+    @app.route('/eventos_resumo_text', methods=['GET'])
+    def eventos_resumo_text():
+        session = app.config.get('dbsession')
+        eventos = []
+        try:
+            eventos = get_eventos_resumo(session, request)
+        except Exception as err:
+            return 'Erro! Detalhes no log da aplicação.' + str(err), 500
+        linhas = [(f'Data:{evento.get("data")} Recinto: {evento.get("recinto")} '
+                   f'Tipo: {evento.get("tipo")} Info: {evento.get("info")}')
+                  for evento in eventos]
+        return '\n'.join(linhas), 200
+
+    @app.route('/eventos_resumo_json', methods=['GET'])
+    def eventos_resumo_json():
+        session = app.config.get('dbsession')
+        eventos = []
+        try:
+            eventos = get_eventos_resumo(session, request)
+        except Exception as err:
+            return jsonify({'msg': 'Erro! Detalhes no log da aplicação.' + str(err)}), 500
+        return jsonify(eventos), 200

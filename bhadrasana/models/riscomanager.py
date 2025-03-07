@@ -379,35 +379,35 @@ def get_eventos_conteiner(session, numero: str,
     return todos_eventos
 
 
-def consulta_container_objects(values: dict, session, mongodb, limit=40):
-    print(values)
-    numero = values.get('numerolote')
-    datainicio = None
-    datafim = None
-    try:
-        datainicio = datetime.strptime(values.get('datainicio'), '%Y-%m-%d')
-        datafim = datetime.strptime(values.get('datafim'), '%Y-%m-%d')
-    except ValueError:
-        raise ValueError(' Data de início inválida. Formato AAAA-MM-DD')
-    if numero is None or datainicio is None or datafim is None:
+def consulta_container_objects(session, numero: str, inicio: datetime, fim: datetime, limit=40):
+    """Retorna lista de objetos relativos ao filtro para exibição na tela: rvfs, ovrs, infoces, dues, eventos
+
+    Args:
+        session: sessão SQLAlchemy
+        numero: número do contêiner
+        inicio: Data
+        fim: Data
+        limit: limite de registros de cada objeto
+    """
+    if numero is None or inicio is None or fim is None:
         raise ValueError(' Dados inválidos passados nos parâmetros.'
                          ' Parâmetros numerolote: XXXX9999999,'
                          ' datainicio, datafim: AAAA-MM-DD')
     logger.info('Consultando contêiner %s' % numero)
     logger.info('get_rvfs_filtro')
     rvfs = get_rvfs_filtro(session, {'numerolote': numero,
-                                     'datainicio': datainicio,
-                                     'datafim': datafim})
+                                     'datainicio': inicio,
+                                     'datafim': fim})
     logger.info('get_dues_container')
-    dues = get_dues_container(session, numero, datainicio, datafim, limit=limit)
+    dues = get_dues_container(session, numero, inicio, fim, limit=limit)
     lista_numeroDUEs = [due.numero_due for due in dues]
     logger.info('get_ovr_container')
-    ces, ovrs = get_ovr_container(session, numero, datainicio, datafim,
+    ces, ovrs = get_ovr_container(session, numero, inicio, fim,
                                   lista_numeroDUEs, limit=limit)
     logger.info('get detalhes CE Mercante')
     infoces = get_detalhes_mercante(session, ces)
     logger.info('get_eventos_container')
-    eventos = get_eventos_conteiner(session, numero, datainicio, datafim, limit=limit)
+    eventos = get_eventos_conteiner(session, numero, inicio, fim, limit=limit)
     return rvfs, ovrs, infoces, dues, eventos
 
 
