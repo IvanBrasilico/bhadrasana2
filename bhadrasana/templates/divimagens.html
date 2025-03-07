@@ -9,6 +9,7 @@
         {% for imagem in imagens %}
         <tr data-numero="{{ imagem.metadata.numeroinformado }}" data-data="{{ imagem.metadata.dataescaneamento }}">
             <td width="500" style="text-align:left" class="api-text">
+            <!-- onclick="window.location='consulta_container?numerolote={{ imagem.metadata.numeroinformado }}'" style="cursor: pointer;">-->
                 {{ imagem.metadata.dataescaneamento }}
                 <a href="consulta_container?numerolote={{ imagem.metadata.numeroinformado }}" target="_blank">
                 {{ imagem.metadata.numeroinformado }}</a> <br>
@@ -49,7 +50,7 @@
             fetch(apiUrl)
                 .then(response => response.text()) // If API returns plain text
                 .then(apiData => {
-                    cell.textContent += apiData; // Insert fetched text into the cell
+                    cell.innerHTML += apiData; // Insert fetched text into the cell
                 })
                 .catch(error => {
                     console.error("Error fetching data:", error);

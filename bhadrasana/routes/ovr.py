@@ -2026,7 +2026,7 @@ def ovr_app(app):
         linhas = [(f'Data:{evento.get("data")} Recinto: {evento.get("recinto")} '
                    f'Tipo: {evento.get("tipo")} Info: {evento.get("info")}')
                   for evento in eventos]
-        return '\n'.join(linhas), 200
+        return '<br>'.join(linhas), 200
 
     @app.route('/eventos_resumo_json', methods=['GET'])
     def eventos_resumo_json():
