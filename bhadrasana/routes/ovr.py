@@ -1245,9 +1245,8 @@ def ovr_app(app):
         filtro_form = FiltroDUEForm()
         title_page = 'Pesquisa DUE'
         try:
-            if request.method == 'POST':
-                filtro_form = FiltroDUEForm(request.form)
-                filtro_form.validate()
+            filtro_form = FiltroDUEForm(request.values)
+            if filtro_form.numero.data:
                 rvfs, ovrs, due = \
                     consulta_due_objects(filtro_form.numero.data, session, mongodb)
                 imagens = get_imagens_due(mongodb, filtro_form.numero.data)
