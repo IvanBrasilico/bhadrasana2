@@ -72,6 +72,6 @@ def apirecintos_app(app):
                 return jsonify({'msg': 'Arquivo "file" vazio ou não incluído no POST'}, 404)
             processa_zip(file, session)
         except Exception as err:
-            logger.error(err, exc_info=True)
+            logger.error(f'upload_arquivo_json_api_api: {err}')
             return jsonify({'msg:': str(err)}, 500)
         return jsonify({'msg': 'Arquivo integrado com sucesso!!'}, 200)
