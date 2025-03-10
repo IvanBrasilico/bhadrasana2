@@ -396,6 +396,7 @@ def persiste_df(df_eventos: pd.DataFrame, classeevento: Type[BaseDumpable], sess
     except Exception as err:
         session.rollback()
         logger.error(err, exc_info=True)
+        raise err
     logger.info(f'{ind} Eventos lidos, {cont_sucesso} inseridos')
 
 
