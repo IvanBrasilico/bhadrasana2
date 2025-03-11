@@ -44,7 +44,7 @@ def get_filename_valido(filename: str) -> str:
 class BaseDumpable(Base):
     __abstract__ = True
 
-    def dump(self, exclude=None, explode=False, converte=False):
+    def dump(self, exclude=None, explode=False, converte=True):
         def converte_campo(campo):
             if type(campo) == datetime.datetime:
                 return datetime.datetime.strftime(campo, '%d/%m/%Y %H:%M')
