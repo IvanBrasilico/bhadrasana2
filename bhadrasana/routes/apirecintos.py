@@ -22,13 +22,13 @@ def processa_zip(arquivo, session):
                '3': PesagemVeiculo,
                '4': EmbarqueDesembarque,
                '25': InspecaoNaoInvasiva}
-    indices = {AcessoVeiculo: ['placa', 'operacao', 'dataHoraOcorrencia'],
+    indices = {AcessoVeiculo: ['placa', 'operacao', 'tipoOperacao', 'dataHoraOcorrencia'],
                PesagemVeiculo: ['placa', 'dataHoraOcorrencia'],
                EmbarqueDesembarque: ['numeroConteiner', 'dataHoraOcorrencia'],
                InspecaoNaoInvasiva: ['numeroConteiner', 'dataHoraOcorrencia']}
     classe = classes[tipoevento]
     indice = indices[classe]
-    print(classe, indice)
+    logger.info(f'Classe: {classe}, Chave única: {indice}')
     json_texto = zip_file.read('json.txt').decode()
     df_eventos = processa_json(json_texto, classe, indice)
     persiste_df(df_eventos, classe, session)
