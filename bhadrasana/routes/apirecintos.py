@@ -69,9 +69,9 @@ def apirecintos_app(app):
             file = request.files.get('file')
             validfile, mensagem = valid_file(file, extensions=['zip'])
             if not validfile:
-                return jsonify({'msg': 'Arquivo "file" vazio ou não incluído no POST'}, 404)
+                return jsonify({'msg': 'Arquivo "file" vazio ou não incluído no POST'}), 404
             processa_zip(file, session)
         except Exception as err:
             logger.error(f'upload_arquivo_json_api_api: {err}')
-            return jsonify({'msg:': str(err)}, 500)
-        return jsonify({'msg': 'Arquivo integrado com sucesso!!'}, 200)
+            return jsonify({'msg:': str(err)}), 500
+        return jsonify({'msg': 'Arquivo integrado com sucesso!!'}), 200
