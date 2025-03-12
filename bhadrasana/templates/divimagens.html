@@ -1,4 +1,4 @@
-<div class="table table-responsive col-sm-10">
+<div class="table table-responsive col-sm-10" id="tblImagens">
     <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive">
         <thead>
         <tr>
@@ -7,10 +7,13 @@
         </tr>
         </thead>
         {% for imagem in imagens %}
-        <tr>
-            <td width="300" style="text-align:left">
+        <tr data-numero="{{ imagem.metadata.numeroinformado }}" data-data="{{ imagem.metadata.dataescaneamento }}">
+            <td width="500" style="text-align:left" class="api-text">
+            <!-- onclick="window.location='consulta_container?numerolote={{ imagem.metadata.numeroinformado }}'" style="cursor: pointer;">-->
                 {{ imagem.metadata.dataescaneamento }}
-                {{ imagem.metadata.numeroinformado }}
+                <a href="consulta_container?numerolote={{ imagem.metadata.numeroinformado }}" target="_blank">
+                {{ imagem.metadata.numeroinformado }}</a> <br>
+
             </td>
             <td>
                 <a href="/virasana/file?_id={{ imagem._id }}">
@@ -23,3 +26,39 @@
         {% endfor %}
     </table>
 </div>
+<script>
+    // Function to fetch and update table rows
+    function fetchAndFillTable() {
+        const table = document.getElementById("tblImagens");
+        if (!table) {
+            console.error(`Table with ID '${tableId}' not found.`);
+            return;
+        }
+        // Select all rows that have the attributes
+        const rows = table.querySelectorAll("tbody tr");
+
+        rows.forEach(row => {
+            // Get parameters from the row
+            const numero = row.getAttribute("data-numero");
+            const data = row.getAttribute("data-data");
+            const cell = row.querySelector(".api-text");
+
+            // Construct API URL dynamically (modify as needed)
+            const apiUrl = `eventos_resumo_text?numero=${numero}&data=${data}`;
+
+            // Fetch data and insert into the respective cell
+            fetch(apiUrl)
+                .then(response => response.text()) // If API returns plain text
+                .then(apiData => {
+                    cell.innerHTML += apiData; // Insert fetched text into the cell
+                })
+                .catch(error => {
+                    console.error("Error fetching data:", error);
+                    cell.textContent = "Error!";
+                });
+        });
+    }
+
+    // Call the function to fill the table
+    fetchAndFillTable();
+    </script>

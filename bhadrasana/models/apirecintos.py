@@ -24,7 +24,7 @@ metadata = Base.metadata
 
 def converte_datetime(str_datetime: str):
     try:
-        return parser.isoparse(str_datetime).replace(tzinfo=None)
+        return parser.isoparse(str_datetime).replace(tzinfo=None, microsecond=0)
     except:
         return None
 
@@ -149,7 +149,7 @@ def alfanumeric_c(texto):
 
 class AcessoVeiculo(EventoAPIBase):
     __tablename__ = 'apirecintos_acessosveiculo'
-    __table_args__ = (UniqueConstraint('placa', 'operacao', 'dataHoraOcorrencia'),
+    __table_args__ = (UniqueConstraint('placa', 'operacao', 'tipoOperacao', 'dataHoraOcorrencia'),
                       )
     operacao = Column(String(1), index=True)  # G - A*g*endamento, C - A*c*esso
     direcao = Column(String(1), index=True)  # E - Entrada, S - Saída
@@ -301,6 +301,7 @@ class PesagemVeiculo(EventoAPIBase):
             self.placaSemirreboque = alfanumeric_c(placaSemirreboque)
 
     def is_duplicate(self, session):
+        #if self.placa == 'DPC9J28':      print(self.placa, self.dataHoraOcorrencia)
         return session.query(PesagemVeiculo).filter(PesagemVeiculo.placa == self.placa). \
             filter(PesagemVeiculo.dataHoraOcorrencia == self.dataHoraOcorrencia).one_or_none() is not None
 
@@ -370,8 +371,11 @@ def processa_json(texto: str, classeevento: Type[BaseDumpable], chave_unica: lis
             continue
         eventos.append(instancia.dump())
     df_eventos = pd.DataFrame(eventos)
+    df_eventos['dataHoraOcorrencia'] = pd.to_datetime(df_eventos['dataHoraOcorrencia'])
+    # print(df_eventos[df_eventos['placa']== 'DPC9J28'].sort_values('placa'))
     df_eventos = df_eventos.drop_duplicates(subset=chave_unica)
     df_eventos = df_eventos.replace({np.nan: ''})
+    # print(df_eventos[df_eventos['placa']== 'DPC9J28'].sort_values('placa'))
     logger.info(f'Recuperados {len(json_raw)} eventos. Mantidos {len(df_eventos)} '
                 f'após remoção de duplicatas de chave primária.')
     if classeevento == AcessoVeiculo:
@@ -384,18 +388,19 @@ def persiste_df(df_eventos: pd.DataFrame, classeevento: Type[BaseDumpable], sess
     """Percorre dataframe, instanciando Eventos e adicionando à sessão, finalizando com commit no banco"""
     cont_sucesso = 0
     ind = 0
-    for ind, evento_dict in enumerate(df_eventos.to_dict('records'), 1):
-        evento = classeevento(**evento_dict)
-        # print(evento.dump())
-        if evento.is_duplicate(session):
-            continue
-        session.add(evento)
-        cont_sucesso += 1
     try:
+        for ind, evento_dict in enumerate(df_eventos.to_dict('records'), 1):
+            evento = classeevento(**evento_dict)
+            # print(evento.dump())
+            if evento.is_duplicate(session):
+                continue
+            session.add(evento)
+            cont_sucesso += 1
         session.commit()
     except Exception as err:
         session.rollback()
-        logger.error(err, exc_info=True)
+        logger.error(f'persiste_df: {err}')
+        raise err
     logger.info(f'{ind} Eventos lidos, {cont_sucesso} inseridos')
 
 
@@ -408,9 +413,9 @@ if __name__ == '__main__':  # pragma: no-cover
         from sqlalchemy.orm import sessionmaker
 
         engine = create_engine(SQL_URI)
-        Session = sessionmaker(bind=engine)
+        Session = sessionmaker(bind=engine, autoflush=False)
         session = Session()
-        caminho = 'C:\\Users\\11913225640\\Downloads\\api_recintos\\'
+        caminho = 'C:\\Users\\25052288840\\Downloads\\api_recintos\\'
         arquivos = os.listdir(caminho)
 
         for arquivo in arquivos:
@@ -423,16 +428,19 @@ if __name__ == '__main__':  # pragma: no-cover
                            '3': PesagemVeiculo,
                            '4': EmbarqueDesembarque,
                            '25': InspecaoNaoInvasiva}
-                indices = {AcessoVeiculo: ['placa', 'operacao', 'dataHoraOcorrencia'],
+                indices = {AcessoVeiculo: ['placa', 'operacao', 'tipoOperacao', 'dataHoraOcorrencia'],
                            PesagemVeiculo: ['placa', 'dataHoraOcorrencia'],
                            EmbarqueDesembarque: ['numeroConteiner', 'dataHoraOcorrencia'],
                            InspecaoNaoInvasiva: ['numeroConteiner', 'dataHoraOcorrencia']}
                 classe = classes[tipoevento]
                 indice = indices[classe]
-                print(classe, indice)
+                logger.info(f'Classe: {classe}, Chave única: {indice}')
                 json_texto = zip_file.read('json.txt').decode()
                 df_eventos = processa_json(json_texto, classe, indice)
-                persiste_df(df_eventos, classe, session)
+                try:
+                    persiste_df(df_eventos, classe, session)
+                except Exception as err:
+                    logger.info(err)
         # Sair por segurança. Comentar linha abaixo para funcionar
         sys.exit(0)
 

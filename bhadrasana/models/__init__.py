@@ -44,8 +44,17 @@ def get_filename_valido(filename: str) -> str:
 class BaseDumpable(Base):
     __abstract__ = True
 
-    def dump(self, exclude=None, explode=False):
-        dump = OrderedDict([(k, v) for k, v in vars(self).items() if not k.startswith('_')])
+    def dump(self, exclude=None, explode=False, converte=False):
+        def converte_campo(campo):
+            if type(campo) == datetime.datetime:
+                return datetime.datetime.strftime(campo, '%d/%m/%Y %H:%M')
+            return campo
+
+        if converte:
+            dump = OrderedDict([(k, converte_campo(v))
+                                for k, v in vars(self).items() if not k.startswith('_')])
+        else:
+            dump = OrderedDict([(k, v) for k, v in vars(self).items() if not k.startswith('_')])
         if exclude:
             for key in exclude:
                 if dump.get(key):

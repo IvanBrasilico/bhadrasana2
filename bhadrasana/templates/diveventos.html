@@ -4,7 +4,6 @@
                id="eventos_table">
             <thead>
             <tr>
-                <th></th>
                 <th>Data do Evento</th>
                 <th>Recinto</th>
                 <th>Tipo de Evento</th>
@@ -13,12 +12,12 @@
             </thead>
             <tbody>
             {% for evento in eventos %}
-            <tr onmouseover="showEvento(this, '{{evento.recinto}}', '{{evento.tipo}}', '{{evento.id}}')" onmouseout="clearEvento(this)">
+            <tr onmouseover="showEvento(this, '{{evento.recinto}}', '{{evento.tipo}}', '{{evento.id}}')"
+                onmouseout="clearEvento(this)">
                 <td>
-                    <a href="/ajnaapi/api/resumo_evento?recinto={{evento.recinto}}&tipo={{evento.tipo}}&id={{evento.id}}" target="_blank">
-                        Ver</a>
-                </td>
-                <td>{{ evento.data }}</td>
+                    <a href="/ajnaapi/api/resumo_evento?recinto={{evento.recinto}}&tipo={{evento.tipo}}&id={{evento.id}}"
+                       target="_blank">
+                        {{ evento.data }}</a></td>
                 <td>{{ evento.recinto }}</td>
                 <td>{{ evento.tipo }}</td>
                 <td>{{ evento.info }}</td>

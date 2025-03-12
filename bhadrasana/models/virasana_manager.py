@@ -69,7 +69,7 @@ def get_imagens_due(mongodb, due: str) -> list:
     if due is None or due == '' or len(due) < 14:
         raise ValueError('get_imagens: Informe o número da DUE'
                          ' com 14 dígitos (AABR9999999999)!')
-    query = {'metadata.due.numero': due,
+    query = {'metadata.due': due,
              'metadata.contentType': 'image/jpeg'}
     return get_imagens_query(mongodb, query)
 
@@ -179,9 +179,16 @@ def get_dues_container(session, numero: str,
                        limit=40
                        ) -> List[Due]:
     if numero is None or numero == '':
-        raise ValueError('get_dues: Informe o número do contêiner!')
-    return (session.query(Due).join(DueConteiner, DueConteiner.numero_conteiner == numero). \
-            filter(Due.data_criacao_due.between(datainicio, datafim)).limit(limit).all())
+        raise ValueError('get_dues_container: Informe o número do contêiner!')
+    q = session.query(Due).join(DueConteiner, Due.numero_due == DueConteiner.numero_due). \
+            filter( DueConteiner.numero_conteiner == numero,
+                    Due.data_criacao_due.between(datainicio, datafim)).limit(limit)
+    logger.info(q.statement)
+    dues = q.all()
+    #dues = session.query(Due).filter(
+    #    Due.data_criacao_due.between(datainicio, datafim),
+    #    Due.lista_id_conteiner.like('%' + numero + '%')).limit(limit).all()
+    return dues
 
 
 def get_dues_empresa(session, cnpj: str, limit=40) -> List[Due]:

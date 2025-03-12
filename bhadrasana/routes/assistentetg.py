@@ -7,6 +7,7 @@ Fornece métodos para consulta texto em itens de TGs já cadastrados, similares
 """
 
 import os
+import sys
 from datetime import datetime
 
 import nltk
@@ -171,9 +172,9 @@ def consulta_itens(texto)-> pd.DataFrame:
     print('len df:', len(df))
     return df
 
-#TODO: Implementar checagem se é ambiente de desenvolvimento ou de produção
-# Por enquanto, comentar no desenvolvimento mas não publicar no git
-bm25n, corpus, itenstg = monta_assistente_bm25(engine)
+if sys.platform != 'win32':
+    logger.info(f'Montando assistente de TG - BM25. sys.platform: {sys.platform}')
+    bm25n, corpus, itenstg = monta_assistente_bm25(engine)
 
 
 def assistentetg_app(app):
