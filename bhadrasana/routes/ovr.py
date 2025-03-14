@@ -104,7 +104,7 @@ def ovr_app(app):
         containers = []
         flags_ovr = []
         itens_roteiro = []
-        due = Due()
+        due = None
         ovr = OVR()
         qtdervfs = 0
         qtdeimagens = 0
@@ -173,6 +173,7 @@ def ovr_app(app):
                                 pass
                         if ovr.numerodeclaracao:
                             due = get_due_view(session, ovr.numerodeclaracao)
+                        logger.info(f'{due}, {type(due)}')
                         ovr_form.id.data = ovr.id
                         listahistorico = ovr.historico
                         processos = ovr.processos
