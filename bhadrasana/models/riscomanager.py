@@ -27,8 +27,9 @@ from sqlalchemy import select, and_, join, or_, create_engine, func
 from ajna_commons.flask.log import logger
 from bhadrasana.models.ovrmanager import get_ovr_container, get_ovr_filtro
 from bhadrasana.models.rvfmanager import get_rvfs_filtro, lista_rvfovr
-from bhadrasana.models.virasana_manager import get_dues_container, get_detalhes_mercante, \
-    get_detalhe_conhecimento, get_due
+from bhadrasana.models.virasana_manager import get_detalhes_mercante, \
+    get_detalhe_conhecimento
+from virasana.integracao.due.due_manager import get_due_view, get_dues_container
 from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem, \
     RiscoAtivo
 
@@ -426,21 +427,20 @@ def consulta_ce_objects(numero: str, session):
     return rvfs, ovrs, infoce
 
 
-def consulta_due_objects(due: str, session, mongodb):
-    if due is None or due == '' or len(due) < 14:
+def consulta_due_objects(numero_due: str, session, mongodb):
+    if numero_due is None or numero_due == '' or len(numero_due) < 14:
         raise ValueError('get_imagens: Informe o número da DUE'
                          ' com 14 dígitos (AABR9999999999)!')
-    logger.info('Consultando due %s' % due)
+    logger.info('Consultando due %s' % numero_due)
     logger.info('get_ovrs_filtro')
-    ovrs = get_ovr_filtro(session, {'numerodeclaracao': due})
+    ovrs = get_ovr_filtro(session, {'numerodeclaracao': numero_due})
     rvfs = []
     for ovr in ovrs:
         rvfs_ovr = lista_rvfovr(session, ovr.id)
         rvfs.extend(rvfs_ovr)
     logger.info('get detalhes DUE')
-    infodue = ''
-    due = get_due(session, due)
-    return rvfs, ovrs, due
+    numero_due = get_due_view(session, numero_due)
+    return rvfs, ovrs, numero_due
 
 
 if __name__ == '__main__':

@@ -10,7 +10,7 @@ from bhadrasana.models.ovr import FonteDocx
 from bhadrasana.models.ovrmanager import get_ovr_one, MarcaManager, get_tgovr_one
 from bhadrasana.models.rvf import RVF
 from bhadrasana.models.rvfmanager import get_rvf_one
-from bhadrasana.models.virasana_manager import get_due
+from virasana.integracao.due.due_manager import get_due
 
 
 def not_implemented():

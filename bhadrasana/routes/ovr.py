@@ -56,12 +56,13 @@ from bhadrasana.models.rvfmanager import lista_rvfovr, programa_rvf_container, \
     get_infracoes_choice, get_ids_anexos_ordenado
 from bhadrasana.models.virasana_manager import get_conhecimento, \
     get_containers_conhecimento, get_ncms_conhecimento, get_imagens_dict_container_id, \
-    get_imagens_container, get_dues_empresa, get_ces_empresa, \
-    get_due, get_detalhes_mercante, get_imagens_conhecimento, get_imagens_due
+    get_imagens_container, get_ces_empresa, \
+    get_detalhes_mercante, get_imagens_conhecimento, get_imagens_due
 from bhadrasana.routes.plotly_graphs import bar_plotly, burndown_plotly, gauge_plotly_plot
 from bhadrasana.scripts.gera_planilha_rilo import monta_planilha_rilo
 from bhadrasana.views import get_user_save_path, valid_file, csrf
 from virasana.integracao.due.due_alchemy import Due
+from virasana.integracao.due.due_manager import get_due_view, get_dues_empresa
 
 
 def do_flash(ovrs, descricao):
@@ -171,7 +172,7 @@ def ovr_app(app):
                                 logger.info(err)
                                 pass
                         if ovr.numerodeclaracao:
-                            due = get_due(session, ovr.numerodeclaracao)
+                            due = get_due_view(session, ovr.numerodeclaracao)
                         ovr_form.id.data = ovr.id
                         listahistorico = ovr.historico
                         processos = ovr.processos
@@ -1119,7 +1120,7 @@ def ovr_app(app):
                 )
                 return redirect(url_for('programa_rvf_ajna', ovr_id=ovr_id))
             conhecimento = get_conhecimento(session, ovr.numeroCEmercante)
-            due = get_due(session, ovr.numerodeclaracao)
+            due = get_due_view(session, ovr.numerodeclaracao)
             containers = get_containers_conhecimento(session, ovr.numeroCEmercante)
             lista_rvf = lista_rvfovr(session, ovr_id)
             if lista_rvf:
