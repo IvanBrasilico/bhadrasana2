@@ -11,19 +11,7 @@
             {% endif %}
             <h4>Dados da due</h4>
             {% if due %}
-            DUE: {{ due.numero_due }} <br>
-            País Importador: {{ due.nome_pais_importador }} Canal: 'Não implementado' Data Registro:
-            {{ due.data_registro_due }}
-            <br>
-            Exportador: {{ due.ni_declarante }} - 'Implementar nome declarante'
-            <br>
-            Recinto despacho: {{ due.codigo_recinto_despacho }} 'Implementar recintoAduaneiroDespacho.nome'
-            <br>
-            Recinto embarque: {{ due.codigo_recinto_embarque }} 'Implementar recintoAduaneiroembarque.nome'
-            <br>
-            {% if dueitens %}
-            Itens: {% for item in dueitens %}{{ item.descricao_item }} {% endfor %}
-            {% endif %}
+            {% include 'divdue.html' %}
             {% endif %}
         </div>
         <div class="col-sm-4">

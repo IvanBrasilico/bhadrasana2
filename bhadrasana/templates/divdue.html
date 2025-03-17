@@ -12,11 +12,11 @@
             País Importador: {{ due.nome_pais_importador }} Canal: 'Não implementado' Data Registro:
             {{ due.data_registro_due }}
             <br>
-            Exportador: {{ due.ni_declarante }} - 'Implementar nome declarante'
+            Exportador: {{ due.ni_declarante }} - {{ due.nome_declarante }}
             <br>
-            Recinto despacho: {{ due.codigo_recinto_despacho }} 'Implementar recintoAduaneiroDespacho.nome'
+            Recinto despacho: {{ due.codigo_recinto_despacho }} - {{ due.nome_recinto_despacho }}
             <br>
-            Recinto embarque: {{ due.codigo_recinto_embarque }} 'Implementar recintoAduaneiroembarque.nome'
+            Recinto embarque: {{ due.codigo_recinto_embarque }} - {{ due.nome_recinto_embarque }}
             <br>
             {% if due.itens %}
             Itens: {% for item in dueitens %}{{ item.descricao_item }} {% endfor %}

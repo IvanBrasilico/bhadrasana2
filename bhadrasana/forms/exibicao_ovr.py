@@ -8,7 +8,8 @@ from bhadrasana.models.laudo import get_empresa, get_pessoa
 from bhadrasana.models.ovr import OVR
 from bhadrasana.models.ovrmanager import get_visualizacoes, lista_tgovr
 from bhadrasana.models.rvfmanager import lista_rvfovr
-from bhadrasana.models.virasana_manager import get_conhecimento, get_ncms_conhecimento, get_due, get_itens_due
+from bhadrasana.models.virasana_manager import get_conhecimento, get_ncms_conhecimento
+from virasana.integracao.due.due_manager import get_itens_due, get_due_view
 
 
 class TipoExibicao(Enum):
@@ -395,13 +396,13 @@ class ExibicaoOVR:
 
     def get_due_resumo(self, ovr) -> list:
         resumo = []
-        due = get_due(self.session,
-                      ovr.numerodeclaracao)
+        due = get_due_view(self.session,
+                           ovr.numerodeclaracao)
         if due:
-            resumo.append(f'<b>Declarante</b>: {due.ni_declarante}')
+            resumo.append(f'<b>Declarante</b>: {due.ni_declarante} - {due.nome_declarante}')
             resumo.append(f'<b>Exportador</b>: {due.cnpj_estabelecimento_exportador}')
-            resumo.append(f'<b>Recinto Despacho</b>: {due.codigo_recinto_despacho}')
-            resumo.append(f'<b>Recinto Embarque</b>: {due.codigo_recinto_embarque}')
+            resumo.append(f'<b>Recinto Despacho</b>: {due.codigo_recinto_despacho} - {due.nome_recinto_despacho}')
+            resumo.append(f'<b>Recinto Embarque</b>: {due.codigo_recinto_embarque} - {due.nome_recinto_embarque}')
             resumo.append(f'<b>País Importador</b>: {due.nome_pais_importador}')
             itens = get_itens_due(self.session, due.numero_due)
             for item in itens:

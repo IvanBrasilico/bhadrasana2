@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import List
 
 import requests
@@ -6,7 +5,6 @@ import requests
 from ajna_commons.flask.log import logger
 from ajna_commons.utils.sanitiza import mongo_sanitizar
 from bhadrasana.models.laudo import get_empresa, get_sats_cnpj, get_pessoa
-from virasana.integracao.due.due_alchemy import Due, DueItem, DueConteiner
 from virasana.integracao.mercante.mercantealchemy import Item, Conhecimento, NCMItem
 
 VIRASANA_URL = 'https://localhost/virasana/'
@@ -163,36 +161,3 @@ def get_detalhes_mercante(session, ces: List[str]) -> dict:
         except Exception as err:
             logger.info(err)
     return infoces
-
-
-def get_due(session, numerodeclaracao: str) -> Due:
-    return session.query(Due).filter(Due.numero_due == numerodeclaracao).one_or_none()
-
-
-def get_itens_due(session, numerodeclaracao: str) -> List[DueItem]:
-    return session.query(DueItem).filter(DueItem.nr_due == numerodeclaracao).all()
-
-
-def get_dues_container(session, numero: str,
-                       datainicio: datetime,
-                       datafim: datetime,
-                       limit=40
-                       ) -> List[Due]:
-    if numero is None or numero == '':
-        raise ValueError('get_dues_container: Informe o número do contêiner!')
-    q = session.query(Due).join(DueConteiner, Due.numero_due == DueConteiner.numero_due). \
-            filter( DueConteiner.numero_conteiner == numero,
-                    Due.data_criacao_due.between(datainicio, datafim)).limit(limit)
-    logger.info(q.statement)
-    dues = q.all()
-    #dues = session.query(Due).filter(
-    #    Due.data_criacao_due.between(datainicio, datafim),
-    #    Due.lista_id_conteiner.like('%' + numero + '%')).limit(limit).all()
-    return dues
-
-
-def get_dues_empresa(session, cnpj: str, limit=40) -> List[Due]:
-    if cnpj is None or len(cnpj) < 8:
-        raise ValueError('get_dues: Informe o CNPJ da empresa com no mínimo 8 posições!')
-    return session.query(Due).filter(Due.cnpj_estabelecimento_exportador.like(cnpj + '%')). \
-        limit(limit).all()
