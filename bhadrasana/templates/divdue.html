@@ -19,7 +19,10 @@
             Recinto embarque: {{ due.codigo_recinto_embarque }} - {{ due.nome_recinto_embarque }}
             <br>
             {% if due.itens %}
-            Itens: {% for item in dueitens %}{{ item.descricao_item }} {% endfor %}
+            Itens: {% for item in due.itens %}{{ item.descricao_item }}, {% endfor %}<br>
+            {% endif %}
+            {% if due.conteineres %}
+            Contêineres: {% for ctr in due.conteineres %}{{ ctr.numero_conteiner }}, {% endfor %}<br>
             {% endif %}
             {% endif %}
         </div>

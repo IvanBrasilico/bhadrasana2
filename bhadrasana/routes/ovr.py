@@ -1252,6 +1252,8 @@ def ovr_app(app):
                 rvfs, ovrs, due = \
                     consulta_due_objects(filtro_form.numero.data, session, mongodb)
                 imagens = get_imagens_due(mongodb, filtro_form.numero.data)
+                logger.info(f'DUE: {due.numero_due} Tipo: {type(due)} repr: {due}')
+                logger.info(f'DUE Itens: {due.itens}')
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
