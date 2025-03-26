@@ -61,7 +61,6 @@ from bhadrasana.models.virasana_manager import get_conhecimento, \
 from bhadrasana.routes.plotly_graphs import bar_plotly, burndown_plotly, gauge_plotly_plot
 from bhadrasana.scripts.gera_planilha_rilo import monta_planilha_rilo
 from bhadrasana.views import get_user_save_path, valid_file, csrf
-from virasana.integracao.due.due_alchemy import Due
 from virasana.integracao.due.due_manager import get_due_view, get_dues_empresa
 
 
@@ -1439,8 +1438,7 @@ def ovr_app(app):
             logger.info('Consultando empresa %s' % cnpj)
             empresa = get_empresa(session, cnpj)
             logger.info('get_dues_empresa')
-            dues = get_dues_empresa(mongodb,
-                                    cnpj)
+            dues = get_dues_empresa(mongodb, cnpj)
             logger.info('get_ovr_empresa')
             ovrs = get_ovr_empresa(session, cnpj)
             empresas_qtdeovrs = [{'empresa': empresa, 'qtdeovrs': len(ovrs)}]
