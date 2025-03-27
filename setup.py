@@ -31,7 +31,7 @@ setup(
         'plotly',  # Ver como retirar necessidade
         'odfpy',
         'openpyxl',
-        'pandas==2.2.3',
+        'pandas==2.1.4',
         'pymongo',
         'pymysql',
         'python-docx',
@@ -68,7 +68,6 @@ setup(
             'mkdocs',
             'mkdocs-material',
             'mypy',
-            'pandas',
             'pylint',
             'pytest',
             'pytest-cov',
