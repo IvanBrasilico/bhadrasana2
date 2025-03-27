@@ -45,9 +45,6 @@ setup(
         'xlrd',
         'xlwt',
     ],
-    dependency_links=[
-        'git+https://github.com/IvanBrasilico/ajna_commons.git#egg=ajna_commons-0.0.1'
-    ],
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
     test_suite="tests",
