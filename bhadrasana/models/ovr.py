@@ -304,6 +304,10 @@ class Recinto(Base):
     create_date = Column(TIMESTAMP, index=True,
                          server_default=func.current_timestamp())
 
+    def __repr__(self):
+        codigo = self.cod_siscomex if self.cod_siscomex else self.cod_dte
+        return f'{self.nome} ({codigo}) CNPJ {self.cnpj}'
+
 
 class TipoProcessoOVR(Base):
     __tablename__ = 'ovr_tiposprocesso'
@@ -613,8 +617,6 @@ class ResultadoOVR(BaseRastreavel):
     tipo_resultado = Column(Integer(), default=1)
     valor = Column(Numeric(12, 2))
 
-
-
     @property
     def get_tipo_resultado(self):
         return TipoResultado(self.tipo_resultado).name
@@ -752,9 +754,9 @@ if __name__ == '__main__':  # pragma: no-cover
                             ])
         sys.exit(0)
         metadata.drop_all(engine,
-                            [
-                                metadata.tables['ovr_resultados'],
-                            ])
+                          [
+                              metadata.tables['ovr_resultados'],
+                          ])
         processos = []  # session.query(ProcessoOVR).all()
         for processo in processos:
             # print(processo)

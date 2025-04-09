@@ -47,6 +47,7 @@ class MotoristaModel(CadastradorModelView):
     column_list = ('cpf', 'cnh', 'nome', 'nome_da_mae', 'classificacao', 'carga', 'carga_qtde')
     form_columns = ('cpf', 'cnh', 'nome', 'nome_da_mae', 'classificacao', 'carga', 'carga_qtde')
 
+
 class UsuarioModel(CadastradorModelView):
     can_delete = False
     column_hide_backrefs = False
@@ -92,11 +93,13 @@ class RecintosModel(SupervisorModelView):
     can_delete = False
     column_searchable_list = ['nome']
     column_list = ('nome', 'descricao', 'cod_dte', 'cod_siscomex', 'cod_unidade')
-    form_columns = ('nome', 'descricao', 'cod_dte', 'cod_siscomex', 'cod_unidade')
+    form_columns = ('nome', 'descricao', 'cod_dte', 'cnpj', 'cod_siscomex',
+                    'cod_carga', 'cod_unidade')
 
 
 class FlagModel(SupervisorModelView):
     column_searchable_list = ['nome']
+
 
 class MarcaModel(SupervisorModelView):
     column_searchable_list = ['nome']

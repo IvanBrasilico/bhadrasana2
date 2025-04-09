@@ -4,6 +4,7 @@ from sqlite3 import OperationalError
 
 from gridfs import GridFS
 from sqlalchemy.orm.exc import NoResultFound
+
 from virasana.integracao.bagagens.viajantesalchemy import DSI
 
 sys.path.append('.')
@@ -44,13 +45,13 @@ from virasana.integracao.mercante.mercantealchemy import Item
 
 def get_recintos_unidade(session, cod_unidade: str) -> List[Tuple[int, str]]:
     recintos = session.query(Recinto).filter(Recinto.cod_unidade == cod_unidade).all()
-    recintos_list = [(recinto.id, f'{recinto.nome} ({recinto.cod_dte})') for recinto in recintos]
+    recintos_list = [(recinto.id, recinto.__repr__()) for recinto in recintos]
     return sorted(recintos_list, key=lambda x: x[1])
 
 
 def get_recintos(session) -> List[Tuple[int, str]]:
     recintos = session.query(Recinto).all()
-    recintos_list = [(recinto.id, f'{recinto.nome} ({recinto.cod_dte})') for recinto in recintos]
+    recintos_list = [(recinto.id, recinto.__repr__()) for recinto in recintos]
     return sorted(recintos_list, key=lambda x: x[1])
 
 
@@ -60,10 +61,10 @@ def get_recintos_dte(session) -> List[Tuple[int, str]]:
                      for recinto in recintos]
     return sorted(recintos_list, key=lambda x: x[1])
 
+
 def get_recintos_api(session) -> List[Tuple[int, str]]:
     recintos = session.query(Recinto).filter(Recinto.cod_siscomex.isnot(None)).all()
-    recintos_list = [(recinto.cod_siscomex, f'{recinto.nome} - {recinto.cod_siscomex}')
-                     for recinto in recintos]
+    recintos_list = [(recinto.cod_siscomex, recinto.__repr__()) for recinto in recintos]
     return sorted(recintos_list, key=lambda x: x[1])
 
 
@@ -424,7 +425,7 @@ def get_ovr_filtro(session,
             q = session.query(EventoOVR).join(OVR).filter(
                 EventoOVR.tipoevento_id == int(pfiltro.get('teveevento')))
             if pfiltro.get('datainicio'):
-               q = q.filter(OVR.datahora >= pfiltro.get('datainicio'))
+                q = q.filter(OVR.datahora >= pfiltro.get('datainicio'))
             datafim = pfiltro.get('datafim')
             if datafim:
                 datafim = datafim + timedelta(days=1)
@@ -1434,7 +1435,7 @@ def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
             if row.get('descricao') is None:
                 logger.info('Abortando linha {} da planilha {}'
                             'devido descrição vazia'.format(index, lfilename))
-                conta_linhas_puladas +=1
+                conta_linhas_puladas += 1
                 if conta_linhas_puladas > 10:
                     break
                 continue

@@ -1,5 +1,5 @@
 from wtforms import StringField, IntegerField, TextAreaField, SelectField, BooleanField
-from wtforms.fields.html5 import DateField, TimeField, DecimalField
+from wtforms.fields import DateField, TimeField, DecimalField
 
 from bhadrasana.forms import RastreavelForm
 

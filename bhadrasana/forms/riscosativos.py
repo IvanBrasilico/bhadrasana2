@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import BooleanField
-from wtforms.fields.html5 import DateField
+from wtforms.fields import DateField
 
 
 class RiscosForm(FlaskForm):
