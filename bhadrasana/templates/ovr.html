@@ -902,7 +902,7 @@
         // Limpa o select atual
         responsavelSelect.innerHTML = '<option>Carregando...</option>';
 
-        fetch(`/usuarios_por_setor?setor_id=${setorId}`)
+        fetch(`usuarios_por_setor?setor_id=${setorId}`)
           .then(response => response.json())
           .then(data => {
             responsavelSelect.innerHTML = ''; // limpa as opções antigas
