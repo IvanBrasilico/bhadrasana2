@@ -333,6 +333,13 @@ class EventoOVR(BaseRastreavel, BaseDumpable):
     excluido = Column(Boolean, index=True)
     meramente_informativo = Column(Boolean, index=False)
 
+    def get_detalhes(self):
+        return self.motivo.split('|')[0]
+
+    def get_motivos(self):
+        return ''.join(self.motivo.split('|')[1:] )
+
+
     @property
     def descricao_fase(self):
         return Enumerado.faseOVR(self.fase)

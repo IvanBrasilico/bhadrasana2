@@ -3,7 +3,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, TextAreaField, SelectField, \
     validators, SelectMultipleField, BooleanField
 from wtforms.fields import DateField, TimeField, DecimalField
-from wtforms.validators import optional
+from wtforms.validators import Length, Optional, optional
 
 from bhadrasana.forms.exibicao_ovr import TipoExibicao
 from bhadrasana.models.ovr import Enumerado, TipoResultado
@@ -215,12 +215,22 @@ class ResponsavelOVRForm(FlaskForm):
 class SetorOVRForm(FlaskForm):
     ovr_id = IntegerField('OVR')
     setor = SelectField('Novo Setor')
+    responsavel = SelectField('Novo Responsável', validators=[Optional()])
+    motivo_setor = TextAreaField(
+        'Motivo da Mudança',
+        validators=[Optional(), Length(max=200, message="O motivo deve ter no máximo 200 caracteres.")]
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setor.choices = []
+        self.responsavel.choices = []
+
         if kwargs.get('setores'):
             self.setor.choices = kwargs.get('setores')
+
+        if kwargs.get('responsaveis'):
+            self.responsavel.choices = kwargs.get('responsaveis')
 
 
 class TGOVRForm(FlaskForm):

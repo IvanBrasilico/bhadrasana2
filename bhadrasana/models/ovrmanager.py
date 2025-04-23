@@ -694,7 +694,10 @@ def atribui_responsavel_ovr(session, ovr_id: int,
 
 
 def muda_setor_ovr(session, ovr_id: int,
-                   setor_id: str, user_name: str) -> OVR:
+                   setor_id: str,
+                   user_name: str,
+                   responsavel_cpf: str = None,
+                   motivo: str = None) -> OVR:
     """Atualiza campo setor na OVR. Gera evento correspondente.
 
     Regras: somente responsável ou Supervisor pode chamar,
@@ -703,28 +706,45 @@ def muda_setor_ovr(session, ovr_id: int,
     :param session: Conexão com banco SQLAlchemy
     :param ovr_id: ID da OVR a atribuir responsável
     :param setor_id: ID do novo setor
+    :param user_name: Usuário que está realizando a mudança
+    :param responsavel_cpf: Novo responsável (CPF)
+    :param motivo: Texto justificando a mudança (máx. 200 caracteres)
     :return: OVR modificado
     """
     try:
         ovr = get_ovr(session, ovr_id)
         tipoevento = session.query(TipoEventoOVR).filter(
             TipoEventoOVR.eventoespecial == EventoEspecial.MudancaSetor.value).first()
-        evento_params = {'tipoevento_id': tipoevento.id,
-                         'motivo': 'Setor Anterior: ' + ovr.setor.nome,
-                         'user_name': user_name,  # Responsável pela mudança
-                         'ovr_id': ovr.id,
-                         }
+
+        motivo_evento = f"Setor anterior: {ovr.setor.nome}"
+        if motivo:
+            motivo_evento += f" | Motivo: {motivo}"
+        if responsavel_cpf:
+            motivo_evento += f" | Novo responsável: {responsavel_cpf}"
+
+        evento_params = {
+            'tipoevento_id': tipoevento.id,
+            'motivo': motivo_evento,
+            'user_name': user_name,
+            'ovr_id': ovr.id,
+        }
+
         evento = gera_eventoovr(session, evento_params, commit=False, user_name=user_name)
+
+        # Atualiza os dados na ficha OVR
         ovr.tipoevento_id = tipoevento.id
         ovr.setor_id = setor_id
-        ovr.responsavel_cpf = None
+        ovr.responsavel_cpf = responsavel_cpf if responsavel_cpf else None
         ovr.fase = 0
+
         session.add(evento)
         session.add(ovr)
         session.commit()
+
     except Exception as err:
         session.rollback()
         raise err
+
     return ovr
 
 

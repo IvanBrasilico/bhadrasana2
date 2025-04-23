@@ -29,7 +29,7 @@ from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_ovr_filtro, gera_eventoovr, gera_processoovr, get_tipos_processo, lista_itemtg, \
     get_itemtg, get_recintos, \
     cadastra_itemtg, get_usuarios, atribui_responsavel_ovr, lista_tgovr, get_tgovr, \
-    cadastra_tgovr, get_ovr_responsavel, importa_planilha_tg, exporta_planilhaovr, \
+    cadastra_tgovr, get_ovr_responsavel, Setor, importa_planilha_tg, exporta_planilhaovr, \
     get_tiposmercadoria_choice, \
     inclui_flag_ovr, exclui_flag_ovr, get_flags, informa_lavratura_auto, \
     get_relatorios_choice, \
@@ -596,17 +596,67 @@ def ovr_app(app):
         try:
             setor_ovr_form = SetorOVRForm(request.form)
             ovr_id = setor_ovr_form.ovr_id.data
-            muda_setor_ovr(session,
-                           ovr_id=ovr_id,
-                           setor_id=setor_ovr_form.setor.data,
-                           user_name=current_user.name
-                           )
+
+            # 🆕 Pega os novos dados do formulário
+            responsavel_cpf = request.form.get('responsavel') or None
+            motivo = request.form.get('motivo_setor', '').strip()
+
+            # 🆕 Passa tudo para a função
+            muda_setor_ovr(
+                session,
+                ovr_id=ovr_id,
+                setor_id=setor_ovr_form.setor.data,
+                user_name=current_user.name,
+                responsavel_cpf=responsavel_cpf,
+                motivo=motivo
+            )
+
+            flash("Ficha transferida com sucesso.")
+
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
             flash(str(type(err)))
             flash(str(err))
+
         return redirect(url_for('ovr', id=ovr_id))
+
+    @app.route('/usuarios_por_setor')
+    @login_required
+    def usuarios_por_setor():
+        session = app.config.get('dbsession')
+        setor_id = request.args.get('setor_id')
+
+        try:
+            print(f"Recebido setor_id: {setor_id}")
+
+            if not setor_id:
+                return jsonify({'usuarios': []})
+
+            setor_id = int(setor_id)
+            print(f"Convertido para inteiro: {setor_id}")
+
+            # 🛠️ Recupera o setor do banco
+            setor = session.query(Setor).filter_by(id=setor_id).first()
+            if not setor:
+                print("Setor não encontrado!")
+                return jsonify({'usuarios': []})
+
+            # Passa o objeto setor como lista
+            usuarios = get_usuarios_setores_choice(session, [setor])
+            print(f"Usuários encontrados: {usuarios}")
+
+            return jsonify({
+                'usuarios': [{'cpf': cpf, 'nome': nome} for cpf, nome in usuarios]
+            })
+
+        except Exception as e:
+            print(f"Erro na rota /usuarios_por_setor: {e}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({'usuarios': []}), 500
+
+
 
     @app.route('/libera_ficha', methods=['GET'])
     @login_required
