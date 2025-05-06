@@ -1474,7 +1474,6 @@ def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
                 itemtg.numero = index
             itemtg.tg_id = tg.id
             itemtg.descricao = row['descricao'].strip()
-            itemtg.qtde = row['qtde']
             try:
                 unidade = row.get('unidadedemedida', '').strip()
                 itemtg.unidadedemedida = Enumerado. \
@@ -1493,14 +1492,27 @@ def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
                 if alertas.get('ncm') is None:
                     alertas['ncm'] = 'Campo ncm ({}) não encontrado.'. \
                         format(de_para.get('ncm'))
+            qtde = row['qtde']
+            if qtde:
+                if isinstance(qtde, str):
+                    itemtg.set_qtde_str(qtde)
+                else:
+                    itemtg.qtde = qtde
+            else:
+                itemtg.valor = 0.
+                if alertas.get('qtde') is None:
+                    alertas['qtde'] = 'Campo qtde ({}) não encontrado.'. \
+                        format(de_para.get('qtde'))
+
             valor = row.get('valor')
             if valor:
                 if isinstance(valor, str):
-                    valor = ''.join([c for c in valor if c in '0123456789.'])
-                    valor = float(valor)
-                itemtg.valor = valor * recupera_taxa_cambio(row)
+                    itemtg.set_valor_str(valor)
+                else:
+                    itemtg.valor = valor
+                itemtg.valor = itemtg.valor * recupera_taxa_cambio(row)
             else:
-                itemtg.valor = 0
+                itemtg.valor = 0.
                 if alertas.get('valor') is None:
                     alertas['valor'] = 'Campo valor ({}) não encontrado.'. \
                         format(de_para.get('valor'))

@@ -510,11 +510,27 @@ class ItemTG(BaseRastreavel, BaseDumpable):
     def hscode(self):
         return self.ncm[:6]
 
+    def importa_str_float(self, ovalor: str):
+        ovalor = ''.join([c for c in ovalor if c in '0123456789.'])
+        return float(ovalor)
+
+    def set_qtde_str(self, strqtde: str):
+        self.qtde = self.importa_str_float(strqtde)
+
+    def set_valor_str(self, strvalor: str):
+        self.valor = self.importa_str_float(strvalor)
+
+    def format_float(self, ofloat):
+        if ofloat is None:
+            return '0.00'
+        return '{:,.2f}'.format(ofloat). \
+            replace('.', '-').replace(',', '.').replace('-', ',')
+
     @property
     def qtde_str(self) -> str:
         if self.qtde is None:
-            return '0'
-        return '{:0d}'.format(int(self.qtde))
+            return '0.00'
+        return '{:,.2fd}'.format(self.qtde)
 
     @property
     def valor_str(self) -> str:
@@ -525,15 +541,8 @@ class ItemTG(BaseRastreavel, BaseDumpable):
 
     def dump(self, exclude=None, explode=True):
         dumped = super().dump(exclude)
-        # TODO: Utilizar properties (qtde e valor)
-        if dumped['qtde']:
-            dumped['qtde'] = '{:0f}'.format(dumped['qtde'])
-        else:
-            dumped['qtde'] = ''
-        if dumped['valor']:
-            dumped['valor'] = '{:0.2f}'.format(dumped['valor'])
-        else:
-            dumped['valor'] = ''
+        dumped['qtde'] = self.format_float(self.qtde)
+        dumped['valor'] = self.format_float(self.valor)
         if self.marca:
             dumped['marca_descricao'] = self.marca.nome
         dumped['unidadedemedida'] = self.get_unidadedemedida

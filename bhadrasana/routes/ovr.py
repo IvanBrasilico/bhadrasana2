@@ -1063,7 +1063,7 @@ def ovr_app(app):
             if not formato:
                 formato = 'Safira'
             tg = get_tgovr(session, tg_id)
-            out_filename = 'tg_{}_{}.xls'.format(
+            out_filename = 'tg_{}_{}.xlsx'.format(
                 tg.numerotg_alnum,
                 datetime.strftime(datetime.now(), '%Y_%m_%dT%H_%M_%S'))
             print(formato)
