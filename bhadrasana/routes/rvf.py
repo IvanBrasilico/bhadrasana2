@@ -323,9 +323,10 @@ def rvf_app(app):
     @login_required
     def rvf_imgupload():
         db = app.config['mongo_risco']
+        rvf_id = None
         try:
             session = app.config.get('dbsession')
-            rvf_id = request.form.get('rvf_id')
+            rvf_id = int(request.form.get('rvf_id'))
             if rvf_id is None:
                 flash('Escolha um RVF antes')
                 return redirect(url_for('rvf'))
@@ -341,7 +342,6 @@ def rvf_app(app):
         except Exception as err:
             logger.error(err, exc_info=True)
             flash(str(err))
-            return jsonify({'msg': str(err)}), 500
         return redirect(url_for('rvf', id=rvf_id))
 
     # telegram - upload_foto
