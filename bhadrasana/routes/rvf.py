@@ -323,20 +323,25 @@ def rvf_app(app):
     @login_required
     def rvf_imgupload():
         db = app.config['mongo_risco']
-        session = app.config.get('dbsession')
-        rvf_id = request.form.get('rvf_id')
-        if rvf_id is None:
-            flash('Escolha um RVF antes')
-            return redirect(url_for('rvf'))
-        for file in request.files.getlist('images'):
-            print('Arquivo:', file)
-            validfile, mensagem = valid_file(file)
-            if not validfile:
-                flash(mensagem)
-                print('Não é válido %s' % mensagem)
-                return redirect(url_for('rvf', id=rvf_id))
-            content = file.read()
-            inclui_imagemrvf(db, session, content, file.filename, rvf_id)
+        try:
+            session = app.config.get('dbsession')
+            rvf_id = request.form.get('rvf_id')
+            if rvf_id is None:
+                flash('Escolha um RVF antes')
+                return redirect(url_for('rvf'))
+            for file in request.files.getlist('images'):
+                print('Arquivo:', file)
+                validfile, mensagem = valid_file(file)
+                if not validfile:
+                    flash(mensagem)
+                    print('Não é válido %s' % mensagem)
+                    return redirect(url_for('rvf', id=rvf_id))
+                content = file.read()
+                inclui_imagemrvf(db, session, content, file.filename, rvf_id)
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            flash(str(err))
+            return jsonify({'msg': str(err)}), 500
         return redirect(url_for('rvf', id=rvf_id))
 
     # telegram - upload_foto
