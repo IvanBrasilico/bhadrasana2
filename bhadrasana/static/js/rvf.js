@@ -98,7 +98,7 @@ function upload_files(ev){
                     });
                 });
             }
-            img.onload()
+            //img.onload()
         }
         reader.readAsDataURL(file);
     }
