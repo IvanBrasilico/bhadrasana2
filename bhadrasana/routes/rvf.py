@@ -10,6 +10,7 @@ from flask_login import login_required, current_user
 from gridfs import GridFS
 from io import BytesIO
 from werkzeug.utils import redirect
+from werkzeug.exceptions import BadRequest
 
 from bhadrasana.conf import APP_PATH
 from bhadrasana.docx.docx_functions import gera_OVR, gera_taseda
@@ -319,29 +320,53 @@ def rvf_app(app):
         return jsonify([{'id': k9.id, 'nome': k9.nome}
                         for k9 in k9s]), 201
 
+
     @app.route('/rvf_imgupload', methods=['POST'])
     @login_required
     def rvf_imgupload():
         db = app.config['mongo_risco']
-        rvf_id = None
+
+        # 1) Logue as chaves recebidas no form e nos arquivos
+        logger.debug(f"FORM keys: {list(request.form.keys())}")
+        logger.debug(f"FILES keys: {list(request.files.keys())}")
+
+        # 2) Tente extrair um inteiro de rvf_id de forma segura
+        raw_rvf = request.form.get('rvf_id', '').strip()
+        logger.debug(f"rvf_id raw: '{raw_rvf}'")
+        try:
+            rvf_id = int(raw_rvf)
+        except ValueError:
+            logger.error(f"rvf_id inválido: '{raw_rvf}'")
+            flash("rvf_id inválido ou ausente")
+            return redirect(url_for('rvf'))
+
+        # 3) Comece o processamento
         try:
             session = app.config.get('dbsession')
-            rvf_id = int(request.form.get('rvf_id'))
-            if rvf_id is None:
-                flash('Escolha um RVF antes')
-                return redirect(url_for('rvf'))
-            for file in request.files.getlist('images'):
-                print('Arquivo:', file)
+
+            # Se não houver arquivos, avisar
+            imagens = request.files.getlist('images')
+            if not imagens:
+                logger.error("Nenhum arquivo em request.files['images']")
+                flash("Nenhuma imagem enviada")
+                return redirect(url_for('rvf', id=rvf_id))
+
+            for file in imagens:
+                logger.debug(f"Arquivo recebido: {file.filename!r}, content_type={file.content_type}")
                 validfile, mensagem = valid_file(file)
                 if not validfile:
+                    logger.error(f"Imagem inválida: {mensagem}")
                     flash(mensagem)
-                    print('Não é válido %s' % mensagem)
                     return redirect(url_for('rvf', id=rvf_id))
+
                 content = file.read()
                 inclui_imagemrvf(db, session, content, file.filename, rvf_id)
+
         except Exception as err:
-            logger.error(err, exc_info=True)
-            flash(str(err))
+            # Log completo do traceback
+            logger.error("Erro em rvf_imgupload", exc_info=True)
+            flash(f"Erro ao processar o upload: {err}")
+
         return redirect(url_for('rvf', id=rvf_id))
 
     # telegram - upload_foto
