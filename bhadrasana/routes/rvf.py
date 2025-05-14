@@ -741,7 +741,7 @@ def rvf_app(app):
             for grid_out in result:
                 zf.writestr(grid_out.filename, grid_out.read())
         memory_file.seek(0)
-        return send_file(memory_file, attachment_filename='imagens.zip', as_attachment=True)
+        return send_file(memory_file, download_name='imagens.zip', as_attachment=True)
 
     @app.route('/registrar_rvf', methods=['POST', 'GET'])
     @login_required
