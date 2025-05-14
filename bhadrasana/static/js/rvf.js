@@ -66,6 +66,10 @@ function upload_files(ev){
                     fd.append("dataModificacao", file.lastModifiedDate.toISOString());
                     let rvf_id = document.querySelector("#rvfid").textContent;
                     fd.append("rvf_id",  rvf_id);
+					
+					let dataurl = canvas.toDataURL("image/jpeg", 0.92);
+					console.log("Comprimento da string base64:", dataurl.length);
+
                     $.ajax({
                         url: 'api/rvf_imgupload',
                         data: fd,
