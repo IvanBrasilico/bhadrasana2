@@ -729,77 +729,19 @@ def rvf_app(app):
             return jsonify({'msg': str(err)}), 500
         return jsonify(apreensao_rvf.dump()), 201
 
-from io import BytesIO
-import zipfile
-import logging
-from flask import (
-    current_app,    # para pegar config e logger
-    request,
-    send_file,
-    abort
-)
-
-logger = logging.getLogger(__name__)
-
     @app.route('/rvf_download_imagens', methods=['GET', 'POST'])
     def rfv_download_imagens():
-        """
-        Gera um ZIP com todos os anexos do RVF e o retorna como download.
-        """
-
-        # 1) Valida e converte o parâmetro rvf_id para inteiro
-        rvf_id = request.args.get('rvf_id', type=int)
-        if rvf_id is None:
-            abort(400, description="Parâmetro 'rvf_id' ausente ou inválido.")
-
-        # 2) Pega a sessão do SQLAlchemy e o cliente MongoDB (GridFS)
-        session = current_app.config.get('dbsession')
-        db = current_app.config.get('mongo_risco')
-        if session is None or db is None:
-            logger.error("Configuração de DB ausente.")
-            abort(500, description="Erro interno de configuração.")
-
-        try:
-            # 3) Busca o objeto relacional (SQL) do RVF
-            rvf = get_rvf(session, rvf_id)
-            if rvf is None:
-                abort(404, description=f"RVF de id {rvf_id} não encontrado.")
-
-            # 4) Recupera os arquivos do GridFS
-            #    get_anexos_mongo deve retornar um cursor ou lista de objetos GridOut
-            result = get_anexos_mongo(db, rvf)
-
-            # 5) Empacota tudo em um ZIP na memória
-            memory_file = BytesIO()
-            with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zf:
-                for grid_out in result:
-                    filename = getattr(grid_out, 'filename', None)
-                    if not filename:
-                        logger.warning("Anexo sem filename para RVF %s: %r", rvf_id, grid_out)
-                        continue
-
-                    data = grid_out.read()
-                    if not data:
-                        logger.warning("Anexo vazio em RVF %s: %s", rvf_id, filename)
-                        continue
-
-                    # escreve no ZIP
-                    zf.writestr(filename, data)
-
-            memory_file.seek(0)
-
-            # 6) Retorna o ZIP como attachment; use download_name em Flask ≥2.0
-            return send_file(
-                memory_file,
-                as_attachment=True,
-                download_name='imagens.zip',
-                mimetype='application/zip'
-            )
-
-        except Exception:
-            # 7) Em caso de qualquer falha, loga o stack trace e retorna 500
-            logger.exception("Falha ao gerar ZIP de imagens para RVF %s", rvf_id)
-            abort(500, description="Erro interno ao baixar imagens.")
+        session = app.config.get('dbsession')
+        db = app.config['mongo_risco']
+        rvf_id = request.args.get('rvf_id')
+        rvf = get_rvf(session, rvf_id)
+        result = get_anexos_mongo(db, rvf)
+        memory_file = BytesIO()
+        with zipfile.ZipFile(memory_file, 'w') as zf:
+            for grid_out in result:
+                zf.writestr(grid_out.filename, grid_out.read())
+        memory_file.seek(0)
+        return send_file(memory_file, attachment_filename='imagens.zip', as_attachment=True)
 
     @app.route('/registrar_rvf', methods=['POST', 'GET'])
     @login_required
