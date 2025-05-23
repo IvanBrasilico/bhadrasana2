@@ -358,7 +358,7 @@ class ExibicaoOVR:
                 resultados.append(f'<b>{resultado.get_tipo_resultado}:</b> {resultado.valor :,.2f}<br>')
             processos = []
             for processo in ovr.processos:
-                processos.append(f'<b>{processo.tipoprocesso}:</b> {processo.numero}<br>')
+                processos.append(f'{processo.numero}<br>')
             return ovr.id, visualizado, [
                 ovr.datahora,
                 ovr.numeroCEmercante,
