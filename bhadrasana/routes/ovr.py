@@ -361,7 +361,7 @@ def ovr_app(app):
                     print(linhas)
                     df = pd.DataFrame(linhas)
                     df.columns = ['Grupo', *titulos_exibicao]
-                    out_filename = '{}_{}.xls'.format('PesquisaFicha_',
+                    out_filename = '{}_{}.xlsx'.format('PesquisaFicha_',
                                                       datetime.strftime(datetime.now(), '%Y-%m-%dT%H-%M-%S')
                                                       )
                     df.to_excel(os.path.join(get_user_save_path(), out_filename), index=False)
