@@ -114,7 +114,7 @@ class ExibicaoOVR:
              'Peso apreensões',
              'Valor TG',
              'Resultados informados',
-             'Responsável atual',
+             'Processos',
              'Auditor Responsável'],
         TipoExibicao.Resumo:
             ['ID',
@@ -356,6 +356,9 @@ class ExibicaoOVR:
             resultados = []
             for resultado in ovr.resultados:
                 resultados.append(f'<b>{resultado.get_tipo_resultado}:</b> {resultado.valor :,.2f}<br>')
+            processos = []
+            for processo in ovr.processos:
+                processos.append(f'<b>{processo.tipoprocesso}:</b> {processo.numero}<br>')
             return ovr.id, visualizado, [
                 ovr.datahora,
                 ovr.numeroCEmercante,
@@ -366,7 +369,7 @@ class ExibicaoOVR:
                 '{:0.2f}'.format(peso_apreensoes),
                 '{:0.2f}'.format(valor_tgs),
                 '\n'.join(resultados),
-                responsavel_descricao,
+                ', '.join(processos),
                 auditor_descricao], e_perecivel
         if self.tipo == TipoExibicao.Resumo:
             resumo = self.get_OVR_resumo_html(ovr)
