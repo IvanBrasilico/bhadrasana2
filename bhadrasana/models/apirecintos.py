@@ -149,8 +149,9 @@ def alfanumeric_c(texto):
 
 class AcessoVeiculo(EventoAPIBase):
     __tablename__ = 'apirecintos_acessosveiculo'
-    __table_args__ = (UniqueConstraint('placa', 'operacao', 'tipoOperacao', 'dataHoraOcorrencia'),
+    __table_args__ = (UniqueConstraint('placa', 'operacao', 'tipoOperacao', 'dataHoraOcorrencia', 'dataHoraRegistro'),
                       )
+    dataHoraRegistro = Column(DateTime(), index=True)
     operacao = Column(String(1), index=True)  # G - A*g*endamento, C - A*c*esso
     direcao = Column(String(1), index=True)  # E - Entrada, S - Saída
     placa = Column(String(7), index=True)
@@ -274,7 +275,8 @@ class EmbarqueDesembarque(EventoAPIBase):
 
 class PesagemVeiculo(EventoAPIBase):
     __tablename__ = 'apirecintos_pesagensveiculo'
-    __table_args__ = (UniqueConstraint('placa', 'dataHoraOcorrencia'),)
+    __table_args__ = (UniqueConstraint('placa', 'dataHoraOcorrencia','dataHoraTransmissao'),)
+    dataHoraTransmissao = Column(DateTime(), index=True)
     pesoBrutoBalanca = Column(Numeric(7, 2), index=True)
     pesoBrutoManifesto = Column(Numeric(7, 2))
     taraConjunto = Column(Numeric(7, 2))
@@ -301,10 +303,11 @@ class PesagemVeiculo(EventoAPIBase):
             self.placaSemirreboque = alfanumeric_c(placaSemirreboque)
 
     def is_duplicate(self, session):
-        #if self.placa == 'DPC9J28':      print(self.placa, self.dataHoraOcorrencia)
-        return session.query(PesagemVeiculo).filter(PesagemVeiculo.placa == self.placa). \
-            filter(PesagemVeiculo.dataHoraOcorrencia == self.dataHoraOcorrencia).one_or_none() is not None
-
+        return session.query(PesagemVeiculo).filter(
+            PesagemVeiculo.placa == self.placa,
+            PesagemVeiculo.dataHoraOcorrencia == self.dataHoraOcorrencia,
+            PesagemVeiculo.dataHoraTransmissao == self.dataHoraTransmissao
+        ).one_or_none() is not None
 
 class InspecaoNaoInvasiva(EventoAPIBase):
     __tablename__ = 'apirecintos_inspecoesnaoinvasivas'
