@@ -250,7 +250,7 @@ class ExibicaoOVR:
                 conteineres.add(rvf.numerolote)
         return conteineres
 
-    def get_peso_apreensoes(self, ovr):
+    def get_peso_apreensoes(self, ovr) -> float:
         peso = 0.
         rvfs = lista_rvfovr(self.session, ovr.id)
         for rvf in rvfs:
@@ -260,6 +260,14 @@ class ExibicaoOVR:
                 except TypeError:
                     pass
         return peso
+
+    def get_datas_verificacoes(self, ovr) -> List[str]:
+        lista_datas = []
+        rvfs = lista_rvfovr(self.session, ovr.id)
+        for rvf in rvfs:
+            if rvf.datahora:
+                lista_datas.append(rvf.datahora.strftime('%d/%m/%Y'))
+        return lista_datas
 
     def get_valor_tgs(self, ovr):
         valor = 0.
@@ -444,6 +452,8 @@ class ExibicaoOVR:
         datahora = ovr.datahora.strftime('%d/%m/%Y') if ovr.datahora else ''
         resumo = [f'<h4><a href="ovr?id={ovr.id}" style="color: orange" target="_blank">' +
                   f'{ovr.id} - {datahora}</a></h4>{ovr.get_tipooperacao()}']
+        datasapreensoes = self.get_datas_verificacoes(ovr)
+        resumo.append(f'<b>Aberturas</b>: {", ".join(datasapreensoes)}')
         if mostra_ovr:
             if ovr.setor:
                 resumo.append(f'<b>Setor</b>: {ovr.setor.nome}')
