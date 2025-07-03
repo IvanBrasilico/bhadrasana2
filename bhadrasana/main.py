@@ -51,21 +51,6 @@ conn_risco = MongoClient(host=MONGODB_RISCO)
 mongodb_risco = conn_risco['risco']
 app = configure_app(mongodb, db_session, mongodb_risco)
 
-# ———————————————— DEBUG MAX_CONTENT_LENGTH ————————————————
-from flask import current_app
-
-@app.before_first_request
-def _debug_max_content():
-    """
-    Dispara um WARNING no log com o valor atual de MAX_CONTENT_LENGTH
-    antes de servir a primeira requisição.
-    """
-    current_app.logger.warning(
-        ">>> DEBUG: MAX_CONTENT_LENGTH = %r bytes",
-        current_app.config.get("MAX_CONTENT_LENGTH")
-    )
-# ———————————————————————————————————————————————————————————————
-
 if os.environ.get('SESSION_COOKIE'):
     app.config.update(SESSION_COOKIE_NAME=os.environ.get('SESSION_COOKIE'))
 risco_app(app)
