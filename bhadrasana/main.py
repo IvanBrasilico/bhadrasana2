@@ -20,9 +20,7 @@ a aplicação de filtros/parâmetros de risco.
 import os
 import sys
 
-+from flask_login import current_user
-+from flask import Request, current_app
-+from werkzeug.formparser import FormDataParser
+from flask_login import current_user
 from pymongo import MongoClient
 
 from bhadrasana.routes.apirecintos import apirecintos_app
@@ -52,29 +50,6 @@ MONGODB_RISCO = os.environ.get('MONGODB_RISCO')
 conn_risco = MongoClient(host=MONGODB_RISCO)
 mongodb_risco = conn_risco['risco']
 app = configure_app(mongodb, db_session, mongodb_risco)
-
-# ————— Override de propriedades para permitir uploads maiores —————
-class LargeUploadRequest(Request):
-    @property
-    def max_content_length(self):
-        # aborta Flask após X bytes
-        return current_app.config.get('MAX_CONTENT_LENGTH',
-                                      super().max_content_length)
-
-    @property
-    def max_form_memory_size(self):
-        # define buffer máximo do parser multipart
-        return current_app.config.get('MAX_FORM_MEMORY_SIZE',
-                                      super().max_form_memory_size)
-
-# registra a classe customizada ANTES de adicionar rotas/blueprints
-app.request_class = LargeUploadRequest
-# ——————————————————————————————————————————————————————————————
-
-# —————— Forçar limites de upload no Flask/Werkzeug ——————
-app.config['MAX_CONTENT_LENGTH']   = 50 * 1024 * 1024   # 50 MB
-app.config['MAX_FORM_MEMORY_SIZE'] = 100 * 1024 * 1024  # 100 MB para o parser multipart
-# ————————————————————————————————————————————————————————
 
 if os.environ.get('SESSION_COOKIE'):
     app.config.update(SESSION_COOKIE_NAME=os.environ.get('SESSION_COOKIE'))
