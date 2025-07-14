@@ -51,31 +51,25 @@ conn_risco = MongoClient(host=MONGODB_RISCO)
 mongodb_risco = conn_risco['risco']
 app = configure_app(mongodb, db_session, mongodb_risco)
 
-# ————— Override da Request para aceitar uploads grandes no Werkzeug 1.0.1 —————
-from flask import Request, current_app
-from werkzeug.formparser import FormDataParser
-
+# ————— Override de propriedades para permitir uploads maiores —————
 class LargeUploadRequest(Request):
-    """
-    Subclasse de Request que injeta no FormDataParser um teto maior
-    (lendo de app.config['MAX_FORM_MEMORY_SIZE']).
-    """
-    def _load_form_data(self):
-        # pega do config via current_app ou usa 100 MB por default
-        max_mem = current_app.config.get('MAX_FORM_MEMORY_SIZE', 100 * 1024 * 1024)
-        parser = FormDataParser(max_form_memory_size=max_mem)
-        # parseia o body (multipart/form-data)
-        self._cached_data = parser.parse(
-            self.environ['wsgi.input'],
-            self.mimetype_params.get('boundary', ''),
-            self.content_length
+    @property
+    def max_content_length(self):
+        # usado pelo Flask/Werkzeug para abortar após X bytes
+        return current_app.config.get(
+            'MAX_CONTENT_LENGTH', super().max_content_length
         )
-        # chama o parser original para restante do fluxo
-        return super()._load_form_data()
+
+    @property
+    def max_form_memory_size(self):
+        # usado pelo FormDataParser para buffer de multipart
+        return current_app.config.get(
+            'MAX_FORM_MEMORY_SIZE', super().max_form_memory_size
+        )
 
 # aplica a subclasse no Flask
 app.request_class = LargeUploadRequest
-# ————————————————————————————————————————————————————————————————
+# ——————————————————————————————————————————————————————————————
 
 # —————— Forçar limites de upload no Flask/Werkzeug ——————
 app.config['MAX_CONTENT_LENGTH']   = 50 * 1024 * 1024   # 50 MB
