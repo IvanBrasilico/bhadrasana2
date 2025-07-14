@@ -20,7 +20,9 @@ a aplicação de filtros/parâmetros de risco.
 import os
 import sys
 
-from flask_login import current_user
++from flask_login import current_user
++from flask import Request, current_app
++from werkzeug.formparser import FormDataParser
 from pymongo import MongoClient
 
 from bhadrasana.routes.apirecintos import apirecintos_app
@@ -55,19 +57,17 @@ app = configure_app(mongodb, db_session, mongodb_risco)
 class LargeUploadRequest(Request):
     @property
     def max_content_length(self):
-        # usado pelo Flask/Werkzeug para abortar após X bytes
-        return current_app.config.get(
-            'MAX_CONTENT_LENGTH', super().max_content_length
-        )
+        # aborta Flask após X bytes
+        return current_app.config.get('MAX_CONTENT_LENGTH',
+                                      super().max_content_length)
 
     @property
     def max_form_memory_size(self):
-        # usado pelo FormDataParser para buffer de multipart
-        return current_app.config.get(
-            'MAX_FORM_MEMORY_SIZE', super().max_form_memory_size
-        )
+        # define buffer máximo do parser multipart
+        return current_app.config.get('MAX_FORM_MEMORY_SIZE',
+                                      super().max_form_memory_size)
 
-# aplica a subclasse no Flask
+# registra a classe customizada ANTES de adicionar rotas/blueprints
 app.request_class = LargeUploadRequest
 # ——————————————————————————————————————————————————————————————
 
