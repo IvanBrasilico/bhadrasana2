@@ -52,7 +52,7 @@ mongodb_risco = conn_risco['risco']
 app = configure_app(mongodb, db_session, mongodb_risco)
 
 # ————— Override da Request para aceitar uploads grandes no Werkzeug 1.0.1 —————
-from flask import Request
+from flask import Request, current_app
 from werkzeug.formparser import FormDataParser
 
 class LargeUploadRequest(Request):
@@ -61,8 +61,8 @@ class LargeUploadRequest(Request):
     (lendo de app.config['MAX_FORM_MEMORY_SIZE']).
     """
     def _load_form_data(self):
-        # pega do config ou usa 100 MB por default
-        max_mem = self.app.config.get('MAX_FORM_MEMORY_SIZE', 100 * 1024 * 1024)
+        # pega do config via current_app ou usa 100 MB por default
+        max_mem = current_app.config.get('MAX_FORM_MEMORY_SIZE', 100 * 1024 * 1024)
         parser = FormDataParser(max_form_memory_size=max_mem)
         # parseia o body (multipart/form-data)
         self._cached_data = parser.parse(
