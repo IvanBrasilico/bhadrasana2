@@ -52,18 +52,18 @@ mongodb_risco = conn_risco['risco']
 app = configure_app(mongodb, db_session, mongodb_risco)
 
 # ————— DEBUG: log do limite de upload do Flask —————
-from flask import current_app
+#from flask import current_app
 
-@app.before_first_request
-def _dump_max_content_length():
-    """
-    Loga o valor de MAX_CONTENT_LENGTH antes da primeira requisição.
-    """
+#@app.before_first_request
+#def _dump_max_content_length():
+#    """
+#    Loga o valor de MAX_CONTENT_LENGTH antes da primeira requisição.
+#    """
     # usando o logger central, tal como em shutdown_session
-    logger.warning(
-        ">>> DEBUG: app.config['MAX_CONTENT_LENGTH'] = %r bytes",
-        current_app.config.get("MAX_CONTENT_LENGTH")
-    )
+#    logger.warning(
+#        ">>> DEBUG: app.config['MAX_CONTENT_LENGTH'] = %r bytes",
+#        current_app.config.get("MAX_CONTENT_LENGTH")
+#    )
 # —————————————————————————————————————————————————————————————————
 
 if os.environ.get('SESSION_COOKIE'):
