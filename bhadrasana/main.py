@@ -51,6 +51,11 @@ conn_risco = MongoClient(host=MONGODB_RISCO)
 mongodb_risco = conn_risco['risco']
 app = configure_app(mongodb, db_session, mongodb_risco)
 
+# —————— Forçar limites de upload no Flask/Werkzeug ——————
+app.config['MAX_CONTENT_LENGTH']   = 50 * 1024 * 1024   # 50 MB
+app.config['MAX_FORM_MEMORY_SIZE'] = 100 * 1024 * 1024  # 100 MB para o parser multipart
+# ————————————————————————————————————————————————————————
+
 if os.environ.get('SESSION_COOKIE'):
     app.config.update(SESSION_COOKIE_NAME=os.environ.get('SESSION_COOKIE'))
 risco_app(app)
