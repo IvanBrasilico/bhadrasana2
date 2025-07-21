@@ -62,6 +62,10 @@ logger.warning(
 app.config['MAX_FORM_MEMORY_SIZE'] = 5 * 1024 * 1024  # 100 MiB
 # ————————————————————————————————————————————————————————————————
 
+logger.warning(">>> DEBUG: max_form_memory_size = %r", 
+               app.request_class().max_form_memory_size)
+
+
 if os.environ.get('SESSION_COOKIE'):
     app.config.update(SESSION_COOKIE_NAME=os.environ.get('SESSION_COOKIE'))
 risco_app(app)
