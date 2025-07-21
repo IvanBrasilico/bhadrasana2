@@ -10,6 +10,7 @@ from flask_login import login_required, current_user
 from gridfs import GridFS
 from io import BytesIO
 from werkzeug.utils import redirect
+from werkzeug.exceptions import RequestEntityTooLarge
 from werkzeug.exceptions import BadRequest
 
 from bhadrasana.conf import APP_PATH
@@ -363,6 +364,9 @@ def rvf_app(app):
                 content = file.read()
                 inclui_imagemrvf(db, session, content, file.filename, rvf_id)
 
+        except RequestEntityTooLarge:
+            # Deixa o errorhandler de 413 tratar este caso
+            raise
         except Exception as err:
             # Log completo do traceback
             logger.error("Erro em rvf_imgupload", exc_info=True)
