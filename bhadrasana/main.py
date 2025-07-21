@@ -41,6 +41,9 @@ from bhadrasana.routes.exporta_secta_e_ovr import eovr_app
 from bhadrasana.views import configure_app
 from flask_nav import Nav
 from flask_nav.elements import Navbar, View, Separator, Subgroup
+from werkzeug.exceptions import RequestEntityTooLarge
+from flask import request, jsonify
+
 
 # print('****************************')
 # print(MONGODB_URI)
@@ -50,6 +53,16 @@ MONGODB_RISCO = os.environ.get('MONGODB_RISCO')
 conn_risco = MongoClient(host=MONGODB_RISCO)
 mongodb_risco = conn_risco['risco']
 app = configure_app(mongodb, db_session, mongodb_risco)
+
+@app.errorhandler(RequestEntityTooLarge)
+def handle_too_large(e):
+    app.logger.error("→ MAX_CONTENT_LENGTH   = %r", app.config.get("MAX_CONTENT_LENGTH"))
+    # se você tiver sobrescrito request.max_form_memory_size:
+    app.logger.error("→ max_form_memory_size = %r", getattr(request, "max_form_memory_size", None))
+    return jsonify({'msg': 'Upload muito grande'}), 413
+
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50 MB
+
 
 # ————— DEBUG IMEDIATO: imprima o limite de upload do Flask —————
 logger.warning(
