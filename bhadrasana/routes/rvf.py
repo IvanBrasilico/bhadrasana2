@@ -403,10 +403,12 @@ def rvf_app(app):
             except IndexError:
                 image = base64.decodebytes(content.encode())
             inclui_imagemrvf(db, session, image, filename, rvf_id, dataModificacao)
+        except RequestEntityTooLarge:
+            # deixa escapar para o handler global de 413
+            raise
         except Exception as err:
             logger.error(str(err), exc_info=True)
             return jsonify({'msg': 'Erro: %s' % str(err)}), 500
-        return jsonify({'msg': 'imagens incluídas'}), 201
 
     @app.route('/exclui_anexo')
     def exclui_anexo():
