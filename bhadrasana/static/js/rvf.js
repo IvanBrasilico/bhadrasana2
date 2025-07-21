@@ -77,6 +77,17 @@ function upload_files(ev){
                         contentType: false,
                         processData: false,
                         type: 'POST',
+
+						error: function(xhr, status, err) {
+							if (xhr.status === 413) {
+								// recupera o nome do arquivo que está no FormData
+								var nome = fd.get('filename');
+								alert('Upload falhou: a imagem "' + nome + '" excede o tamanho máximo permitido.');
+							} else {
+								alert('Erro ao enviar imagem: ' + (err || xhr.statusText));
+							}
+						},
+
                         success: function(data){
                             quantidadeDeImagensCarregadas++;
                             console.log(`Carregou imagem: ${quantidadeDeImagensCarregadas}`);
