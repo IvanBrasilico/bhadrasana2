@@ -51,12 +51,12 @@ conn_risco = MongoClient(host=MONGODB_RISCO)
 mongodb_risco = conn_risco['risco']
 app = configure_app(mongodb, db_session, mongodb_risco)
 
-@app.before_first_request
-def _dump_max_content_length():
-    # imprime no log o limite atual de upload antes da primeira requisição
-    logger.warning(
-        f">>> DEBUG: MAX_CONTENT_LENGTH = {app.config.get('MAX_CONTENT_LENGTH')} bytes"
-    )
+# ————— DEBUG IMEDIATO: imprima o limite de upload do Flask —————
+logger.warning(
+    ">>> DEBUG: MAX_CONTENT_LENGTH = %r bytes",
+    app.config.get("MAX_CONTENT_LENGTH")
+)
+# ————————————————————————————————————————————————————————————————
 
 if os.environ.get('SESSION_COOKIE'):
     app.config.update(SESSION_COOKIE_NAME=os.environ.get('SESSION_COOKIE'))
