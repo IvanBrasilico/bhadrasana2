@@ -58,6 +58,10 @@ logger.warning(
 )
 # ————————————————————————————————————————————————————————————————
 
+# ——————— Force um buffer MUITO maior para cada campo multipart ———————
+app.config['MAX_FORM_MEMORY_SIZE'] = 5 * 1024 * 1024  # 100 MiB
+# ————————————————————————————————————————————————————————————————
+
 if os.environ.get('SESSION_COOKIE'):
     app.config.update(SESSION_COOKIE_NAME=os.environ.get('SESSION_COOKIE'))
 risco_app(app)
