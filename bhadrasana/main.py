@@ -42,10 +42,6 @@ from bhadrasana.views import configure_app
 from flask_nav import Nav
 from flask_nav.elements import Navbar, View, Separator, Subgroup
 
-logger.warning(">>> STARTUP: Python executable = %s", sys.executable)
-logger.warning(">>> STARTUP: Flask    version = %s", flask.__version__)
-logger.warning(">>> STARTUP: Werkzeug version = %s", werkzeug.__version__)
-
 # print('****************************')
 # print(MONGODB_URI)
 conn = MongoClient(host=MONGODB_URI)
@@ -65,6 +61,7 @@ logger.warning(
 # ——————— Force um buffer MUITO maior para cada campo multipart ———————
 app.config['MAX_FORM_MEMORY_SIZE'] = 5 * 1024 * 1024  # 100 MiB
 # ————————————————————————————————————————————————————————————————
+
 
 
 if os.environ.get('SESSION_COOKIE'):
