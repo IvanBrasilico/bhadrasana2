@@ -326,6 +326,7 @@ def rvf_app(app):
     @app.route('/rvf_imgupload', methods=['POST'])
     @login_required
     def rvf_imgupload():
+        request.max_form_memory_size = 5 * 1024 * 1024
         db = app.config['mongo_risco']
 
         # 1) Logue as chaves recebidas no form e nos arquivos
@@ -378,6 +379,7 @@ def rvf_app(app):
     @csrf.exempt
     @app.route('/api/rvf_imgupload', methods=['POST'])
     def api_rvf_imgupload():
+        request.max_form_memory_size = 5 * 1024 * 1024
         db = app.config['mongo_risco']
         session = app.config.get('dbsession')
         logger.debug("→ request.max_content_length   = %r", request.max_content_length)
@@ -409,6 +411,7 @@ def rvf_app(app):
         except Exception as err:
             logger.error(str(err), exc_info=True)
             return jsonify({'msg': 'Erro: %s' % str(err)}), 500
+        return jsonify({'msg': 'imagens incluídas'}), 201
 
     @app.route('/exclui_anexo')
     def exclui_anexo():

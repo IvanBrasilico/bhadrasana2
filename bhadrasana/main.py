@@ -61,7 +61,7 @@ def handle_too_large(e):
     app.logger.error("→ max_form_memory_size = %r", getattr(request, "max_form_memory_size", None))
     return jsonify({'msg': 'Upload muito grande'}), 413
 
-app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50 MB
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50 MiB
 
 
 # ————— DEBUG IMEDIATO: imprima o limite de upload do Flask —————
@@ -72,10 +72,13 @@ logger.warning(
 # ————————————————————————————————————————————————————————————————
 
 # ——————— Force um buffer MUITO maior para cada campo multipart ———————
-app.config['MAX_FORM_MEMORY_SIZE'] = 5 * 1024 * 1024  # 100 MiB
+app.config['MAX_FORM_MEMORY_SIZE'] = 5 * 1024 * 1024  # 5 MiB
 # ————————————————————————————————————————————————————————————————
 
-
+logger.warning(
+    ">>> DEBUG: MAX_FORM_MEMORY_SIZE = %r bytes",
+    app.config.get("MAX_FORM_MEMORY_SIZE")
+)
 
 if os.environ.get('SESSION_COOKIE'):
     app.config.update(SESSION_COOKIE_NAME=os.environ.get('SESSION_COOKIE'))
