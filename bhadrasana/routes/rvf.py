@@ -10,6 +10,7 @@ from flask_login import login_required, current_user
 from gridfs import GridFS
 from io import BytesIO
 from werkzeug.utils import redirect
+from werkzeug.exceptions import RequestEntityTooLarge
 from werkzeug.exceptions import BadRequest
 
 from bhadrasana.conf import APP_PATH
@@ -57,6 +58,14 @@ def rvf_app(app):
                                oform=filtro_form,
                                rvfs=rvfs,
                                title_page=title_page)
+
+    @app.errorhandler(RequestEntityTooLarge)
+    def handle_too_large(e):
+        # Isso roda sempre que o parser multipart solta um 413
+        logger.error("Upload estourou o limite do parser multipart")
+        logger.error("→ request.max_content_length   = %r", request.max_content_length)
+        logger.error("→ request.max_form_memory_size = %r", request.max_form_memory_size)
+        return jsonify({'msg': 'Upload muito grande'}), 413
 
     @app.route('/lista_rvfovr', methods=['POST', 'GET'])
     @login_required
@@ -375,6 +384,8 @@ def rvf_app(app):
     def api_rvf_imgupload():
         db = app.config['mongo_risco']
         session = app.config.get('dbsession')
+        logger.debug("→ request.max_content_length   = %r", request.max_content_length)
+        logger.debug("→ request.max_form_memory_size = %r", request.max_form_memory_size)
         try:
             rvf_id = request.form.get('rvf_id')
             if rvf_id is None:
