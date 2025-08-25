@@ -93,6 +93,7 @@ venv*/
 ENV/
 
 ajna_api/
+/ajnaapi/
 notebooks/gerenciais/Gerencial Paraguai.ipynb
 
 
@@ -167,4 +168,7 @@ bhadrasana2_password.txt
 .vscode/*
 ajna_mari/*
 meu_ambiente38/*
+/bhadrasana/static/*/
 /bhadrasana/static/25052288840/*
+
+virasana
