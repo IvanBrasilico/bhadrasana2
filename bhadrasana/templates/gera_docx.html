@@ -160,9 +160,20 @@
         AJNA - Receita Federal do Brasil 2017
     </div>
 </div>
-{% endblock %} {% block scripts %} {{super()}}
+{% endblock %}
 
+
+{% block scripts %}
+{{super()}}
 <script>
-
-
-</script> {% endblock %}
+function change_anexo(ev) {
+    console.log(ev.files[0]);
+    if (ev.files[0].size > 6*5120000) {
+        alert('Arquivos devem ser menores que 12MB!!');
+        ev.preventDefault();
+    } else {
+        document.getElementById('upload-file-info').textContent = ev.files[0].name;
+    }
+}
+</script>
+{% endblock %}
