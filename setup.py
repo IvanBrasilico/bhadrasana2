@@ -40,7 +40,7 @@ setup(
         'requests',  # Ver como retirar necessidade
         'sqlalchemy==1.4.54',
         'statsmodels',
-        'wtforms',
+        'wtforms==3.1.2',
         'markupsafe',
         'xlrd',
         'xlwt',
