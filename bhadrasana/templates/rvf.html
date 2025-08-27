@@ -110,6 +110,23 @@
                 <a href="rvf_docx?rvf_id={{oform.id.data}}" class="btn btn-info form-control">
                     RVF
                 </a>
+				
+            <div class="col-sm-2">
+                {% if oform.id.data %}
+                <button type="button" class="btn btn-success form-control" id="btn_cencomm">
+                    CENcomm – Importação
+                </button>
+                {% endif %}
+            </div>
+            <!-- Form oculto que envia a seleção ao backend -->
+            <form id="form_cencomm" method="POST" action="rvf_docx" style="display:none;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <input type="hidden" name="rvf_id" value="{{ oform.id.data }}"/>
+              <input type="hidden" name="tipo" value="cencomm_rvf"/>
+              <input type="hidden" name="imagens_ids" id="imagens_ids_cencomm" value=""/>
+            </form>
+
+
             </div>
         </div>
         </form>
@@ -310,6 +327,26 @@
     </div>
 </div>
 
+<div class="modal fade" id="modalCencomm" tabindex="-1" role="dialog" aria-labelledby="modalCencommLabel">
+  <div class="modal-dialog modal-lg" role="document" style="width:90%;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="modalCencommLabel">Selecione as imagens da RVF</h4>
+      </div>
+      <div class="modal-body">
+        <div id="imagens-cencomm" class="row" style="max-height:60vh; overflow:auto;">
+          <!-- thumbnails com checkboxes serão renderizados via JS -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="cencomm-toggle" type="button" class="btn btn-default">Selecionar/Desmarcar todas</button>
+        <button id="cencomm-ok" type="button" class="btn btn-primary">Gerar DOCX</button>
+        <button type="button" class="btn btn-danger" data-dismiss="modal">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %} {% block scripts %} {{super()}}
 <script src="static/js/rvf.js"></script>
 
@@ -486,7 +523,92 @@ $('input#k9s').bind('keydown', function(e) {
   }
 });
 
+// ==========================
+// CENCOMM – seleção de imagens
+// ==========================
+// Coleta os IDs das imagens já renderizadas em #div_imagens (cada uma dentro de <span class="badge" name="{{anexo}}">)
+function coletarIdsImagensDaPagina() {
+  var spans = document.querySelectorAll('#div_imagens span.badge[name]');
+  var ids = [];
+  spans.forEach(function(s){ ids.push(s.getAttribute('name')); });
+  return ids;
+}
 
+// Renderiza thumbnails + checkboxes no modal CENcomm
+function renderModalCencomm(ids) {
+  var cont = document.getElementById('imagens-cencomm');
+  cont.innerHTML = '';
+  if (!ids.length) {
+    cont.innerHTML = '<div class="col-sm-12"><p>Nenhuma imagem nesta RVF.</p></div>';
+    return;
+  }
+  ids.forEach(function(id){
+    var col = document.createElement('div');
+    col.className = 'col-xs-6 col-sm-4 col-md-3';
+    col.style.marginBottom = '12px';
+
+    var card = document.createElement('div');
+    card.style.border = '1px solid #ddd';
+    card.style.padding = '8px';
+    card.style.borderRadius = '4px';
+    card.style.textAlign = 'center';
+
+    var img = document.createElement('img');
+    img.src = 'image/' + id + '?size=240,160';
+    img.alt = id;
+    img.style.maxWidth = '100%';
+    img.style.maxHeight = '140px';
+    img.style.display = 'block';
+    img.style.margin = '0 auto 6px auto';
+    img.loading = 'lazy';
+
+    var chk = document.createElement('input');
+    chk.type = 'checkbox';
+    chk.className = 'cencomm-check';
+    chk.value = id;
+
+    var cap = document.createElement('div');
+    cap.textContent = id;
+    cap.style.fontSize = '12px';
+    cap.style.whiteSpace = 'nowrap';
+    cap.style.overflow = 'hidden';
+    cap.style.textOverflow = 'ellipsis';
+
+    card.appendChild(img);
+    card.appendChild(cap);
+    card.appendChild(chk);
+    col.appendChild(card);
+    cont.appendChild(col);
+  });
+}
+
+// Handlers do modal CENcomm
+(function initCencomm() {
+  var btn = document.getElementById('btn_cencomm');
+  if (!btn) return;
+
+  btn.addEventListener('click', function(){
+    var ids = coletarIdsImagensDaPagina();
+    renderModalCencomm(ids);
+    $('#modalCencomm').modal('show');
+  });
+
+  document.getElementById('cencomm-toggle').addEventListener('click', function(){
+    var checks = document.querySelectorAll('#imagens-cencomm .cencomm-check');
+    if (!checks.length) return;
+    var allChecked = Array.prototype.every.call(checks, function(c){ return c.checked; });
+    checks.forEach(function(c){ c.checked = !allChecked; });
+  });
+
+  document.getElementById('cencomm-ok').addEventListener('click', function(){
+    var checks = document.querySelectorAll('#imagens-cencomm .cencomm-check:checked');
+    if (!checks.length) { alert('Selecione ao menos uma imagem.'); return; }
+    var ids = Array.prototype.map.call(checks, function(c){ return c.value; });
+    document.getElementById('imagens_ids_cencomm').value = ids.join(',');
+    $('#modalCencomm').modal('hide');
+    document.getElementById('form_cencomm').submit();
+  });
+})();
 
 </script>
 {% endblock %}
