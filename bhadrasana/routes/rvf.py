@@ -182,29 +182,69 @@ def rvf_app(app):
                                marcas_encontradas=marcas_encontradas,
                                anexos=anexos)
 
-    @app.route('/rvf_docx', methods=['GET'])
+    @app.route('/rvf_docx', methods=['GET', 'POST'])
     @login_required
     def rvf_OVR():
         session = app.config.get('dbsession')
         mongodb = app.config.get('mongo_risco')
-        rvf_id = request.args.get('rvf_id')
-        tipo = request.args.get('tipo', 'OVR')
+
+        # request.values cobre GET e POST
+        rvf_id = request.values.get('rvf_id')
+        tipo = (request.values.get('tipo', 'OVR') or 'OVR').strip().lower()  # ovr, taseda, cencomm_rvf
+        imagens_ids_str = (request.values.get('imagens_ids') or '').strip()
+
         try:
             rvf = get_rvf(session, rvf_id)
             if rvf is None:
                 flash('rvf %s não encontrado.' % rvf_id)
                 return redirect(url_for('pesquisa_rvf'))
-            ovr_id = rvf.ovr_id
-            OVR_out_filename = '{}_FCC{}_RVF{}_datahora{}.docx'.format(
-                tipo, ovr_id, rvf_id,
-                datetime.strftime(datetime.now(), '%Y-%m%dT%H%M%S'))
+
+            # Monta o dicionário-base para o gerador
             rvf_dump = OVRDict(1).monta_rvf_dict(mongodb, session, rvf_id)
-            if tipo == 'OVR':
-                document = gera_OVR(rvf_dump, current_user.name)
-            else:
+
+            # Se receber seleção de imagens, filtra o dump
+            selected_ids = set([s for s in imagens_ids_str.split(',') if s]) if imagens_ids_str else set()
+            if selected_ids:
+                def _img_id(img):
+                    return str(
+                        img.get('id')
+                        or img.get('_id')
+                        or img.get('imagem')
+                        or img.get('codigo')
+                        or img.get('url')
+                        or ''
+                    )
+
+                def _filtra_imagens_em_dict(d):
+                    if not isinstance(d, dict):
+                        return d
+                    if 'imagens' in d and isinstance(d['imagens'], list):
+                        d['imagens'] = [img for img in d['imagens'] if _img_id(img) in selected_ids]
+                    if 'rvfs' in d and isinstance(d['rvfs'], list):
+                        for rvf_it in d['rvfs']:
+                            if isinstance(rvf_it, dict) and 'imagens' in rvf_it and isinstance(rvf_it['imagens'], list):
+                                rvf_it['imagens'] = [img for img in rvf_it['imagens'] if _img_id(img) in selected_ids]
+                    return d
+
+                rvf_dump = _filtra_imagens_em_dict(rvf_dump)
+
+            # Seleciona gerador e mantém padrão de nomes anterior
+            agora = datetime.strftime(datetime.now(), '%Y-%m%dT%H%M%S')
+            if tipo == 'taseda':
                 document = gera_taseda(rvf_dump, current_user.name)
-            document.save(os.path.join(get_user_save_path(), OVR_out_filename))
-            return redirect('static/%s/%s' % (current_user.name, OVR_out_filename))
+                # mantém o padrão antigo: taseda_FCC{rvf_id}-{timestamp}.docx
+                out_name = f'taseda_FCC{rvf_id}-{agora}.docx'
+            elif tipo == 'cencomm_rvf':
+                # Usa o modelo específico CENcomm_Importacao.docx
+                document = gera_cencomm_importacao(rvf_dump, current_user.name)
+                out_name = f'CENCOMM_IMPORTACAO_FCC{rvf.ovr_id}_RVF{rvf_id}_datahora{agora}.docx'
+            else:
+                document = gera_OVR(rvf_dump, current_user.name)
+                out_name = f'OVR_FCC{rvf.ovr_id}_RVF{rvf_id}_datahora{agora}.docx'
+
+            document.save(os.path.join(get_user_save_path(), out_name))
+            return redirect('static/%s/%s' % (current_user.name, out_name))
+
         except Exception as err:
             logger.warning(err, exc_info=True)
             flash(str(err))
