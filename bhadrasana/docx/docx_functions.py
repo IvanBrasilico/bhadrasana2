@@ -20,6 +20,16 @@ def gera_taseda(rvf: dict, user_name: str):
     docx_replacein(document, conteudo, user_name)
     return document
 
+def gera_cencomm_importacao(rvf: dict, user_name: str):
+    """
+    Gera o DOCX específico do modelo 'Modelo CENcomm_Importacao.docx'
+    (usado no fluxo CENcomm – RVF).
+    """
+    conteudo = {'unidade': 'ALFSTS', **rvf}
+    basepath = os.path.dirname(__file__)
+    document = docx.Document(os.path.join(basepath, 'Modelo CENcomm_Importacao.docx'))
+    docx_replacein(document, conteudo, user_name)
+    return document
 
 def gera_auto_contrafacao(ovr: dict, user_name: str):
     conteudo = {'unidade': 'ALFSTS', **ovr}
