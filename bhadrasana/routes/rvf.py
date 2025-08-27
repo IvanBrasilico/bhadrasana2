@@ -14,7 +14,7 @@ from werkzeug.exceptions import RequestEntityTooLarge
 from werkzeug.exceptions import BadRequest
 
 from bhadrasana.conf import APP_PATH
-from bhadrasana.docx.docx_functions import gera_OVR, gera_taseda
+from bhadrasana.docx.docx_functions import gera_OVR, gera_taseda, gera_cencomm_importacao
 from bhadrasana.forms.filtro_rvf import FiltroRVFForm
 from bhadrasana.forms.rvf import RVFForm, ImagemRVFForm, ApreensaoRVFForm
 from bhadrasana.models import get_usuario_validando, get_usuario
