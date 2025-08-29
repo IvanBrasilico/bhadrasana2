@@ -106,18 +106,24 @@
                     Taseda
                 </a>
             </div>
-            <div class="col-sm-2">
-                <a href="rvf_docx?rvf_id={{oform.id.data}}" class="btn btn-info form-control">
-                    RVF
-                </a>
-				
-            <div class="col-sm-2">
-                {% if oform.id.data %}
-                <button type="button" class="btn btn-success form-control" id="btn_cencomm">
-                    CENcomm – Importação
-                </button>
-                {% endif %}
+			<div class="col-sm-2">
+			  <a href="rvf_docx?rvf_id={{oform.id.data}}" class="btn btn-info form-control">
+				RVF
+			  </a>
+			</div>
+
+			<div class="col-sm-2">
+			  {% if oform.id.data %}
+			  <button type="button" class="btn btn-success form-control" id="btn_cencomm">
+				CENcomm – Importação
+			  </button>
+			  {% endif %}
+			</div>
+
             </div>
+        </div>
+        </form>
+
             <!-- Form oculto que envia a seleção ao backend -->
             <form id="form_cencomm" method="POST" action="rvf_docx" style="display:none;">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
@@ -126,10 +132,6 @@
               <input type="hidden" name="imagens_ids" id="imagens_ids_cencomm" value=""/>
             </form>
 
-
-            </div>
-        </div>
-        </form>
     </div>
     <div class="row col-sm-12">
         <div class="col-sm-3">
