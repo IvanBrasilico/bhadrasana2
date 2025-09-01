@@ -204,21 +204,12 @@ def rvf_app(app):
 
             app.logger.info("CENCOMM: dump de imagens recebido=%s", rvf_dump.get("imagens"))
 
-
-            # Normalização
-            for img in rvf_dump.get('imagens', []):
-                if 'id' not in img:
-                    if '_id' in img:
-                        img['id'] = str(img['_id'])
-                    elif 'imagem' in img:
-                        img['id'] = str(img['imagem'])
-
             # Se receber seleção de imagens, filtra o dump
             selected_ids = set([s for s in imagens_ids_str.split(',') if s]) if imagens_ids_str else set()
             if selected_ids:
                 def _img_id(img):
-                    return str(img.get('id', ''))
-
+                    # Usar o mesmo campo que o modal envia!
+                    return str(img.get('imagem', ''))
 
                 def _filtra_imagens_em_dict(d):
                     if not isinstance(d, dict):
