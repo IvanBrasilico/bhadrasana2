@@ -192,6 +192,7 @@ def rvf_app(app):
         rvf_id = request.values.get('rvf_id')
         tipo = (request.values.get('tipo', 'OVR') or 'OVR').strip().lower()  # ovr, taseda, cencomm_rvf
         imagens_ids_str = (request.values.get('imagens_ids') or '').strip()
+        app.logger.info("CENCOMM: imagens_ids_str=%r", imagens_ids_str)
 
         try:
             rvf = get_rvf(session, rvf_id)
@@ -202,11 +203,13 @@ def rvf_app(app):
             # Monta o dicionário-base para o gerador
             rvf_dump = OVRDict(1).monta_rvf_dict(mongodb, session, rvf_id)
 
-            app.logger.info("CENCOMM: dump de imagens recebido=%s", rvf_dump.get("imagens"))
+            app.logger.info("CENCOMM: dump de imagens recebido (qtd=%s)", len(rvf_dump.get("imagens") or []))
 
             # Se receber seleção de imagens, filtra o dump
-            selected_ids = set([s for s in imagens_ids_str.split(',') if s]) if imagens_ids_str else set()
+            selected_ids = set([s.strip() for s in imagens_ids_str.split(',') if s.strip()]) if imagens_ids_str else set()
+
             if selected_ids:
+                app.logger.info("CENCOMM: selected_ids (qtd=%d) = %s", len(selected_ids), list(selected_ids)[:5])
                 def _img_id(img):
                     # Usar o mesmo campo que o modal envia!
                     return str(img.get('imagem', ''))
@@ -215,11 +218,15 @@ def rvf_app(app):
                     if not isinstance(d, dict):
                         return d
                     if 'imagens' in d and isinstance(d['imagens'], list):
+                        antes = len(d['imagens'])
                         d['imagens'] = [img for img in d['imagens'] if _img_id(img) in selected_ids]
+                        app.logger.info("CENCOMM: filtro imagens: %d -> %d", antes, len(d['imagens']))
                     if 'rvfs' in d and isinstance(d['rvfs'], list):
                         for rvf_it in d['rvfs']:
                             if isinstance(rvf_it, dict) and 'imagens' in rvf_it and isinstance(rvf_it['imagens'], list):
+                                antes = len(rvf_it['imagens'])
                                 rvf_it['imagens'] = [img for img in rvf_it['imagens'] if _img_id(img) in selected_ids]
+                                app.logger.info("CENCOMM: filtro imagens (rvf_it): %d -> %d", antes, len(rvf_it['imagens']))
                     return d
 
                 rvf_dump = _filtra_imagens_em_dict(rvf_dump)
@@ -234,6 +241,7 @@ def rvf_app(app):
                 # Normaliza para que 'imagem' (BytesIO) seja a PRIMEIRA chave,
                 # compatível com o modelo que já funciona via /gera_docx.
                 imagens = rvf_dump.get('imagens', [])
+                app.logger.info("CENCOMM: imagens pos-filtro (qtd=%d)", len(imagens))              
                 novas = []
                 for item in imagens:
                     img_bytes = item.get('content')  # vem de monta_rvf_dict (BytesIO)
@@ -243,7 +251,13 @@ def rvf_app(app):
                         if cand:
                             img_bytes = cand
                     if not img_bytes:
+                        app.logger.info("CENCOMM: item sem bytes, pulando. keys=%s", list(item.keys()))
                         continue
+                    # garante cursor no início do stream
+                    try:
+                        img_bytes.seek(0)
+                    except Exception:
+                        pass
 
                     # PRIMEIRA chave: 'imagem' com os bytes
                     novo = {'imagem': img_bytes}
@@ -259,8 +273,8 @@ def rvf_app(app):
 
                 rvf_dump['imagens'] = novas
 
-                app.logger.info("CENCOMM: apos normalizacao, primeira chave do 1o item=%s",
-                                (list(novas[0].keys())[0] if novas else None))
+                app.logger.info("CENCOMM: apos normalizacao, qtd=%d, primeira chave do 1o item=%s",
+                                len(novas), (list(novas[0].keys())[0] if novas else None))
 
                 document = gera_cencomm_importacao(rvf_dump, current_user.name)
                 out_name = f'CENCOMM_IMPORTACAO_FCC{rvf.ovr_id}_RVF{rvf_id}_datahora{agora}.docx'
