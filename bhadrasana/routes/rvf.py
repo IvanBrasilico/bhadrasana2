@@ -235,22 +235,37 @@ def rvf_app(app):
                 # mantém o padrão antigo: taseda_FCC{rvf_id}-{timestamp}.docx
                 out_name = f'taseda_FCC{rvf_id}-{agora}.docx'
             elif tipo == 'cencomm_rvf':
-                # Normaliza para que 'content' (BytesIO) seja a PRIMEIRA chave de cada imagem
+                # Normaliza para que 'imagem' (BytesIO) seja a PRIMEIRA chave,
+                # compatível com o modelo que já funciona via /gera_docx.
                 imagens = rvf_dump.get('imagens', [])
                 novas = []
                 for item in imagens:
-                    img_bytes = item.get('content')  # já vem de monta_rvf_dict
+                    img_bytes = item.get('content')  # vem de monta_rvf_dict (BytesIO)
+                    if not img_bytes:
+                        # fallback: se por acaso houver bytes noutro campo
+                        cand = next((v for v in item.values() if hasattr(v, 'read') or hasattr(v, 'getvalue')), None)
+                        if cand:
+                            img_bytes = cand
                     if not img_bytes:
                         continue
-                    novo = {'content': img_bytes}  # PRIMEIRA chave = bytes da imagem
-                    # opcional: preserva outros metadados, se úteis
-                    for k in ('ordem', 'descricao', 'legenda', 'imagem'):
+
+                    # PRIMEIRA chave: 'imagem' com os bytes
+                    novo = {'imagem': img_bytes}
+
+                    # Duplicamos em 'content' só por compatibilidade futura:
+                    novo['content'] = img_bytes
+
+                    # preserva alguns metadados (opcional)
+                    for k in ('ordem', 'descricao', 'legenda', 'id', '_id'):
                         if k in item:
                             novo[k] = item[k]
                     novas.append(novo)
+
                 rvf_dump['imagens'] = novas
 
-                # Usa o modelo específico CENcomm_Importacao.docx
+                app.logger.info("CENCOMM: apos normalizacao, primeira chave do 1o item=%s",
+                                (list(novas[0].keys())[0] if novas else None))
+
                 document = gera_cencomm_importacao(rvf_dump, current_user.name)
                 out_name = f'CENCOMM_IMPORTACAO_FCC{rvf.ovr_id}_RVF{rvf_id}_datahora{agora}.docx'
             else:
