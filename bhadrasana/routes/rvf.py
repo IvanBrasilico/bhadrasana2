@@ -202,18 +202,20 @@ def rvf_app(app):
             # Monta o dicionário-base para o gerador
             rvf_dump = OVRDict(1).monta_rvf_dict(mongodb, session, rvf_id)
 
+            # Normalização
+            for img in rvf_dump.get('imagens', []):
+                if 'id' not in img:
+                    if '_id' in img:
+                        img['id'] = str(img['_id'])
+                    elif 'imagem' in img:
+                        img['id'] = str(img['imagem'])
+
             # Se receber seleção de imagens, filtra o dump
             selected_ids = set([s for s in imagens_ids_str.split(',') if s]) if imagens_ids_str else set()
             if selected_ids:
                 def _img_id(img):
-                    return str(
-                        img.get('id')
-                        or img.get('_id')
-                        or img.get('imagem')
-                        or img.get('codigo')
-                        or img.get('url')
-                        or ''
-                    )
+                    return str(img.get('id', ''))
+
 
                 def _filtra_imagens_em_dict(d):
                     if not isinstance(d, dict):
