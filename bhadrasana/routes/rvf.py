@@ -259,22 +259,21 @@ def rvf_app(app):
                     except Exception:
                         pass
 
-                    # PRIMEIRA chave: 'imagem' com os bytes
-                    novo = {'imagem': img_bytes}
-
-                    # Duplicamos em 'content' só por compatibilidade futura:
-                    novo['content'] = img_bytes
+                    novo = {'foto': img_bytes}
 
                     # preserva alguns metadados (opcional)
-                    for k in ('ordem', 'descricao', 'legenda', 'id', '_id'):
+                    for k in ('ordem', 'descricao', 'legenda', 'id', '_id', 'imagem'):
                         if k in item:
                             novo[k] = item[k]
+                    if 'imagem' in item:
+                        novo['imagem_id'] = item['imagem']
                     novas.append(novo)
 
                 rvf_dump['imagens'] = novas
 
-                app.logger.info("CENCOMM: apos normalizacao, qtd=%d, primeira chave do 1o item=%s",
-                                len(novas), (list(novas[0].keys())[0] if novas else None))
+                app.logger.info(
+                    "CENCOMM: apos normalizacao, qtd=%d, keys do 1o item=%s",
+                    len(novas), (list(novas[0].keys()) if novas else None)
 
                 document = gera_cencomm_importacao(rvf_dump, current_user.name)
                 out_name = f'CENCOMM_IMPORTACAO_FCC{rvf.ovr_id}_RVF{rvf_id}_datahora{agora}.docx'
