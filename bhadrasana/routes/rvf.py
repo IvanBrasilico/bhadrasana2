@@ -235,6 +235,21 @@ def rvf_app(app):
                 # mantém o padrão antigo: taseda_FCC{rvf_id}-{timestamp}.docx
                 out_name = f'taseda_FCC{rvf_id}-{agora}.docx'
             elif tipo == 'cencomm_rvf':
+                # Normaliza para que 'content' (BytesIO) seja a PRIMEIRA chave de cada imagem
+                imagens = rvf_dump.get('imagens', [])
+                novas = []
+                for item in imagens:
+                    img_bytes = item.get('content')  # já vem de monta_rvf_dict
+                    if not img_bytes:
+                        continue
+                    novo = {'content': img_bytes}  # PRIMEIRA chave = bytes da imagem
+                    # opcional: preserva outros metadados, se úteis
+                    for k in ('ordem', 'descricao', 'legenda', 'imagem'):
+                        if k in item:
+                            novo[k] = item[k]
+                    novas.append(novo)
+                rvf_dump['imagens'] = novas
+
                 # Usa o modelo específico CENcomm_Importacao.docx
                 document = gera_cencomm_importacao(rvf_dump, current_user.name)
                 out_name = f'CENCOMM_IMPORTACAO_FCC{rvf.ovr_id}_RVF{rvf_id}_datahora{agora}.docx'
