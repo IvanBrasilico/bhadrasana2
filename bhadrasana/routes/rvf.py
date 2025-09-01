@@ -259,10 +259,8 @@ def rvf_app(app):
                     except Exception:
                         pass
 
-                    novo = {'foto': img_bytes}
-
-                    # preserva alguns metadados (opcional)
-                    for k in ('ordem', 'descricao', 'legenda', 'id', '_id', 'imagem'):
+                    novo = {'content': img_bytes}
+                    for k in ('ordem', 'descricao', 'legenda', 'id', '_id'):
                         if k in item:
                             novo[k] = item[k]
                     if 'imagem' in item:
