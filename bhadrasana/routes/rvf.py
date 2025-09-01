@@ -273,7 +273,7 @@ def rvf_app(app):
 
                 app.logger.info(
                     "CENCOMM: apos normalizacao, qtd=%d, keys do 1o item=%s",
-                    len(novas), (list(novas[0].keys()) if novas else None)
+                    len(novas), (list(novas[0].keys()) if novas else None))
 
                 document = gera_cencomm_importacao(rvf_dump, current_user.name)
                 out_name = f'CENCOMM_IMPORTACAO_FCC{rvf.ovr_id}_RVF{rvf_id}_datahora{agora}.docx'
