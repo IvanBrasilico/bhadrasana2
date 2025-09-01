@@ -83,38 +83,38 @@
         </div>
         <div class="row col-sm-12">
             &nbsp;<br>
-            <div class="col-sm-3">
-                <button class="btn btn-default btn-primary" onclick="submit">
+            <div class="col-sm-2">
+                <button class="btn btn-default btn-primary form-control" onclick="submit">
                     Salvar
                 </button>
             </div>
-            <div class="col-sm-3">
+            <div class="col-sm-2">
                 {% if oform.id.data %}
-                <button id="btn_apreensao" type="button" class="btn btn-warning"
+                <button id="btn_apreensao" type="button" class="btn btn-warning form-control"
                         data-toggle="modal" data-target="#apreensao">
                     Informar apreensão sem TG
                 </button>
                 {% endif %}
             </div>
             <div class="col-sm-2">
-                <a href="rvf_impressao/{{ oform.id.data }}" class="btn btn-info">
+                <a href="rvf_impressao/{{ oform.id.data }}" class="btn btn-info form-control">
                     Imprimir
                 </a>
             </div>
             <div class="col-sm-2">
-                <a href="rvf_docx?rvf_id={{oform.id.data}}&tipo=taseda" class="btn btn-info">
+                <a href="rvf_docx?rvf_id={{oform.id.data}}&tipo=taseda" class="btn btn-info form-control">
                     Taseda
                 </a>
             </div>
 			<div class="col-sm-2">
-			  <a href="rvf_docx?rvf_id={{oform.id.data}}" class="btn btn-info">
+			  <a href="rvf_docx?rvf_id={{oform.id.data}}" class="btn btn-info form-control">
 				RVF
 			  </a>
 			</div>
 
 			<div class="col-sm-2">
 			  {% if oform.id.data %}
-			  <button type="button" class="btn btn-info" id="btn_cencomm">
+			  <button type="button" class="btn btn-info form-control" id="btn_cencomm">
 				CENcomm – Importação
 			  </button>
 			  {% endif %}
