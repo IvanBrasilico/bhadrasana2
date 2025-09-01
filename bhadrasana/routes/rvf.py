@@ -202,6 +202,9 @@ def rvf_app(app):
             # Monta o dicionário-base para o gerador
             rvf_dump = OVRDict(1).monta_rvf_dict(mongodb, session, rvf_id)
 
+            app.logger.info("CENCOMM: dump de imagens recebido=%s", rvf_dump.get("imagens"))
+
+
             # Normalização
             for img in rvf_dump.get('imagens', []):
                 if 'id' not in img:
