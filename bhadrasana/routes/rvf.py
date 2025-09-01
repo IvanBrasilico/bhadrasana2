@@ -238,15 +238,12 @@ def rvf_app(app):
                 # mantém o padrão antigo: taseda_FCC{rvf_id}-{timestamp}.docx
                 out_name = f'taseda_FCC{rvf_id}-{agora}.docx'
             elif tipo == 'cencomm_rvf':
-                # Normaliza para que 'imagem' (BytesIO) seja a PRIMEIRA chave,
-                # compatível com o modelo que já funciona via /gera_docx.
                 imagens = rvf_dump.get('imagens', [])
                 app.logger.info("CENCOMM: imagens pos-filtro (qtd=%d)", len(imagens))              
                 novas = []
                 for item in imagens:
                     img_bytes = item.get('content')  # vem de monta_rvf_dict (BytesIO)
                     if not img_bytes:
-                        # fallback: se por acaso houver bytes noutro campo
                         cand = next((v for v in item.values() if hasattr(v, 'read') or hasattr(v, 'getvalue')), None)
                         if cand:
                             img_bytes = cand
