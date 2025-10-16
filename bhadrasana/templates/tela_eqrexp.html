@@ -47,10 +47,10 @@
       {% for r in rows %}
         <tr>
           <td class="mono">
-            {% if r.perecivel %}
-              <span class="badge badge-yellow" title="Carga perecível" aria-label="Perecível">P</span>
-            {% endif %}
             <a href="https://ajna1.rfoc.srf/bhadrasana2/ovr?id={{ r.id }}" target="_blank">{{ r.id }}</a>
+            {% if r.perecivel %}
+              <span class="badge badge-yellow" title="Carga perecível" aria-label="Perecível">Perecível</span>
+            {% endif %}
           </td>
           <td class="mono">{{ r.recinto_nome or r.recinto_id or "" }}</td>
           <td class="mono">{{ r.create_date.strftime('%d/%m/%Y %H:%M:%S') }}</td>
