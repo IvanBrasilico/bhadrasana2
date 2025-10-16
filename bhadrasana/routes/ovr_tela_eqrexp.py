@@ -33,16 +33,17 @@ def configure(app):
     @app.route('/tela_eqrexp', methods=['GET'], endpoint='ovr.tela_eqrexp', strict_slashes=False)
     def tela_eqrexp():
         """
-        Mostra as 50 linhas mais recentes de ovr_ovrs
+        Mostra as linhas mais recentes de ovr_ovrs
         com as colunas: id, recinto_id, create_date.
         """
-        session = _get_session()
+        session = app.config.get('dbsession') or app.config.get('db_session')
 
         sql = text("""
             SELECT
               o.id,
               o.recinto_id,
               r.nome AS recinto_nome,
+              COALESCE(u.nome, '-') AS responsavel_nome,
               o.create_date,
               EXISTS (
                 SELECT 1
@@ -53,6 +54,8 @@ def configure(app):
             FROM ovr_ovrs o
             LEFT JOIN ovr_recintos r
                    ON r.id = o.recinto_id
+            LEFT JOIN ovr_usuarios u
+                   ON u.cpf = o.responsavel_cpf
             WHERE tipooperacao=2 -- exportação
             ORDER BY o.create_date DESC, o.id DESC
             LIMIT 100

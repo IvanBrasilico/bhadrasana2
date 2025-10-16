@@ -39,6 +39,7 @@
     <thead>
       <tr>
         <th>Ficha</th>
+		<th>Responsável</th>
         <th>Recinto</th>
         <th>Data de criação</th>
       </tr>
@@ -52,6 +53,7 @@
               <span class="badge badge-yellow" title="Carga perecível" aria-label="Perecível">Perecível</span>
             {% endif %}
           </td>
+		  <td>{{ r.responsavel_nome or '-' }}</td>
           <td class="mono">{{ r.recinto_nome or r.recinto_id or "" }}</td>
           <td class="mono">{{ r.create_date.strftime('%d/%m/%Y %H:%M:%S') }}</td>
         </tr>
