@@ -43,7 +43,13 @@ def configure(app):
               o.id,
               o.recinto_id,
               r.nome AS recinto_nome,
-              o.create_date
+              o.create_date,
+              EXISTS (
+                SELECT 1
+                  FROM ovr_flags_ovr ofo
+                 WHERE ofo.rvf_id = o.id
+                   AND ofo.flag_id = 1
+              ) AS perecivel
             FROM ovr_ovrs o
             LEFT JOIN ovr_recintos r
                    ON r.id = o.recinto_id
