@@ -39,9 +39,15 @@ def configure(app):
         session = _get_session()
 
         sql = text("""
-            SELECT id, recinto_id, create_date
-            FROM ovr_ovrs
-            ORDER BY create_date DESC, id DESC
+            SELECT
+              o.id,
+              o.recinto_id,
+              r.nome AS recinto_nome,
+              o.create_date
+            FROM ovr_ovrs o
+            LEFT JOIN ovr_recintos r
+                   ON r.id = o.recinto_id
+            ORDER BY o.create_date DESC, o.id DESC
             LIMIT 50
         """)
         rows = session.execute(sql).mappings().all()
