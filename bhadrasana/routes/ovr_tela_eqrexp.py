@@ -57,7 +57,7 @@ def configure(app):
             LEFT JOIN ovr_usuarios u
                    ON u.cpf = o.responsavel_cpf
             WHERE tipooperacao=2 -- exportação
-            AND fase=0 OR fase=1 OR fase=2 -- iniciada, ativa, suspensa
+            AND (fase=0 OR fase=1 OR fase=2) -- iniciada, ativa, suspensa
             AND setor_id = '3'            
             ORDER BY o.create_date DESC, o.id DESC
             LIMIT 200
