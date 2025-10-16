@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
   <meta charset="utf-8">
-  <title>OVR — 50 mais recentes</title>
+  <title>OVR — Mais recentes</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
@@ -32,7 +32,7 @@
         <tr>
           <td class="mono"><a href="https://ajna1.rfoc.srf/bhadrasana2/ovr?id={{ r.id }}" target="_blank">{{ r.id }}</a></td>
           <td class="mono">{{ r.recinto_nome or r.recinto_id or "" }}</td>
-          <td class="mono">{{ r.create_date }}</td>
+          <td class="mono">{{ r.create_date.strftime('%d/%m/%Y %H:%M:%S') }}</td>
         </tr>
       {% endfor %}
     </tbody>

@@ -49,7 +49,7 @@ def configure(app):
                    ON r.id = o.recinto_id
             WHERE tipooperacao=2 -- exportação
             ORDER BY o.create_date DESC, o.id DESC
-            LIMIT 50
+            LIMIT 100
         """)
         rows = session.execute(sql).mappings().all()
 
