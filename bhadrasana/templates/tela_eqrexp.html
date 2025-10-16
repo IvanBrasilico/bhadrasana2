@@ -31,7 +31,7 @@
     <tbody>
       {% for r in rows %}
         <tr>
-          <td class="mono">{{ r.id }}</td>
+          <td class="mono"><a href="https://ajna1.rfoc.srf/bhadrasana2/ovr?id={{ r.id }}" target="_blank">{{ r.id }}</a></td>
           <td class="mono">{{ r.recinto_nome or r.recinto_id or "" }}</td>
           <td class="mono">{{ r.create_date }}</td>
         </tr>
