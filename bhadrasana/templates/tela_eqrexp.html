@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <title>OVR — 50 mais recentes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    body { margin: 24px; }
+    h1 { font-size: 1.25rem; margin: 0 0 12px 0; }
+    .muted { color: #666; font-size: .9rem; margin-bottom: 12px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #e3e3e3; padding: 8px 10px; }
+    th { background: #f7f7f7; text-align: left; }
+    tr:nth-child(even){ background: #fbfbfb; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+  </style>
+</head>
+<body>
+  <h1>OVR — 50 mais recentes</h1>
+  <div class="muted">Colunas: <strong>id</strong>, <strong>recinto_id</strong>, <strong>create_date</strong></div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>id</th>
+        <th>recinto_id</th>
+        <th>create_date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+        <tr>
+          <td class="mono">{{ r.id }}</td>
+          <td class="mono">{{ r.recinto_id or "" }}</td>
+          <td class="mono">{{ r.create_date }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>
