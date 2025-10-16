@@ -32,7 +32,7 @@
       {% for r in rows %}
         <tr>
           <td class="mono">{{ r.id }}</td>
-          <td class="mono">{{ r.recinto_id or "" }}</td>
+          <td class="mono">{{ r.nome or "" }}</td>
           <td class="mono">{{ r.create_date }}</td>
         </tr>
       {% endfor %}
