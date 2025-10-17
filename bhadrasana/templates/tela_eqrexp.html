@@ -35,10 +35,23 @@
     th.sortable .indicator { font-size: .8em; opacity: .6; margin-left: .35em; }
     th.sortable:focus { outline: 2px solid #a3c4f3; outline-offset: 2px; }
 
-  </style>
+    /* Totais por recinto */
+    .totais { list-style: none; padding: 0; margin: 8px 0 16px; display: flex; flex-wrap: wrap; gap: 10px; }
+    .totais li { background: #f3f6ff; border: 1px solid #e2e8ff; border-radius: 8px; padding: 6px 10px; }
+   </style>
+   
 </head>
 <body>
   <h1>Fichas mais recentes</h1>
+
+  <section aria-labelledby="totais-title">
+    <h2 id="totais-title" class="muted">Totais por recinto — {{ total_rows }} registros</h2>
+    <ul class="totais">
+      {% for nome, qtd in agrupados_por_recinto %}
+        <li><strong>{{ nome }}</strong>: {{ qtd }}</li>
+      {% endfor %}
+    </ul>
+  </section>
 
   <table id="tabela-eqrexp">
     <thead>

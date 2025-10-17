@@ -2,6 +2,7 @@
 from flask import render_template
 from sqlalchemy import text
 import logging
+from collections import Counter
 
 # (opcional) se seu layout usa CSRF em formulários, podemos passar o token pro template
 try:
@@ -71,8 +72,17 @@ def configure(app):
         """)
         rows = session.execute(sql).mappings().all()
 
+        # Agrupa por recinto (nome se houver, senão id, senão ─)
+        counts = Counter()
+        for r in rows:
+            nome = (r.get('recinto_nome') or r.get('recinto_id') or '─')
+            counts[nome] += 1
+        agrupados_por_recinto = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))
+
         return render_template(
             'tela_eqrexp.html',
             rows=rows,
+            total_rows=len(rows),
+            agrupados_por_recinto=agrupados_por_recinto,
             csrf_token=generate_csrf if generate_csrf else None
         )
