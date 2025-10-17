@@ -30,41 +30,129 @@
       color: #7a5b00;      /* bom contraste */
     }
 
+    /* Ordenação */
+    th.sortable { cursor: pointer; user-select: none; }
+    th.sortable .indicator { font-size: .8em; opacity: .6; margin-left: .35em; }
+    th.sortable:focus { outline: 2px solid #a3c4f3; outline-offset: 2px; }
+
   </style>
 </head>
 <body>
   <h1>Fichas mais recentes</h1>
 
-  <table>
+  <table id="tabela-eqrexp">
     <thead>
       <tr>
-        <th>Ficha</th>
-		<th>Responsável</th>
-        <th>Recinto</th>
-		<th>Verificação física informada</th>
-        <th>Data de criação</th>
+        <th class="sortable" data-col="0" tabindex="0">Ficha <span class="indicator"></span></th>
+        <th class="sortable" data-col="1" tabindex="0">Responsável <span class="indicator"></span></th>
+        <th class="sortable" data-col="2" tabindex="0">Recinto <span class="indicator"></span></th>
+        <th class="sortable" data-col="3" tabindex="0" title="Verificação física informada?">Verificação física informada <span class="indicator"></span></th>
+        <th class="sortable" data-col="4" tabindex="0">Data de criação <span class="indicator"></span></th>
       </tr>
     </thead>
     <tbody>
       {% for r in rows %}
         <tr>
-          <td class="mono">
+          <td class="mono" data-order="{{ r.id }}">
             <a href="https://ajna1.rfoc.srf/bhadrasana2/ovr?id={{ r.id }}" target="_blank">{{ r.id }}</a>
             {% if r.perecivel %}
               <span class="badge badge-yellow" title="Carga perecível" aria-label="Perecível">Perecível</span>
             {% endif %}
           </td>
-		  <td>{{ r.responsavel_nome or '-' }}</td>
-          <td class="mono">{{ r.recinto_nome or r.recinto_id or "" }}</td>
-          <td class="mono" title="Verificação física informada?">
+          <td data-order="{{ (r.responsavel_nome or '-')|lower }}">{{ r.responsavel_nome or '-' }}</td>
+          <td class="mono" data-order="{{ (r.recinto_nome or r.recinto_id or '')|lower }}">{{ r.recinto_nome or r.recinto_id or "" }}</td>
+          <td class="mono" title="Verificação física informada?" data-order="{{ 1 if r.verificacao_fisica_informada else 0 }}">
             {% if r.verificacao_fisica_informada %}
               ✅
             {% else %} — {% endif %}
-          </td>		  
-          <td class="mono">{{ r.create_date.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+          </td>
+          <td class="mono"
+              data-order="{{ r.create_date.strftime('%Y-%m-%dT%H:%M:%S') }}">
+            {{ r.create_date.strftime('%d/%m/%Y %H:%M:%S') }}
+          </td>
         </tr>
       {% endfor %}
     </tbody>
   </table>
+
+  <script>
+    (function() {
+      const table = document.getElementById('tabela-eqrexp');
+      const thead = table.querySelector('thead');
+      const tbody = table.querySelector('tbody');
+      let lastSortedCol = null;
+      let lastDir = 1; // 1 asc, -1 desc
+
+      // Helper: obtem valor para ordenar (prioriza data-order)
+      function getCellValue(tr, colIdx) {
+        const cell = tr.children[colIdx];
+        if (!cell) return '';
+        const ord = cell.getAttribute('data-order');
+        if (ord !== null) return ord;
+        return (cell.textContent || '').trim();
+      }
+
+      function naturalCompare(a, b) {
+        // tenta número
+        const na = parseFloat(a), nb = parseFloat(b);
+        const aNum = !Number.isNaN(na) && a.match(/^-?\d+(\.\d+)?$/);
+        const bNum = !Number.isNaN(nb) && b.match(/^-?\d+(\.\d+)?$/);
+        if (aNum && bNum) return na - nb;
+        // tenta data ISO
+        const da = Date.parse(a), db = Date.parse(b);
+        if (!Number.isNaN(da) && !Number.isNaN(db)) return da - db;
+        // fallback: string case-insensitive
+        return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+      }
+
+      function clearIndicators(exceptTh) {
+        thead.querySelectorAll('th.sortable .indicator').forEach(span => {
+          if (!exceptTh || span.parentElement !== exceptTh) span.textContent = '';
+        });
+      }
+
+      function updateIndicator(th, dir) {
+        clearIndicators(th);
+        const span = th.querySelector('.indicator');
+        if (span) span.textContent = dir === 1 ? '▲' : '▼';
+      }
+
+      function sortByColumn(colIdx, dir) {
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        rows.sort((r1, r2) => {
+          const v1 = getCellValue(r1, colIdx);
+          const v2 = getCellValue(r2, colIdx);
+          const cmp = naturalCompare(v1, v2);
+          return dir * cmp;
+        });
+        // reanexa na nova ordem
+        rows.forEach(r => tbody.appendChild(r));
+      }
+
+      function handleSort(th) {
+        const colIdx = parseInt(th.getAttribute('data-col'), 10);
+        let dir = 1;
+        if (lastSortedCol === colIdx) dir = -lastDir; // alterna
+        sortByColumn(colIdx, dir);
+        updateIndicator(th, dir);
+        lastSortedCol = colIdx;
+        lastDir = dir;
+      }
+
+      thead.addEventListener('click', (e) => {
+        const th = e.target.closest('th.sortable');
+        if (!th) return;
+        handleSort(th);
+      });
+      // acessibilidade via teclado (Enter/Espaço)
+      thead.addEventListener('keydown', (e) => {
+        if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('th.sortable')) {
+          e.preventDefault();
+          handleSort(e.target);
+        }
+      });
+    })();
+  </script>
+
 </body>
 </html>
