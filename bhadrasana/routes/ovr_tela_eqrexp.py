@@ -51,6 +51,13 @@ def configure(app):
                  WHERE ofo.rvf_id = o.id
                    AND ofo.flag_id = 1
               ) AS perecivel
+              ,
+              EXISTS (
+                SELECT 1
+                  FROM ovr_eventos ev
+                 WHERE ev.ovr_id = o.id
+                   AND ev.tipoevento_id = 22
+              ) AS verificacao_fisica_informada
             FROM ovr_ovrs o
             LEFT JOIN ovr_recintos r
                    ON r.id = o.recinto_id

@@ -41,6 +41,7 @@
         <th>Ficha</th>
 		<th>Responsável</th>
         <th>Recinto</th>
+		<th>Verificação física informada</th>
         <th>Data de criação</th>
       </tr>
     </thead>
@@ -55,6 +56,11 @@
           </td>
 		  <td>{{ r.responsavel_nome or '-' }}</td>
           <td class="mono">{{ r.recinto_nome or r.recinto_id or "" }}</td>
+          <td class="mono" title="Verificação física informada?">
+            {% if r.verificacao_fisica_informada %}
+              ✅
+            {% else %} — {% endif %}
+          </td>		  
           <td class="mono">{{ r.create_date.strftime('%d/%m/%Y %H:%M:%S') }}</td>
         </tr>
       {% endfor %}
