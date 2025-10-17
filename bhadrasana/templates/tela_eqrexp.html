@@ -45,7 +45,7 @@
   <h1>Fichas mais recentes</h1>
 
   <section aria-labelledby="totais-title">
-    <h2 id="totais-title" class="muted">Totais por recinto — {{ total_rows }} registros</h2>
+    <h2 id="totais-title" class="muted">Total — {{ total_rows }} fichas</h2>
     <ul class="totais">
       {% for nome, qtd in agrupados_por_recinto %}
         <li><strong>{{ nome }}</strong>: {{ qtd }}</li>
