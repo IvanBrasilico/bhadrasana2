@@ -4,20 +4,22 @@ Módulo para consultas simples da API Recintos e para upload de arquivos
 
 """
 import zipfile
+from datetime import timedelta, datetime
 
-from ajna_commons.flask.log import logger
 from flask import render_template, flash, request, redirect, jsonify
 from flask_login import login_required
 
-from bhadrasana.forms.assistente_checkapi import ArquivoApiForm
-from bhadrasana.models.apirecintos import AcessoVeiculo, PesagemVeiculo, EmbarqueDesembarque, InspecaoNaoInvasiva, processa_json, persiste_df
+from ajna_commons.flask.log import logger
+from bhadrasana.models.apirecintos import AcessoVeiculo, PesagemVeiculo, EmbarqueDesembarque, InspecaoNaoInvasiva, \
+    processa_json, persiste_df
 from bhadrasana.views import valid_file, csrf
 
 
-def processa_zip(arquivo, session):
-    zip_file = zipfile.ZipFile(arquivo, 'r')
-    tipoevento = zip_file.read('tipoEvento.txt').decode()
-    print(tipoevento)
+def traduz_parametros(tipoevento: str):
+    """Esta função encapsula as informações de classes e indices. TODO: encapsular nas classes esta info
+
+    :param tipoevento: string do tipo classes abaixo. Informação de domínio da API Recintos
+    """
     classes = {'1': AcessoVeiculo,
                '3': PesagemVeiculo,
                '4': EmbarqueDesembarque,
@@ -26,12 +28,43 @@ def processa_zip(arquivo, session):
                PesagemVeiculo: ['placa', 'dataHoraOcorrencia'],
                EmbarqueDesembarque: ['numeroConteiner', 'dataHoraOcorrencia'],
                InspecaoNaoInvasiva: ['numeroConteiner', 'dataHoraOcorrencia']}
-    classe = classes[tipoevento]
+    try:
+        classe = classes[tipoevento]
+    except KeyError:
+        raise ValueError(f'Tipo de evento inválido ou não suportado: {tipoevento}')
     indice = indices[classe]
     logger.info(f'Classe: {classe}, Chave única: {indice}')
-    json_texto = zip_file.read('json.txt').decode()
+    return classe, indice
+
+
+def processar_json_puro(session, json_texto, classe, indice):
+    """
+
+    :param session:
+    :param json_texto: texto json com conteúdo de um tipo de evento, lista de eventos de um recinto em um período
+    :param classe:
+    :param indice:
+    """
     df_eventos = processa_json(json_texto, classe, indice)
     persiste_df(df_eventos, classe, session)
+
+
+def le_tipo_evento(json_texto):
+    # TODO: Ver como ler o primeiro tipoevento do json (tipo é único no arquivo)
+    return '1'
+
+
+def processa_arquivo(arquivo, session):
+    if arquivo.filename.endswith('.json'):
+        json_texto = arquivo.read().decode()
+        tipoevento = le_tipo_evento(json_texto)
+    else:
+        zip_file = zipfile.ZipFile(arquivo, 'r')
+        tipoevento = zip_file.read('tipoEvento.txt').decode()
+        json_texto = zip_file.read('json.txt').decode()
+    logger.debug(tipoevento)
+    classe, indice = traduz_parametros(tipoevento)
+    processar_json_puro(session, json_texto, classe, indice)
 
 
 def apirecintos_app(app):
@@ -44,12 +77,12 @@ def apirecintos_app(app):
             if request.method == 'POST':
                 print(request)
                 file = request.files.get('file')
-                validfile, mensagem = valid_file(file, extensions=['zip'])
+                validfile, mensagem = valid_file(file, extensions=['zip', 'json'])
                 if not validfile:
                     flash(mensagem)
                     return redirect(request.url)
                 # TODO: Retornar resultado, hoje o resultado está somente no log
-                processa_zip(file, session)
+                processa_arquivo(session, file)
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
@@ -59,7 +92,7 @@ def apirecintos_app(app):
                                title_page=title_page)
 
     @app.route('/upload_arquivo_json_api/api', methods=['POST'])
-    #TODO: ativar login e mover para api ajna
+    # TODO: ativar login e mover para api ajna
     # @login_required
     @csrf.exempt
     def upload_arquivo_json_api_api():
@@ -67,11 +100,29 @@ def apirecintos_app(app):
         session = app.config.get('dbsession')
         try:
             file = request.files.get('file')
-            validfile, mensagem = valid_file(file, extensions=['zip'])
+            validfile, mensagem = valid_file(file, extensions=['zip', 'json'])
             if not validfile:
                 return jsonify({'msg': 'Arquivo "file" vazio ou não incluído no POST'}), 404
-            processa_zip(file, session)
+            processa_arquivo(session, file)
         except Exception as err:
             logger.error(f'upload_arquivo_json_api_api: {err}')
-            return jsonify({'msg:': str(err)}), 500
+            return jsonify({'msg': str(err)}), 500
         return jsonify({'msg': 'Arquivo integrado com sucesso!!'}), 200
+
+    @app.route('/api_recintos/lista_integracao', methods=['GET'])
+    # TODO: ativar login e mover para api ajna
+    # @login_required
+    @csrf.exempt
+    def api_recintos_lista_integracao():
+        session = app.config.get('dbsession')
+        lista_integracao = []
+        try:
+            max_data = datetime.now() - timedelta(hours=1)
+            max_data_iso = max_data.isoformat()
+            lista_integracao = [{'tipoEvento': '1',  # AcessoVeiculo
+                                 'codigoRecinto': '8931359',  # BTP
+                                 'max_dataHoraTransmissao': max_data_iso}]
+        except Exception as err:
+            logger.error(f'api_recintos_lista_integracao: {err}')
+            return jsonify({'msg': str(err), 'lista_integracao': lista_integracao}), 500
+        return jsonify({'msg': '', 'lista_integracao': lista_integracao}), 200
