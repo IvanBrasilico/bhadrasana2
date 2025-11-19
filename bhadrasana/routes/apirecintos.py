@@ -18,9 +18,9 @@ from bhadrasana.models.apirecintos import AcessoVeiculo, PesagemVeiculo, Embarqu
 from bhadrasana.views import valid_file, csrf
 
 CLASSES = {'1': AcessoVeiculo,
-           #     '3': PesagemVeiculo,
-           #     '4': EmbarqueDesembarque,
-           #     '25': InspecaoNaoInvasiva
+           '3': PesagemVeiculo,
+           '4': EmbarqueDesembarque,
+           '25': InspecaoNaoInvasiva
            }
 
 from sqlalchemy import func
