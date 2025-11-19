@@ -5,7 +5,6 @@ Módulo para consultas simples da API Recintos e para upload de arquivos
 """
 import sys
 import zipfile
-from datetime import timedelta, datetime
 
 from flask import render_template, flash, request, redirect, jsonify
 from flask_login import login_required
@@ -19,9 +18,10 @@ from bhadrasana.models.apirecintos import AcessoVeiculo, PesagemVeiculo, Embarqu
 from bhadrasana.views import valid_file, csrf
 
 CLASSES = {'1': AcessoVeiculo,
-           '3': PesagemVeiculo,
-           '4': EmbarqueDesembarque,
-           '25': InspecaoNaoInvasiva}
+           #     '3': PesagemVeiculo,
+           #     '4': EmbarqueDesembarque,
+           #     '25': InspecaoNaoInvasiva
+           }
 
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -35,18 +35,22 @@ def max_datahora_por_recinto(session: Session):
             classe.codigoRecinto,
             func.max(classe.dataHoraTransmissao)
         ).group_by(classe.codigoRecinto)
-        resultados[tipo] = query.all()  # lista de tuplas (codigoRecinto, max_dataHoraTransmissao)
+        resultados[tipo] = list(query.all())  # lista de tuplas (codigoRecinto, max_dataHoraTransmissao)
     return resultados
+
 
 def max_datahora_por_recinto_lista(session: Session):
     resultados = max_datahora_por_recinto(session)
     resultados_em_lista = []
     for tipoEvento, lista in resultados.items():
-        item = {'tipoEvento': tipoEvento,
-                'codigoRecinto': lista[0],
-                'dataHoraTransmissao': lista[1].isoformat()}
-        resultados_em_lista.append(item)
+        # print(lista)
+        for linha in lista:
+            item = {'tipoEvento': tipoEvento,
+                    'codigoRecinto': linha[0],
+                    'dataHoraTransmissao': linha[1].isoformat()}
+            resultados_em_lista.append(item)
     return resultados_em_lista
+
 
 def traduz_parametros(tipoevento: str):
     """Esta função encapsula as informações de classes e indices. TODO: encapsular nas classes esta info
@@ -172,5 +176,3 @@ if __name__ == '__main__':  # pragma: no-cover
     Session = sessionmaker(bind=engine, autoflush=False)
     session = Session()
     print(max_datahora_por_recinto_lista(session))
-
-
