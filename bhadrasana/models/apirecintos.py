@@ -128,15 +128,15 @@ def get_listaNfe(o_kwargs: dict) -> Union[str, None]:
        Returns: listaChaveNfe separado por vírgula
     """
     listaNfe = o_kwargs.get('listaNfe')
+    Nfes = []
     if listaNfe and isinstance(listaNfe, list) and \
             len(listaNfe) > 0:
         # print(listaNfe)
-        Nfes = []
         for row in listaNfe:
             chave = row.get('chaveNfe')
             if chave:
                 Nfes.append(chave)
-        return ', '.join(Nfes)
+    return ', '.join(Nfes)
 
 
 def numeric_c(texto):
@@ -275,7 +275,7 @@ class EmbarqueDesembarque(EventoAPIBase):
 
 class PesagemVeiculo(EventoAPIBase):
     __tablename__ = 'apirecintos_pesagensveiculo'
-    __table_args__ = (UniqueConstraint('placa', 'dataHoraOcorrencia','dataHoraTransmissao'),)
+    __table_args__ = (UniqueConstraint('placa', 'dataHoraOcorrencia', 'dataHoraTransmissao'),)
     dataHoraTransmissao = Column(DateTime(), index=True)
     pesoBrutoBalanca = Column(Numeric(7, 2), index=True)
     pesoBrutoManifesto = Column(Numeric(7, 2))
@@ -308,6 +308,7 @@ class PesagemVeiculo(EventoAPIBase):
             PesagemVeiculo.dataHoraOcorrencia == self.dataHoraOcorrencia,
             PesagemVeiculo.dataHoraTransmissao == self.dataHoraTransmissao
         ).one_or_none() is not None
+
 
 class InspecaoNaoInvasiva(EventoAPIBase):
     __tablename__ = 'apirecintos_inspecoesnaoinvasivas'
@@ -418,6 +419,12 @@ if __name__ == '__main__':  # pragma: no-cover
         engine = create_engine(SQL_URI)
         Session = sessionmaker(bind=engine, autoflush=False)
         session = Session()
+
+
+
+        # Sair por segurança. Comentar linha abaixo para funcionar
+        sys.exit(0)
+
         caminho = 'C:\\Users\\25052288840\\Downloads\\api_recintos\\'
         arquivos = os.listdir(caminho)
 
