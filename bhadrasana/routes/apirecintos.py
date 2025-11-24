@@ -50,7 +50,7 @@ def max_datahora_por_recinto_lista(session: Session):
                     'codigoRecinto': linha[0],
                     'dataHoraTransmissao': linha[1].isoformat()}
             resultados_em_lista.append(item)
-    return resultados_em_lista
+    return sorted(resultados_em_lista, key=lambda x: x['dataHoraTransmissao'], reverse=True)
 
 
 def traduz_parametros(tipoevento: str):
@@ -85,7 +85,6 @@ def processar_json_puro(session, json_texto, classe, indice):
 
 
 def le_tipo_evento(lista_eventos):
-    # TODO: Ver como ler o primeiro tipoevento do json (tipo é único no arquivo)
     return str(lista_eventos[0]['dadosTransmissao']['tipoEvento'])
 
 
@@ -189,7 +188,7 @@ def apirecintos_app(app):
             logger.debug("Passou em json_recebido****")
             processa_json_post(session, json_recebido)
         except Exception as err:
-            logger.error(f'upload_arquivo_json_api_api: {err}', exc_info=True)
+            logger.error(f'upload_arquivo_json_api_api: {err}')
             return jsonify({'msg': str(err)}), 500
         return jsonify({'msg': 'Arquivo integrado com sucesso!!'}), 200
 
