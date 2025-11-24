@@ -88,9 +88,16 @@ def le_tipo_evento(json_texto):
     return '1'
 
 
-def processa_arquivo(arquivo, session):
+def extrai_eventos(json_texto):
+    # Caso arquivo seja no formato aniita, extrai a partir do conteúdo dos eventos.
+
+    return json_texto
+
+
+def processa_arquivo(session, arquivo):
     if arquivo.filename.endswith('.json'):
         json_texto = arquivo.read().decode()
+        json_texto = extrai_eventos(json_texto)
         tipoevento = le_tipo_evento(json_texto)
     else:
         zip_file = zipfile.ZipFile(arquivo, 'r')
