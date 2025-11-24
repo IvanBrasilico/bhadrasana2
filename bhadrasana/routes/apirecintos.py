@@ -84,9 +84,9 @@ def processar_json_puro(session, json_texto, classe, indice):
     persiste_df(df_eventos, classe, session)
 
 
-def le_tipo_evento(json_object):
+def le_tipo_evento(lista_eventos):
     # TODO: Ver como ler o primeiro tipoevento do json (tipo é único no arquivo)
-    return json_object[0]['dadosTransmissao']['tipoEvento']
+    return str(lista_eventos[0]['dadosTransmissao']['tipoEvento'])
 
 
 def extrai_eventos(json_texto):
@@ -112,7 +112,20 @@ def processa_arquivo(session, arquivo):
     processar_json_puro(session, json_texto, classe, indice)
 
 
+def limpa_json_apirecintos(json_raw):
+    lista_partes = json_raw['partes_resultado']
+    lista_eventos = []
+    for parte in lista_partes:
+        for evento in parte['eventos']:
+            dadosTransmissao = evento['dadosTransmissao']
+            jsonOriginal = evento['jsonOriginal']
+            if isinstance(jsonOriginal, str):
+                jsonOriginal = json.loads(jsonOriginal)
+            lista_eventos.append({'jsonOriginal': jsonOriginal, 'dadosTransmissao': dadosTransmissao})
+    return lista_eventos
+
 def processa_json_post(session, json_raw):
+    json_raw = limpa_json_apirecintos(json_raw)
     tipoevento = le_tipo_evento(json_raw)
     logger.debug(tipoevento)
     logger.debug(json_raw)
@@ -173,9 +186,10 @@ def apirecintos_app(app):
         session = app.config.get('dbsession')
         try:
             json_recebido = request.json
+            logger.debug("Passou em json_recebido****")
             processa_json_post(session, json_recebido)
         except Exception as err:
-            logger.error(f'upload_arquivo_json_api_api: {err}')
+            logger.error(f'upload_arquivo_json_api_api: {err}', exc_info=True)
             return jsonify({'msg': str(err)}), 500
         return jsonify({'msg': 'Arquivo integrado com sucesso!!'}), 200
 
