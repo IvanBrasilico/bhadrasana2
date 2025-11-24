@@ -3,6 +3,7 @@ Módulo para consultas simples da API Recintos e para upload de arquivos
 
 
 """
+import json
 import sys
 import zipfile
 
@@ -83,22 +84,26 @@ def processar_json_puro(session, json_texto, classe, indice):
     persiste_df(df_eventos, classe, session)
 
 
-def le_tipo_evento(json_texto):
+def le_tipo_evento(json_object):
     # TODO: Ver como ler o primeiro tipoevento do json (tipo é único no arquivo)
-    return '1'
+    return json_object[0]['dadosTransmissao']['tipoEvento']
 
 
 def extrai_eventos(json_texto):
     # Caso arquivo seja no formato aniita, extrai a partir do conteúdo dos eventos.
+    json_raw = json.loads(''.join(json_texto))
+    json_raw = json_raw['partes_resultado']['eventos']
+    # json_raw = [json_original for json_original in json_raw['json_original']]
+    tipoevento = le_tipo_evento(json_raw)
+    novo_json_texto = json.dumps(json_raw)
 
-    return json_texto
+    return novo_json_texto, tipoevento
 
 
 def processa_arquivo(session, arquivo):
     if arquivo.filename.endswith('.json'):
         json_texto = arquivo.read().decode()
-        json_texto = extrai_eventos(json_texto)
-        tipoevento = le_tipo_evento(json_texto)
+        json_texto, tipoevento = extrai_eventos(json_texto)
     else:
         zip_file = zipfile.ZipFile(arquivo, 'r')
         tipoevento = zip_file.read('tipoEvento.txt').decode()
