@@ -53,6 +53,9 @@ class EventoAPIBase(BaseRastreavel, BaseDumpable):
             if evento_filtrado.get(k) is None:
                 evento_filtrado[k] = None
         self._mapeia(**evento_filtrado)
+        logger.info(self.__class__.__name__)
+        logger.info(self)
+        logger.info(evento_filtrado)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
