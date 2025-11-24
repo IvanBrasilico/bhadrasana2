@@ -172,7 +172,7 @@ def apirecintos_app(app):
         # Upload de arquivo API Recintos - JSON API Friendly
         session = app.config.get('dbsession')
         try:
-            json_recebido = request.json()
+            json_recebido = request.json
             processa_json_post(session, json_recebido)
         except Exception as err:
             logger.error(f'upload_arquivo_json_api_api: {err}')
