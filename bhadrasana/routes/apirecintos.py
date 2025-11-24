@@ -96,7 +96,6 @@ def extrai_eventos(json_texto):
     # json_raw = [json_original for json_original in json_raw['json_original']]
     tipoevento = le_tipo_evento(json_raw)
     novo_json_texto = json.dumps(json_raw)
-
     return novo_json_texto, tipoevento
 
 
@@ -110,6 +109,15 @@ def processa_arquivo(session, arquivo):
         json_texto = zip_file.read('json.txt').decode()
     logger.debug(tipoevento)
     classe, indice = traduz_parametros(tipoevento)
+    processar_json_puro(session, json_texto, classe, indice)
+
+
+def processa_json_post(session, json_raw):
+    tipoevento = le_tipo_evento(json_raw)
+    logger.debug(tipoevento)
+    logger.debug(json_raw)
+    classe, indice = traduz_parametros(tipoevento)
+    json_texto = json.dumps(json_raw)
     processar_json_puro(session, json_texto, classe, indice)
 
 
@@ -154,6 +162,23 @@ def apirecintos_app(app):
             logger.error(f'upload_arquivo_json_api_api: {err}')
             return jsonify({'msg': str(err)}), 500
         return jsonify({'msg': 'Arquivo integrado com sucesso!!'}), 200
+
+
+    @app.route('/upload_arquivo_json_api/api_json', methods=['POST'])
+    # TODO: ativar login e mover para api ajna
+    # @login_required
+    @csrf.exempt
+    def upload_arquivo_json_api_api_json():
+        # Upload de arquivo API Recintos - JSON API Friendly
+        session = app.config.get('dbsession')
+        try:
+            json_recebido = request.json()
+            processa_json_post(session, json_recebido)
+        except Exception as err:
+            logger.error(f'upload_arquivo_json_api_api: {err}')
+            return jsonify({'msg': str(err)}), 500
+        return jsonify({'msg': 'Arquivo integrado com sucesso!!'}), 200
+
 
     @app.route('/api_recintos/maisrecentes', methods=['GET'])
     # TODO: ativar login e mover para api ajna
