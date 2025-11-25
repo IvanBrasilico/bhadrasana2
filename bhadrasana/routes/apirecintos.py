@@ -4,8 +4,10 @@ Módulo para consultas simples da API Recintos e para upload de arquivos
 
 """
 import json
+import random
 import sys
 import zipfile
+from datetime import timedelta, datetime
 
 from flask import render_template, flash, request, redirect, jsonify
 from flask_login import login_required
@@ -43,14 +45,27 @@ def max_datahora_por_recinto(session: Session):
 def max_datahora_por_recinto_lista(session: Session):
     resultados = max_datahora_por_recinto(session)
     resultados_em_lista = []
+    agora = datetime.now()
+
     for tipoEvento, lista in resultados.items():
         # print(lista)
         for linha in lista:
-            item = {'tipoEvento': tipoEvento,
-                    'codigoRecinto': linha[0],
-                    'dataHoraTransmissao': linha[1].isoformat()}
-            resultados_em_lista.append(item)
-    return sorted(resultados_em_lista, key=lambda x: x['dataHoraTransmissao'], reverse=True)
+            data_hora = linha[1]
+            ultima_transmissao = agora - data_hora
+            incluir = False
+            if ultima_transmissao <= timedelta(days=1):
+                incluir = True
+            elif timedelta(days=1) < ultima_transmissao <= timedelta(days=3):
+                incluir = random.random() < 0.5
+            else:  # maior que 3 dias
+                incluir = random.random() < 0.1
+
+            if incluir:
+                item = {'tipoEvento': tipoEvento,
+                        'codigoRecinto': linha[0],
+                        'dataHoraTransmissao': data_hora.isoformat()}
+                resultados_em_lista.append(item)
+    return sorted(resultados_em_lista, key=lambda x: x['dataHoraTransmissao'])
 
 
 def traduz_parametros(tipoevento: str):
@@ -123,6 +138,7 @@ def limpa_json_apirecintos(json_raw):
             lista_eventos.append({'jsonOriginal': jsonOriginal, 'dadosTransmissao': dadosTransmissao})
     return lista_eventos
 
+
 def processa_json_post(session, json_raw):
     json_raw = limpa_json_apirecintos(json_raw)
     tipoevento = le_tipo_evento(json_raw)
@@ -175,7 +191,6 @@ def apirecintos_app(app):
             return jsonify({'msg': str(err)}), 500
         return jsonify({'msg': 'Arquivo integrado com sucesso!!'}), 200
 
-
     @app.route('/upload_arquivo_json_api/api_json', methods=['POST'])
     # TODO: ativar login e mover para api ajna
     # @login_required
@@ -191,7 +206,6 @@ def apirecintos_app(app):
             logger.error(f'upload_arquivo_json_api_api: {err}')
             return jsonify({'msg': str(err)}), 500
         return jsonify({'msg': 'Arquivo integrado com sucesso!!'}), 200
-
 
     @app.route('/api_recintos/maisrecentes', methods=['GET'])
     # TODO: ativar login e mover para api ajna
