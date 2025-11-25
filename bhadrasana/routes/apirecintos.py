@@ -56,9 +56,11 @@ def max_datahora_por_recinto_lista(session: Session):
             if ultima_transmissao <= timedelta(days=1):
                 incluir = True
             elif timedelta(days=1) < ultima_transmissao <= timedelta(days=3):
-                incluir = random.random() < 0.5
-            else:  # maior que 3 dias
-                incluir = random.random() < 0.1
+                incluir = random.random() < 0.25
+            elif timedelta(days=3) < ultima_transmissao <= timedelta(days=7):
+                incluir = random.random() < 0.05
+            else:  # maior que 7 dias
+                incluir = random.random() < 0.01
 
             if incluir:
                 item = {'tipoEvento': tipoEvento,
