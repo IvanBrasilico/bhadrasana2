@@ -220,6 +220,7 @@ class AcessoVeiculo(EventoAPIBase):
     def is_duplicate(self, session):
         return session.query(AcessoVeiculo).filter(AcessoVeiculo.placa == self.placa). \
             filter(AcessoVeiculo.operacao == self.operacao). \
+            filter(AcessoVeiculo.tipoOperacao == self.tipoOperacao). \
             filter(AcessoVeiculo.dataHoraOcorrencia == self.dataHoraOcorrencia).one_or_none() is not None
 
     def to_sivana(self) -> dict:
