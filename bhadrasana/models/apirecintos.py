@@ -9,6 +9,7 @@ import pandas as pd
 from dateutil import parser
 from dotenv import load_dotenv
 from sqlalchemy import BigInteger, Column, DateTime, Boolean, String, UniqueConstraint, Numeric
+from sqlalchemy.exc import IntegrityError
 
 load_dotenv()
 
@@ -218,10 +219,13 @@ class AcessoVeiculo(EventoAPIBase):
         return 'Conhecimento'
 
     def is_duplicate(self, session):
-        return session.query(AcessoVeiculo).filter(AcessoVeiculo.placa == self.placa). \
+        return session.query(AcessoVeiculo). \
+            filter(AcessoVeiculo.placa == self.placa). \
             filter(AcessoVeiculo.operacao == self.operacao). \
             filter(AcessoVeiculo.tipoOperacao == self.tipoOperacao). \
-            filter(AcessoVeiculo.dataHoraOcorrencia == self.dataHoraOcorrencia).one_or_none() is not None
+            filter(AcessoVeiculo.dataHoraOcorrencia == self.dataHoraOcorrencia). \
+            filter(AcessoVeiculo.dataHoraRegistro == self.dataHoraRegistro). \
+            one_or_none() is not None
 
     def to_sivana(self) -> dict:
         info = f'Contêiner:{self.numeroConteiner} - ' + \
@@ -406,6 +410,19 @@ def persiste_df(df_eventos: pd.DataFrame, classeevento: Type[BaseDumpable], sess
             session.add(evento)
             cont_sucesso += 1
         session.commit()
+    except IntegrityError as err:
+        # Erros de integridade (inclui chave duplicada 1062)
+        session.rollback()
+        logger.error(f'persiste_df IntegrityError: {err}')
+        # Se for erro de chave duplicada (MySQL 1062), tratamos como "ok, já estava inserido"
+        orig = getattr(err, "orig", None)
+        code = getattr(orig, "args", [None])[0] if orig and getattr(orig, "args", None) else None
+        if code == 1062:
+            logger.info("persiste_df: chave duplicada (1062) detectada; ignorando e seguindo como idempotente.")
+            # Não relançamos: o endpoint devolve sucesso e o consumidor não quebra
+            return
+        # Outros erros de integridade continuam sendo críticos
+        raise
     except Exception as err:
         session.rollback()
         logger.error(f'persiste_df: {err}')
