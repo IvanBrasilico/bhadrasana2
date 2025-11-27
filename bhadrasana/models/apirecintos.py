@@ -395,7 +395,7 @@ def processa_json(texto: str, classeevento: Type[BaseDumpable], chave_unica: lis
     df_eventos['dataHoraOcorrencia'] = pd.to_datetime(df_eventos['dataHoraOcorrencia'])
     # print(df_eventos[df_eventos['placa']== 'DPC9J28'].sort_values('placa'))
     df_eventos = df_eventos.drop_duplicates(subset=chave_unica)
-    df_eventos['dataHoraRegistro'] = df_eventos['dataHoraRegistro'].fillna('0000-00-00 00:00:00')
+    #df_eventos['dataHoraRegistro'] = df_eventos['dataHoraRegistro'].fillna('0000-00-00 00:00:00')
     df_eventos = df_eventos.replace({np.nan: ''})
     # print(df_eventos[df_eventos['placa']== 'DPC9J28'].sort_values('placa'))
     logger.info(f'Recuperados {len(json_raw)} eventos. Mantidos {len(df_eventos)} '
