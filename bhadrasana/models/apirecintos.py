@@ -377,7 +377,7 @@ def processa_json(texto: str, classeevento: Type[BaseDumpable], chave_unica: lis
     json_raw = json.loads(''.join(texto))
     eventos = []
     for evento_json in json_raw:
-        print(evento_json, type(evento_json))
+        #print(evento_json, type(evento_json))
         instancia = classeevento()
         instancia.processa_json(evento_json)
         if ('placa' in chave_unica) and (instancia.placa is None):
