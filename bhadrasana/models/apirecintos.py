@@ -188,22 +188,14 @@ class AcessoVeiculo(EventoAPIBase):
 
         placa_raw = kwargs.get('placa')
         if placa_raw:
+            # Limpa caracteres especiais
             placa_clean = alfanumeric_c(placa_raw)
 
-            # LOG DE DIAGNÓSTICO:
-            # Se a placa "limpa" tiver mais de 7 caracteres, isso é suspeito,
-            # porque a coluna no MySQL é VARCHAR(7) e será truncada na gravação.
-            if len(placa_clean) > 7:
-                logger.warning(
-                    f"[AcessoVeiculo] Placa com mais de 7 caracteres detectada. "
-                    f"raw='{placa_raw}', clean='{placa_clean}', "
-                    f"len_clean={len(placa_clean)} (coluna é VARCHAR(7))."
-                )
+            # CORREÇÃO CRÍTICA: Trunca para 7 caracteres
+            # Isso garante que o Python busque no banco exatamente o que o MySQL consegue armazenar.
+            # Resolve o erro 1062 causado por placas duplas/concatenadas.
+            self.placa = placa_clean[:7]
 
-            # Mantemos o comportamento atual (sem truncar aqui, por enquanto),
-            # só registrando no log para investigação.
-            self.placa = placa_clean
-            
         self.ocrPlaca = kwargs.get('ocrPlaca')
         cnpjTransportador = kwargs.get('cnpjTransportador')
         if cnpjTransportador:
