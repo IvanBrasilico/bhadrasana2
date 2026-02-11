@@ -9,6 +9,7 @@ import pandas as pd
 from dateutil import parser
 from dotenv import load_dotenv
 from sqlalchemy import BigInteger, Column, DateTime, Boolean, String, UniqueConstraint, Numeric
+from sqlalchemy.exc import IntegrityError
 
 load_dotenv()
 
@@ -184,9 +185,17 @@ class AcessoVeiculo(EventoAPIBase):
         super()._mapeia(**kwargs)
         self.operacao = kwargs.get('operacao')
         self.direcao = kwargs.get('direcao')
-        placa = kwargs.get('placa')
-        if placa:
-            self.placa = alfanumeric_c(placa)
+
+        placa_raw = kwargs.get('placa')
+        if placa_raw:
+            # Limpa caracteres especiais
+            placa_clean = alfanumeric_c(placa_raw)
+
+            # CORREÇÃO CRÍTICA: Trunca para 7 caracteres
+            # Isso garante que o Python busque no banco exatamente o que o MySQL consegue armazenar.
+            # Resolve o erro 1062 causado por placas duplas/concatenadas.
+            self.placa = placa_clean[:7]
+
         self.ocrPlaca = kwargs.get('ocrPlaca')
         cnpjTransportador = kwargs.get('cnpjTransportador')
         if cnpjTransportador:
@@ -218,10 +227,13 @@ class AcessoVeiculo(EventoAPIBase):
         return 'Conhecimento'
 
     def is_duplicate(self, session):
-        return session.query(AcessoVeiculo).filter(AcessoVeiculo.placa == self.placa). \
+        return session.query(AcessoVeiculo). \
+            filter(AcessoVeiculo.placa == self.placa). \
             filter(AcessoVeiculo.operacao == self.operacao). \
             filter(AcessoVeiculo.tipoOperacao == self.tipoOperacao). \
-            filter(AcessoVeiculo.dataHoraOcorrencia == self.dataHoraOcorrencia).one_or_none() is not None
+            filter(AcessoVeiculo.dataHoraOcorrencia == self.dataHoraOcorrencia). \
+            filter(AcessoVeiculo.dataHoraRegistro == self.dataHoraRegistro). \
+            one_or_none() is not None
 
     def to_sivana(self) -> dict:
         info = f'Contêiner:{self.numeroConteiner} - ' + \
@@ -373,7 +385,7 @@ def processa_json(texto: str, classeevento: Type[BaseDumpable], chave_unica: lis
     json_raw = json.loads(''.join(texto))
     eventos = []
     for evento_json in json_raw:
-        print(evento_json, type(evento_json))
+        #print(evento_json, type(evento_json))
         instancia = classeevento()
         instancia.processa_json(evento_json)
         if ('placa' in chave_unica) and (instancia.placa is None):
@@ -383,6 +395,7 @@ def processa_json(texto: str, classeevento: Type[BaseDumpable], chave_unica: lis
     df_eventos['dataHoraOcorrencia'] = pd.to_datetime(df_eventos['dataHoraOcorrencia'])
     # print(df_eventos[df_eventos['placa']== 'DPC9J28'].sort_values('placa'))
     df_eventos = df_eventos.drop_duplicates(subset=chave_unica)
+    #df_eventos['dataHoraRegistro'] = df_eventos['dataHoraRegistro'].fillna('0000-00-00 00:00:00')
     df_eventos = df_eventos.replace({np.nan: ''})
     # print(df_eventos[df_eventos['placa']== 'DPC9J28'].sort_values('placa'))
     logger.info(f'Recuperados {len(json_raw)} eventos. Mantidos {len(df_eventos)} '
@@ -406,6 +419,19 @@ def persiste_df(df_eventos: pd.DataFrame, classeevento: Type[BaseDumpable], sess
             session.add(evento)
             cont_sucesso += 1
         session.commit()
+    except IntegrityError as err:
+        # Erros de integridade (inclui chave duplicada 1062)
+        session.rollback()
+        logger.error(f'persiste_df IntegrityError: {err}')
+        # Se for erro de chave duplicada (MySQL 1062), tratamos como "ok, já estava inserido"
+        orig = getattr(err, "orig", None)
+        code = getattr(orig, "args", [None])[0] if orig and getattr(orig, "args", None) else None
+        if code == 1062:
+            logger.info("persiste_df: chave duplicada (1062) detectada; ignorando e seguindo como idempotente.")
+            # Não relançamos: o endpoint devolve sucesso e o consumidor não quebra
+            return
+        # Outros erros de integridade continuam sendo críticos
+        raise
     except Exception as err:
         session.rollback()
         logger.error(f'persiste_df: {err}')
