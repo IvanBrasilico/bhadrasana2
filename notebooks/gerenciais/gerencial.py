@@ -9,10 +9,11 @@ import plotly.graph_objects as go
 WIDTH = 1100
 pd.options.display.float_format = 'R$ {:,.2f}'.format
 
-caminho_commons = os.path.join('../..', '..', 'ajna_docs', 'commons')
-caminho_virasana = os.path.join('../..', '..', 'ajna_docs', 'virasana')
+sys.path.append('.')
+caminho_commons = os.path.join('..', 'ajna_docs', 'commons')
+caminho_virasana = os.path.join('..', 'virasana')
 sys.path.append(caminho_commons)
-sys.path.append('../..')
+sys.path.append('..')
 sys.path.append(caminho_virasana)
 
 from ajna_commons.flask.conf import DATABASE, MONGODB_URI

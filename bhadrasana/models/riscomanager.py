@@ -147,7 +147,7 @@ def mercanterisco(session, pfiltros: dict, limit=1000, operador_ou=False):
     for rowproxy in resultproxy:
         row_dict = OrderedDict()
         for key in (*keys, *keys_ncm):
-            for column, value in rowproxy.items():
+            for column, value in rowproxy._mapping.items():
                 if key in column:
                     row_dict[key] = value
                     break
