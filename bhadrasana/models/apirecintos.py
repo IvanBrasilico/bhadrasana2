@@ -179,7 +179,7 @@ class AcessoVeiculo(EventoAPIBase):
     listaManifestos = Column(String(1))  # Placeholder
     tipoConhecimento = Column(String(15))
     numeroConhecimento = Column(String(15), index=True)
-    listaNfe = Column(String(200), index=True)
+    listaNfe = Column(String(690), index=True)
 
     def _mapeia(self, *args, **kwargs):
         super()._mapeia(**kwargs)
@@ -390,13 +390,15 @@ def processa_json(texto: str, classeevento: Type[BaseDumpable], chave_unica: lis
         instancia.processa_json(evento_json)
         if ('placa' in chave_unica) and (instancia.placa is None):
             continue
-        eventos.append(instancia.dump())
+        instancia_dump = instancia.dump()
+        instancia_dump.pop('id', None)
+        eventos.append(instancia_dump)
     df_eventos = pd.DataFrame(eventos)
     df_eventos['dataHoraOcorrencia'] = pd.to_datetime(df_eventos['dataHoraOcorrencia'])
     # print(df_eventos[df_eventos['placa']== 'DPC9J28'].sort_values('placa'))
     df_eventos = df_eventos.drop_duplicates(subset=chave_unica)
     #df_eventos['dataHoraRegistro'] = df_eventos['dataHoraRegistro'].fillna('0000-00-00 00:00:00')
-    df_eventos = df_eventos.replace({np.nan: ''})
+    #df_eventos = df_eventos.replace({np.nan: ''})
     # print(df_eventos[df_eventos['placa']== 'DPC9J28'].sort_values('placa'))
     logger.info(f'Recuperados {len(json_raw)} eventos. Mantidos {len(df_eventos)} '
                 f'após remoção de duplicatas de chave primária.')
