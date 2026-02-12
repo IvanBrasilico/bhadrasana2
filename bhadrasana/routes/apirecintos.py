@@ -56,11 +56,11 @@ def max_datahora_por_recinto_lista(session: Session):
             if ultima_transmissao <= timedelta(days=1):
                 incluir = True
             elif timedelta(days=1) < ultima_transmissao <= timedelta(days=3):
-                incluir = random.random() < 0.20
+                incluir = random.random() < 0.50
             elif timedelta(days=3) < ultima_transmissao <= timedelta(days=7):
-                incluir = random.random() < 0.03
+                incluir = random.random() < 0.5
             else:  # maior que 7 dias
-                incluir = random.random() < 0.01
+                incluir = random.random() < 0.5
 
             if incluir:
                 item = {'tipoEvento': tipoEvento,
@@ -98,6 +98,8 @@ def processar_json_puro(session, json_texto, classe, indice):
     :param indice:
     """
     df_eventos = processa_json(json_texto, classe, indice)
+    print("HEADDDDDDDDDDD")
+    print(df_eventos.head())
     persiste_df(df_eventos, classe, session)
 
 
