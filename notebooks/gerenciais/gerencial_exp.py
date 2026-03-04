@@ -45,7 +45,7 @@ SQL_APREENSOES = \
     SELECT year(rvf.datahora) as Ano, month(rvf.datahora) as Mês, rvf.datahora,
       r.nome as recinto,
       ovr.id as Ficha, rvf.id as RVF, rvf.descricao as relato, rvf.numerolote as Conteiner,
-      a.id as Apreensao, a.descricao, t.descricao, a.peso as Peso, c.PortoDestFinal as PortoDestino
+      a.id as Apreensao, a.descricao, t.descricao as "Substância", a.peso as Peso, c.PortoDestFinal as PortoDestino
       FROM ovr_ovrs ovr
      inner join ovr_verificacoesfisicas rvf on rvf.ovr_id = ovr.id
      inner join ovr_apreensoes_rvf a on a.rvf_id = rvf.id
