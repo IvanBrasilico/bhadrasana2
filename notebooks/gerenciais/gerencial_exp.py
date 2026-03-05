@@ -393,7 +393,7 @@ def FigTipoOcultacao():
     left join ovr_flags_ovr flag on flag.rvf_id = ovr.id
     left join ovr_flags flagd on flagd.id = flag.flag_id
     where ovr.setor_id in (1, 2, 3)  and ovr.tipooperacao != 6
-    and flagd.nome like 'Tipo de ocultação:%' or flagd.nome is null
+    and flagd.nome like "Tipo de ocultação:%%" or flagd.nome is null
     order by Ano, Mês
     '''
     df_tipo_ocultacao = pd.read_sql(SQL_TIPO_OCULTACAO, engine)
