@@ -76,17 +76,47 @@ def configure(app):
         """)
         rows = session.execute(sql).mappings().all()
 
-        # Agrupa por recinto (nome se houver, senão id, senão ─)
-        counts = Counter()
+        # IDs dos recintos principais que devem ficar em destaque
+        principais_ids = ('8', '9', '10', '11', '21', '22', '70')
+        
+        # Busca os nomes dos recintos principais para exibir mesmo quando houver 0 fichas
+        sql_recintos = text(f"SELECT id, nome FROM ovr_recintos WHERE id IN {principais_ids}")
+        recintos_db = session.execute(sql_recintos).mappings().all()
+        
+        id_to_nome_principal = {}
+        counts_principais = {}
+        for r_db in recintos_db:
+            rec_id = str(r_db['id']).strip()
+            nome = r_db['nome'] or rec_id
+            counts_principais[nome] = 0
+            id_to_nome_principal[rec_id] = nome
+
+        # Failsafe: caso algum ID principal não esteja no banco, adicionamos ele manualmente
+        for pid in principais_ids:
+            if pid not in id_to_nome_principal:
+                counts_principais[pid] = 0
+                id_to_nome_principal[pid] = pid
+
+        counts_outros = Counter()
+
         for r in rows:
+            rec_id = str(r.get('recinto_id')).strip() if r.get('recinto_id') else ''
             nome = (r.get('recinto_nome') or r.get('recinto_id') or '─')
-            counts[nome] += 1
-        agrupados_por_recinto = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))
+           
+            if rec_id in principais_ids:
+                nome_padrao = id_to_nome_principal[rec_id]
+                counts_principais[nome_padrao] += 1
+            else:
+                counts_outros[nome] += 1
+
+        agrupados_principais = sorted(counts_principais.items(), key=lambda kv: (-kv[1], kv[0]))
+        agrupados_outros = sorted(counts_outros.items(), key=lambda kv: (-kv[1], kv[0]))
 
         return render_template(
             'tela_eqrexp.html',
             rows=rows,
             total_rows=len(rows),
-            agrupados_por_recinto=agrupados_por_recinto,
+            agrupados_principais=agrupados_principais,
+            agrupados_outros=agrupados_outros,
             csrf_token=generate_csrf if generate_csrf else None
         )
