@@ -61,8 +61,11 @@ class EventoAPIBase(BaseRastreavel, BaseDumpable):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for k in self.get_campos():
-            setattr(self, k, kwargs.get(k))
-
+            val = kwargs.get(k)
+            # Limpeza global de NaN: impede que valores inválidos do Pandas cheguem ao MySQL
+            if isinstance(val, float) and np.isnan(val):
+                val = None
+            setattr(self, k, val)
 
 def get_listaConteineresUld(o_kwargs: dict) -> Union[Tuple[str, bool, str, bool], Tuple[None, bool, None, bool]]:
     """
@@ -125,7 +128,7 @@ def get_listaManifestos(o_kwargs: dict) -> Union[Tuple[str, str], Tuple[None, No
     return None, None
 
 
-def get_listaNfe(o_kwargs: dict) -> Union[str, None]:
+def get_listaNfe(o_kwargs: dict, limite: int = None) -> Union[str, None]:
     """
     Pega objeto listaNfe e faz "listão" separado por ,
 
@@ -140,7 +143,10 @@ def get_listaNfe(o_kwargs: dict) -> Union[str, None]:
             chave = row.get('chaveNfe')
             if chave:
                 Nfes.append(chave)
-    return ', '.join(Nfes)
+    resultado = ', '.join(Nfes)
+    if limite and resultado and len(resultado) > limite:
+        return resultado[:limite]
+    return resultado
 
 
 def numeric_c(texto):
@@ -150,6 +156,35 @@ def numeric_c(texto):
 def alfanumeric_c(texto):
     return ''.join([c for c in texto if c.isalnum()])
 
+def valida_peso(peso, limite=99999999.99):
+    """Valida se o peso recebido é numérico e está dentro do limite do banco de dados.
+    Evita erro 1264 (Out of range value) no MySQL.
+    """
+    if peso is not None:
+        try:
+            peso_float = float(peso)
+            if peso_float > limite:
+                logger.warning(f"Peso absurdo detectado e anulado (acima de {limite}): {peso}")
+                return None
+            return peso
+        except (ValueError, TypeError):
+            return None
+    return None
+
+class ControleExtracaoRecintos(Base):
+    __tablename__ = 'apirecintos_controle_extracao'
+    __table_args__ = (UniqueConstraint('codigoRecinto', 'tipoEvento'),)
+    
+    id = Column(BigInteger(), primary_key=True)
+    codigoRecinto = Column(String(7), index=True)
+    tipoEvento = Column(String(2), index=True)
+    ultimaDataPesquisada = Column(DateTime())
+
+    def __init__(self, codigoRecinto, tipoEvento, ultimaDataPesquisada, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.codigoRecinto = codigoRecinto
+        self.tipoEvento = tipoEvento
+        self.ultimaDataPesquisada = ultimaDataPesquisada
 
 class AcessoVeiculo(EventoAPIBase):
     __tablename__ = 'apirecintos_acessosveiculo'
@@ -174,10 +209,10 @@ class AcessoVeiculo(EventoAPIBase):
     ocrPlacaSemirreboque = Column(Boolean(), index=True)
     vazioSemirreboque = Column(Boolean(), index=True)
     listaDeclaracaoAduaneira = Column(String(1))  # Placeholder
-    tipoDeclaracao = Column(String(3))
+    tipoDeclaracao = Column(String(20))
     numeroDeclaracao = Column(String(15), index=True)
     listaManifestos = Column(String(1))  # Placeholder
-    tipoConhecimento = Column(String(15))
+    tipoConhecimento = Column(String(20))
     numeroConhecimento = Column(String(15), index=True)
     listaNfe = Column(String(690), index=True)
 
@@ -214,7 +249,9 @@ class AcessoVeiculo(EventoAPIBase):
             self.placaSemirreboque = alfanumeric_c(placaSemirreboque)
         self.tipoDeclaracao, self.numeroDeclaracao = get_listaDeclaracaoAduaneira(kwargs)
         self.tipoConhecimento, self.numeroConhecimento = get_listaManifestos(kwargs)
-        self.listaNfe = get_listaNfe(kwargs)
+        
+        # Utiliza a truncagem centralizada na função utilitária
+        self.listaNfe = get_listaNfe(kwargs, limite=690)
 
     def get_tipoDeclaracao(self):
         if self.tipoDeclaracao:
@@ -265,22 +302,24 @@ class EmbarqueDesembarque(EventoAPIBase):
     tipoConteiner = Column(String(4), index=True)
     listaManifestos = Column(String(1))  # Placeholder
     listaDeclaracaoAduaneira = Column(String(1))  # Placeholder
-    listaNfe = Column(String(200), index=True)
+    listaNfe = Column(String(690), index=True)
 
     def _mapeia(self, *args, **kwargs):
         super()._mapeia(**kwargs)
         self.viagem = kwargs.get('viagem')
-        self.pesoBrutoManifesto = kwargs.get('pesoBrutoManifesto')
+        self.pesoBrutoManifesto = valida_peso(kwargs.get('pesoBrutoManifesto'), 99999999.99)
         self.escala = kwargs.get('escala')
         self.embarqueDesembarque = kwargs.get('embarqueDesembarque')
+        self.cargaSolta = kwargs.get('cargaSolta')
+        self.pesoBrutoBalanca = valida_peso(kwargs.get('pesoBrutoBalanca'), 99999.99)
         numeroConteiner = kwargs.get('numeroConteiner')
         if numeroConteiner:
             self.numeroConteiner = ''.join([c for c in numeroConteiner if c.isalnum()])
-        self.taraConteiner = kwargs.get('taraConteiner')
+        self.taraConteiner = valida_peso(kwargs.get('taraConteiner'), 99999.99)
         self.tipoConteiner = kwargs.get('tipoConteiner')
         self.tipoDeclaracao, self.numeroDeclaracao = get_listaDeclaracaoAduaneira(kwargs)
         self.tipoConhecimento, self.numeroConhecimento = get_listaManifestos(kwargs)
-        self.listaNfe = get_listaNfe(kwargs)
+        self.listaNfe = get_listaNfe(kwargs, limite=690)
 
     def is_duplicate(self, session):
         return session.query(EmbarqueDesembarque). \
@@ -306,15 +345,18 @@ class PesagemVeiculo(EventoAPIBase):
 
     def _mapeia(self, *args, **kwargs):
         super()._mapeia(**kwargs)
-        self.pesoBrutoBalanca = kwargs.get('pesoBrutoBalanca')
-        self.pesoBrutoManifesto = kwargs.get('pesoBrutoManifesto')
+        self.pesoBrutoBalanca = valida_peso(kwargs.get('pesoBrutoBalanca'), 99999.99)
+        self.pesoBrutoManifesto = valida_peso(kwargs.get('pesoBrutoManifesto'), 99999999.99)
+        self.taraConjunto = valida_peso(kwargs.get('taraConjunto'), 99999.99)
         self.capturaAutoPeso = kwargs.get('capturaAutoPeso', False)
         placa = kwargs.get('placa')
         if placa:
             self.placa = alfanumeric_c(placa)
         # self.ocrPlaca == kwargs.get('ocrPlaca')
         self.numeroConteiner, _, _, _ = get_listaConteineresUld(kwargs)
-        placaSemirreboque, _, _, self.taraSemirreboque = get_listaSemirreboque(kwargs)
+        placaSemirreboque, _, _, taraSemirreboque_raw = get_listaSemirreboque(kwargs)
+        self.taraSemirreboque = valida_peso(taraSemirreboque_raw, 99999.99)
+
         if placaSemirreboque:
             self.placaSemirreboque = alfanumeric_c(placaSemirreboque)
 
@@ -397,8 +439,8 @@ def processa_json(texto: str, classeevento: Type[BaseDumpable], chave_unica: lis
     df_eventos['dataHoraOcorrencia'] = pd.to_datetime(df_eventos['dataHoraOcorrencia'])
     # print(df_eventos[df_eventos['placa']== 'DPC9J28'].sort_values('placa'))
     df_eventos = df_eventos.drop_duplicates(subset=chave_unica)
-    #df_eventos['dataHoraRegistro'] = df_eventos['dataHoraRegistro'].fillna('0000-00-00 00:00:00')
-    #df_eventos = df_eventos.replace({np.nan: ''})
+    # Substitui NaNs por None (NULL no SQL), evitando o erro de "nan" no MySQL
+    df_eventos = df_eventos.where(pd.notnull(df_eventos), None)
     # print(df_eventos[df_eventos['placa']== 'DPC9J28'].sort_values('placa'))
     logger.info(f'Recuperados {len(json_raw)} eventos. Mantidos {len(df_eventos)} '
                 f'após remoção de duplicatas de chave primária.')
@@ -427,7 +469,8 @@ def persiste_df(df_eventos: pd.DataFrame, classeevento: Type[BaseDumpable], sess
         logger.error(f'persiste_df IntegrityError: {err}')
         # Se for erro de chave duplicada (MySQL 1062), tratamos como "ok, já estava inserido"
         orig = getattr(err, "orig", None)
-        code = getattr(orig, "args", [None])[0] if orig and getattr(orig, "args", None) else None
+        args = getattr(orig, "args", [])
+        code = args[0] if args and len(args) > 0 else None
         if code == 1062:
             logger.info("persiste_df: chave duplicada (1062) detectada; ignorando e seguindo como idempotente.")
             # Não relançamos: o endpoint devolve sucesso e o consumidor não quebra

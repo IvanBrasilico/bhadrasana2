@@ -3,11 +3,14 @@ Módulo para consultas simples da API Recintos e para upload de arquivos
 
 
 """
+
 import json
 import random
 import sys
 import zipfile
 from datetime import timedelta, datetime
+
+from dateutil import parser
 
 from flask import render_template, flash, request, redirect, jsonify
 from flask_login import login_required
@@ -17,7 +20,7 @@ sys.path.insert(0, '../ajna_docs/commons')
 sys.path.insert(0, '../virasana')
 from ajna_commons.flask.log import logger
 from bhadrasana.models.apirecintos import AcessoVeiculo, PesagemVeiculo, EmbarqueDesembarque, InspecaoNaoInvasiva, \
-    processa_json, persiste_df
+    processa_json, persiste_df, ControleExtracaoRecintos
 from bhadrasana.views import valid_file, csrf
 
 CLASSES = {'1': AcessoVeiculo,
@@ -31,14 +34,47 @@ from sqlalchemy.orm import Session
 
 
 def max_datahora_por_recinto(session: Session):
+    # FUNDAMENTAL: Encerra transações presas do SQLAlchemy para evitar "Phantom Reads" (Cache).
+    # Força a leitura dos dados mais atualizados diretamente do MySQL.
+    session.commit()
+
     resultados = {}
     for tipo, classe in CLASSES.items():
         logger.info(f'Consultando classe: {tipo} - {classe}')
-        query = session.query(
+        
+        # 1. Pega os recintos existentes baseados nos eventos (como já era feito)
+        query_eventos = session.query(
             classe.codigoRecinto,
             func.max(classe.dataHoraTransmissao)
         ).group_by(classe.codigoRecinto)
-        resultados[tipo] = list(query.all())  # lista de tuplas (codigoRecinto, max_dataHoraTransmissao)
+        # Usa str().strip() para evitar que espaços ocultos quebrem o dicionário
+        eventos_max = {str(row[0]).strip(): row[1] for row in query_eventos.all() if row[0]}
+
+        # 2. Pega as marcações da nova tabela de controle
+        controles = session.query(ControleExtracaoRecintos).filter(
+            ControleExtracaoRecintos.tipoEvento == str(tipo).strip()
+        ).all()
+        controle_max = {str(c.codigoRecinto).strip(): c.ultimaDataPesquisada for c in controles}
+
+        lista_final = []
+        # 3. Mescla os dados unindo todos os recintos (evita ignorar recintos sem eventos recentes)
+        todos_recintos = set(eventos_max.keys()).union(set(controle_max.keys()))
+        
+        for recinto in todos_recintos:
+            data_evento = eventos_max.get(recinto)
+            data_controle = controle_max.get(recinto)
+            
+            # Regra de Ouro: Sempre assume a MAIOR data disponível entre as duas tabelas!
+            if data_controle and data_evento:
+                data_final = max(data_controle, data_evento)
+            else:
+                data_final = data_controle or data_evento
+                
+            if data_final:
+                lista_final.append((recinto, data_final))
+            
+        resultados[tipo] = lista_final
+        
     return resultados
 
 
@@ -98,12 +134,13 @@ def processar_json_puro(session, json_texto, classe, indice):
     :param indice:
     """
     df_eventos = processa_json(json_texto, classe, indice)
-    print("HEADDDDDDDDDDD")
     print(df_eventos.head())
     persiste_df(df_eventos, classe, session)
 
 
 def le_tipo_evento(lista_eventos):
+    if not lista_eventos or len(lista_eventos) == 0:
+        raise ValueError("A lista de eventos está vazia. Não é possível determinar o tipoEvento.")
     return str(lista_eventos[0]['dadosTransmissao']['tipoEvento'])
 
 
@@ -228,6 +265,53 @@ def apirecintos_app(app):
             logger.error(f'api_recintos_lista_integracao: {err}')
             return jsonify({'msg': str(err), 'maisrecentes': result}), 500
         return jsonify({'msg': '', 'maisrecentes': result}), 200
+
+
+    @app.route('/api_recintos/atualiza_ponteiro', methods=['POST'])
+    # TODO: ativar login e mover para api ajna
+    # @login_required
+    @csrf.exempt
+    def api_recintos_atualiza_ponteiro():
+
+        session = app.config.get('dbsession')
+        try:
+            dados = request.json
+            recinto = dados.get('codigoRecinto')
+            tipo = dados.get('tipoEvento')
+            data_str = dados.get('dataFim')
+
+            if not all([recinto, tipo, data_str]):
+                return jsonify({'msg': 'Faltam parâmetros (codigoRecinto, tipoEvento, dataFim)'}), 400
+
+            # Converte a data string do Jython para objeto DateTime
+            nova_data = parser.isoparse(data_str).replace(tzinfo=None, microsecond=0)
+
+            # Busca se já existe um controle para esse recinto e evento
+            controle = session.query(ControleExtracaoRecintos).filter(
+                ControleExtracaoRecintos.codigoRecinto == str(recinto),
+                ControleExtracaoRecintos.tipoEvento == str(tipo)
+            ).first()
+
+            if controle:
+                # Só atualiza se a nova data for realmente maior que a anterior (evita retrocessos)
+                if nova_data > controle.ultimaDataPesquisada:
+                    controle.ultimaDataPesquisada = nova_data
+            else:
+                # Se não existir, insere o registro inicial
+                novo_controle = ControleExtracaoRecintos(
+                    codigoRecinto=str(recinto), 
+                    tipoEvento=str(tipo), 
+                    ultimaDataPesquisada=nova_data
+                )
+                session.add(novo_controle)
+
+            session.commit()
+            return jsonify({'msg': 'Ponteiro atualizado com sucesso!'}), 200
+
+        except Exception as err:
+            session.rollback()
+            logger.error(f'api_recintos_atualiza_ponteiro erro: {err}')
+            return jsonify({'msg': str(err)}), 500
 
 
 if __name__ == '__main__':  # pragma: no-cover
