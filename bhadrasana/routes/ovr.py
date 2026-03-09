@@ -362,8 +362,8 @@ def ovr_app(app):
                     df = pd.DataFrame(linhas)
                     df.columns = ['Grupo', *titulos_exibicao]
                     out_filename = '{}_{}.xlsx'.format('PesquisaFicha_',
-                                                      datetime.strftime(datetime.now(), '%Y-%m-%dT%H-%M-%S')
-                                                      )
+                                                       datetime.strftime(datetime.now(), '%Y-%m-%dT%H-%M-%S')
+                                                       )
                     df.to_excel(os.path.join(get_user_save_path(), out_filename), index=False)
                     return redirect('static/%s/%s' % (current_user.name, out_filename))
         except Exception as err:
@@ -596,12 +596,8 @@ def ovr_app(app):
         try:
             setor_ovr_form = SetorOVRForm(request.form)
             ovr_id = setor_ovr_form.ovr_id.data
-
-            # 🆕 Pega os novos dados do formulário
-            responsavel_cpf = request.form.get('responsavel') or None
-            motivo = request.form.get('motivo_setor', '').strip()
-
-            # 🆕 Passa tudo para a função
+            responsavel_cpf = setor_ovr_form.responsavel.data
+            motivo = setor_ovr_form.motivo_setor.data
             muda_setor_ovr(
                 session,
                 ovr_id=ovr_id,
@@ -610,9 +606,7 @@ def ovr_app(app):
                 responsavel_cpf=responsavel_cpf,
                 motivo=motivo
             )
-
             flash("Ficha transferida com sucesso.")
-
         except Exception as err:
             logger.error(err, exc_info=True)
             flash('Erro! Detalhes no log da aplicação.')
@@ -620,6 +614,30 @@ def ovr_app(app):
             flash(str(err))
 
         return redirect(url_for('ovr', id=ovr_id))
+
+    @app.route('/mudasetorficha_pesquisaovr', methods=['POST'])
+    @login_required
+    def mudasetorficha_pesquisaovr():
+        session = app.config.get('dbsession')
+        ovr_id = None
+        try:
+            setor_ovr_form = SetorOVRForm(request.form)
+            ovr_id = setor_ovr_form.ovr_id.data
+            responsavel_cpf = setor_ovr_form.responsavel.data
+            motivo = setor_ovr_form.motivo_setor.data
+            muda_setor_ovr(
+                session,
+                ovr_id=ovr_id,
+                setor_id=setor_ovr_form.setor.data,
+                user_name=current_user.name,
+                responsavel_cpf=responsavel_cpf,
+                motivo=motivo
+            )
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            return jsonify({'msg': 'Erro: {}'.format(str(err))}), 500
+
+        return jsonify({'msg': 'Sucesso!'}), 201
 
     @app.route('/usuarios_por_setor')
     @login_required
@@ -655,8 +673,6 @@ def ovr_app(app):
             import traceback
             traceback.print_exc()
             return jsonify({'usuarios': []}), 500
-
-
 
     @app.route('/libera_ficha', methods=['GET'])
     @login_required
