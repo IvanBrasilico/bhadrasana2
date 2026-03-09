@@ -70,7 +70,8 @@ def configure(app):
             LEFT JOIN ovr_setores s
                    ON s.id = uc.setor_id
             WHERE (fase=0 OR fase=1 OR fase=2) -- iniciada, ativa, suspensa
-            AND o.setor_id = '3'            
+            AND o.setor_id = '3'
+            AND (o.tipooperacao ='1' or o.tipooperacao ='4') 
             ORDER BY o.create_date DESC, o.id DESC
             LIMIT 200
         """)
