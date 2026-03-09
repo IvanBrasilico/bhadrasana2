@@ -182,7 +182,8 @@
 
     <div class="row col-sm-12">
         <hr>
-        <h3>Fichas encontradas: {{ listaovrs | length }} resultados - limite de {{limit}} resultados (1.000 na Exportação)</h3>
+        <h3>Fichas encontradas: {{ listaovrs | length }} resultados - limite de {{limit}} resultados (1.000 na
+            Exportação)</h3>
         <div id="actions" class="row col-sm-12">
             <div class="col-sm-3">
                 <h4>Com linhas selecionadas, fazer ação:</h4>
@@ -199,6 +200,10 @@
                 </button>
             </div>
             <div class="col-sm-3">
+                <button id="btn_mudarsetor" type="button" class="btn btn-warning form-control"
+                        data-toggle="modal" data-target="#mudarsetor">
+                    Transferir para outro Setor
+                </button>
             </div>
         </div>
     </div>
@@ -212,7 +217,7 @@
                    id="pesquisa_ovr_table">
                 <thead>
                 <tr>
-                    <th></th>
+                    <th><input type="checkbox" id="checkall" title="Selecionar todas as linhas"></th>
                     {% for col in titulos %}
                     <th>{{ col }}</th>
                     {% endfor %}
@@ -223,11 +228,13 @@
                 <tr class="{% if ovr[1] %}default{% else %}warning{% endif %} {% if ovr[3] %}text-danger{% endif %}">
                     <td><input type="checkbox" name="rowid" class="action-checkbox" value="{{ovr[0]}}"
                                title="Selecionar linha"></td>
-                    <td><div onmouseover="showMsg(this, '{{ovr[0]}}')">
-                        <a href="ovr?id={{ovr[0]}}" target="_blank">{{ ovr[0] }}</a>
-                    </div></td>
+                    <td>
+                        <div onmouseover="showMsg(this, '{{ovr[0]}}')">
+                            <a href="ovr?id={{ovr[0]}}" target="_blank">{{ ovr[0] }}</a>
+                        </div>
+                    </td>
                     {% for col in ovr[2] %}
-                    <td style="text-align:left" {% if ovr[3] %}class="text-danger"{% endif %}>{{ col | safe }}</td>
+                    <td style="text-align:left" {% if ovr[3] %}class="text-danger" {% endif %}>{{ col | safe }}</td>
                     {% endfor %}
                 </tr>
                 {% endfor %}
@@ -304,83 +311,157 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="mudarsetor" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title" id="ModalLabel23">Transfere ficha para outro Setor</h1>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="mudasetorficha" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <input type="hidden" name="ovr_id" value="{{ oform.id.data }}"/>
+
+                    <!-- Campo para setor -->
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label for="setor">Novo Setor</label>
+                        </div>
+                        <div class="col-sm-9">
+                            {{ setor_ovr_form.setor(class='form-control', id='setor-select') }}
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Campo para responsável -->
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label for="responsavel">Novo Responsável</label>
+                        </div>
+                        <div class="col-sm-9">
+                            <select name="responsavel" id="responsavel-select" class="form-control">
+                                <option value="">Selecione um setor primeiro</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Campo para motivo -->
+                    <div class="row mt-3">
+                        <div class="col-sm-3">
+                            <label for="motivo_setor">Motivo</label>
+                        </div>
+                        <div class="col-sm-9">
+                            <textarea name="motivo_setor" id="motivo_setor" class="form-control" maxlength="200" rows="3"
+                                      placeholder="Descreva o motivo da mudança (máx. 200 caracteres)"></textarea>
+                            <small class="form-text text-muted text-right">
+                                <span id="charCount">0</span> / 200 caracteres
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Botão centralizado com espaçamento -->
+                    <p class="text-center mt-4">
+                        <input class="btn btn-primary" type="submit" value="Transferir"/>
+                    </p>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
 </div>
 {% endblock %} {% block scripts %} {{super()}}
 <script>
 
+    $(function () {
+        $('#checkall').on('change', function () {
+            $('.action-checkbox').prop('checked', this.checked);
+        });
+    });
+
     $('th').click(function(){
-    var table = $(this).parents('table').eq(0)
-    var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index()))
-    this.asc = !this.asc
-    if (!this.asc){rows = rows.reverse()}
-    for (var i = 0; i < rows.length; i++){table.append(rows[i])}
-})
-function comparer(index) {
-    return function(a, b) {
-        var valA = getCellValue(a, index), valB = getCellValue(b, index)
-        return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.toString().localeCompare(valB)
+         var index = $(this).index();
+
+        // não ordenar se for a primeira coluna (checkall)
+        if (index === 0) {
+            return;
+        }
+        var table = $(this).parents('table').eq(0)
+        var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index()))
+        this.asc = !this.asc
+        if (!this.asc){rows = rows.reverse()}
+        for (var i = 0; i < rows.length; i++){table.append(rows[i])}
+    })
+    function comparer(index) {
+        return function(a, b) {
+            var valA = getCellValue(a, index), valB = getCellValue(b, index)
+            return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.toString().localeCompare(valB)
+        }
     }
-}
-function getCellValue(row, index){ return $(row).children('td').eq(index).text() }
+    function getCellValue(row, index){ return $(row).children('td').eq(index).text() }
 
 
-function abre_ovr_numero(){
-    numero = $("#abre_ovr_id").val();
-    console.log(numero);
-    if (numero) {
-        window.open("ovr?id=" + numero);
+    function abre_ovr_numero(){
+        numero = $("#abre_ovr_id").val();
+        console.log(numero);
+        if (numero) {
+            window.open("ovr?id=" + numero);
+        }
     }
-}
-$("#abre_ovr_id").on('keyup', function (e) {
-    if (e.key === 'Enter' || e.keyCode === 13) {
-        abre_ovr_numero()
-    }
-});
+    $("#abre_ovr_id").on('keyup', function (e) {
+        if (e.key === 'Enter' || e.keyCode === 13) {
+            abre_ovr_numero()
+        }
+    });
 
 
-    function submit_many(pinput){
-        var form = $(pinput.form);
-        $('input.action-checkbox:checked').each(function() {
-            form.append($(this).clone());
-        });
-        // console.log(form);
-        // console.log(form.serialize());
-        $.ajax({
-            url: form.attr('action'),
-            type: "POST",
-            data: form.serialize(),
-            success : function(result) {
-                window.location.reload();
-            },
-            error: function(xhr, resp, text) {
-                console.log(resp);
-                console.log(text);
-                window.alert(text);
-                window.location.reload();
-            }
-        });
-    }
+        function submit_many(pinput){
+            var form = $(pinput.form);
+            $('input.action-checkbox:checked').each(function() {
+                form.append($(this).clone());
+            });
+            // console.log(form);
+            // console.log(form.serialize());
+            $.ajax({
+                url: form.attr('action'),
+                type: "POST",
+                data: form.serialize(),
+                success : function(result) {
+                    window.location.reload();
+                },
+                error: function(xhr, resp, text) {
+                    console.log(resp);
+                    console.log(text);
+                    window.alert(text);
+                    window.location.reload();
+                }
+            });
+        }
 
-$('#selectAll').click(function (e) {
-    $(this).closest('table').find('td input:checkbox').prop('checked', this.checked);
-});
+    $('#selectAll').click(function (e) {
+        $(this).closest('table').find('td input:checkbox').prop('checked', this.checked);
+    });
 
-   function showMsg(adiv, oid) {
-        xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function () {
-            if (this.readyState == 4) {
-                if (this.status == 200) {
-                    adiv.title = this.responseText;
+       function showMsg(adiv, oid) {
+            xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4) {
+                    if (this.status == 200) {
+                        adiv.title = this.responseText;
+                    }
                 }
             }
+            xhttp.open("GET", "/bhadrasana2/ficha/summary/" + oid, true);
+            xhttp.send();
         }
-        xhttp.open("GET", "/bhadrasana2/ficha/summary/" + oid, true);
-        xhttp.send();
-    }
-    function clearMsg(adiv) {
-        adiv.title = "";
-    }
-
+        function clearMsg(adiv) {
+            adiv.title = "";
+        }
 
 
 </script>
