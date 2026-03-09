@@ -2,6 +2,7 @@
 from flask import render_template
 from sqlalchemy import text
 import logging
+import re
 from collections import Counter
 
 # (opcional) se seu layout usa CSRF em formulários, podemos passar o token pro template
@@ -44,6 +45,7 @@ def configure(app):
               o.id,
               o.recinto_id,
               r.nome AS recinto_nome,
+              o.observacoes,
               COALESCE(u.nome, '-') AS responsavel_nome,
               s.nome AS setor_criador_nome,
               o.create_date,
@@ -75,7 +77,7 @@ def configure(app):
             ORDER BY o.create_date DESC, o.id DESC
             LIMIT 200
         """)
-        rows = session.execute(sql).mappings().all()
+        rows_db = session.execute(sql).mappings().all()
 
         # IDs dos recintos principais que devem ficar em destaque
         principais_ids = ('8', '9', '10', '11', '21', '22', '70')
@@ -101,14 +103,26 @@ def configure(app):
         counts_outros = Counter()
 
         for r in rows:
-            rec_id = str(r.get('recinto_id')).strip() if r.get('recinto_id') else ''
-            nome = (r.get('recinto_nome') or r.get('recinto_id') or '─')
+        # Transformando rows em dicionários mutáveis para adicionar a lista de contêineres
+        rows = []
+        padrao_conteiner = re.compile(r'[A-Za-z]{4}\d{7}')
+
+        for r_db in rows_db:
+            row_dict = dict(r_db)
+            obs = row_dict.get('observacoes') or ''
+            # Extrai e converte para maiúsculas para manter o padrão
+            row_dict['conteineres'] = [c.upper() for c in padrao_conteiner.findall(obs)]
+            
+            rec_id = str(row_dict.get('recinto_id')).strip() if row_dict.get('recinto_id') else ''
+            nome = (row_dict.get('recinto_nome') or row_dict.get('recinto_id') or '─')
            
             if rec_id in principais_ids:
                 nome_padrao = id_to_nome_principal[rec_id]
                 counts_principais[nome_padrao] += 1
             else:
                 counts_outros[nome] += 1
+
+            rows.append(row_dict)
 
         agrupados_principais = sorted(counts_principais.items(), key=lambda kv: (-kv[1], kv[0]))
         agrupados_outros = sorted(counts_outros.items(), key=lambda kv: (-kv[1], kv[0]))
