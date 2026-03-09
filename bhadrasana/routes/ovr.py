@@ -328,6 +328,7 @@ def ovr_app(app):
                                               responsavel=current_user.name)
         historico_ovr_form = HistoricoOVRForm(
             tiposeventos=get_tipos_evento_comfase_choice(session))
+        setor_ovr_form = SetorOVRForm(setores=lista_setores)
         try:
             usuario = get_usuario(session, current_user.name)
             if usuario is None:
@@ -379,6 +380,7 @@ def ovr_app(app):
                                listaagrupada=listaagrupada,
                                responsavel_form=responsavel_form,
                                historico_form=historico_ovr_form,
+                               setor_ovr_form=setor_ovr_form,
                                title_page=title_page)
 
     @app.route('/ovrs_meus_setores', methods=['GET', 'POST'])
