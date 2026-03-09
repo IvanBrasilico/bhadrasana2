@@ -68,7 +68,7 @@
         <tr>
           <td class="mono" data-order="{{ r.id }}">
             <a href="https://ajna1.rfoc.srf/bhadrasana2/ovr?id={{ r.id }}" target="_blank">{{ r.id }}</a>
-            {% if r.setor_usuario_nome %}
+            {% if r.setor_criador_nome %}
               <span class="muted">(criado por: {{ r.setor_criador_nome }})</span>
             {% endif %}
             {% if r.perecivel %}
