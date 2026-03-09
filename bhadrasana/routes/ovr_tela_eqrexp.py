@@ -102,7 +102,6 @@ def configure(app):
 
         counts_outros = Counter()
 
-        for r in rows:
         # Transformando rows em dicionários mutáveis para adicionar a lista de contêineres
         rows = []
         padrao_conteiner = re.compile(r'[A-Za-z]{4}\d{7}')
