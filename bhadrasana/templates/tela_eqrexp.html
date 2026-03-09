@@ -69,7 +69,7 @@
           <td class="mono" data-order="{{ r.id }}">
             <a href="https://ajna1.rfoc.srf/bhadrasana2/ovr?id={{ r.id }}" target="_blank">{{ r.id }}</a>
             {% if r.setor_usuario_nome %}
-              <span class="muted">({{ r.setor_usuario_nome }})</span>
+              <span class="muted">(criado por: {{ r.setor_criador_nome }})</span>
             {% endif %}
             {% if r.perecivel %}
               <span class="badge badge-yellow" title="Carga perecível" aria-label="Perecível">Perecível</span>

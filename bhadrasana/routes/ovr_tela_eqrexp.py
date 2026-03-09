@@ -45,7 +45,7 @@ def configure(app):
               o.recinto_id,
               r.nome AS recinto_nome,
               COALESCE(u.nome, '-') AS responsavel_nome,
-              s.nome AS setor_usuario_nome,
+              s.nome AS setor_criador_nome,
               o.create_date,
               EXISTS (
                 SELECT 1
@@ -65,8 +65,10 @@ def configure(app):
                    ON r.id = o.recinto_id
             LEFT JOIN ovr_usuarios u
                    ON u.cpf = o.responsavel_cpf
+            LEFT JOIN ovr_usuarios uc
+                   ON uc.cpf = o.user_name
             LEFT JOIN ovr_setores s
-                   ON s.id = u.setor_id
+                   ON s.id = uc.setor_id
             WHERE (fase=0 OR fase=1 OR fase=2) -- iniciada, ativa, suspensa
             AND o.setor_id = '3'            
             ORDER BY o.create_date DESC, o.id DESC
