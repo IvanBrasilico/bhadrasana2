@@ -187,10 +187,10 @@ def limpa_json_apirecintos(json_raw):
             # --- BLINDAGEM DO PANDAS ---
             # Impede que a ausência de chaves cause KeyError na indexação do DataFrame
             if 'placa' not in jsonOriginal:
-                jsonOriginal['placa'] = 'SEM_PLACA'
+                jsonOriginal['placa'] = ''
                 
             if 'numeroConteiner' not in jsonOriginal:
-                jsonOriginal['numeroConteiner'] = 'SEM_CONTEINER'
+                jsonOriginal['numeroConteiner'] = ''
                 
             if 'dataHoraOcorrencia' not in jsonOriginal:
                 # Fallback: usa a data de transmissão se não houver data da ocorrência
