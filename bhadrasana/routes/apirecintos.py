@@ -168,15 +168,47 @@ def processa_arquivo(session, arquivo):
 
 
 def limpa_json_apirecintos(json_raw):
-    lista_partes = json_raw['partes_resultado']
+    # Usa .get() para evitar KeyError caso a estrutura principal mude
+    lista_partes = json_raw.get('partes_resultado', [])
     lista_eventos = []
+    
     for parte in lista_partes:
-        for evento in parte['eventos']:
-            dadosTransmissao = evento['dadosTransmissao']
-            jsonOriginal = evento['jsonOriginal']
+        for evento in parte.get('eventos', []):
+            dadosTransmissao = evento.get('dadosTransmissao', {})
+            jsonOriginal = evento.get('jsonOriginal', {})
+            
+            # Previne quebra se o JSON interno vier malformado do recinto
             if isinstance(jsonOriginal, str):
-                jsonOriginal = json.loads(jsonOriginal)
-            lista_eventos.append({'jsonOriginal': jsonOriginal, 'dadosTransmissao': dadosTransmissao})
+                try:
+                    jsonOriginal = json.loads(jsonOriginal)
+                except Exception:
+                    jsonOriginal = {}
+                    
+            # --- BLINDAGEM DO PANDAS ---
+            # Impede que a ausência de chaves cause KeyError na indexação do DataFrame
+            if 'placa' not in jsonOriginal:
+                jsonOriginal['placa'] = ''
+                
+            if 'numeroConteiner' not in jsonOriginal:
+                jsonOriginal['numeroConteiner'] = ''
+                
+            if 'dataHoraOcorrencia' not in jsonOriginal:
+                # Fallback: usa a data de transmissão se não houver data da ocorrência
+                jsonOriginal['dataHoraOcorrencia'] = dadosTransmissao.get(
+                    'dataHoraTransmissao', '1970-01-01T00:00:00'
+                )
+                
+            # Proteção específica para o evento Tipo 1 (AcessoVeiculo)
+            if 'operacao' not in jsonOriginal:
+                jsonOriginal['operacao'] = 'N/A'
+            if 'tipoOperacao' not in jsonOriginal:
+                jsonOriginal['tipoOperacao'] = 'N/A'
+
+            lista_eventos.append({
+                'jsonOriginal': jsonOriginal, 
+                'dadosTransmissao': dadosTransmissao
+            })
+            
     return lista_eventos
 
 

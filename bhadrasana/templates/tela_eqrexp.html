@@ -23,11 +23,16 @@
       border-radius: 999px;
       vertical-align: middle;
       border: 1px solid rgba(0,0,0,.08);
-      margin-right: 6px; /* fica antes do ID */
+      margin-right: 6px;
     }
     .badge-yellow {
-      background: #ffe58f; /* amarelo suave */
-      color: #7a5b00;      /* bom contraste */
+      background: #ffe58f;
+      color: #7a5b00;
+    }
+
+    .badge-gray {
+      background: #e9ecef;
+      color: #495057;
     }
 
     /* Ordenação */
@@ -71,8 +76,9 @@
         <th class="sortable" data-col="0" tabindex="0">Ficha <span class="indicator"></span></th>
         <th class="sortable" data-col="1" tabindex="0">Responsável <span class="indicator"></span></th>
         <th class="sortable" data-col="2" tabindex="0">Recinto <span class="indicator"></span></th>
-        <th class="sortable" data-col="3" tabindex="0" title="Verificação física informada?">Verificação física informada <span class="indicator"></span></th>
-        <th class="sortable" data-col="4" tabindex="0">Data de criação <span class="indicator"></span></th>
+        <th class="sortable" data-col="3" tabindex="0">Contêineres <span class="indicator"></span></th>
+        <th class="sortable" data-col="4" tabindex="0" title="Verificação física informada?">Verificação física informada <span class="indicator"></span></th>
+        <th class="sortable" data-col="5" tabindex="0">Data de criação <span class="indicator"></span></th>
       </tr>
     </thead>
     <tbody>
@@ -89,6 +95,13 @@
           </td>
           <td data-order="{{ (r.responsavel_nome or '-')|lower }}">{{ r.responsavel_nome or '-' }}</td>
           <td class="mono" data-order="{{ (r.recinto_nome or r.recinto_id or '')|lower }}">{{ r.recinto_nome or r.recinto_id or "" }}</td>
+
+          <td class="mono" data-order="{{ r.conteineres|join(', ') }}">
+            {% for c in r.conteineres %}
+              <span class="badge badge-gray">{{ c }}</span>
+            {% endfor %}
+          </td>
+		  
           <td class="mono" title="Verificação física informada?" data-order="{{ 1 if r.verificacao_fisica_informada else 0 }}">
             {% if r.verificacao_fisica_informada %}
               ✅
