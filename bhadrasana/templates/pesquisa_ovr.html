@@ -319,9 +319,9 @@
                 <h1 class="modal-title" id="ModalLabel23">Transfere ficha para outro Setor</h1>
             </div>
             <div class="modal-body">
-                <form method="POST" action="mudasetorficha" enctype="multipart/form-data">
+                <form method="POST" action="mudasetorficha_pesquisaovr" enctype="multipart/form-data">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                    <input type="hidden" name="ovr_id" value="{{ oform.id.data }}"/>
+                    <input type="hidden" name="active_tab" value="pesquisa_ovr"/>
 
                     <!-- Campo para setor -->
                     <div class="row">
@@ -363,9 +363,8 @@
 
                     <!-- Botão centralizado com espaçamento -->
                     <p class="text-center mt-4">
-                        <input class="btn btn-primary" type="submit" value="Transferir"/>
+                        <input class="btn btn-primary" onclick="submit_many(this)" value="Transferir"/>
                     </p>
-
                 </form>
             </div>
             <div class="modal-footer">
@@ -377,6 +376,60 @@
 </div>
 {% endblock %} {% block scripts %} {{super()}}
 <script>
+
+      // Inicio codigo mudanca de setor com responsavel
+  document.addEventListener('DOMContentLoaded', function () {
+    const setorSelect = document.getElementById('setor-select');
+    const responsavelSelect = document.getElementById('responsavel-select');
+
+    if (setorSelect) {
+      setorSelect.addEventListener('change', function () {
+        const setorId = this.value;
+
+        // Limpa o select atual
+        responsavelSelect.innerHTML = '<option>Carregando...</option>';
+
+        fetch(`usuarios_por_setor?setor_id=${setorId}`)
+          .then(response => response.json())
+          .then(data => {
+            responsavelSelect.innerHTML = ''; // limpa as opções antigas
+
+            if (data.usuarios.length === 0) {
+              responsavelSelect.innerHTML = '<option value="">Nenhum responsável encontrado</option>';
+            } else {
+              data.usuarios.forEach(usuario => {
+                const option = document.createElement('option');
+                option.value = usuario.cpf;
+                option.text = usuario.nome;
+                responsavelSelect.appendChild(option);
+              });
+            }
+          })
+          .catch(error => {
+            responsavelSelect.innerHTML = '<option value="">Erro ao carregar</option>';
+            console.error('Erro ao buscar usuários:', error);
+          });
+      });
+    }
+  });
+ // Fim codigo mudanca de setor com responsavel
+
+//Contado de caracteres:
+  document.addEventListener('DOMContentLoaded', function () {
+    // Outros scripts que você já tem...
+
+    const motivoTextarea = document.getElementById('motivo_setor');
+    const charCount = document.getElementById('charCount');
+
+    if (motivoTextarea && charCount) {
+      motivoTextarea.addEventListener('input', function () {
+        charCount.textContent = `${this.value.length}`;
+      });
+
+      // Atualiza o contador se já tiver texto
+      charCount.textContent = `${motivoTextarea.value.length}`;
+    }
+  });
 
     $(function () {
         $('#checkall').on('change', function () {

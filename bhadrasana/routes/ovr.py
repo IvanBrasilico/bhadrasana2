@@ -600,6 +600,7 @@ def ovr_app(app):
             ovr_id = setor_ovr_form.ovr_id.data
             responsavel_cpf = setor_ovr_form.responsavel.data
             motivo = setor_ovr_form.motivo_setor.data
+            logger.info(f'{ovr_id}, {responsavel_cpf}, {motivo}, {setor_ovr_form.setor.data}')
             muda_setor_ovr(
                 session,
                 ovr_id=ovr_id,
@@ -616,30 +617,6 @@ def ovr_app(app):
             flash(str(err))
 
         return redirect(url_for('ovr', id=ovr_id))
-
-    @app.route('/mudasetorficha_pesquisaovr', methods=['POST'])
-    @login_required
-    def mudasetorficha_pesquisaovr():
-        session = app.config.get('dbsession')
-        ovr_id = None
-        try:
-            setor_ovr_form = SetorOVRForm(request.form)
-            ovr_id = setor_ovr_form.ovr_id.data
-            responsavel_cpf = setor_ovr_form.responsavel.data
-            motivo = setor_ovr_form.motivo_setor.data
-            muda_setor_ovr(
-                session,
-                ovr_id=ovr_id,
-                setor_id=setor_ovr_form.setor.data,
-                user_name=current_user.name,
-                responsavel_cpf=responsavel_cpf,
-                motivo=motivo
-            )
-        except Exception as err:
-            logger.error(err, exc_info=True)
-            return jsonify({'msg': 'Erro: {}'.format(str(err))}), 500
-
-        return jsonify({'msg': 'Sucesso!'}), 201
 
     @app.route('/usuarios_por_setor')
     @login_required
@@ -690,6 +667,29 @@ def ovr_app(app):
             flash(str(type(err)))
             flash(str(err))
         return redirect(url_for('ovr', id=ovr_id))
+
+    @app.route('/mudasetorficha_pesquisaovr', methods=['POST'])
+    @login_required
+    def mudasetorficha_pesquisaovr():
+        session = app.config.get('dbsession')
+        try:
+            setor_ovr_form = SetorOVRForm(request.form)
+            responsavel_cpf = setor_ovr_form.responsavel.data
+            motivo = setor_ovr_form.motivo_setor.data
+            setor_id = setor_ovr_form.setor.data
+            for ovr_id in request.form.getlist('rowid'):
+                muda_setor_ovr(
+                    session,
+                    ovr_id=ovr_id,
+                    setor_id=setor_id,
+                    user_name=current_user.name,
+                    responsavel_cpf=responsavel_cpf,
+                    motivo=motivo
+                )
+        except Exception as err:
+            logger.error(err, exc_info=True)
+            return jsonify({'msg': 'Erro: {}'.format(str(err))}), 500
+        return jsonify({'msg': 'Sucesso!'}), 201
 
     @app.route('/responsavelovr_minhasovrs', methods=['POST'])
     @app.route('/eventoovr_minhasovrs', methods=['POST'])

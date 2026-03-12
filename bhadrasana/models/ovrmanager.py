@@ -715,7 +715,7 @@ def muda_setor_ovr(session, ovr_id: int,
         ovr = get_ovr(session, ovr_id)
         tipoevento = session.query(TipoEventoOVR).filter(
             TipoEventoOVR.eventoespecial == EventoEspecial.MudancaSetor.value).first()
-
+        logger.debug(ovr.setor_id)
         motivo_evento = f"Setor anterior: {ovr.setor.nome}"
         if motivo:
             motivo_evento += f" | Motivo: {motivo}"
