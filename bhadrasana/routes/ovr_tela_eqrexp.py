@@ -73,6 +73,12 @@ def configure(app):
                    ON s.id = uc.setor_id
             WHERE (fase=1) -- 0 = iniciada, 1 = ativa, 2 = suspensa
             AND o.setor_id = '3'
+            AND NOT EXISTS (
+                SELECT 1
+                  FROM ovr_flags_ovr ofo_check
+                 WHERE ofo_check.rvf_id = o.id
+                   AND ofo_check.flag_id = 2445
+            )
             -- AND (o.tipooperacao ='1' or o.tipooperacao ='4') 
             ORDER BY o.create_date DESC, o.id DESC
             LIMIT 300
