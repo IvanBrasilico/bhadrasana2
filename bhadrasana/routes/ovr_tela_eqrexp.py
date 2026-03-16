@@ -79,6 +79,7 @@ def configure(app):
                  WHERE ofo_check.rvf_id = o.id
                    AND ofo_check.flag_id = 2445
             )
+            AND (o.observacoes NOT LIKE '%Ronda no canal do porto%' OR o.observacoes IS NULL)
             -- AND (o.tipooperacao ='1' or o.tipooperacao ='4') 
             ORDER BY o.create_date DESC, o.id DESC
             LIMIT 300
