@@ -71,11 +71,18 @@ def configure(app):
                    ON uc.cpf = o.user_name
             LEFT JOIN ovr_setores s
                    ON s.id = uc.setor_id
-            WHERE (fase=0 OR fase=1 OR fase=2) -- iniciada, ativa, suspensa
+            WHERE (fase=1) -- 0 = iniciada, 1 = ativa, 2 = suspensa
             AND o.setor_id = '3'
-            AND (o.tipooperacao ='1' or o.tipooperacao ='4') 
+            AND NOT EXISTS (
+                SELECT 1
+                  FROM ovr_flags_ovr ofo_check
+                 WHERE ofo_check.rvf_id = o.id
+                   AND ofo_check.flag_id = 2445
+            )
+            AND (o.observacoes NOT LIKE '%Ronda no canal do porto%' OR o.observacoes IS NULL)
+            -- AND (o.tipooperacao ='1' or o.tipooperacao ='4') 
             ORDER BY o.create_date DESC, o.id DESC
-            LIMIT 200
+            LIMIT 300
         """)
         rows_db = session.execute(sql).mappings().all()
 
