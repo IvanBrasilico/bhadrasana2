@@ -84,7 +84,7 @@ def assistenteini_app(app):
                     mongodb, mongo_risco, session,
                     ovr, container, _id
                 )
-            if not rvf.descricao:
+            if rvf and (rvf.descricao == '' or rvf.descricao is None):
                 rvf.descricao = 'Análise de imagem de escaneamento, por rotina do COV.'
                 if alerta:
                     rvf.descricao = rvf.descricao + '\n Contêiner com alerta Operador.'

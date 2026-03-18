@@ -179,12 +179,11 @@ def programa_rvf_container(mongodb, mongodb_risco, session,
         raise err
     # copia imagem do Banco virasana para bhadrasana e gera objeto ImagemRVF
     try:
-        if mongodb:
-            fs = GridFS(mongodb)
-            grid_out = fs.get(ObjectId(id_imagem))
-            inclui_imagemrvf(mongodb_risco, session, grid_out.read(),
-                             grid_out.filename, rvf.id)
-    except (TypeError, NoFile) as err:
+        fs = GridFS(mongodb)
+        grid_out = fs.get(ObjectId(id_imagem))
+        inclui_imagemrvf(mongodb_risco, session, grid_out.read(),
+                         grid_out.filename, rvf.id)
+    except Exception as err:
         logger.error(err)
     return rvf
 
