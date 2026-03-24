@@ -5,14 +5,17 @@ Permite registrar rapidamente análise de imagem efetuada pelo COV, seja com Fic
 encaminhar para verificação física, ou registrando e logo em seguida encerrando.
 
 """
-from ajna_commons.flask.log import logger
+from datetime import timedelta
+
 from bson import ObjectId
 from flask import render_template, flash, url_for
 from flask_login import login_required, current_user
 from werkzeug.utils import redirect
 
+from ajna_commons.flask.log import logger
 from bhadrasana.models.ovr import OVR
 from bhadrasana.models.ovrmanager import cadastra_ovr, atribui_responsavel_ovr
+from bhadrasana.models.rvf import RVF
 from bhadrasana.models.rvfmanager import programa_rvf_container, lista_rvfovr, gera_evento_rvf, get_rvf
 
 
@@ -35,6 +38,7 @@ def assistenteini_app(app):
             else:
                 alerta = xmldoc.get('alerta')
             container = meta.get('numeroinformado')
+            dataescaneamento = meta.get('dataescaneamento')
             metacarga = meta.get('carga')
             tipooperacao = 2
             if metacarga is None:
@@ -66,11 +70,16 @@ def assistenteini_app(app):
             if conhecimento:
                 ovr = session.query(OVR).filter(OVR.numeroCEmercante == conhecimento). \
                     order_by(OVR.id.desc()).first()
+            elif container and dataescaneamento:
+                rvf = session.query(RVF).filter(RVF.numerolote == container). \
+                    filter(RVF.datahora.between(dataescaneamento, dataescaneamento + timedelta(days=7)). \
+                           order_by(OVR.id.desc()).first())
+                ovr = session.query(OVR).filter(OVR.id == rvf.ovr_id).one_or_none()
             if ovr is None:
                 ovr = cadastra_ovr(session,
                                    params=ovr_data,
                                    user_name=current_user.name)
-                atribui_responsavel_ovr(session, ovr.id, current_user.name, current_user.name)
+            atribui_responsavel_ovr(session, ovr.id, current_user.name, current_user.name)
             rvf = None
             rvfs = lista_rvfovr(session, ovr.id)
             if len(rvfs) > 0:
