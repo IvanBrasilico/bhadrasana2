@@ -71,7 +71,7 @@ def configure(app):
                    ON uc.cpf = o.user_name
             LEFT JOIN ovr_setores s
                    ON s.id = uc.setor_id
-            WHERE (fase=1) -- 0 = iniciada, 1 = ativa, 2 = suspensa
+            WHERE (fase=0 or fase=1) -- 0 = iniciada, 1 = ativa, 2 = suspensa
             AND o.setor_id = '3'
             AND NOT EXISTS (
                 SELECT 1
