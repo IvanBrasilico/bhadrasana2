@@ -157,8 +157,7 @@ SQL_TGs_OUTLET = \
       tg.id as TG, tg.valor as ValorTG
       FROM ovr_ovrs ovr
      inner join ovr_tgovr tg on ovr.id = tg.ovr_id
-     inner join ovr_flags_ovr flags on flags.rvf_id = ovr.id
-     where flags.flag_id = 9 and tg.valor > 2000
+     where tg.valor > 2000
      order by Ano, Mês;'''
 
 SQL_Fichas_Outlet_Tempos = \
@@ -167,10 +166,8 @@ SQL_Fichas_Outlet_Tempos = \
      min(ev.create_date) as data_evento_inicial, max(ev.create_date) as data_evento_ultimo
       FROM ovr_ovrs ficha
      inner join ovr_eventos ev on ev.ovr_id = ficha.id
-     inner join ovr_flags_ovr flags on flags.rvf_id = ficha.id
      inner join Enumerado e on e.id = ficha.fase
      inner join ovr_recintos r on r.id = ficha.recinto_id
-     where flags.flag_id = 9
      group by Ano, Mês, Ficha
      order by Ano, Mês;'''
 
@@ -201,9 +198,8 @@ SQL_PENDENTE_OUTLET = \
      ficha.numeroCEmercante, rvf.numerolote as Contêiner
      FROM ovr_ovrs ficha
      INNER JOIN ovr_verificacoesfisicas rvf ON  rvf.ovr_id = ficha.id
-     inner join ovr_flags_ovr flags on flags.rvf_id = ficha.id
      INNER JOIN ovr_recintos r ON r.id = ficha.recinto_id
-     where flags.flag_id = 9 AND ficha.fase <3
+     where ficha.fase <3
      ORDER BY r.nome, rvf.datahora'''
 
 df_pendente_outlet = pd.read_sql(SQL_PENDENTE_OUTLET, engine)
