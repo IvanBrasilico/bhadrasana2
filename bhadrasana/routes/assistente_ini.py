@@ -71,10 +71,17 @@ def assistenteini_app(app):
                 ovr = session.query(OVR).filter(OVR.numeroCEmercante == conhecimento). \
                     order_by(OVR.id.desc()).first()
             elif container and dataescaneamento:
-                rvf = session.query(RVF).filter(RVF.numerolote == container). \
-                    filter(RVF.datahora.between(dataescaneamento, dataescaneamento + timedelta(days=7)). \
-                           order_by(OVR.id.desc()).first())
-                ovr = session.query(OVR).filter(OVR.id == rvf.ovr_id).one_or_none()
+                # 1 e 2: Parênteses corrigidos e ordenando por RVF.id
+                rvf = session.query(RVF).filter(
+                    RVF.numerolote == container,
+                    RVF.datahora.between(dataescaneamento, dataescaneamento + timedelta(days=7))
+                ).order_by(RVF.id.desc()).first()
+                
+                # 3: Checagem se o RVF realmente existe antes de buscar a OVR
+                if rvf:
+                    ovr = session.query(OVR).filter(OVR.id == rvf.ovr_id).one_or_none()
+                else:
+                    ovr = None
             if ovr is None:
                 ovr = cadastra_ovr(session,
                                    params=ovr_data,
