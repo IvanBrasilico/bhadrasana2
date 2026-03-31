@@ -5,6 +5,7 @@ Permite registrar rapidamente análise de imagem efetuada pelo COV, seja com Fic
 encaminhar para verificação física, ou registrando e logo em seguida encerrando.
 
 """
+import datetime
 from datetime import timedelta
 
 from bson import ObjectId
@@ -105,6 +106,7 @@ def assistenteini_app(app):
                 if alerta:
                     rvf.descricao = rvf.descricao + '\n Contêiner com alerta Operador.'
             rvf.inspecaonaoinvasiva = True
+            rvf.datahora = datetime.datetime.now()
             try:
                 session.add(rvf)
                 session.commit()
