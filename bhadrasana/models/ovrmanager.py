@@ -5,7 +5,6 @@ from sqlite3 import OperationalError
 from gridfs import GridFS
 from sqlalchemy.orm.exc import NoResultFound
 
-from virasana.integracao.bagagens.viajantesalchemy import DSI
 
 sys.path.append('.')
 sys.path.append('../ajna_docs/commons')
@@ -41,6 +40,7 @@ from bhadrasana.models.ovr import OVR, EventoOVR, TipoEventoOVR, ProcessoOVR, \
 from bhadrasana.models.rvf import Infracao, infracoesencontradas_table, RVF
 from bhadrasana.models.virasana_manager import get_conhecimento
 from virasana.integracao.mercante.mercantealchemy import Item
+from virasana.integracao.bagagens.viajantesalchemy import DSI
 
 
 def get_recintos_unidade(session, cod_unidade: str) -> List[Tuple[int, str]]:
