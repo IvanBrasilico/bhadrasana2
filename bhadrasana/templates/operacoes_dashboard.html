@@ -1,0 +1,94 @@
+<form method="get" class="mb-4">
+  <label for="flag_id">Operação</label>
+  <select name="flag_id" id="flag_id" onchange="this.form.submit()">
+    <option value="">Selecione</option>
+    {% for op in operacoes %}
+      <option value="{{ op.id }}"
+        {% if operacao_atual and op.id == operacao_atual.id %}selected{% endif %}>
+        {{ op.nome }}
+      </option>
+    {% endfor %}
+  </select>
+</form>
+
+{% if dados %}
+<div class="kpis">
+  <div>Total OVRs: {{ dados.total_ovrs }}</div>
+  <div>Total RVFs: {{ dados.total_rvfs }}</div>
+  <div>CEs mercantes: {{ dados.total_ces }}</div>
+  <div>Contêineres: {{ dados.total_containers }}</div>
+  <div>Total apreendido: R$ {{ dados.total_apreendido}}</div>
+</div>
+
+<div class="status-grid">
+  {% for status, total in dados.status_totais.items() %}
+    <div>{{ status }}: {{ total }}</div>
+  {% endfor %}
+</div>
+
+<h2>OVRs</h2>
+<table>
+  <thead>
+    <tr>
+      <th>OVR</th>
+      <th>Data</th>
+      <th>CE Mercante</th>
+      <th>Status</th>
+      <th>RVFs</th>
+      <th>TGs</th>
+      <th>Valor TG</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for ovr in dados.ovrs %}
+    <tr>
+      <td>{{ ovr.numero }}/{{ ovr.ano }}</td>
+      <td>{{ ovr.datahora.strftime('%d/%m/%Y %H:%M') if ovr.datahora else '' }}</td>
+      <td>{{ ovr.numeroCEmercante or '' }}</td>
+      <td>{{ ovr.status_dashboard }}</td>
+      <td>{{ ovr.qtd_rvfs }}</td>
+      <td>{{ ovr.qtd_tgs }}</td>
+      <td>R$ {{ ovr.valor_tgs }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h2>RVFs</h2>
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>OVR</th>
+      <th>Contêiner</th>
+      <th>Data</th>
+      <th>Descrição</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for rvf in dados.rvfs %}
+    <tr>
+      <td>{{ rvf.id }}</td>
+      <td>{{ rvf.ovr_id }}</td>
+      <td>{{ rvf.numerolote or '' }}</td>
+      <td>{{ rvf.datahora.strftime('%d/%m/%Y %H:%M') if rvf.datahora else '' }}</td>
+      <td>{{ rvf.descricao }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h2>CEs mercantes</h2>
+<ul>
+  {% for ce in dados.ces_mercantes %}
+    <li>{{ ce }}</li>
+  {% endfor %}
+</ul>
+
+<h2>Contêineres</h2>
+<ul>
+  {% for c in dados.containers %}
+    <li>{{ c }}</li>
+  {% endfor %}
+</ul>
+{% endif %}

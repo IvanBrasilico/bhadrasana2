@@ -195,6 +195,8 @@ class OVR(BaseRastreavel, BaseDumpable):
     cnpj_fiscalizado = Column(VARCHAR(15), index=True)
     cpfauditorresponsavel = Column(VARCHAR(15))
 
+    rvfs = relationship('RVF', back_populates='ovr')
+
     def get_ano(self):
         if self.datahora is not None and isinstance(self.datahora, datetime):
             return self.datahora.year
@@ -337,8 +339,7 @@ class EventoOVR(BaseRastreavel, BaseDumpable):
         return self.motivo.split('|')[0]
 
     def get_motivos(self):
-        return ''.join(self.motivo.split('|')[1:] )
-
+        return ''.join(self.motivo.split('|')[1:])
 
     @property
     def descricao_fase(self):

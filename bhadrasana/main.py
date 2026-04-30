@@ -25,6 +25,7 @@ from pymongo import MongoClient
 
 from bhadrasana.routes.apirecintos import apirecintos_app
 from bhadrasana.routes.assistente_checkapi import assistentecheckapi_app
+from bhadrasana.routes.operacoes_dashboard import dashboard_app
 
 sys.path.append('../ajna_api')
 from ajna_commons.flask.conf import DATABASE, MONGODB_URI, logo
@@ -55,6 +56,7 @@ conn_risco = MongoClient(host=MONGODB_RISCO)
 mongodb_risco = conn_risco['risco']
 app = configure_app(mongodb, db_session, mongodb_risco)
 
+
 @app.errorhandler(RequestEntityTooLarge)
 def handle_too_large(e):
     app.logger.error("→ MAX_CONTENT_LENGTH   = %r", app.config.get("MAX_CONTENT_LENGTH"))
@@ -62,8 +64,8 @@ def handle_too_large(e):
     app.logger.error("→ max_form_memory_size = %r", getattr(request, "max_form_memory_size", None))
     return jsonify({'msg': 'Upload muito grande'}), 413
 
-app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50 MiB
 
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50 MiB
 
 # ————— DEBUG IMEDIATO: imprima o limite de upload do Flask —————
 logger.warning(
@@ -95,7 +97,7 @@ eovr_app(app)
 apirecintos_app(app)
 ovr_tela_eqrexp_app(app)
 apirecintos_maisrecentes(app)
-
+dashboard_app(app)
 
 nav = Nav()
 nav.init_app(app)
@@ -119,8 +121,6 @@ if os.environ.get('DEBUG') != '1':
 def shutdown_session(exception=None):
     db_session.remove()
     logger.info('db_session remove')
-
-
 
 
 @nav.navigation()
