@@ -11,6 +11,55 @@
   </select>
 </form>
 
+{% if not operacao_atual %}
+  <h2>Resumo das operações</h2>
+
+  <div class="ops-grid">
+    {% for op in resumo_operacoes %}
+      <a class="op-card" href="{{ url_for('dashboard_operacoes', flag_id=op.flag_id) }}">
+        <h3>{{ op.nome }}</h3>
+        <div>OVRs: {{ op.total_ovrs }}</div>
+        <div>RVFs: {{ op.total_rvfs }}</div>
+        <div>CEs: {{ op.total_ces }}</div>
+        <div>Contêineres: {{ op.total_containers }}</div>
+        <div>Total apreendido: R$ {{ op.total_apreendido|br_currency }}</div>
+        <div>Selecionado: {{ op.status_totais.get('Selecionado', 0) }}</div>
+        <div>Aguardando conclusão: {{ op.status_totais.get('Aguardando conclusão', 0) }}</div>
+        <div>Mercadoria informada: {{ op.status_totais.get('Mercadoria informada', 0) }}</div>
+      </a>
+    {% endfor %}
+  </div>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Operação</th>
+        <th>OVRs</th>
+        <th>RVFs</th>
+        <th>CEs</th>
+        <th>Contêineres</th>
+        <th>Total apreendido</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for op in resumo_operacoes %}
+      <tr>
+        <td>
+          <a href="{{ url_for('dashboard_operacoes', flag_id=op.flag_id) }}">
+            {{ op.nome }}
+          </a>
+        </td>
+        <td>{{ op.total_ovrs }}</td>
+        <td>{{ op.total_rvfs }}</td>
+        <td>{{ op.total_ces }}</td>
+        <td>{{ op.total_containers }}</td>
+        <td>R$ {{ op.total_apreendido|br_currency }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endif %}
+
 {% if dados %}
 <div class="kpis">
   <div>Total OVRs: {{ dados.total_ovrs }}</div>

@@ -39,15 +39,7 @@ def monta_dashboard_operacao(session, flag_id):
     ovrs_resumo = []
 
     for ovr in ovrs:
-        tem_rvf = bool(ovr.rvfs)
-        tem_tg = bool(ovr.tgs)
-
-        if tem_tg:
-            status = 'Mercadoria informada'
-        elif tem_rvf:
-            status = 'Aguardando conclusão'
-        else:
-            status = 'Selecionado'
+        status = ovr_dashboard_status(ovr)
 
         status_counter[status] += 1
 
@@ -104,3 +96,37 @@ def monta_dashboard_operacao(session, flag_id):
         'total_ces': len(ce_mercantes),
         'total_containers': len(containers),
     }
+
+
+def ovr_dashboard_status(ovr):
+    if ovr.fase > 3:
+        return ovr.get_fase()
+    tem_rvf = bool(ovr.rvfs)
+    tem_tg = bool(ovr.tgs)
+    if tem_tg:
+        status = 'Mercadorias já informadas*'
+    elif tem_rvf:
+        status = 'Aguardando saneamento(s)'
+    else:
+        status = 'Selecionado ainda sem aberturas'
+    return status
+
+
+def monta_resumo_operacoes(session):
+    operacoes = listar_operacoes(session)
+    resumo = []
+
+    for operacao in operacoes:
+        dados = monta_dashboard_operacao(session, operacao.id)
+        resumo.append({
+            'flag_id': operacao.id,
+            'nome': operacao.nome,
+            'total_ovrs': dados['total_ovrs'],
+            'total_rvfs': dados['total_rvfs'],
+            'total_ces': dados['total_ces'],
+            'total_containers': dados['total_containers'],
+            'total_apreendido': dados['total_apreendido'],
+            'status_totais': dados['status_totais'],
+        })
+
+    return resumo
