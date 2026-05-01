@@ -17,7 +17,7 @@
   <div>Total RVFs: {{ dados.total_rvfs }}</div>
   <div>CEs mercantes: {{ dados.total_ces }}</div>
   <div>Contêineres: {{ dados.total_containers }}</div>
-  <div>Total apreendido: R$ {{ dados.total_apreendido}}</div>
+  <div>Total apreendido: R$ {{ dados.total_apreendido|br_currency }}</div>
 </div>
 
 <div class="status-grid">
@@ -26,11 +26,11 @@
   {% endfor %}
 </div>
 
-<h2>OVRs</h2>
+<h2>Operações</h2>
 <table>
   <thead>
     <tr>
-      <th>OVR</th>
+      <th>Ficha</th>
       <th>Data</th>
       <th>CE Mercante</th>
       <th>Status</th>
@@ -42,13 +42,13 @@
   <tbody>
     {% for ovr in dados.ovrs %}
     <tr>
-      <td>{{ ovr.numero }}/{{ ovr.ano }}</td>
+      <td><a href="ovr?id={{ ovr.id }}" target="_blank">{{ ovr.id }}</a></td>
       <td>{{ ovr.datahora.strftime('%d/%m/%Y %H:%M') if ovr.datahora else '' }}</td>
       <td>{{ ovr.numeroCEmercante or '' }}</td>
       <td>{{ ovr.status_dashboard }}</td>
       <td>{{ ovr.qtd_rvfs }}</td>
       <td>{{ ovr.qtd_tgs }}</td>
-      <td>R$ {{ ovr.valor_tgs }}</td>
+      <td>R$ {{ ovr.valor_tgs|br_currency }}</td>
     </tr>
     {% endfor %}
   </tbody>
@@ -59,7 +59,7 @@
   <thead>
     <tr>
       <th>ID</th>
-      <th>OVR</th>
+      <th>Operação (Ficha)</th>
       <th>Contêiner</th>
       <th>Data</th>
       <th>Descrição</th>
@@ -68,8 +68,8 @@
   <tbody>
     {% for rvf in dados.rvfs %}
     <tr>
-      <td>{{ rvf.id }}</td>
-      <td>{{ rvf.ovr_id }}</td>
+      <td><a href="rvf?id={{ rvf.id }}" target="_blank">{{ rvf.id }}</a></td>
+      <td><a href="ovr?id={{ rvf.ovr_id }}" target="_blank">{{ rvf.ovr_id }}</a></td>
       <td>{{ rvf.numerolote or '' }}</td>
       <td>{{ rvf.datahora.strftime('%d/%m/%Y %H:%M') if rvf.datahora else '' }}</td>
       <td>{{ rvf.descricao }}</td>

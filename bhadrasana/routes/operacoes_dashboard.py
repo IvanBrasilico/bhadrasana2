@@ -1,20 +1,21 @@
 from decimal import Decimal
 
-from flask import Blueprint, render_template, request
+from flask import render_template, request
 
 from bhadrasana.models.operacoes_dashboard import listar_operacoes, monta_dashboard_operacao
 
-#bp = Blueprint('ovr_dashboard', __name__, url_prefix='/ovr')
 
+# bp = Blueprint('ovr_dashboard', __name__, url_prefix='/ovr')
 
-#@bp.app_template_filter('br_currency')
-#def br_currency(value):
-#    if value is None:
-#        value = Decimal('0.00')
-#    return f'{value:,.2f}'.replace(',', 'X').replace('.', ',').replace('X', '.')
 
 def dashboard_app(app):
-    @app.route('/operacoes/dashboard')
+    @app.app_template_filter('br_currency')
+    def br_currency(value):
+        if value is None:
+            value = Decimal('0.00')
+        return f'{value:,.2f}'.replace(',', 'X').replace('.', ',').replace('X', '.')
+
+    @app.route('/operacoes_dashboard')
     def dashboard_operacoes():
         session = app.config.get('dbsession')
         flag_id = request.args.get('flag_id', type=int)
