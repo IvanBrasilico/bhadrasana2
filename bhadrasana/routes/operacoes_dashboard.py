@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from flask import render_template, request
+from flask_caching import Cache
 
 from bhadrasana.models.operacoes_dashboard import listar_operacoes, monta_dashboard_operacao, monta_resumo_operacoes
 
@@ -9,12 +10,20 @@ from bhadrasana.models.operacoes_dashboard import listar_operacoes, monta_dashbo
 
 
 def dashboard_app(app):
+    cache = Cache(config={
+        'CACHE_TYPE': 'SimpleCache',
+        'CACHE_DEFAULT_TIMEOUT': 60,
+        'CACHE_THRESHOLD': 500
+    })
+    cache.init_app(app)
+
     @app.template_filter('br_currency')
     def br_currency(value):
         if value is None:
             value = Decimal('0.00')
         return f'{value:,.2f}'.replace(',', 'X').replace('.', ',').replace('X', '.')
 
+    @cache.memoize(timeout=60)
     @app.route('/operacoes_dashboard')
     def dashboard_operacoes():
         session = app.config.get('dbsession')
