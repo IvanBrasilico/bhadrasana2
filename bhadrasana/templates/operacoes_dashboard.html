@@ -57,9 +57,9 @@
                     <div>CEs: {{ op.total_ces }}</div>
                     <div>Contêineres: {{ op.total_containers }}</div>
                     <div>Total apreendido: R$ {{ op.total_apreendido|br_currency }}</div>
-                    <div>Selecionado: {{ op.status_totais.get('Selecionado', 0) }}</div>
-                    <div>Aguardando conclusão: {{ op.status_totais.get('Aguardando conclusão', 0) }}</div>
-                    <div>Mercadoria informada: {{ op.status_totais.get('Mercadoria informada', 0) }}</div>
+                    {% for status, total in op.status_totais.items() %}
+                    <div>{{ status }}: {{ total }}</div>
+                    {% endfor %}
                 </a>
             </div>
         </div>
