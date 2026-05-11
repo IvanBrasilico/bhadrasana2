@@ -7,22 +7,33 @@ from bhadrasana.models.ovr import Flag, OVR
 
 
 def listar_operacoes(session):
-    return (
+    flags = (
         session.query(Flag)
         .filter(Flag.nome.like('Operação%'))
         .order_by(Flag.nome)
         .all()
     )
 
-def monta_dashboard_operacao(session, flag_id):
+    pendentes = type('FlagVirtual', (), {
+        'id': -1,
+        'nome': 'Fichas pendentes**'
+    })()
+
+    return [pendentes] + flags
+
+
+def listar_ovrs_com_pendencias(session):
     ovrs = (
         session.query(OVR)
-        .join(OVR.flags)
-        .filter(Flag.id == flag_id)
+        .outerjoin(Flag, OVR.flags)
+        .filter(~Flag.nome.like('Operação%'))
+        .filter(OVR.fase < 3)  # Ver faseOVR em models/ovr.py
+        .filter(OVR.tipooperacao == 1)  # Ver tipoOperacao em models/ovr.py
+        .group_by(OVR.id)
         .options(
             selectinload(OVR.flags),
             selectinload(OVR.tgs),
-            selectinload(OVR.rvfs),  # após criar relationship
+            selectinload(OVR.rvfs),
             selectinload(OVR.recinto),
             selectinload(OVR.setor),
             selectinload(OVR.responsavel),
@@ -30,8 +41,30 @@ def monta_dashboard_operacao(session, flag_id):
         .order_by(OVR.datahora.desc())
         .all()
     )
+    return ovrs
 
-    status_counter = Counter()
+
+def monta_dashboard_operacao(session, flag_id):
+    if flag_id == -1:
+        ovrs = listar_ovrs_com_pendencias(session)
+    else:
+        ovrs = (
+            session.query(OVR)
+            .join(OVR.flags)
+            .filter(Flag.id == flag_id)
+            .options(
+                selectinload(OVR.flags),
+                selectinload(OVR.tgs),
+                selectinload(OVR.rvfs),
+                selectinload(OVR.recinto),
+                selectinload(OVR.setor),
+                selectinload(OVR.responsavel),
+            )
+            .order_by(OVR.datahora.desc())
+            .all()
+        )
+
+    status_counter = inicializa_counter()
     ce_mercantes = set()
     containers = set()
     total_apreendido = Decimal('0.00')
@@ -96,6 +129,31 @@ def monta_dashboard_operacao(session, flag_id):
         'total_ces': len(ce_mercantes),
         'total_containers': len(containers),
     }
+
+
+class MockOVR():
+    def __init__(self):
+        self.fase = 0
+        self.tgs = []
+        self.rvfs = []
+
+    def get_fase(self):
+        return 'Arquivada'
+
+
+def inicializa_counter():
+    """Replica as situações de ovr_dashboard_status para capturar as descrições possíveis."""
+    counter = Counter()
+    ovr = MockOVR()
+    ovr.fase = 4
+    counter[ovr_dashboard_status(ovr)] = 0
+    ovr.fase = 1
+    counter[ovr_dashboard_status(ovr)] = 0
+    ovr.rvfs = [0]
+    counter[ovr_dashboard_status(ovr)] = 0
+    ovr.tgs = [0]
+    counter[ovr_dashboard_status(ovr)] = 0
+    return counter
 
 
 def ovr_dashboard_status(ovr):

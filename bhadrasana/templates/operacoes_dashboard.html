@@ -20,7 +20,7 @@
             <thead>
             <tr>
                 <th>Operação</th>
-                <th>OVRs</th>
+                <th>Fichas</th>
                 <th>RVFs</th>
                 <th>CEs</th>
                 <th>Contêineres</th>
@@ -70,7 +70,7 @@
 
     {% if dados %}
     <div class="row container-fluid">
-        <div>Total OVRs: {{ dados.total_ovrs }}</div>
+        <div>Total Fichas: {{ dados.total_ovrs }}</div>
         <div>Total RVFs: {{ dados.total_rvfs }}</div>
         <div>CEs mercantes: {{ dados.total_ces }}</div>
         <div>Contêineres: {{ dados.total_containers }}</div>
@@ -155,6 +155,15 @@
         {% endfor %}
     </ul>
     {% endif %}
+</div>
+<div id="legenda" class="row col-sm-12">
+    <p>* Mercadorias já informadas: contém TG, mas ainda não foi finalizado. Pode estar com auto de infração
+        sendo confeccionado, ou pode ainda ter TGs pendentes, ou mesmo estar com TG sendo saneado.</p>
+    <p>** Fichas pendentes: Fichas <b>não</b> concluídas que não estão vinculadas a nenhuma operação.
+    Podem ser casos avulsos ou pode ter havido lapso de vinculação a uma operação. Note-se que
+    não são exibidas Fichas arquivadas ou concluídas, porque seriam muitas. Fichas arquivadas ou concluídas
+    que possam pertencer a uma operação e houve esquecimento de vinculação precisam ser pesquisadas no
+    Pesquisa Fichas.</p>
 </div>
 <div id="bottom" class="row col-sm-12">
     AJNA - Receita Federal do Brasil 2017
