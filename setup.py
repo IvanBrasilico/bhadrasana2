@@ -19,6 +19,7 @@ setup(
         'Flask==2.3.3',
         'flask-admin',
         'flask-babelex',
+        'flask-caching',
         'Flask-BootStrap',
         'Flask-Login',
         'Flask-cors',
