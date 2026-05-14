@@ -19,27 +19,29 @@
         <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive">
             <thead>
             <tr>
-                <th>Operação</th>
+                <th style="text-align: left;">Operação</th>
                 <th>Fichas</th>
+                <th>% conclusão</th>
                 <th>RVFs</th>
                 <th>CEs</th>
                 <th>Contêineres</th>
-                <th>Total apreendido</th>
+                <th style="text-align: right;">Total apreendido</th>
             </tr>
             </thead>
             <tbody>
             {% for op in resumo_operacoes %}
             <tr>
-                <td>
+                <td style="text-align: left;">
                     <a href="{{ url_for('dashboard_operacoes', flag_id=op.flag_id) }}">
                         {{ op.nome }}
                     </a>
                 </td>
                 <td>{{ op.total_ovrs }}</td>
+                <td>{{ op.percentual_conclusao }}%</td>
                 <td>{{ op.total_rvfs }}</td>
                 <td>{{ op.total_ces }}</td>
                 <td>{{ op.total_containers }}</td>
-                <td>R$ {{ op.total_apreendido|br_currency }}</td>
+                <td style="text-align: right;">R$ {{ op.total_apreendido|br_currency }}</td>
             </tr>
             {% endfor %}
             </tbody>
@@ -158,7 +160,7 @@
 </div>
 <div id="legenda" class="row col-sm-12">
     <p>* Mercadorias já informadas: contém TG, mas ainda não foi finalizado. Pode estar com auto de infração
-        sendo confeccionado, ou pode ainda ter TGs pendentes, ou mesmo estar com TG sendo saneado.</p>
+        sendo confecionado, ou pode ainda ter TGs pendentes, ou mesmo estar com TG sendo saneado.</p>
     <p>** Fichas pendentes: Fichas <b>não</b> concluídas que não estão vinculadas a nenhuma operação.
     Podem ser casos avulsos ou pode ter havido lapso de vinculação a uma operação. Note-se que
     não são exibidas Fichas arquivadas ou concluídas, porque seriam muitas. Fichas arquivadas ou concluídas

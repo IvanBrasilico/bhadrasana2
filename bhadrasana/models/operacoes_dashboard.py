@@ -1,3 +1,27 @@
+"""Módulo para permitir visualizar "Operações" de importação pendentes.
+
+"Operações" são grupos de Fichas (Operações no Secta e-OVR*) que se conectam, por exemplo, ao
+mesmo grupo econômico ou à mesma pesquisa e seleção.
+
+Note-se que o nome da classe "OVR" na verdade mudou para Ficha, sendo que OVR também é um conjunto de Fichas.
+
+A OVR é um conjunto de Fichas no tempo e motivo (Tipo Fichas de importação de um mês). Já a "Operação" é um
+conjunto de Fichas conectadas por um nexo.
+
+As Fichas que não estão em nenhuma operação mas não estão concluídas serão exibidas na Operação virtual "Pendentes"
+para controle.
+
+No Secta e-OVR, OVR é a autorização para fiscalização, alocando equipe em alvo(s), Operação ou atividade é
+a fiscalização de um endereço/alvo, e cada operação pode ter n relatórios do Secta vinculados.
+
+Não há no Fichas a figura do OVR, pela própria dinâmica da operação portuária, pois não há necessidade de
+autorização prévia para uma fiscalização em zona primária, a autorização é dada pela própria portaria de
+atribuições. E as operações/atividades/fichas são realizadas de forma constante pelas equipes permanentemente
+alocadas. Assim, a solução para se adequar à Portaria de OVR é agrupar as fiscalizações finalizadas naquele mês
+ em OVRs conforme tipo e/ou equipe.
+
+ "Operação" neste dashboard é o sentido corrente, que seria um conjunto de fiscalizações.
+"""
 from collections import Counter
 from decimal import Decimal
 
@@ -71,7 +95,10 @@ def monta_dashboard_operacao(session, flag_id):
     rvfs_resumo = []
     ovrs_resumo = []
 
+    total_concluidas = 0
     for ovr in ovrs:
+        if ovr.fase >= 3:
+            total_concluidas += 1
         status = ovr_dashboard_status(ovr)
 
         status_counter[status] += 1
@@ -127,6 +154,7 @@ def monta_dashboard_operacao(session, flag_id):
         'total_ovrs': len(ovrs_resumo),
         'total_rvfs': len(rvfs_resumo),
         'total_ces': len(ce_mercantes),
+        'percentual_conclusao': total_concluidas / len(ovrs_resumo),
         'total_containers': len(containers),
     }
 
@@ -157,7 +185,7 @@ def inicializa_counter():
 
 
 def ovr_dashboard_status(ovr):
-    if ovr.fase > 3:
+    if ovr.fase >= 3:  # Ver faseOVR em models/ovr.py 3 - Concluída 4 - Arquivada
         return ovr.get_fase()
     tem_rvf = bool(ovr.rvfs)
     tem_tg = bool(ovr.tgs)
@@ -180,6 +208,7 @@ def monta_resumo_operacoes(session):
             'flag_id': operacao.id,
             'nome': operacao.nome,
             'total_ovrs': dados['total_ovrs'],
+            'percentual_conclusao': int(dados['percentual_conclusao'] * 100),
             'total_rvfs': dados['total_rvfs'],
             'total_ces': dados['total_ces'],
             'total_containers': dados['total_containers'],
