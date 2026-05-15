@@ -3,6 +3,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Tuple, List
 
+from ajna_commons.flask.log import logger
 from bhadrasana.models import get_usuario
 from bhadrasana.models.laudo import get_empresa, get_pessoa
 from bhadrasana.models.ovr import OVR
@@ -20,6 +21,7 @@ class TipoExibicao(Enum):
     Resultado = 5
     Resumo = 6
     FMA_2 = 7
+    FMA_3 = 8
 
 
 def agrupa_ovrs(ovrs, listaovrs, campo):
@@ -72,6 +74,22 @@ class ExibicaoOVR:
              'Observações',
              'Mercadoria',
              'Lista de NCMs'],
+        TipoExibicao.FMA_3:
+            ['ID',
+             'Data',
+             'Tipo Operação',
+             'Recinto',
+             'Ano',
+             'Número doc.',
+             'CE Mercante',
+             'CNPJ Fiscalizado',
+             'Nome Fiscalizado',
+             'Alertas',
+             'Último Evento',
+             'Evento Anterior',
+             'Responsável atual',
+             'Auditor Responsável',
+             'Setor'],
         TipoExibicao.Descritivo:
             ['ID',
              'Data Ficha',
@@ -155,8 +173,13 @@ class ExibicaoOVR:
         motivo = ''
         ind_aux = ind
         if len(ovr.historico) >= ind:
+            # Exclui eventos "meramente informativos" ou eventos de atribuição de usuário ou setor da
+            # busca do último evento importante
+            logger.debug(f'OVR id {ovr.id}')
             while ovr.historico[len(ovr.historico) - ind].meramente_informativo or \
-                    'atribuição' in ovr.historico[len(ovr.historico) - ind].tipoevento.nome.lower():
+                    ('atribuição' in ovr.historico[len(ovr.historico) - ind].tipoevento.nome.lower()) or \
+                    ('definição' in ovr.historico[len(ovr.historico) - ind].tipoevento.nome.lower()):
+
                 ind += 1
                 if ind >= len(ovr.historico):
                     break
@@ -330,6 +353,23 @@ class ExibicaoOVR:
                 str(ovr.observacoes or ''),
                 mercadoria,
                 lista_de_ncms], e_perecivel
+        if self.tipo == TipoExibicao.FMA_3:
+            fiscalizado_cnpj, fiscalizado_nome = self.get_fiscalizado_cnpj_nome(ovr)
+            return ovr.id, visualizado, [
+                ovr.datahora,
+                ovr.get_tipooperacao(),
+                recinto_nome,
+                ovr.get_ano(),
+                ovr.numero,
+                ovr.numeroCEmercante,
+                fiscalizado_cnpj,
+                fiscalizado_nome,
+                ', '.join(alertas),
+                html_ultimo_evento,
+                html_penultimo_evento,
+                responsavel_descricao,
+                auditor_descricao,
+                ovr.setor.nome], e_perecivel
         if self.tipo == TipoExibicao.Descritivo:
             return ovr.id, visualizado, [
                 ovr.datahora,

@@ -297,8 +297,8 @@ def ovr_app(app):
     @login_required
     def pesquisa_ovr():
         session = app.config.get('dbsession')
-        LIMIT = 200
-        LIMIT_EXPORTAR = 1_000
+        LIMIT = 400
+        LIMIT_EXPORTAR = 2_000
         titulos_exibicao = []
         listaovrs = []
         listaagrupada = {}
