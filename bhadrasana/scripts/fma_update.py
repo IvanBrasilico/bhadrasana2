@@ -15,6 +15,7 @@ from sqlalchemy.orm import sessionmaker
 
 from ajna_commons.flask.log import logger
 from bhadrasana.models.ovr import OVR, Recinto
+from bhadrasana.models.rvf import RVF
 from bhadrasana.models.virasana_manager import get_conhecimento
 
 DTE_USERNAME = os.environ.get('DTE_USERNAME')
@@ -145,6 +146,7 @@ def processa_lista_fma(session, lista_recintos_fmas):
 @click.option('--fim', default=None,
               help='Hoje')
 def update(sql_uri, inicio, fim):
+    rvf = RVF()  # Instanciação Fake, só para garantir importação, senão OVR dará erro.
     engine = create_engine(sql_uri)
     Session = sessionmaker(bind=engine)
     session = Session()
