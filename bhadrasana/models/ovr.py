@@ -436,14 +436,14 @@ class TipoMercadoria(Base):
     id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
     nome = Column(VARCHAR(50), index=True)
 
-
+'''
 marcas_table = Table('ovr_tgvor_marcas', metadata,
                      Column('tg_id', BigInteger().with_variant(Integer, 'sqlite'),
                             ForeignKey('ovr_tgovr.id')),
                      Column('marca_id', BigInteger().with_variant(Integer, 'sqlite'),
                             ForeignKey('ovr_marcas.id'))
                      )
-
+'''
 
 class TGOVR(BaseRastreavel, BaseDumpable):
     __tablename__ = 'ovr_tgovr'
@@ -457,8 +457,7 @@ class TGOVR(BaseRastreavel, BaseDumpable):
     unidadedemedida = Column(Integer(), index=True)
     qtde = Column(Numeric(10, 2))
     valor = Column(Numeric(12, 2))
-    marcas = relationship('Marca',
-                          secondary=marcas_table)
+    # marcas = relationship('Marca', secondary=marcas_table)
     tipomercadoria_id = Column(BigInteger().with_variant(Integer, 'sqlite'),
                                ForeignKey('ovr_tiposmercadoria.id'))
     tipomercadoria = relationship('TipoMercadoria')

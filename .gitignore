@@ -175,3 +175,5 @@ virasana
 /tests/teste.json
 /tests/json/consulta.json
 /tests/json/formato_contagil.json
+/impala_dump.sql
+/impala_dump_inserts.sql
