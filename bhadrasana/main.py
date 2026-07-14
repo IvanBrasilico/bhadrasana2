@@ -40,7 +40,6 @@ from bhadrasana.routes.assistentetg import assistentetg_app
 from bhadrasana.routes.assistente_ini import assistenteini_app
 from bhadrasana.routes.exporta_secta_e_ovr import eovr_app
 from bhadrasana.routes.ovr_tela_eqrexp import configure as ovr_tela_eqrexp_app
-from bhadrasana.routes.apirecintos_maisrecentes import configure as apirecintos_maisrecentes
 from bhadrasana.views import configure_app
 from flask_nav import Nav
 from flask_nav.elements import Navbar, View, Separator, Subgroup
@@ -96,7 +95,6 @@ assistentecheckapi_app(app)
 eovr_app(app)
 apirecintos_app(app)
 ovr_tela_eqrexp_app(app)
-apirecintos_maisrecentes(app)
 dashboard_app(app)
 
 nav = Nav()

@@ -8,12 +8,13 @@ import json
 import random
 import sys
 import zipfile
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, timezone
 
 from dateutil import parser
-
 from flask import render_template, flash, request, redirect, jsonify
 from flask_login import login_required
+
+from virasana.routes.inspecaonaoinvasiva_app import DICT_AJNA_RA
 
 sys.path.append('.')
 sys.path.insert(0, '../ajna_docs/commons')
@@ -41,7 +42,7 @@ def max_datahora_por_recinto(session: Session):
     resultados = {}
     for tipo, classe in CLASSES.items():
         logger.info(f'Consultando classe: {tipo} - {classe}')
-        
+
         # 1. Pega os recintos existentes baseados nos eventos (como já era feito)
         query_eventos = session.query(
             classe.codigoRecinto,
@@ -59,22 +60,22 @@ def max_datahora_por_recinto(session: Session):
         lista_final = []
         # 3. Mescla os dados unindo todos os recintos (evita ignorar recintos sem eventos recentes)
         todos_recintos = set(eventos_max.keys()).union(set(controle_max.keys()))
-        
+
         for recinto in todos_recintos:
             data_evento = eventos_max.get(recinto)
             data_controle = controle_max.get(recinto)
-            
+
             # Regra de Ouro: Sempre assume a MAIOR data disponível entre as duas tabelas!
             if data_controle and data_evento:
                 data_final = max(data_controle, data_evento)
             else:
                 data_final = data_controle or data_evento
-                
+
             if data_final:
                 lista_final.append((recinto, data_final))
-            
+
         resultados[tipo] = lista_final
-        
+
     return resultados
 
 
@@ -171,33 +172,33 @@ def limpa_json_apirecintos(json_raw):
     # Usa .get() para evitar KeyError caso a estrutura principal mude
     lista_partes = json_raw.get('partes_resultado', [])
     lista_eventos = []
-    
+
     for parte in lista_partes:
         for evento in parte.get('eventos', []):
             dadosTransmissao = evento.get('dadosTransmissao', {})
             jsonOriginal = evento.get('jsonOriginal', {})
-            
+
             # Previne quebra se o JSON interno vier malformado do recinto
             if isinstance(jsonOriginal, str):
                 try:
                     jsonOriginal = json.loads(jsonOriginal)
                 except Exception:
                     jsonOriginal = {}
-                    
+
             # --- BLINDAGEM DO PANDAS ---
             # Impede que a ausência de chaves cause KeyError na indexação do DataFrame
             if 'placa' not in jsonOriginal:
                 jsonOriginal['placa'] = ''
-                
+
             if 'numeroConteiner' not in jsonOriginal:
                 jsonOriginal['numeroConteiner'] = ''
-                
+
             if 'dataHoraOcorrencia' not in jsonOriginal:
                 # Fallback: usa a data de transmissão se não houver data da ocorrência
                 jsonOriginal['dataHoraOcorrencia'] = dadosTransmissao.get(
                     'dataHoraTransmissao', '1970-01-01T00:00:00'
                 )
-                
+
             # Proteção específica para o evento Tipo 1 (AcessoVeiculo)
             if 'operacao' not in jsonOriginal:
                 jsonOriginal['operacao'] = 'N/A'
@@ -205,10 +206,10 @@ def limpa_json_apirecintos(json_raw):
                 jsonOriginal['tipoOperacao'] = 'N/A'
 
             lista_eventos.append({
-                'jsonOriginal': jsonOriginal, 
+                'jsonOriginal': jsonOriginal,
                 'dadosTransmissao': dadosTransmissao
             })
-            
+
     return lista_eventos
 
 
@@ -222,12 +223,56 @@ def processa_json_post(session, json_raw):
     processar_json_puro(session, json_texto, classe, indice)
 
 
+def max_imagem_datahora_por_recinto_lista(db):
+    collection = db['fs.files']
+
+    pipeline = [
+        {
+            "$match": {
+                "metadata.dataescaneamento": {
+                    "$gte": datetime(2026, 1, 1, tzinfo=timezone.utc)
+                }
+            }
+        },
+        {
+            "$group": {
+                "_id": "$metadata.recinto",
+                "maxDataHoraEscaneamento": {
+                    "$max": "$metadata.dataescaneamento"
+                }
+            }
+        },
+        {
+            "$project": {
+                "_id": 0,
+                "codigoRecinto": "$_id",
+                "dataHoraTransmissao": "$maxDataHoraEscaneamento"
+            }
+        },
+        {
+            "$sort": {
+                "codigoRecinto": 1
+            }
+        }
+    ]
+
+    result = list(collection.aggregate(pipeline))
+
+    for item in result:
+        if item.get('dataHoraTransmissao'):
+            item['dataHoraTransmissao'] = item['dataHoraTransmissao'].isoformat()
+        if item.get('codigoRecinto'):
+            item['codigoRecinto'] = DICT_AJNA_RA.get(item['codigoRecinto'], '0000000')
+
+    return result
+
+
 def apirecintos_app(app):
     @app.route('/upload_arquivo_json_api', methods=['GET', 'POST'])
     @login_required
     def upload_arquivo_json_api():
         title_page = 'Upload de arquivo API Recintos'
-        session = app.config.get('dbsession')
+        db = app.config.get('mongodb')
         try:
             if request.method == 'POST':
                 print(request)
@@ -298,6 +343,20 @@ def apirecintos_app(app):
             return jsonify({'msg': str(err), 'maisrecentes': result}), 500
         return jsonify({'msg': '', 'maisrecentes': result}), 200
 
+    @app.route('/api_recintos/imagens_maisrecentes', methods=['GET'])
+    # TODO: ativar login e mover para api ajna
+    # @login_required
+    @csrf.exempt
+    def api_recintos_lista_imagens_maisrecentes():
+        db = app.config.get('mongodb')
+        result = {}
+        try:
+            # result = [{'codigoRecinto': '8931359', 'dataHoraTransmissao': max_data_iso]}
+            result = max_imagem_datahora_por_recinto_lista(db)
+        except Exception as err:
+            logger.error(f'api_recintos_lista_imagens_maisrecentes: {err}')
+            return jsonify({'msg': str(err), 'maisrecentes': result}), 500
+        return jsonify({'msg': '', 'maisrecentes': result}), 200
 
     @app.route('/api_recintos/atualiza_ponteiro', methods=['POST'])
     # TODO: ativar login e mover para api ajna
@@ -331,8 +390,8 @@ def apirecintos_app(app):
             else:
                 # Se não existir, insere o registro inicial
                 novo_controle = ControleExtracaoRecintos(
-                    codigoRecinto=str(recinto), 
-                    tipoEvento=str(tipo), 
+                    codigoRecinto=str(recinto),
+                    tipoEvento=str(tipo),
                     ultimaDataPesquisada=nova_data
                 )
                 session.add(novo_controle)
