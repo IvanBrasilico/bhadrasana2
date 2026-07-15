@@ -8,7 +8,7 @@ import json
 import random
 import sys
 import zipfile
-from datetime import timedelta, datetime, timezone
+from datetime import timedelta, datetime
 
 from dateutil import parser
 from flask import render_template, flash, request, redirect, jsonify
@@ -226,6 +226,8 @@ def processa_json_post(session, json_raw):
 def max_imagem_datahora_por_recinto_lista(db):
     collection = db['fs.files']
 
+    from datetime import datetime, timezone
+
     pipeline = [
         {
             "$match": {
@@ -235,11 +237,16 @@ def max_imagem_datahora_por_recinto_lista(db):
             }
         },
         {
+            "$project": {
+                "_id": 0,
+                "recinto": "$metadata.recinto",
+                "dataescaneamento": "$metadata.dataescaneamento"
+            }
+        },
+        {
             "$group": {
-                "_id": "$metadata.recinto",
-                "maxDataHoraEscaneamento": {
-                    "$max": "$metadata.dataescaneamento"
-                }
+                "_id": "$recinto",
+                "maxDataHoraEscaneamento": {"$max": "$dataescaneamento"}
             }
         },
         {
@@ -250,9 +257,7 @@ def max_imagem_datahora_por_recinto_lista(db):
             }
         },
         {
-            "$sort": {
-                "codigoRecinto": 1
-            }
+            "$sort": {"codigoRecinto": 1}
         }
     ]
 
