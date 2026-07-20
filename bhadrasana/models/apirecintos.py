@@ -249,6 +249,8 @@ class AcessoVeiculo(EventoAPIBase):
             self.placaSemirreboque = alfanumeric_c(placaSemirreboque)
         self.tipoDeclaracao, self.numeroDeclaracao = get_listaDeclaracaoAduaneira(kwargs)
         self.tipoConhecimento, self.numeroConhecimento = get_listaManifestos(kwargs)
+        if self.numeroConhecimento:
+            self.numeroConhecimento = self.numeroConhecimento[:15]
         
         # Utiliza a truncagem centralizada na função utilitária
         self.listaNfe = get_listaNfe(kwargs, limite=690)
