@@ -300,7 +300,7 @@ class AcessoVeiculo(EventoAPIBase):
         self.listaNfe = get_listaNfe(kwargs, limite=690)
         self.portoDescarregamento = get_listaPortoDescarregamento(kwargs)
         self.paisDestinoFinalCarga = get_listaPaisDestinoFinalCarga(kwargs)
-        self.navio = get_listaNavio(kwargs)
+        self.navio, _ = get_listaNavio(kwargs)
 
     def get_tipoDeclaracao(self):
         if self.tipoDeclaracao:
