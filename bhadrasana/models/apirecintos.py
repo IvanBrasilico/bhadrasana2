@@ -148,6 +148,43 @@ def get_listaNfe(o_kwargs: dict, limite: int = None) -> Union[str, None]:
         return resultado[:limite]
     return resultado
 
+def get_listaPortoDescarregamento(o_kwargs: dict) -> Union[str, None]:
+    """
+    "estoura" objeto get_listaPortoDescarregamento retornando apenas o '0'
+
+       Returns: porto (get_listaPortoDescarregamento)
+    """
+    listaPortoDescarregamento = o_kwargs.get('listaPortoDescarregamento')
+    if listaPortoDescarregamento and isinstance(listaPortoDescarregamento, list) and \
+            len(listaPortoDescarregamento) > 0:
+        return listaPortoDescarregamento[0].get('porto')
+    return None
+
+def get_listaPaisDestinoFinalCarga(o_kwargs: dict) -> Union[str, None]:
+    """
+    "estoura" objeto get_listaPaisDestinoFinalCarga retornando apenas o '0'
+
+       Returns: pais (get_listaPaisDestinoFinalCarga)
+    """
+    listaPaisDestinoFinalCarga = o_kwargs.get('listaPaisDestinoFinalCarga')
+    if listaPaisDestinoFinalCarga and isinstance(listaPaisDestinoFinalCarga, list) and \
+            len(listaPaisDestinoFinalCarga) > 0:
+        return listaPaisDestinoFinalCarga[0].get('pais')
+    return None
+
+
+def get_listaNavio(o_kwargs: dict) -> Union[Tuple[str, str], Tuple[None, None]]:
+    """
+    "estoura" objeto listaNavio
+
+       Returns: imo, nome (listaNavio)
+    """
+    listaNavio = o_kwargs.get('listaNavio')
+    if listaNavio and isinstance(listaNavio, list) and \
+            len(listaNavio) > 0:
+        return listaNavio[0].get('imo'), listaNavio[0].get('nome')
+    return None, None
+
 
 def numeric_c(texto):
     return ''.join([c for c in texto if c.isnumeric()])
@@ -215,6 +252,13 @@ class AcessoVeiculo(EventoAPIBase):
     tipoConhecimento = Column(String(20))
     numeroConhecimento = Column(String(15), index=True)
     listaNfe = Column(String(690), index=True)
+    #Inclusão de novos campos do AcessoVeiculo
+    listaPortoDescarregamento = Column(String(1))  # Placeholder
+    listaPaisDestinoFinalCarga = Column(String(1))  # Placeholder
+    listaNavio = Column(String(1))  # Placeholder
+    portoDescarregamento = Column(String(5))
+    paisDestinoFinalCarga = Column(String(2))
+    navio = Column(String(10))
 
     def _mapeia(self, *args, **kwargs):
         super()._mapeia(**kwargs)
@@ -250,10 +294,13 @@ class AcessoVeiculo(EventoAPIBase):
         self.tipoDeclaracao, self.numeroDeclaracao = get_listaDeclaracaoAduaneira(kwargs)
         self.tipoConhecimento, self.numeroConhecimento = get_listaManifestos(kwargs)
         if self.numeroConhecimento:
-            self.numeroConhecimento = self.numeroConhecimento[:15]
+            self.numeroConhecimento = self.numeroConhecimento.strip()[:15]
         
         # Utiliza a truncagem centralizada na função utilitária
         self.listaNfe = get_listaNfe(kwargs, limite=690)
+        self.portoDescarregamento = get_listaPortoDescarregamento(kwargs)
+        self.paisDestinoFinalCarga = get_listaPaisDestinoFinalCarga(kwargs)
+        self.navio = get_listaNavio(kwargs)
 
     def get_tipoDeclaracao(self):
         if self.tipoDeclaracao:
