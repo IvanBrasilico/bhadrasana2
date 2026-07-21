@@ -154,10 +154,12 @@ def get_listaPortoDescarregamento(o_kwargs: dict) -> Union[str, None]:
 
        Returns: porto (get_listaPortoDescarregamento)
     """
-    listaPortoDescarregamento = o_kwargs.get('listaPortoDescarregamento')
-    if listaPortoDescarregamento and isinstance(listaPortoDescarregamento, list) and \
-            len(listaPortoDescarregamento) > 0:
-        return listaPortoDescarregamento[0].get('porto')
+    listaConteineresUld = o_kwargs.get('listaConteineresUld')
+    if listaConteineresUld and isinstance(listaConteineresUld, list) and len(listaConteineresUld) > 0:
+        listaPortoDescarregamento = listaConteineresUld[0].get('listaPortoDescarregamento')
+        if listaPortoDescarregamento and isinstance(listaPortoDescarregamento, list) and \
+                len(listaPortoDescarregamento) > 0:
+            return listaPortoDescarregamento[0].get('porto')
     return None
 
 def get_listaPaisDestinoFinalCarga(o_kwargs: dict) -> Union[str, None]:
@@ -166,10 +168,12 @@ def get_listaPaisDestinoFinalCarga(o_kwargs: dict) -> Union[str, None]:
 
        Returns: pais (get_listaPaisDestinoFinalCarga)
     """
-    listaPaisDestinoFinalCarga = o_kwargs.get('listaPaisDestinoFinalCarga')
-    if listaPaisDestinoFinalCarga and isinstance(listaPaisDestinoFinalCarga, list) and \
-            len(listaPaisDestinoFinalCarga) > 0:
-        return listaPaisDestinoFinalCarga[0].get('pais')
+    listaConteineresUld = o_kwargs.get('listaConteineresUld')
+    if listaConteineresUld and isinstance(listaConteineresUld, list) and len(listaConteineresUld) > 0:
+        listaPaisDestinoFinalCarga = listaConteineresUld[0].get('listaPaisDestinoFinalCarga')
+        if listaPaisDestinoFinalCarga and isinstance(listaPaisDestinoFinalCarga, list) and \
+                len(listaPaisDestinoFinalCarga) > 0:
+            return listaPaisDestinoFinalCarga[0].get('pais')
     return None
 
 
@@ -179,10 +183,12 @@ def get_listaNavio(o_kwargs: dict) -> Union[Tuple[str, str], Tuple[None, None]]:
 
        Returns: imo, nome (listaNavio)
     """
-    listaNavio = o_kwargs.get('listaNavio')
-    if listaNavio and isinstance(listaNavio, list) and \
-            len(listaNavio) > 0:
-        return listaNavio[0].get('imo'), listaNavio[0].get('nome')
+    listaConteineresUld = o_kwargs.get('listaConteineresUld')
+    if listaConteineresUld and isinstance(listaConteineresUld, list) and len(listaConteineresUld) > 0:
+        listaNavio = listaConteineresUld[0].get('listaNavio')
+        if listaNavio and isinstance(listaNavio, list) and \
+                len(listaNavio) > 0:
+            return listaNavio[0].get('imo'), listaNavio[0].get('nome')
     return None, None
 
 
