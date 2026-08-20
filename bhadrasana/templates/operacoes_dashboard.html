@@ -25,7 +25,9 @@
                 <th>RVFs</th>
                 <th>CEs</th>
                 <th>Contêineres</th>
-                <th style="text-align: right;">Total apreendido</th>
+                <th style="text-align: right;">Total TG</th>
+                <th style="text-align: right;">Total crédito</th>
+                <th style="text-align: right;">Total perdimento</th>
             </tr>
             </thead>
             <tbody>
@@ -41,7 +43,9 @@
                 <td>{{ op.total_rvfs }}</td>
                 <td>{{ op.total_ces }}</td>
                 <td>{{ op.total_containers }}</td>
-                <td style="text-align: right;">R$ {{ op.total_apreendido|br_currency }}</td>
+                <td style="text-align: right;">R$ {{ op.total_tgs|br_currency }}</td>
+                <td style="text-align: right;">R$ {{ op.total_multas|br_currency }}</td>
+                <td style="text-align: right;">R$ {{ op.total_perdimentos|br_currency }}</td>
             </tr>
             {% endfor %}
             </tbody>
@@ -58,7 +62,9 @@
                     <div>RVFs: {{ op.total_rvfs }}</div>
                     <div>CEs: {{ op.total_ces }}</div>
                     <div>Contêineres: {{ op.total_containers }}</div>
-                    <div>Total apreendido: R$ {{ op.total_apreendido|br_currency }}</div>
+                    <div>Total TGs: R$ {{ op.total_tgs|br_currency }}</div>
+                    <div>Total de multas e crédito: R$ {{ op.total_multas|br_currency }}</div>
+                    <div>Total de perdimentos: R$ {{ op.total_perdimentos|br_currency }}</div>
                     {% for status, total in op.status_totais.items() %}
                     <div>{{ status }}: {{ total }}</div>
                     {% endfor %}
@@ -76,7 +82,9 @@
         <div>Total RVFs: {{ dados.total_rvfs }}</div>
         <div>CEs mercantes: {{ dados.total_ces }}</div>
         <div>Contêineres: {{ dados.total_containers }}</div>
-        <div>Total apreendido: R$ {{ dados.total_apreendido|br_currency }}</div>
+        <div>Total TGs: R$ {{ dados.total_tgs|br_currency }}</div>
+        <div>Total de multas e crédito: R$ {{ dados.total_multas|br_currency }}</div>
+        <div>Total de perdimentos: R$ {{ op.total_perdimentos|br_currency }}</div>
     </div>
 
     <div class="row">
@@ -98,6 +106,7 @@
                 <th>RVFs</th>
                 <th>TGs</th>
                 <th>Valor TG</th>
+                <th>Valor Multas</th>
             </tr>
             </thead>
             <tbody>
@@ -110,6 +119,7 @@
                 <td>{{ ovr.qtd_rvfs }}</td>
                 <td>{{ ovr.qtd_tgs }}</td>
                 <td>R$ {{ ovr.valor_tgs|br_currency }}</td>
+                <td>R$ {{ ovr.valor_multas|br_currency }}</td>
             </tr>
             {% endfor %}
             </tbody>
@@ -162,10 +172,10 @@
     <p>* Mercadorias já informadas: contém TG, mas ainda não foi finalizado. Pode estar com auto de infração
         sendo confecionado, ou pode ainda ter TGs pendentes, ou mesmo estar com TG sendo saneado.</p>
     <p>** Fichas pendentes: Fichas <b>não</b> concluídas que não estão vinculadas a nenhuma operação.
-    Podem ser casos avulsos ou pode ter havido lapso de vinculação a uma operação. Note-se que
-    não são exibidas Fichas arquivadas ou concluídas, porque seriam muitas. Fichas arquivadas ou concluídas
-    que possam pertencer a uma operação e houve esquecimento de vinculação precisam ser pesquisadas no
-    Pesquisa Fichas.</p>
+        Podem ser casos avulsos ou pode ter havido lapso de vinculação a uma operação. Note-se que
+        não são exibidas Fichas arquivadas ou concluídas, porque seriam muitas. Fichas arquivadas ou concluídas
+        que possam pertencer a uma operação e houve esquecimento de vinculação precisam ser pesquisadas no
+        Pesquisa Fichas.</p>
 </div>
 <div id="bottom" class="row col-sm-12">
     AJNA - Receita Federal do Brasil 2017

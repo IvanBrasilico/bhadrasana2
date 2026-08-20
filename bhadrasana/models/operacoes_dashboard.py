@@ -27,7 +27,7 @@ from decimal import Decimal
 
 from sqlalchemy.orm import selectinload
 
-from bhadrasana.models.ovr import Flag, OVR
+from bhadrasana.models.ovr import Flag, OVR, TipoResultado
 
 
 def listar_operacoes(session):
@@ -52,7 +52,7 @@ def listar_ovrs_com_pendencias(session):
         .outerjoin(Flag, OVR.flags)
         .filter(~Flag.nome.like('Operação%'))
         .filter(OVR.fase < 3)  # Ver faseOVR em models/ovr.py
-        .filter(OVR.tipooperacao == 1)  # Ver tipoOperacao em models/ovr.py
+        # .filter(OVR.tipooperacao == 1)  # Ver tipoOperacao em models/ovr.py
         .group_by(OVR.id)
         .options(
             selectinload(OVR.flags),
@@ -83,6 +83,7 @@ def monta_dashboard_operacao(session, flag_id):
                 selectinload(OVR.recinto),
                 selectinload(OVR.setor),
                 selectinload(OVR.responsavel),
+                selectinload(OVR.resultados),
             )
             .order_by(OVR.datahora.desc())
             .all()
@@ -91,7 +92,9 @@ def monta_dashboard_operacao(session, flag_id):
     status_counter = inicializa_counter()
     ce_mercantes = set()
     containers = set()
-    total_apreendido = Decimal('0.00')
+    total_tgs = Decimal('0.00')
+    total_multas = Decimal('0.00')
+    total_perdimentos = Decimal('0.00')
     rvfs_resumo = []
     ovrs_resumo = []
 
@@ -110,7 +113,22 @@ def monta_dashboard_operacao(session, flag_id):
         for tg in ovr.tgs:
             if tg.valor:
                 valor_tgs += tg.valor
-                total_apreendido += tg.valor
+                total_tgs += tg.valor
+
+        valor_multas = Decimal('0.00')
+        for resultado in ovr.resultados:
+            if resultado.tipo_resultado not in (TipoResultado.Apreensao.value,
+                                                TipoResultado.Perdimento.value, TipoResultado.Sancao.value):
+                if resultado.valor:
+                    valor_multas += resultado.valor
+                    total_multas += resultado.valor
+
+        valor_perdimentos = Decimal('0.00')
+        for resultado in ovr.resultados:
+            if resultado.tipo_resultado == TipoResultado.Perdimento.value:
+                if resultado.valor:
+                    valor_perdimentos += resultado.valor
+                    total_perdimentos += resultado.valor
 
         for rvf in ovr.rvfs:
             if rvf.numerolote:
@@ -141,21 +159,30 @@ def monta_dashboard_operacao(session, flag_id):
             'qtd_rvfs': len(ovr.rvfs),
             'qtd_tgs': len(ovr.tgs),
             'valor_tgs': valor_tgs,
+            'valor_multas': valor_multas,
+            'valor_perdimentos': valor_perdimentos,
             'flags': [f.nome for f in ovr.flags],
         })
+
+    if len(ovrs_resumo) > 0:
+        percentual_conclusao = total_concluidas / len(ovrs_resumo)
+    else:
+        percentual_conclusao = 0
 
     return {
         'ovrs': ovrs_resumo,
         'rvfs': rvfs_resumo,
         'ces_mercantes': sorted(ce_mercantes),
         'containers': sorted(containers),
-        'total_apreendido': total_apreendido,
+        'total_tgs': total_tgs,
         'status_totais': dict(status_counter),
         'total_ovrs': len(ovrs_resumo),
         'total_rvfs': len(rvfs_resumo),
         'total_ces': len(ce_mercantes),
-        'percentual_conclusao': total_concluidas / len(ovrs_resumo),
+        'percentual_conclusao': percentual_conclusao,
         'total_containers': len(containers),
+        'total_multas': total_multas,
+        'total_perdimentos': total_perdimentos,
     }
 
 
@@ -212,7 +239,9 @@ def monta_resumo_operacoes(session):
             'total_rvfs': dados['total_rvfs'],
             'total_ces': dados['total_ces'],
             'total_containers': dados['total_containers'],
-            'total_apreendido': dados['total_apreendido'],
+            'total_tgs': dados['total_tgs'],
+            'total_multas': dados['total_multas'],
+            'total_perdimentos': dados['total_perdimentos'],
             'status_totais': dados['status_totais'],
         })
 
