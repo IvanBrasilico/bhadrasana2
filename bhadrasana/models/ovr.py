@@ -305,6 +305,9 @@ class Recinto(Base):
     cod_carga = Column(VARCHAR(20), index=True)
     create_date = Column(TIMESTAMP, index=True,
                          server_default=func.current_timestamp())
+    cod_avatar = Column(VARCHAR(20), index=True)
+    sigla_unidade = Column(VARCHAR(20), index=True)
+    id_equipe = Column(BigInteger().with_variant(Integer, 'sqlite'), index=True)
 
     def __repr__(self):
         codigo = self.cod_siscomex if self.cod_siscomex else self.cod_dte
