@@ -300,7 +300,7 @@ class Recinto(Base):
     descricao = Column(VARCHAR(100), index=True)
     cod_dte = Column(Integer())
     cnpj = Column(VARCHAR(15), index=True)
-    cod_siscomex = Column(VARCHAR(20), index=True)
+    cod_siscomex = Column(VARCHAR(20), unique=True)
     cod_unidade = Column(VARCHAR(20), index=True)
     cod_carga = Column(VARCHAR(20), index=True)
     create_date = Column(TIMESTAMP, index=True,

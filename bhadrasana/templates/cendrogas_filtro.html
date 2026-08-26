@@ -1,0 +1,43 @@
+{% extends "layout.html" %} {% block content %} {{super()}}
+<div id="main" class="container-fluid">
+    <div id="top" class="row col-sm-12">
+        <div class="form-group">
+            <form method="POST" id="filtrocendrogas" action="{{ url_for('exporta_cendrogas') }}">
+                {{ oform.hidden_tag() }}
+                <div class="row">
+                    <div class="col-sm-4">
+                        <label for="datainicio">Início e fim de período de pesquisa</label>
+                    </div>
+                    <div class="col-sm-8"></div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <div class="col-sm-2">
+                            {{ oform.datainicio(class='form-control') }}
+                        </div>
+                        <div class="col-sm-2">
+                            {{ oform.datafim(class='form-control') }}
+                        </div>
+                        <div class="col-sm-8"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    &nbsp;<br>
+                    <div class="col-sm-4">
+                        <button class="btn btn-default btn-info form-control" type="submit">
+                            Exportar Excel
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="bottom" class="row col-sm-12">
+        AJNA - Receita Federal do Brasil 2026
+    </div>
+</div>
+{% endblock %} {% block scripts %} {{super()}}
+<script>
+</script>
+{% endblock %}
