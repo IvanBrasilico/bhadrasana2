@@ -25,6 +25,7 @@ from pymongo import MongoClient
 
 from bhadrasana.routes.apirecintos import apirecintos_app
 from bhadrasana.routes.assistente_checkapi import assistentecheckapi_app
+from bhadrasana.routes.cencomm import cendrogas_app
 from bhadrasana.routes.operacoes_dashboard import dashboard_app
 
 sys.path.append('../ajna_api')
@@ -45,6 +46,7 @@ from flask_nav import Nav
 from flask_nav.elements import Navbar, View, Separator, Subgroup
 from werkzeug.exceptions import RequestEntityTooLarge
 from flask import request, jsonify
+
 # print('****************************')
 # print(MONGODB_URI)
 conn = MongoClient(host=MONGODB_URI)
@@ -53,7 +55,6 @@ MONGODB_RISCO = os.environ.get('MONGODB_RISCO')
 conn_risco = MongoClient(host=MONGODB_RISCO)
 mongodb_risco = conn_risco['risco']
 app = configure_app(mongodb, db_session, mongodb_risco)
-
 
 
 @app.errorhandler(RequestEntityTooLarge)
@@ -96,6 +97,7 @@ eovr_app(app)
 apirecintos_app(app)
 ovr_tela_eqrexp_app(app)
 dashboard_app(app)
+cendrogas_app(app)
 
 nav = Nav()
 nav.init_app(app)

@@ -95,7 +95,9 @@ def gerar_relatorio_cendrogas(session, data_inicio=None, data_fim=None):
             'data_inicio': datetime.combine(data_inicio, time.min),
             'data_fim': datetime.combine(data_fim, time.max),
         }
-    resultado = session.execute(_sql_cendrogas(com_filtro_data=bool(params)), params)
+    sql = _sql_cendrogas(com_filtro_data=bool(params))
+    print(sql)
+    resultado = session.execute(sql, params)
 
     workbook = openpyxl.Workbook()
     planilha = workbook.active
@@ -116,13 +118,12 @@ def gerar_relatorio_cendrogas(session, data_inicio=None, data_fim=None):
     return buffer
 
 
-def configure(app, csrf):
+def cendrogas_app(app):
     """Configura rotas para evento."""
 
-    @csrf.exempt
     @app.route('/relatorio/cendrogas', methods=['GET'])
     def relatorio_cendrogas():
-        session = app.config['db_session']
+        session = app.config['dbsession']
         try:
             buffer = gerar_relatorio_cendrogas(session)
         except Exception as e:
@@ -143,7 +144,7 @@ def configure(app, csrf):
 
     @app.route('/cendrogas/exporta', methods=['POST'])
     def exporta_cendrogas():
-        session = app.config['db_session']
+        session = app.config['dbsession']
         form = CenDrogasFiltroForm()
         if not form.validate_on_submit():
             for campo, erros in form.errors.items():
