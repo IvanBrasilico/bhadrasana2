@@ -21,26 +21,8 @@ sys.path.insert(0, '../virasana')
 from ajna_commons.flask.log import logger
 from bhadrasana.models.apirecintos import AcessoVeiculo, PesagemVeiculo, EmbarqueDesembarque, InspecaoNaoInvasiva, \
     processa_json, persiste_df, ControleExtracaoRecintos
+from bhadrasana.models.ovr import Recinto
 from bhadrasana.views import valid_file, csrf
-
-# Dicionário para traduzir codigoRecinto
-DICT_RA_AJNA = {
-    '8931305': 'TRANSBRASA',
-    '8931356': 'SBT',
-    '8931359': 'BTP1',
-    '8931364': 'BANDEIRANTES',
-    '8933206': 'DEICMAR',
-    '8931318': 'ECOPORTO',
-    '8931404': 'EMBRAPORT',
-    '8931342': 'MARIMEX',
-    '8933001': 'LOCALFRIO',
-    '8933202': 'EUDMARCO',
-}
-
-# Dicionário reverso
-DICT_AJNA_RA = {v: k for k, v in DICT_RA_AJNA.items()}
-
-DICT_AJNA_RA['RECINTO_NAO_ENCONTRADO'] = '0000000'
 
 CLASSES = {'1': AcessoVeiculo,
            '3': PesagemVeiculo,
@@ -52,34 +34,6 @@ CLASSES = {'1': AcessoVeiculo,
 
 from sqlalchemy import func
 from sqlalchemy.orm import Session
-
-
-def processar_inspecaonaoinvasiva(mongodb, json_original, arquivo_imagem):
-    # 3) Montar metadata
-    metadata = {'contentType': 'image/jpeg'}
-    print(json_original)
-    filename = arquivo_imagem.filename
-    data_escaneamento_str = None
-    try:
-        data_escaneamento_str = json_original.get('dataHoraOcorrencia')
-        data_escaneamento = parser.parse(data_escaneamento_str).replace(microsecond=0)
-        metadata['dataescaneamento'] = data_escaneamento
-    except Exception as e:
-        raise Exception(f'Não foi possível parsear data "{data_escaneamento_str}" do arquivo "{filename}": {e}')
-    lista_conteineres = json_original.get('listaConteineresUld', [])
-    numeroinformado = None
-    if lista_conteineres and len(lista_conteineres) > 0:
-        numeroinformado = lista_conteineres[0].get('numeroConteiner') or lista_conteineres[0].get('numero')
-    metadata['numeroinformado'] = numeroinformado
-    metadata['unidade'] = 'ALFSTS'
-    codigo_recinto = json_original.get('codigoRecinto')
-    recinto = DICT_RA_AJNA.get(codigo_recinto, 'RECINTO_NAO_ENCONTRADO')
-    metadata['recinto'] = recinto
-
-    # 4) Salvar arquivo no GridFS com metadata
-    # arquivo_imagem.stream já é um arquivo-like object (bytes)
-    fs = gridfs.GridFS(mongodb)
-    file_id = fs.put(arquivo_imagem.stream, filename=filename, metadata=metadata)
 
 
 def max_datahora_por_recinto(session: Session):
@@ -323,7 +277,11 @@ def max_imagem_datahora_por_recinto_lista(db, session):
     for item in result:
         codigoRecinto = item.get('codigoRecinto')
         if codigoRecinto:
-            codigoRecinto = DICT_AJNA_RA.get(item['codigoRecinto'], '0000000')
+            recinto = session.query(Recinto).filter(Recinto.cod_avatar == codigoRecinto).one_or_none()
+            if recinto:
+                codigoRecinto = recinto.cod_avatar
+            else:
+                codigoRecinto = '000000'
             dataHoraTransmissao = item.get('dataHoraTransmissao')
             dataHoraControle = controles.get(codigoRecinto)
             # Validação de datas para evitar erro caso uma seja None
@@ -341,31 +299,6 @@ def max_imagem_datahora_por_recinto_lista(db, session):
 
 
 def apirecintos_app(app):
-    @app.route('/api/inspecaonaoinvasiva', methods=['POST'])
-    def api_inspecaonaoinvasiva():
-        mongodb = app.config['mongodb']
-        try:
-            # 1) Receber JSON da forma multipart, campo 'json'
-            if 'json' not in request.form:
-                return jsonify({"error": "Campo form 'json' obrigatório"}), 400
-            json_str = request.form['json']
-            json_original = json.loads(json_str).get('jsonOriginal')
-
-            # 2) Receber arquivo jpeg
-            if 'imagem' not in request.files:
-                return jsonify({"error": "Arquivo 'imagem' obrigatório"}), 400
-            arquivo_imagem = request.files['imagem']
-
-            # Verificar extensão do arquivo
-            if not arquivo_imagem.filename.lower().endswith('.jpeg') and not arquivo_imagem.filename.lower().endswith(
-                    '.jpg'):
-                return jsonify({"error": "Arquivo deve ser .jpeg ou .jpg"}), 400
-
-            file_id = processar_inspecaonaoinvasiva(mongodb, json_original, arquivo_imagem)
-            return jsonify({"message": "Salvo com sucesso", "file_id": str(file_id)}), 201
-
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
 
     @app.route('/upload_arquivo_json_api', methods=['GET', 'POST'])
     @login_required
