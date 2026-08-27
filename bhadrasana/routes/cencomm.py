@@ -62,22 +62,24 @@ def _sql_cendrogas(com_filtro_data):
             'Vessel' AS conveyance_level_1,
             'Commercial' AS conveyance_level_2,
             'BRAZIL' AS dept_country,
-            'Santos' AS dept_location,
+            c.portoOrigemCarga AS dept_location,
             'Seaport' AS dept_location_type,
             'Vessel' AS dept_transport,
             '' AS transit_1_country,
-            '' AS transit_1_location,
+            m.portoDescarregamento AS transit_1_location,
             'Seaport' AS transit_1_location_type,
             'Vessel' AS transit_1_transport,
             '' AS dest_country,
-            '' AS dest_location,
+            c.portoDestFinal AS dest_location,
             'Seaport' AS dest_location_type,
             'Vessel' AS dest_transport
         FROM ovr_ovrs AS ficha
         INNER JOIN ovr_verificacoesfisicas AS rvf ON ficha.id = rvf.ovr_id
         INNER JOIN ovr_apreensoes_rvf AS a ON a.rvf_id = rvf.id
         INNER JOIN ovr_tiposapreensao AS ta ON ta.id = a.tipo_id
-        WHERE ficha.tipooperacao IN (2, 3)
+        left join conhecimentosresumo c on ficha.numeroCEmercante = c.numeroCEmercante
+        left join manifestosresumo m on m.numero = c.manifestoCE
+        WHERE ficha.tipooperacao not in (6, 8)
         {filtro}
         ORDER BY ficha.datahora
     """)
@@ -96,7 +98,7 @@ def gerar_relatorio_cendrogas(session, data_inicio=None, data_fim=None):
             'data_fim': datetime.combine(data_fim, time.max),
         }
     sql = _sql_cendrogas(com_filtro_data=bool(params))
-    print(sql)
+    logging.info('SQL CENdrogas: %s | params=%s', sql, params)
     resultado = session.execute(sql, params)
 
     workbook = openpyxl.Workbook()

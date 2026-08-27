@@ -60,15 +60,15 @@ tipoStatusOVR = [
 ]
 
 tipoOperacao = [
-    'Mercadoria Abandonada',
-    'Repressão mediante análise de risco na importação',
-    'Repressão mediante análise de risco na exportação',
-    'Pesquisa e seleção na importação',
-    'Pesquisa e seleção na exportação',
-    'Demanda externa',
-    'Registro de operação de outros países',
-    'Vigilância',
-    'Registro de operação de outros órgãos'
+    'Mercadoria Abandonada',  # 0
+    'Repressão mediante análise de risco na importação',  # 1
+    'Repressão mediante análise de risco na exportação',  # 2
+    'Pesquisa e seleção na importação',  # 3
+    'Pesquisa e seleção na exportação',  # 4
+    'Demanda externa',  # 5
+    'Registro de operação de outros países',  # 6
+    'Vigilância',  # 7
+    'Registro de operação de outros órgãos'  # 8
 ]
 
 faseOVR = [
@@ -439,6 +439,7 @@ class TipoMercadoria(Base):
     id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
     nome = Column(VARCHAR(50), index=True)
 
+
 '''
 marcas_table = Table('ovr_tgvor_marcas', metadata,
                      Column('tg_id', BigInteger().with_variant(Integer, 'sqlite'),
@@ -447,6 +448,7 @@ marcas_table = Table('ovr_tgvor_marcas', metadata,
                             ForeignKey('ovr_marcas.id'))
                      )
 '''
+
 
 class TGOVR(BaseRastreavel, BaseDumpable):
     __tablename__ = 'ovr_tgovr'
