@@ -1351,19 +1351,27 @@ def get_tiposmercadoria_choice(session):
 order_secta = ('TIPO', 'NCM', 'MARCA', 'MODELO', 'OBSERVAÇÃO',
                'UNIDADE', 'QUANTIDADE', 'VALOR')
 
+# Nome da aba usada no modelo NOVO de planilha SECTA. Quando essa aba existir
+# no arquivo .xlsx, ele é tratado como modelo novo e lido a partir dela;
+# caso contrário, mantém-se o comportamento antigo (primeira aba/planilha).
+ABA_SECTA_MODELO_NOVO = '3-UPLOAD SECTA'
+
 de_para = OrderedDict([
     ('descricao', ['Descrição', 'TIPO', 'Tipo de Produto', 'Marca da Mercadoria',
-                   'Modelo da Mercadoria', 'Observações da Mercadoria']),
+                   'Modelo da Mercadoria', 'Observações da Mercadoria',
+                   # modelo novo: descrição/marca/modelo vêm em uma única coluna
+                   'DESCRIÇÃO MARCA MODELO COMPOSIÇÃO Nº SÉRIE']),
     ('Taxa de Câmbio', ['Taxa de Câmbio']),
     ('ncm', ['Código NCM', 'NCM']),
     ('contramarca', ['Marca', 'MARCA', 'Marca da Mercadoria']),
     ('modelo', ['Modelo', 'MODELO', 'Modelo da Mercadoria']),
-    ('unidadedemedida', ['Unid. Medida', 'UNIDADE', 'Unidade de Medida da Mercadoria']),
+    ('unidadedemedida', ['Unid. Medida', 'UNIDADE', 'Unidade de Medida da Mercadoria',
+                         'Unidade de Medida']),  # modelo novo
     ('procedencia', ['País Procedência', '*****']),  # Não utilizado ainda
     ('origem', ['País Origem', '***']),  # Não utilizado ainda
     ('moeda', ['Moeda', '****']),  # Não utilizado ainda
-    ('qtde', ['Quantidade', 'QUANTIDADE', 'Quantidade da Mercadoria']),
-    ('valor', ['Valor Unitário', 'VALOR', 'Valor Item']),
+    ('qtde', ['Quantidade', 'QUANTIDADE', 'Quantidade da Mercadoria', 'QTDE']),  # QTDE = modelo novo
+    ('valor', ['Valor Unitário', 'VALOR', 'Valor Item', 'Preço USD']),  # Preço USD = modelo novo
 ])
 
 
@@ -1386,6 +1394,23 @@ def procura_chave_lower(akey: str, original: dict):
     return result
 
 
+def normaliza_chaves(original: dict) -> dict:
+    """Remove espaços extras (início/fim) das chaves.
+
+    O modelo novo de planilha SECTA traz cabeçalhos com espaço sobrando
+    (ex: 'DESCRIÇÃO MARCA MODELO COMPOSIÇÃO Nº SÉRIE '). Normalizar aqui
+    evita depender de acertar exatamente esses espaços em `de_para`, sem
+    alterar o casamento de chaves do modelo antigo.
+    """
+    normalizado = {}
+    for k, v in original.items():
+        if isinstance(k, str):
+            normalizado[k.strip()] = v
+        else:
+            normalizado[k] = v
+    return normalizado
+
+
 def recupera_taxa_cambio(original):
     try:
         return float(original.get('Taxa de Câmbio'))
@@ -1395,6 +1420,7 @@ def recupera_taxa_cambio(original):
 
 
 def muda_chaves(original: dict) -> dict:
+    original = normaliza_chaves(original)
     new_dict = {}
     print(original)
     for key, alternative_keys in de_para.items():
@@ -1426,7 +1452,15 @@ def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
                          header=1, encoding='windows-1252')
     elif '.xlsx' in lfilename:
         # Retirado openpyxl, está "dando pau" e travando
-        df = pd.read_excel(afile, keep_default_na=False)
+        # ExcelFile lê o arquivo uma única vez e permite checar as abas
+        # disponíveis antes de decidir de qual aba extrair os dados.
+        xls = pd.ExcelFile(afile)
+        if ABA_SECTA_MODELO_NOVO in xls.sheet_names:
+            # Modelo novo: dados ficam na aba "3-UPLOAD SECTA"
+            df = xls.parse(ABA_SECTA_MODELO_NOVO, keep_default_na=False)
+        else:
+            # Modelo antigo: comportamento original, primeira aba/planilha
+            df = xls.parse(keep_default_na=False)
     elif '.xls' in lfilename:
         df = pd.read_excel(afile)
     elif '.ods' in lfilename:
@@ -1530,7 +1564,6 @@ def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
                 'Erro: %s' % str(err))
         else:
             raise KeyError('Erro na coluna {} linha {}'.format(str(err), index))
-
 
 class TipoPlanilha(Enum):
     Safira = 0
