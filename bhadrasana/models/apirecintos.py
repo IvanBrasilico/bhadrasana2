@@ -356,6 +356,8 @@ class EmbarqueDesembarque(EventoAPIBase):
     taraConteiner = Column(Numeric(7, 2))
     tipoConteiner = Column(String(4), index=True)
     listaManifestos = Column(String(1))  # Placeholder
+    tipoConhecimento = Column(String(20))
+    numeroConhecimento = Column(String(15), index=True)
     listaDeclaracaoAduaneira = Column(String(1))  # Placeholder
     listaNfe = Column(String(690), index=True)
 
@@ -435,6 +437,9 @@ class InspecaoNaoInvasiva(EventoAPIBase):
     listaSemirreboque = Column(String(1))  # Placeholder
     placaSemirreboque = Column(String(7), index=True)
     ocrPlacaSemirreboque = Column(Boolean(), index=True)
+    listaManifestos = Column(String(1))  # Placeholder
+    tipoConhecimento = Column(String(20))
+    numeroConhecimento = Column(String(15), index=True)
 
     def _mapeia(self, *args, **kwargs):
         super()._mapeia(**kwargs)
@@ -448,6 +453,7 @@ class InspecaoNaoInvasiva(EventoAPIBase):
         placaSemirreboque, self.ocrPlacaSemirreboque, _, _ = get_listaSemirreboque(kwargs)
         if placaSemirreboque:
             self.placaSemirreboque = alfanumeric_c(placaSemirreboque)
+        self.tipoConhecimento, self.numeroConhecimento = get_listaManifestos(kwargs)
 
     def is_duplicate(self, session):
         return session.query(InspecaoNaoInvasiva). \
