@@ -514,7 +514,7 @@ def processa_json(texto: str, classeevento: Type[BaseDumpable], chave_unica: lis
 
 
 def corrige_campos(evento, classeevento: Type[BaseDumpable]):
-    if classeevento.__class__.__name__ == 'AcessoVeiculo':
+    if classeevento == AcessoVeiculo:
         try:
             evento.nomeMotorista = evento.nomeMotorista.encode('latin1')
         except:
