@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Consulta de Risco - Fichas OVR</title>
+
+    <link rel="stylesheet" href="https://cdngovbr-ds.estaleiro.serpro.gov.br/design-system/fonts/rawline/css/rawline.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@govbr-ds/core@3.7.0/dist/core.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <style>
+        body { background: #F8F8F8; }
+
+        .page-subtitle { color: #666; }
+        .rotulo-mini {
+            display: block; font-size: .625rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: .04em; color: #666;
+        }
+        .valor-mini { font-size: .8125rem; font-weight: 600; color: #1c1c1c; }
+        .texto-mono { font-family: monospace; word-break: break-all; }
+
+        /* ---------- Barra de busca ---------- */
+        .barra-busca { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; margin-bottom: 1.5rem; }
+        .barra-busca .campo { flex: 1 1 16rem; }
+
+        /* ---------- Cartão da ficha ---------- */
+        .card-ficha { margin-bottom: 1.5rem; }
+
+        .cabecalho-ficha {
+            display: flex; flex-wrap: wrap; align-items: flex-start;
+            justify-content: space-between; gap: .75rem;
+            padding: .75rem 1rem; border-bottom: 1px solid #E6E6E6;
+        }
+        .cabecalho-ficha .identificacao { display: flex; flex-direction: column; gap: .25rem; min-width: 0; flex: 1 1 20rem; }
+        .numero-ficha { font-size: 1.25rem; font-weight: 700; letter-spacing: -.02em; margin: 0; line-height: 1; }
+
+        .br-tag.tag-neutra        { background: #E6E6E6; color: #333; }
+        .br-tag.tag-origem-completa { background: #D4E5FF; color: #0C326F; }
+
+        .bloco-dados { padding-top: 1rem; border-top: 1px solid #E6E6E6; }
+        .bloco-dados .item { margin-bottom: .75rem; }
+        .lista-tags { display: flex; flex-wrap: wrap; gap: .375rem; margin-top: .25rem; }
+
+        /* ---------- RVFs dentro da ficha ---------- */
+        .lista-rvfs { display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem; }
+        .rvf-card {
+            border: 1px solid #E6E6E6; border-radius: 4px; padding: .875rem;
+            display: grid; grid-template-columns: 10rem 1fr; gap: 1rem;
+        }
+        .painel-mongo {
+            background: #1c1c1c; border-radius: 4px; height: 8rem; width: 10rem;
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
+        }
+        .painel-mongo img { max-height: 100%; max-width: 100%; object-fit: contain; }
+        .sem-imagens { color: #999; text-align: center; font-size: .625rem; text-transform: uppercase; font-weight: 700; padding: 0 .5rem; }
+
+        .lista-apreensoes { margin: .25rem 0 0; padding-left: 1.1rem; font-size: .75rem; color: #1c1c1c; }
+
+        /* ---------- Estado vazio / carregando ---------- */
+        .estado-vazio {
+            text-align: center; padding: 3rem 1.5rem; background: #fff;
+            border: 2px dashed #DDDEE0; border-radius: 8px;
+        }
+        .estado-vazio .icone { font-size: 2.5rem; color: #B3B3B3; margin-bottom: .75rem; }
+        .estado-carregando { text-align: center; padding: 2rem; color: #666; }
+    </style>
+</head>
+<body>
+
+<div class="container-lg py-4">
+
+    <div class="mb-4">
+        <h1 class="mb-0">Consulta de Risco por CNPJ / NCM</h1>
+        <p class="page-subtitle text-down-01 mb-0 mt-1">
+            Busca fichas (OVR) cujo CNPJ fiscalizado e/ou NCM de algum item do
+            CE Mercante vinculado coincidam com os parâmetros informados.
+        </p>
+    </div>
+
+    <form id="form-busca" class="barra-busca">
+        <div class="campo">
+            <div class="br-input">
+                <label for="campo-cnpj">CNPJ da exportadora/fiscalizada</label>
+                <input id="campo-cnpj" type="text" placeholder="Ex: 12.345.678/0001-99" />
+            </div>
+        </div>
+        <div class="campo">
+            <div class="br-input">
+                <label for="campo-ncm">NCM</label>
+                <input id="campo-ncm" type="text" placeholder="Ex: 0901" />
+            </div>
+        </div>
+        <div>
+            <button class="br-button primary" type="submit">
+                <i class="fas fa-search mr-1" aria-hidden="true"></i> Buscar
+            </button>
+        </div>
+    </form>
+
+    <div id="resultado-info" class="page-subtitle mb-3"></div>
+
+    <div id="lista-fichas"></div>
+
+    <div id="estado-vazio" class="estado-vazio" hidden>
+        <div class="icone"><i class="fas fa-box-open" aria-hidden="true"></i></div>
+        <h3 class="mb-1">Nenhuma ficha encontrada</h3>
+        <p class="page-subtitle">Ajuste o CNPJ ou o NCM informado e tente novamente.</p>
+    </div>
+
+</div>
+
+<script>
+(function () {
+    'use strict';
+
+    var URL_API = '/api/risco/fichas';
+
+    $('#form-busca').on('submit', function (evento) {
+        evento.preventDefault();
+        buscarFichas();
+    });
+
+    function buscarFichas() {
+        var cnpj = $('#campo-cnpj').val();
+        var ncm = $('#campo-ncm').val();
+
+        if (!cnpj.trim() && !ncm.trim()) {
+            $('#resultado-info').text('Informe ao menos um dos parâmetros: CNPJ ou NCM.');
+            return;
+        }
+
+        $('#lista-fichas').empty();
+        $('#estado-vazio').prop('hidden', true);
+        $('#resultado-info').html('<div class="estado-carregando"><i class="fas fa-circle-notch fa-spin mr-1" aria-hidden="true"></i> Consultando...</div>');
+
+        $.ajax({
+            url: URL_API,
+            method: 'GET',
+            dataType: 'json',
+            data: { cnpj: cnpj, ncm: ncm }
+        })
+            .done(renderizarResultado)
+            .fail(function (xhr) {
+                var mensagem = 'Erro ao consultar o serviço de risco.';
+                try {
+                    var corpo = JSON.parse(xhr.responseText);
+                    if (corpo && corpo.erro) { mensagem = corpo.erro; }
+                } catch (erroParse) { /* mantém mensagem padrão */ }
+                $('#resultado-info').html(
+                    '<div class="br-message danger"><div class="icon"><i class="fas fa-circle-exclamation" aria-hidden="true"></i></div>' +
+                    '<div class="content" role="alert"><span class="message-body">' + escapeHtml(mensagem) + '</span></div></div>'
+                );
+            });
+    }
+
+    function renderizarResultado(fichas) {
+        $('#resultado-info').text(fichas.length + ' ficha(s) encontrada(s).');
+
+        var $lista = $('#lista-fichas').empty();
+
+        if (!fichas.length) {
+            $('#estado-vazio').prop('hidden', false);
+            return;
+        }
+        $('#estado-vazio').prop('hidden', true);
+
+        fichas.forEach(function (ficha) {
+            $lista.append(construirCardFicha(ficha));
+        });
+    }
+
+    function construirCardFicha(ficha) {
+        var $card = $('<div class="br-card card-ficha"></div>');
+
+        var $cabecalho = $(
+            '<div class="cabecalho-ficha">' +
+                '<div class="identificacao">' +
+                    '<h2 class="numero-ficha">Ficha #' + escapeHtml(ficha.id) + '</h2>' +
+                    '<p class="rotulo-mini">' + formatarDataHora(ficha.datahora) + '</p>' +
+                '</div>' +
+            '</div>'
+        );
+        $card.append($cabecalho);
+
+        var $conteudo = $('<div class="card-content px-3 pb-3"></div>');
+
+        if (ficha.observacoes) {
+            $conteudo.append($('<p class="mb-3"></p>').text(ficha.observacoes));
+        }
+
+        var $blocoDados = $('<div class="bloco-dados row"></div>');
+        $blocoDados.append(
+            '<div class="col-6 item">' +
+                '<span class="rotulo-mini">CE Mercante</span>' +
+                '<span class="valor-mini texto-mono">' + escapeHtml(ficha.numeroCEmercante || '--') + '</span>' +
+            '</div>' +
+            '<div class="col-6 item">' +
+                '<span class="rotulo-mini">DUE / Declaração</span>' +
+                '<span class="valor-mini texto-mono">' + escapeHtml(ficha.numerodeclaracao || '--') + '</span>' +
+            '</div>'
+        );
+        $conteudo.append($blocoDados);
+
+        $conteudo.append(construirBlocoTags('NCMs', ficha.ncms, 'tag-neutra'));
+        $conteudo.append(construirBlocoTags('Contêineres', ficha.conteineres, 'tag-origem-completa'));
+
+        if (ficha.rvfs && ficha.rvfs.length) {
+            var $rvfs = $('<div class="lista-rvfs"></div>');
+            ficha.rvfs.forEach(function (rvf) {
+                $rvfs.append(construirCardRVF(rvf));
+            });
+            $conteudo.append($rvfs);
+        }
+
+        $card.append($conteudo);
+        return $card;
+    }
+
+    function construirBlocoTags(rotulo, valores, classeTag) {
+        var $bloco = $('<div class="item"></div>');
+        $bloco.append($('<span class="rotulo-mini"></span>').text(rotulo));
+
+        var $tags = $('<div class="lista-tags"></div>');
+        (valores || []).forEach(function (valor) {
+            $tags.append($('<span class="br-tag"></span>').addClass(classeTag).text(valor));
+        });
+        if (!valores || !valores.length) {
+            $tags.append($('<span class="valor-mini"></span>').text('--'));
+        }
+        $bloco.append($tags);
+        return $bloco;
+    }
+
+    function construirCardRVF(rvf) {
+        var $painel = $('<div class="painel-mongo"></div>');
+
+        if (rvf.primeiraimagem) {
+            var $img = $('<img alt="Imagem em destaque da RVF" />')
+                .attr('src', '/image/' + encodeURIComponent(rvf.primeiraimagem))
+                .on('error', function () {
+                    $(this).replaceWith($('<span class="sem-imagens">Sem imagem</span>'));
+                });
+            $painel.append($img);
+        } else {
+            $painel.append('<span class="sem-imagens">Sem imagem</span>');
+        }
+
+        var $detalhes = $('<div></div>');
+        $detalhes.append(
+            '<div class="item mb-2">' +
+                '<span class="rotulo-mini">Data da RVF</span>' +
+                '<span class="valor-mini">' + formatarDataHora(rvf.datahora) + '</span>' +
+            '</div>' +
+            '<div class="item mb-2">' +
+                '<span class="rotulo-mini">Nº lote</span>' +
+                '<span class="valor-mini texto-mono">' + escapeHtml(rvf.numerolote || '--') + '</span>' +
+            '</div>' +
+            '<div class="item mb-2">' +
+                '<span class="rotulo-mini">Descrição</span>' +
+                '<span class="valor-mini">' + escapeHtml(rvf.descricao || '--') + '</span>' +
+            '</div>'
+        );
+
+        if (rvf.apreensoes && rvf.apreensoes.length) {
+            var $apreensoes = $('<div class="item mb-0"></div>');
+            $apreensoes.append('<span class="rotulo-mini">Apreensões</span>');
+            var $ul = $('<ul class="lista-apreensoes"></ul>');
+            rvf.apreensoes.forEach(function (apreensao) {
+                $ul.append(
+                    $('<li></li>').text(
+                        (apreensao.descricao || '--') + ' — ' +
+                        (apreensao.tipo || '--') + ' — ' +
+                        (apreensao.peso || '0.00') + ' kg'
+                    )
+                );
+            });
+            $apreensoes.append($ul);
+            $detalhes.append($apreensoes);
+        }
+
+        return $('<div class="rvf-card"></div>').append($painel).append($detalhes);
+    }
+
+    // Datas chegam em ISO 8601 do backend; o navegador faz o parsing nativo.
+    function formatarDataHora(isoString) {
+        if (!isoString) { return '--'; }
+        var data = new Date(isoString);
+        if (isNaN(data.getTime())) { return escapeHtml(isoString); }
+        return data.toLocaleString('pt-BR');
+    }
+
+    function escapeHtml(texto) {
+        return $('<div>').text(texto === null || texto === undefined ? '' : texto).html();
+    }
+})();
+</script>
+
+</body>
+</html>

@@ -27,6 +27,7 @@ from bhadrasana.routes.apirecintos import apirecintos_app
 from bhadrasana.routes.assistente_checkapi import assistentecheckapi_app
 from bhadrasana.routes.cencomm import cendrogas_app
 from bhadrasana.routes.operacoes_dashboard import dashboard_app
+from bhadrasana.routes.lista_apreensoes import apreensoes_app
 
 sys.path.append('../ajna_api')
 from ajna_commons.flask.conf import DATABASE, MONGODB_URI, logo
@@ -98,6 +99,7 @@ apirecintos_app(app)
 ovr_tela_eqrexp_app(app)
 dashboard_app(app)
 cendrogas_app(app)
+apreensoes_app(app)
 
 nav = Nav()
 nav.init_app(app)
