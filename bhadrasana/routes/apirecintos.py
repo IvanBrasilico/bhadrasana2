@@ -169,6 +169,26 @@ def processa_arquivo(session, arquivo):
     classe, indice = traduz_parametros(tipoevento)
     processar_json_puro(session, json_texto, classe, indice)
 
+def fix_mojibake(s: str) -> str:
+    if not isinstance(s, str):
+        return s
+    # Tenta reverter UTF‑8 interpretado como latin1/Windows-1252
+    try:
+        return s.encode("latin1").decode("utf-8")
+    except Exception:
+        try:
+            return s.encode("cp1252").decode("utf-8")
+        except Exception:
+            return s
+
+def fix_str(value):
+    if isinstance(value, str):
+        return fix_mojibake(value)
+    if isinstance(value, dict):
+        return {k: fix_str(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [fix_str(v) for v in value]
+    return value
 
 def limpa_json_apirecintos(json_raw):
     # Usa .get() para evitar KeyError caso a estrutura principal mude
@@ -176,6 +196,7 @@ def limpa_json_apirecintos(json_raw):
     lista_eventos = []
 
     for parte in lista_partes:
+        parte = fix_str(parte)
         for evento in parte.get('eventos', []):
             dadosTransmissao = evento.get('dadosTransmissao', {})
             jsonOriginal = evento.get('jsonOriginal', {})
