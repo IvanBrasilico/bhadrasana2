@@ -238,7 +238,7 @@
 
         if (rvf.primeiraimagem) {
             var $img = $('<img alt="Imagem em destaque da RVF" />')
-                .attr('src', '/image/' + encodeURIComponent(rvf.primeiraimagem))
+                .attr('src', '/bhadrasana2/image/' + encodeURIComponent(rvf.primeiraimagem))
                 .on('error', function () {
                     $(this).replaceWith($('<span class="sem-imagens">Sem imagem</span>'));
                 });
