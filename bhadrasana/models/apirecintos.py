@@ -512,15 +512,27 @@ def processa_json(texto: str, classeevento: Type[BaseDumpable], chave_unica: lis
 
 
 
+def fix_strdoida(s: str) -> str:
+    if not isinstance(s, str):
+        return s
+    # Tenta reverter UTF‑8 interpretado como latin1/Windows‑1252
+    for enc in ("latin1", "cp1252"):
+        try:
+            return s.encode(enc).decode("utf-8")
+        except Exception:
+            continue
+    return s
 
 def corrige_campos(evento, classeevento: Type[BaseDumpable]):
     if classeevento == AcessoVeiculo:
         try:
             logger.error(f'*******Forçando a barra para ver se entrou aqui***** "{evento.nomeMotorista}"')
-            evento.nomeMotorista = evento.nomeMotorista.encode('latin1')
-        except:
-            logger.error(f'persiste_df: Nome motorista "{evento.nomeMotorista}" não pôde ser lido!!!')
+            # Corrige mojibake (ex.: MENDONÃ‡A -> MENDONÇA)
+            evento.nomeMotorista = fix_strdoida(evento.nomeMotorista or '')
+        except Exception:
+            logger.error(f'persiste_df: Nome motorita "{evento.nomeMotorista}" não pôde ser lido!!!')
             evento.nomeMotorista = ''
+        logger.error(f'*******Forçando a barra para ver como saiu aqui***** "{evento.nomeMotorista}"')
 
 def persiste_df(df_eventos: pd.DataFrame, classeevento: Type[BaseDumpable], session):
     """Percorre dataframe, instanciando Eventos e adicionando à sessão, finalizando com commit no banco"""
