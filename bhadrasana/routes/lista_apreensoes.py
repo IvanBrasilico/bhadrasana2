@@ -79,7 +79,7 @@ def fmt_data(dt):
 def apreensoes_app(app):
     """Configura rotas para evento."""
 
-    @app.route('/api/risco/fichas', methods=['GET'])
+    @app.route('/api/fichas/apreensoes', methods=['GET'])
     def fichas_por_risco():
         session = app.config['dbsession']
 
@@ -174,12 +174,12 @@ def apreensoes_app(app):
                 {'erro': 'Erro interno ao processar a consulta de risco.'}
             ), 500
 
-    @app.route('/narcos/risco-demo/', methods=['GET'])
+    @app.route('/api/fichas/apreensoes-demo', methods=['GET'])
     def risco_demo():
         """Serve a página de demonstração que consome /api/risco/fichas.
 
-        Requer que 'risco_demo.html' esteja na pasta templates/ da app
+        Requer que 'apreensoes_demo.html' esteja na pasta templates/ da app
         (a mesma usada pelas outras telas do sistema). O HTML já referencia
         a rota existente /image/<id> para exibir a imagem da RVF.
         """
-        return render_template('risco_demo.html')
+        return render_template('apreensoes_demo.html')
