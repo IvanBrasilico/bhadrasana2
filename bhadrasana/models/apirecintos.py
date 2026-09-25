@@ -516,6 +516,7 @@ def processa_json(texto: str, classeevento: Type[BaseDumpable], chave_unica: lis
 def corrige_campos(evento, classeevento: Type[BaseDumpable]):
     if classeevento == AcessoVeiculo:
         try:
+            logger.error(f'*******Forçando a barra para ver se entrou aqui***** "{evento.nomeMotorista}"')
             evento.nomeMotorista = evento.nomeMotorista.encode('latin1')
         except:
             logger.error(f'persiste_df: Nome motorista "{evento.nomeMotorista}" não pôde ser lido!!!')
