@@ -511,6 +511,16 @@ def processa_json(texto: str, classeevento: Type[BaseDumpable], chave_unica: lis
     return df_eventos
 
 
+
+
+def corrige_campos(evento, classeevento: Type[BaseDumpable]):
+    if classeevento.__class__.__name__ == 'AcessoVeiculo':
+        try:
+            evento.nomeMotorista = evento.nomeMotorista.encode('latin1')
+        except:
+            logger.error(f'persiste_df: Nome motorista "{evento.nomeMotorista}" não pôde ser lido!!!')
+            evento.nomeMotorista = ''
+
 def persiste_df(df_eventos: pd.DataFrame, classeevento: Type[BaseDumpable], session):
     """Percorre dataframe, instanciando Eventos e adicionando à sessão, finalizando com commit no banco"""
     cont_sucesso = 0
@@ -521,6 +531,7 @@ def persiste_df(df_eventos: pd.DataFrame, classeevento: Type[BaseDumpable], sess
             # print(evento.dump())
             if evento.is_duplicate(session):
                 continue
+            corrige_campos(evento, classeevento)
             session.add(evento)
             cont_sucesso += 1
         session.commit()
