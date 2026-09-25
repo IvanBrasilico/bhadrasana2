@@ -72,9 +72,9 @@
 <div class="container-lg py-4">
 
     <div class="mb-4">
-        <h1 class="mb-0">Consulta de Risco por CNPJ / NCM</h1>
+        <h1 class="mb-0">Consulta de Fichas com apreensões de drogas por CNPJ / NCM</h1>
         <p class="page-subtitle text-down-01 mb-0 mt-1">
-            Busca fichas (OVR) cujo CNPJ fiscalizado e/ou NCM de algum item do
+            Busca fichas cujo CNPJ fiscalizado e/ou NCM de algum item do
             CE Mercante vinculado coincidam com os parâmetros informados.
         </p>
     </div>
@@ -115,7 +115,7 @@
 (function () {
     'use strict';
 
-    var URL_API = '/api/risco/fichas';
+    var URL_API = '/api/fichas/apreensoes';
 
     $('#form-busca').on('submit', function (evento) {
         evento.preventDefault();
