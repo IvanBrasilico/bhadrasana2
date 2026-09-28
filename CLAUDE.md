@@ -19,7 +19,7 @@
 Este repo **não é autocontido** — depende de projetos irmãos no mesmo nível de diretório (referenciados via `sys.path.insert`/symlink, não via pip):
 
 - `ajna_commons` (symlink `ajna_commons` → `../ajna_docs/ajna_commons/commons`) — conf, login, logging.
-- `../virasana` — integração Mercante e outras.
+- `../virasana` — integração Mercante e outras (ex.: `virasana.integracao.mercante.mercantealchemy`, usado em `tests/app_creator.py`). Tem seu próprio [CLAUDE.md](../virasana/CLAUDE.md).
 - `../ajna_api` / `ajnaapi` — API Recintos (`ajnaapi.recintosapi`).
 
 Ao investigar comportamento que não está neste repo, procurar nesses projetos irmãos antes de assumir que algo está faltando.
