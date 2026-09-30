@@ -18,7 +18,7 @@
 
 Este repo **não é autocontido** — depende de projetos irmãos no mesmo nível de diretório (referenciados via `sys.path.insert`/symlink, não via pip):
 
-- `ajna_commons` (symlink `ajna_commons` → `../ajna_docs/ajna_commons/commons`) — conf, login, logging.
+- `ajna_commons` — conf, login, logging. O código vivo está em `../ajna_docs/commons/ajna_commons` (ver [../ajna_docs/CLAUDE.md](../ajna_docs/CLAUDE.md)). A junction `bhadrasana2/ajna_commons` aponta para `../ajna_docs/ajna_commons/commons`, que não existe nesta máquina (symlink do git virou arquivo texto no Windows); o repo `../ajna_commons` separado é uma cópia de 2019, desatualizada — não usar.
 - `../virasana` — integração Mercante e outras (ex.: `virasana.integracao.mercante.mercantealchemy`, usado em `tests/app_creator.py`). Tem seu próprio [CLAUDE.md](../virasana/CLAUDE.md).
 - `../ajna_api` / `ajnaapi` — API Recintos (`ajnaapi.recintosapi`).
 
