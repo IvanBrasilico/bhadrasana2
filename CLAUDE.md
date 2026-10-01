@@ -36,6 +36,24 @@ Ao investigar comportamento que não está neste repo, procurar nesses projetos 
 - `bhadrasana/security/check.py` — checagens de segurança/permissão.
 - `tests/` — pytest; `tests/app_creator.py` monta uma app de teste com SQLite em memória + `mongomock`, e semeia usuários/setores fixos para os testes.
 
+## Produção: prefixo `/bhadrasana2` atrás de proxy (obrigatório para código novo)
+
+No Servidor a app roda via WSGI atrás de um **proxy Apache**, montada no prefixo **`/bhadrasana2`** por
+`DispatcherMiddleware` ([wsgi_production.py](wsgi_production.py); homologação em `/bhadrasana2_hom`, [wsgi_staging.py](wsgi_staging.py)). O Apache só encaminha o
+que está sob o prefixo e repassa um Host interno. Funcionar no `localhost` **não** prova que funciona
+no Servidor. Regras:
+
+- Toda URL interna sai de `url_for(...)` nos templates; o JS **recebe** as URLs do servidor
+  (`var API = {{ url_for('bp.rota') | tojson }};`) e nunca monta caminhos começando com `/`.
+- Sem redirect absoluto: use `redirect(url_for(...))` ou caminho relativo (padrão do código antigo,
+  ex.: `redirect('bagagens?...')`). **Rotas índice com `strict_slashes=False`**: o redirect
+  automático da barra final (`/tela` → `/tela/`) sai com o Host interno e quebra atrás do proxy
+  (foi o caso de `/entregas_cnpj` em 01/10/2026).
+- Link para a outra app usa o prefixo dela fixo: `/bhadrasana2/...` ou `/virasana/...`.
+- Teste montando a app no prefixo (modelo: `virasana/tests/test_prefixo_proxy.py`, no repo virasana):
+  abre cada tela com e sem barra final sem redirect e confere que todo `href`/`src`/`action`/URL do
+  JS começa com o prefixo.
+
 ## Como rodar os testes
 
 ```bash
