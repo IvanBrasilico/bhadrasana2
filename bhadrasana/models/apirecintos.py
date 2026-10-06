@@ -3,6 +3,7 @@ import os
 import re
 import sys
 import zipfile
+from collections import namedtuple
 from typing import List, Optional, Type, Tuple, Union
 
 import numpy as np
@@ -32,6 +33,15 @@ def converte_datetime(str_datetime: str):
         return None
 
 
+# Ação tomada sobre um evento com campo inválido (registrada no detalhe de RegistroRejeitado)
+ACAO_EVENTO_REJEITADO = 'Evento rejeitado'
+ACAO_CAMPO_ANULADO = 'Campo anulado, evento mantido'
+
+# Regra violada em um campo do evento. rejeita_evento=True: coluna de identidade, evento inteiro
+# fora; False: coluna auxiliar, campo anulado e evento mantido (ver EventoAPIBase.valida_campos).
+Rejeicao = namedtuple('Rejeicao', ['nomeColuna', 'valor', 'motivo', 'detalhe', 'rejeita_evento'])
+
+
 class EventoAPIBase(BaseRastreavel, BaseDumpable):
     __abstract__ = True
     # with_variant: BIGINT no MySQL (inalterado); INTEGER no SQLite dos testes (autoincremento)
@@ -43,23 +53,36 @@ class EventoAPIBase(BaseRastreavel, BaseDumpable):
     contingencia = Column(Boolean(), index=True)
 
     # Regras de validação por coluna: {nomeColuna: validador}. O validador recebe o valor já
-    # mapeado e retorna None se válido, ou (motivo, detalhe) se o evento deve ser rejeitado
-    # (ver RegistroRejeitado). Subclasses sobrescrevem para declarar suas regras.
-    # ATENÇÃO: o nome precisa conter '_' para não ser tratado como coluna por get_campos().
+    # mapeado e retorna None se válido, ou (motivo, detalhe) se inválido. Duas políticas:
+    #   _validadores       -> coluna de identidade do evento: evento inteiro rejeitado
+    #   _validadores_campo -> coluna auxiliar: campo anulado (NULL) e evento mantido
+    # Nos dois casos a ocorrência é registrada em RegistroRejeitado. Subclasses sobrescrevem.
+    # ATENÇÃO: os nomes precisam conter '_' para não serem tratados como coluna por get_campos().
     _validadores = {}
+    _validadores_campo = {}
 
-    def valida_campos(self) -> List[Tuple[str, object, str, str]]:
-        """Aplica _validadores aos campos já mapeados.
+    def valida_campos(self) -> List[Rejeicao]:
+        """Aplica _validadores e _validadores_campo aos campos já mapeados.
 
-        Returns: lista de (nomeColuna, valor, motivo, detalhe). Vazia se o evento é válido.
+        Campos auxiliares inválidos são anulados aqui mesmo. Se alguma Rejeicao tiver
+        rejeita_evento=True, o evento não deve ser persistido.
+
+        Returns: lista de Rejeicao. Vazia se o evento é válido.
         """
+        rejeicoes = self._aplica_validadores(self._validadores, rejeita_evento=True)
+        rejeicoes_campo = self._aplica_validadores(self._validadores_campo, rejeita_evento=False)
+        for rejeicao in rejeicoes_campo:
+            setattr(self, rejeicao.nomeColuna, None)
+        return rejeicoes + rejeicoes_campo
+
+    def _aplica_validadores(self, validadores: dict, rejeita_evento: bool) -> List[Rejeicao]:
         rejeicoes = []
-        for nome_coluna, validador in self._validadores.items():
+        for nome_coluna, validador in validadores.items():
             valor = getattr(self, nome_coluna, None)
             resultado = validador(valor)
             if resultado:
                 motivo, detalhe = resultado
-                rejeicoes.append((nome_coluna, valor, motivo, detalhe))
+                rejeicoes.append(Rejeicao(nome_coluna, valor, motivo, detalhe, rejeita_evento))
         return rejeicoes
 
     def _mapeia(self, *args, **kwargs):
@@ -262,6 +285,25 @@ def valida_numero_conteiner(numero) -> Optional[Tuple[str, str]]:
     return 'FORMATO_INVALIDO', 'Esperado 4 letras maiúsculas seguidas de 7 dígitos'
 
 
+def valida_placa(placa) -> Optional[Tuple[str, str]]:
+    """Valida placa já saneada (só letras e dígitos, ver alfanumeric_c): até 7 caracteres.
+
+    Sem regex de padrão brasileiro de propósito: passam carretas da Argentina, do Paraguai e
+    do Uruguai, comuns em Santos. O objetivo é barrar lixo como 'XXX0000SEMIRREBOQUE' (erro 1406).
+
+    Returns: None se válido ou ausente, ou (motivo, detalhe) para registro em RegistroRejeitado
+    """
+    if placa is None or placa == '':
+        return None
+    if not isinstance(placa, str):
+        return 'FORMATO_INVALIDO', f'Esperado texto, recebido {type(placa).__name__}'
+    if len(placa) > 7:
+        return 'TAMANHO_EXCEDIDO', f'Esperado até 7 caracteres, recebido {len(placa)}'
+    if not placa.isalnum():
+        return 'FORMATO_INVALIDO', 'Esperado apenas letras e dígitos'
+    return None
+
+
 def _trunca(valor, tamanho: int) -> Optional[str]:
     """Converte para texto e trunca. Garante que o registro de rejeição nunca estoure coluna."""
     if valor is None:
@@ -286,11 +328,12 @@ class ControleExtracaoRecintos(Base):
 
 
 class RegistroRejeitado(BaseRastreavel):
-    """Evento da API Recintos recusado na validação por dado mal formado.
+    """Campo de evento da API Recintos recusado na validação por dado mal formado.
 
     Uma linha por coluna rejeitada. Guarda o necessário para localizar o evento na origem
-    (tabela de destino, recinto, datas) e o campo/valor que violou a regra. O evento NÃO é
-    gravado na tabela de destino. Ver EventoAPIBase._validadores e processa_json.
+    (tabela de destino, recinto, datas), o campo/valor que violou a regra e, no detalhe, a ação
+    tomada: evento inteiro rejeitado (coluna de identidade) ou campo anulado com o evento
+    mantido (coluna auxiliar). Ver EventoAPIBase.valida_campos e processa_json.
     """
     __tablename__ = 'apirecintos_registros_rejeitados'
     id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
@@ -319,17 +362,21 @@ class RegistroRejeitado(BaseRastreavel):
         self.detalhe = _trunca(kwargs.get('detalhe'), 255)
 
     @classmethod
-    def from_evento(cls, evento: EventoAPIBase, tipoEvento, nomeColuna: str, valor,
-                    motivo: str, detalhe: str) -> 'RegistroRejeitado':
-        """Monta a rejeição a partir de um evento já mapeado (ver EventoAPIBase.valida_campos)."""
-        return cls(evento.__tablename__, nomeColuna, motivo,
+    def from_evento(cls, evento: EventoAPIBase, tipoEvento,
+                    rejeicao: Rejeicao) -> 'RegistroRejeitado':
+        """Monta a rejeição a partir de um evento já mapeado (ver EventoAPIBase.valida_campos).
+
+        O detalhe registra também a ação tomada: evento rejeitado ou campo anulado.
+        """
+        acao = ACAO_EVENTO_REJEITADO if rejeicao.rejeita_evento else ACAO_CAMPO_ANULADO
+        return cls(evento.__tablename__, rejeicao.nomeColuna, rejeicao.motivo,
                    tipoEvento=tipoEvento,
                    codigoRecinto=evento.codigoRecinto,
                    dataHoraTransmissao=evento.dataHoraTransmissao,
                    dataHoraOcorrencia=evento.dataHoraOcorrencia,
                    tipoOperacao=evento.tipoOperacao,
-                   valorColuna=valor,
-                   detalhe=detalhe)
+                   valorColuna=rejeicao.valor,
+                   detalhe=f'{rejeicao.detalhe}. {acao}')
 
     def chave(self) -> tuple:
         """Chave natural: evita gravar a mesma rejeição em reenvios da mesma janela pelo ETL."""
@@ -350,6 +397,7 @@ class AcessoVeiculo(EventoAPIBase):
     __tablename__ = 'apirecintos_acessosveiculo'
     __table_args__ = (UniqueConstraint('placa', 'operacao', 'tipoOperacao', 'dataHoraOcorrencia', 'dataHoraRegistro'),
                       )
+    _validadores_campo = {'placaSemirreboque': valida_placa}  # placa já é truncada no _mapeia
     dataHoraRegistro = Column(DateTime(), index=True)
     operacao = Column(String(1), index=True)  # G - A*g*endamento, C - A*c*esso
     direcao = Column(String(1), index=True)  # E - Entrada, S - Saída
@@ -505,6 +553,8 @@ class EmbarqueDesembarque(EventoAPIBase):
 class PesagemVeiculo(EventoAPIBase):
     __tablename__ = 'apirecintos_pesagensveiculo'
     __table_args__ = (UniqueConstraint('placa', 'dataHoraOcorrencia', 'dataHoraTransmissao'),)
+    _validadores = {'placa': valida_placa}
+    _validadores_campo = {'placaSemirreboque': valida_placa}
     dataHoraTransmissao = Column(DateTime(), index=True)
     pesoBrutoBalanca = Column(Numeric(7, 2), index=True)
     pesoBrutoManifesto = Column(Numeric(7, 2))
@@ -546,6 +596,7 @@ class InspecaoNaoInvasiva(EventoAPIBase):
     __tablename__ = 'apirecintos_inspecoesnaoinvasivas'
     __table_args__ = (UniqueConstraint('numeroConteiner', 'dataHoraOcorrencia'),)
     _validadores = {'numeroConteiner': valida_numero_conteiner}
+    _validadores_campo = {'placa': valida_placa, 'placaSemirreboque': valida_placa}
     vazio = Column(Boolean(), index=True)
     placa = Column(String(7), index=True)
     listaConteineresUld = Column(String(1))  # Placeholder
@@ -592,7 +643,8 @@ def processa_json(texto: str, classeevento: Type[BaseDumpable],
     """ Lê Eventos do Arquivo um a um, tratar e retorna em um dataframe com o dump dos Eventos
 
     Faz também os tratamentos:
-      separar eventos com dados mal formados (ver EventoAPIBase._validadores) em RegistroRejeitado
+      validar campos (ver EventoAPIBase.valida_campos): evento rejeitado ou campo anulado,
+      sempre registrando a ocorrência em RegistroRejeitado
       eliminar linhas duplicadas de acordo com a chave passada
       tratar nan
       filtrar de acordo com regras de negócio
@@ -620,16 +672,16 @@ def processa_json(texto: str, classeevento: Type[BaseDumpable],
         rejeicoes = instancia.valida_campos()
         if rejeicoes:
             tipo_evento = evento_json.get('dadosTransmissao', {}).get('tipoEvento')
-            for nome_coluna, valor, motivo, detalhe in rejeicoes:
-                rejeitados.append(RegistroRejeitado.from_evento(
-                    instancia, tipo_evento, nome_coluna, valor, motivo, detalhe))
-            continue
+            rejeitados.extend(RegistroRejeitado.from_evento(instancia, tipo_evento, rejeicao)
+                              for rejeicao in rejeicoes)
+            if any(rejeicao.rejeita_evento for rejeicao in rejeicoes):
+                continue
         instancia_dump = instancia.dump()
         instancia_dump.pop('id', None)
         eventos.append(instancia_dump)
     if rejeitados:
-        logger.warning(f'{len(rejeitados)} eventos rejeitados na validação de campos '
-                       f'(ver {RegistroRejeitado.__tablename__}).')
+        logger.warning(f'{len(rejeitados)} campos inválidos na validação, registrados em '
+                       f'{RegistroRejeitado.__tablename__} (evento rejeitado ou campo anulado).')
     if not eventos:
         logger.info(f'Recuperados {len(json_raw)} eventos. Nenhum evento válido para persistir.')
         return pd.DataFrame(), rejeitados
