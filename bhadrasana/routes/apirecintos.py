@@ -20,7 +20,7 @@ sys.path.insert(0, '../ajna_docs/commons')
 sys.path.insert(0, '../virasana')
 from ajna_commons.flask.log import logger
 from bhadrasana.models.apirecintos import AcessoVeiculo, PesagemVeiculo, EmbarqueDesembarque, InspecaoNaoInvasiva, \
-    processa_json, persiste_df, ControleExtracaoRecintos
+    processa_json, persiste_df, persiste_rejeitados, ControleExtracaoRecintos
 from bhadrasana.models.ovr import Recinto
 from bhadrasana.views import valid_file, csrf
 
@@ -136,7 +136,9 @@ def processar_json_puro(session, json_texto, classe, indice):
     :param classe:
     :param indice:
     """
-    df_eventos = processa_json(json_texto, classe, indice)
+    df_eventos, rejeitados = processa_json(json_texto, classe, indice)
+    # Rejeições gravadas antes e em commit próprio: a evidência fica mesmo se o lote falhar
+    persiste_rejeitados(rejeitados, session)
     print(df_eventos.head())
     persiste_df(df_eventos, classe, session)
 
