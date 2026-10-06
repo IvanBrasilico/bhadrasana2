@@ -3,8 +3,10 @@
 Cobre os casos reais que motivaram a tabela:
 - número de contêiner com 12 caracteres (recinto 7961304): coluna de identidade, evento rejeitado;
 - placa de semirreboque com 19 caracteres (recinto 6913201): coluna auxiliar, campo anulado e
+  evento mantido;
+- placa de semirreboque com М cirílico (recinto 8931404): charset latin1, campo normalizado e
   evento mantido.
-Antes, os dois geravam erro MySQL 1406 e rollback do lote inteiro.
+Antes, os três geravam erro MySQL (1406 ou 1366) e rollback do lote inteiro.
 """
 import json
 import sys
@@ -19,16 +21,18 @@ sys.path.insert(0, '.')
 
 from bhadrasana.models import Base  # noqa: E402
 from bhadrasana.models.apirecintos import (  # noqa: E402
-    ACAO_CAMPO_ANULADO, ACAO_EVENTO_REJEITADO, InspecaoNaoInvasiva, PesagemVeiculo,
-    RegistroRejeitado, persiste_df, persiste_rejeitados, processa_json, valida_numero_conteiner,
-    valida_placa)
+    ACAO_CAMPO_ANULADO, ACAO_CAMPO_NORMALIZADO, ACAO_EVENTO_REJEITADO, AcessoVeiculo,
+    InspecaoNaoInvasiva, PesagemVeiculo, RegistroRejeitado, persiste_df, persiste_rejeitados,
+    processa_json, valida_numero_conteiner, valida_placa)
 
 CHAVE_INSPECAO = ['numeroConteiner', 'dataHoraOcorrencia']
 CHAVE_PESAGEM = ['placa', 'dataHoraOcorrencia']
+CHAVE_ACESSO = ['placa', 'operacao', 'tipoOperacao', 'dataHoraOcorrencia']
 CONTEINER_VALIDO = 'CAAU2235240'
 CONTEINER_12_CARACTERES = 'CAAUU2235240'  # caso real do recinto 7961304 (erro MySQL 1406)
 PLACA_VALIDA = '5767UDC'
 PLACA_SEMIRREBOQUE_LIXO = '5767UDCSEMIRREBOQUE'  # caso real do recinto 6913201 (erro MySQL 1406)
+PLACA_SEMIRREBOQUE_CIRILICA = 'МIO3H52'  # caso real do recinto 8931404 (erro MySQL 1366)
 
 
 def evento_inspecao(numero_conteiner, data_hora_ocorrencia='2026-09-29T15:13:18'):
@@ -66,6 +70,31 @@ def evento_pesagem(placa, placa_semirreboque, data_hora_ocorrencia='2026-10-01T1
     }
 
 
+def evento_acesso(placa_semirreboque, nome_motorista='ROBERT GABRIEL COFFANI CRESPO'):
+    """Evento tipo 1 (AcessoVeiculo), com os valores do caso real do recinto 8931404."""
+    return {
+        'dadosTransmissao': {'tipoEvento': 1, 'dataHoraTransmissao': '2026-10-05T01:14:53'},
+        'jsonOriginal': {
+            'codigoRecinto': '8931404',
+            'tipoOperacao': 'I',
+            'contingencia': False,
+            'dataHoraOcorrencia': '2026-10-05T01:11:54',
+            'operacao': 'C',
+            'direcao': 'S',
+            'placa': 'GIA6H99',
+            'ocrPlaca': True,
+            'cnpjTransportador': '08011564000131',
+            'motorista': {'cpf': '45886730842', 'nome': nome_motorista},
+            'listaConteineresUld': [{'numeroConteiner': 'KOCU4207306',
+                                     'ocrNumero': True, 'tipo': '45G1'}],
+            'listaSemirreboque': [{'placa': placa_semirreboque, 'ocrPlaca': True}],
+            'listaDeclaracaoAduaneira': [{'tipo': 'DUIMP', 'numeroDeclaracao': '26BR00018703179'}],
+            'listaManifestos': [{'listaConhecimentos': [{'tipo': 'CE_MERCANTE',
+                                                         'numero': '152605302165469'}]}],
+        },
+    }
+
+
 def lote(*eventos):
     return json.dumps(list(eventos))
 
@@ -74,7 +103,7 @@ def lote(*eventos):
 def session():
     engine = create_engine('sqlite://')
     Base.metadata.create_all(engine, [InspecaoNaoInvasiva.__table__, PesagemVeiculo.__table__,
-                                      RegistroRejeitado.__table__])
+                                      AcessoVeiculo.__table__, RegistroRejeitado.__table__])
     sessao = sessionmaker(bind=engine)()
     yield sessao
     sessao.close()
@@ -92,7 +121,9 @@ class TestValidaNumeroConteiner:
         assert '12' in detalhe
 
     @pytest.mark.parametrize('numero', ['CAAU223524', 'caau2235240', 'CAA12235240',
-                                        'CAAU223524A', '12345678901', 'CAAU 235240'])
+                                        'CAAU223524A', '12345678901', 'CAAU 235240',
+                                        'МSKU1234567',  # М cirílico: não é ASCII
+                                        'CAAU٢235240'])  # dígito árabe: não é [0-9]
     def test_formato_invalido(self, numero):
         motivo, _ = valida_numero_conteiner(numero)
         assert motivo == 'FORMATO_INVALIDO'
@@ -111,8 +142,9 @@ class TestValidaPlaca:
         assert motivo == 'TAMANHO_EXCEDIDO'
         assert '19' in detalhe
 
-    def test_formato_invalido(self):
-        motivo, _ = valida_placa('ABC-123')
+    @pytest.mark.parametrize('placa', ['ABC-123', PLACA_SEMIRREBOQUE_CIRILICA])
+    def test_formato_invalido_estrito_a_ascii(self, placa):
+        motivo, _ = valida_placa(placa)
         assert motivo == 'FORMATO_INVALIDO'
 
 
@@ -208,6 +240,67 @@ class TestColunaAuxiliarAnulaCampo:
         assert rejeitados[0].detalhe.endswith(ACAO_CAMPO_ANULADO)
 
 
+class TestNormalizacaoCharset:
+    """Normalização genérica de todas as colunas de texto (EventoAPIBase.normaliza_textos)."""
+
+    def test_homoglifo_corrigido_e_evento_mantido(self):
+        df_eventos, rejeitados = processa_json(
+            lote(evento_acesso(PLACA_SEMIRREBOQUE_CIRILICA)), AcessoVeiculo, CHAVE_ACESSO)
+        assert len(df_eventos) == 1
+        assert df_eventos.iloc[0]['placaSemirreboque'] == 'MIO3H52'
+        assert len(rejeitados) == 1
+        rejeitado = rejeitados[0]
+        assert rejeitado.nomeTabela == 'apirecintos_acessosveiculo'
+        assert rejeitado.nomeColuna == 'placaSemirreboque'
+        assert rejeitado.motivo == 'ENCODING_INVALIDO'
+        # Evidência em ASCII: a própria tabela de rejeição é latin1
+        assert rejeitado.valorColuna == '\\u041cIO3H52'
+        assert rejeitado.detalhe == '\\u041c -> M. ' + ACAO_CAMPO_NORMALIZADO
+        assert rejeitado.tipoEvento == '1'
+        assert rejeitado.codigoRecinto == '8931404'
+
+    def test_persiste_placa_corrigida(self, session):
+        df_eventos, rejeitados = processa_json(
+            lote(evento_acesso(PLACA_SEMIRREBOQUE_CIRILICA)), AcessoVeiculo, CHAVE_ACESSO)
+        assert persiste_rejeitados(rejeitados, session) == 1
+        persiste_df(df_eventos, AcessoVeiculo, session)
+        acesso = session.query(AcessoVeiculo).one()
+        assert acesso.placaSemirreboque == 'MIO3H52'
+        assert acesso.placa == 'GIA6H99'
+        assert acesso.numeroConteiner == 'KOCU4207306'
+
+    def test_homoglifo_em_coluna_de_identidade_corrigido_antes_do_validador(self):
+        df_eventos, rejeitados = processa_json(
+            lote(evento_inspecao('КOCU4207306')),  # К cirílico
+            InspecaoNaoInvasiva, CHAVE_INSPECAO)
+        assert list(df_eventos['numeroConteiner']) == ['KOCU4207306']
+        assert [r.motivo for r in rejeitados] == ['ENCODING_INVALIDO']
+
+    def test_sem_equivalente_em_identidade_rejeita_evento(self):
+        df_eventos, rejeitados = processa_json(
+            lote(evento_inspecao('汉OCU4207306')),  # ideograma: vira '?' e o validador barra
+            InspecaoNaoInvasiva, CHAVE_INSPECAO)
+        assert df_eventos.empty
+        assert [r.motivo for r in rejeitados] == ['ENCODING_INVALIDO', 'FORMATO_INVALIDO']
+        assert rejeitados[1].valorColuna == '?OCU4207306'
+        assert rejeitados[1].detalhe.endswith(ACAO_EVENTO_REJEITADO)
+
+    def test_nome_em_outro_alfabeto_vira_marca_e_evento_mantido(self):
+        df_eventos, rejeitados = processa_json(
+            lote(evento_acesso('ABC1234', nome_motorista='汉字 SILVA')),
+            AcessoVeiculo, CHAVE_ACESSO)
+        assert df_eventos.iloc[0]['nomeMotorista'] == '?? SILVA'
+        assert [r.nomeColuna for r in rejeitados] == ['nomeMotorista']
+        assert rejeitados[0].valorColuna == '\\u6c49\\u5b57 SILVA'
+
+    def test_acento_do_portugues_nao_e_tocado(self):
+        df_eventos, rejeitados = processa_json(
+            lote(evento_acesso('ABC1234', nome_motorista='JOSÉ ANTÔNIO ASSUNÇÃO')),
+            AcessoVeiculo, CHAVE_ACESSO)
+        assert df_eventos.iloc[0]['nomeMotorista'] == 'JOSÉ ANTÔNIO ASSUNÇÃO'
+        assert rejeitados == []
+
+
 class TestPersisteRejeitados:
 
     def test_grava_rejeitados_e_eventos_validos(self, session):
@@ -250,3 +343,9 @@ class TestPersisteRejeitados:
     def test_valor_longo_e_truncado(self):
         rejeitado = RegistroRejeitado('tabela', 'coluna', 'MOTIVO', valorColuna='X' * 300)
         assert len(rejeitado.valorColuna) == 255
+
+    def test_valor_fora_do_charset_e_escapado(self):
+        rejeitado = RegistroRejeitado('tabela', 'coluna', 'MOTIVO',
+                                      valorColuna=PLACA_SEMIRREBOQUE_CIRILICA, detalhe='汉')
+        assert rejeitado.valorColuna == '\\u041cIO3H52'
+        assert rejeitado.detalhe == '\\u6c49'

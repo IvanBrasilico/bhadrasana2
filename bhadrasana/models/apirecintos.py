@@ -22,6 +22,8 @@ sys.path.insert(0, '../virasana')
 
 from ajna_commons.flask.log import logger
 from bhadrasana.models import Base, BaseRastreavel, BaseDumpable
+from bhadrasana.models.apirecintos_normalizacao import (descreve_substituicoes,
+                                                        escapa_nao_representaveis, normaliza_texto)
 
 metadata = Base.metadata
 
@@ -36,10 +38,21 @@ def converte_datetime(str_datetime: str):
 # Ação tomada sobre um evento com campo inválido (registrada no detalhe de RegistroRejeitado)
 ACAO_EVENTO_REJEITADO = 'Evento rejeitado'
 ACAO_CAMPO_ANULADO = 'Campo anulado, evento mantido'
+ACAO_CAMPO_NORMALIZADO = 'Campo normalizado, evento mantido'
 
-# Regra violada em um campo do evento. rejeita_evento=True: coluna de identidade, evento inteiro
-# fora; False: coluna auxiliar, campo anulado e evento mantido (ver EventoAPIBase.valida_campos).
-Rejeicao = namedtuple('Rejeicao', ['nomeColuna', 'valor', 'motivo', 'detalhe', 'rejeita_evento'])
+
+class Rejeicao(namedtuple('Rejeicao', ['nomeColuna', 'valor', 'motivo', 'detalhe', 'acao'])):
+    """Regra violada em um campo do evento e a ação tomada (ver EventoAPIBase.valida_campos).
+
+    acao: ACAO_EVENTO_REJEITADO (coluna de identidade, evento inteiro fora), ACAO_CAMPO_ANULADO
+    (coluna auxiliar, campo vira NULL) ou ACAO_CAMPO_NORMALIZADO (texto corrigido para o charset
+    do banco, ver apirecintos_normalizacao). Em todo caso a ocorrência vai para RegistroRejeitado.
+    """
+    __slots__ = ()
+
+    @property
+    def rejeita_evento(self) -> bool:
+        return self.acao == ACAO_EVENTO_REJEITADO
 
 
 class EventoAPIBase(BaseRastreavel, BaseDumpable):
@@ -62,27 +75,52 @@ class EventoAPIBase(BaseRastreavel, BaseDumpable):
     _validadores_campo = {}
 
     def valida_campos(self) -> List[Rejeicao]:
-        """Aplica _validadores e _validadores_campo aos campos já mapeados.
+        """Normaliza os textos e aplica _validadores e _validadores_campo aos campos já mapeados.
 
+        A ordem importa: primeiro normaliza_textos (homóglifos viram letras latinas e o texto fica
+        representável no charset do banco), depois os validadores, que são estritos a ASCII.
         Campos auxiliares inválidos são anulados aqui mesmo. Se alguma Rejeicao tiver
         rejeita_evento=True, o evento não deve ser persistido.
 
-        Returns: lista de Rejeicao. Vazia se o evento é válido.
+        Returns: lista de Rejeicao. Vazia se o evento é válido e não precisou de correção.
         """
-        rejeicoes = self._aplica_validadores(self._validadores, rejeita_evento=True)
-        rejeicoes_campo = self._aplica_validadores(self._validadores_campo, rejeita_evento=False)
+        rejeicoes = self.normaliza_textos()
+        rejeicoes += self._aplica_validadores(self._validadores, ACAO_EVENTO_REJEITADO)
+        rejeicoes_campo = self._aplica_validadores(self._validadores_campo, ACAO_CAMPO_ANULADO)
         for rejeicao in rejeicoes_campo:
             setattr(self, rejeicao.nomeColuna, None)
         return rejeicoes + rejeicoes_campo
 
-    def _aplica_validadores(self, validadores: dict, rejeita_evento: bool) -> List[Rejeicao]:
+    def normaliza_textos(self) -> List[Rejeicao]:
+        """Normaliza TODAS as colunas de texto para o charset do banco (apirecintos_normalizacao).
+
+        Genérico: percorre as colunas String da tabela, sem declaração por classe, então vale para
+        qualquer evento e qualquer coluna, inclusive futuras. Cada coluna alterada gera uma
+        Rejeicao com ACAO_CAMPO_NORMALIZADO registrando o que foi trocado.
+        """
+        rejeicoes = []
+        for coluna in self.__table__.columns:
+            if not isinstance(coluna.type, String):
+                continue
+            valor = getattr(self, coluna.name, None)
+            if not isinstance(valor, str):
+                continue
+            novo, substituicoes = normaliza_texto(valor)
+            if substituicoes:
+                setattr(self, coluna.name, novo)
+                rejeicoes.append(Rejeicao(coluna.name, valor, 'ENCODING_INVALIDO',
+                                          descreve_substituicoes(substituicoes),
+                                          ACAO_CAMPO_NORMALIZADO))
+        return rejeicoes
+
+    def _aplica_validadores(self, validadores: dict, acao: str) -> List[Rejeicao]:
         rejeicoes = []
         for nome_coluna, validador in validadores.items():
             valor = getattr(self, nome_coluna, None)
             resultado = validador(valor)
             if resultado:
                 motivo, detalhe = resultado
-                rejeicoes.append(Rejeicao(nome_coluna, valor, motivo, detalhe, rejeita_evento))
+                rejeicoes.append(Rejeicao(nome_coluna, valor, motivo, detalhe, acao))
         return rejeicoes
 
     def _mapeia(self, *args, **kwargs):
@@ -261,7 +299,10 @@ def valida_peso(peso, limite=99999999.99):
     return None
 
 
-REGEX_NUMERO_CONTEINER = re.compile(r'^[A-Z]{4}\d{7}$')
+# Estritas a ASCII ([0-9] e não \d): letras e dígitos de outros alfabetos já foram tratados
+# em EventoAPIBase.normaliza_textos; o que sobrar fora de ASCII é inválido mesmo.
+REGEX_NUMERO_CONTEINER = re.compile(r'^[A-Z]{4}[0-9]{7}$')
+REGEX_PLACA = re.compile(r'^[A-Za-z0-9]+$')
 
 
 def valida_numero_conteiner(numero) -> Optional[Tuple[str, str]]:
@@ -299,16 +340,20 @@ def valida_placa(placa) -> Optional[Tuple[str, str]]:
         return 'FORMATO_INVALIDO', f'Esperado texto, recebido {type(placa).__name__}'
     if len(placa) > 7:
         return 'TAMANHO_EXCEDIDO', f'Esperado até 7 caracteres, recebido {len(placa)}'
-    if not placa.isalnum():
-        return 'FORMATO_INVALIDO', 'Esperado apenas letras e dígitos'
+    if not REGEX_PLACA.match(placa):
+        return 'FORMATO_INVALIDO', 'Esperado apenas letras e dígitos (ASCII)'
     return None
 
 
-def _trunca(valor, tamanho: int) -> Optional[str]:
-    """Converte para texto e trunca. Garante que o registro de rejeição nunca estoure coluna."""
+def _texto_seguro(valor, tamanho: int) -> Optional[str]:
+    """Texto que a tabela de rejeição (latin1) sempre aceita.
+
+    Caracteres fora do charset viram escape ASCII ('\\u041c'), preservando a evidência, e o
+    resultado é truncado ao tamanho da coluna. O registro de rejeição nunca pode falhar.
+    """
     if valor is None:
         return None
-    return str(valor)[:tamanho]
+    return escapa_nao_representaveis(str(valor))[:tamanho]
 
 
 class ControleExtracaoRecintos(Base):
@@ -332,8 +377,8 @@ class RegistroRejeitado(BaseRastreavel):
 
     Uma linha por coluna rejeitada. Guarda o necessário para localizar o evento na origem
     (tabela de destino, recinto, datas), o campo/valor que violou a regra e, no detalhe, a ação
-    tomada: evento inteiro rejeitado (coluna de identidade) ou campo anulado com o evento
-    mantido (coluna auxiliar). Ver EventoAPIBase.valida_campos e processa_json.
+    tomada: evento rejeitado (coluna de identidade), campo anulado (coluna auxiliar) ou campo
+    normalizado (charset/homóglifos). Ver EventoAPIBase.valida_campos e processa_json.
     """
     __tablename__ = 'apirecintos_registros_rejeitados'
     id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
@@ -350,16 +395,16 @@ class RegistroRejeitado(BaseRastreavel):
 
     def __init__(self, nomeTabela: str, nomeColuna: str, motivo: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.nomeTabela = _trunca(nomeTabela, 64)
-        self.nomeColuna = _trunca(nomeColuna, 64)
-        self.motivo = _trunca(motivo, 30)
-        self.tipoEvento = _trunca(kwargs.get('tipoEvento'), 2)
-        self.codigoRecinto = _trunca(kwargs.get('codigoRecinto'), 7)
+        self.nomeTabela = _texto_seguro(nomeTabela, 64)
+        self.nomeColuna = _texto_seguro(nomeColuna, 64)
+        self.motivo = _texto_seguro(motivo, 30)
+        self.tipoEvento = _texto_seguro(kwargs.get('tipoEvento'), 2)
+        self.codigoRecinto = _texto_seguro(kwargs.get('codigoRecinto'), 7)
         self.dataHoraTransmissao = kwargs.get('dataHoraTransmissao')
         self.dataHoraOcorrencia = kwargs.get('dataHoraOcorrencia')
-        self.tipoOperacao = _trunca(kwargs.get('tipoOperacao'), 1)
-        self.valorColuna = _trunca(kwargs.get('valorColuna'), 255)
-        self.detalhe = _trunca(kwargs.get('detalhe'), 255)
+        self.tipoOperacao = _texto_seguro(kwargs.get('tipoOperacao'), 1)
+        self.valorColuna = _texto_seguro(kwargs.get('valorColuna'), 255)
+        self.detalhe = _texto_seguro(kwargs.get('detalhe'), 255)
 
     @classmethod
     def from_evento(cls, evento: EventoAPIBase, tipoEvento,
@@ -368,7 +413,6 @@ class RegistroRejeitado(BaseRastreavel):
 
         O detalhe registra também a ação tomada: evento rejeitado ou campo anulado.
         """
-        acao = ACAO_EVENTO_REJEITADO if rejeicao.rejeita_evento else ACAO_CAMPO_ANULADO
         return cls(evento.__tablename__, rejeicao.nomeColuna, rejeicao.motivo,
                    tipoEvento=tipoEvento,
                    codigoRecinto=evento.codigoRecinto,
@@ -376,7 +420,7 @@ class RegistroRejeitado(BaseRastreavel):
                    dataHoraOcorrencia=evento.dataHoraOcorrencia,
                    tipoOperacao=evento.tipoOperacao,
                    valorColuna=rejeicao.valor,
-                   detalhe=f'{rejeicao.detalhe}. {acao}')
+                   detalhe=f'{rejeicao.detalhe}. {rejeicao.acao}')
 
     def chave(self) -> tuple:
         """Chave natural: evita gravar a mesma rejeição em reenvios da mesma janela pelo ETL."""
@@ -643,8 +687,8 @@ def processa_json(texto: str, classeevento: Type[BaseDumpable],
     """ Lê Eventos do Arquivo um a um, tratar e retorna em um dataframe com o dump dos Eventos
 
     Faz também os tratamentos:
-      validar campos (ver EventoAPIBase.valida_campos): evento rejeitado ou campo anulado,
-      sempre registrando a ocorrência em RegistroRejeitado
+      normalizar textos (charset/homóglifos) e validar campos (ver EventoAPIBase.valida_campos):
+      evento rejeitado, campo anulado ou campo normalizado, sempre registrando em RegistroRejeitado
       eliminar linhas duplicadas de acordo com a chave passada
       tratar nan
       filtrar de acordo com regras de negócio
@@ -681,7 +725,8 @@ def processa_json(texto: str, classeevento: Type[BaseDumpable],
         eventos.append(instancia_dump)
     if rejeitados:
         logger.warning(f'{len(rejeitados)} campos inválidos na validação, registrados em '
-                       f'{RegistroRejeitado.__tablename__} (evento rejeitado ou campo anulado).')
+                       f'{RegistroRejeitado.__tablename__} '
+                       f'(evento rejeitado, campo anulado ou normalizado).')
     if not eventos:
         logger.info(f'Recuperados {len(json_raw)} eventos. Nenhum evento válido para persistir.')
         return pd.DataFrame(), rejeitados
