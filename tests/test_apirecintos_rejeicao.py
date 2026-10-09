@@ -5,8 +5,11 @@ Cobre os casos reais que motivaram a tabela:
 - placa de semirreboque com 19 caracteres (recinto 6913201): coluna auxiliar, campo anulado e
   evento mantido;
 - placa de semirreboque com М cirílico (recinto 8931404): charset latin1, campo normalizado e
-  evento mantido.
-Antes, os três geravam erro MySQL (1406 ou 1366) e rollback do lote inteiro.
+  evento mantido;
+- contêiner válido com espaço no meio, em pesagem (recinto 6913201): limpo no mapeamento e
+  gravado, sem rejeição.
+Antes, todos geravam erro MySQL (1406 ou 1366) e rollback do lote inteiro. A rede genérica de
+tamanho (TestTamanhoGenerico) cobre as demais colunas de texto de todos os eventos.
 """
 import json
 import sys
@@ -14,7 +17,7 @@ from datetime import datetime
 
 import pandas as pd
 import pytest
-from sqlalchemy import create_engine
+from sqlalchemy import String, create_engine
 from sqlalchemy.orm import sessionmaker
 
 sys.path.insert(0, '.')
@@ -22,14 +25,19 @@ sys.path.insert(0, '.')
 from bhadrasana.models import Base  # noqa: E402
 from bhadrasana.models.apirecintos import (  # noqa: E402
     ACAO_CAMPO_ANULADO, ACAO_CAMPO_NORMALIZADO, ACAO_EVENTO_REJEITADO, AcessoVeiculo,
-    InspecaoNaoInvasiva, PesagemVeiculo, RegistroRejeitado, persiste_df, persiste_rejeitados,
-    processa_json, valida_numero_conteiner, valida_placa)
+    EmbarqueDesembarque, InspecaoNaoInvasiva, PesagemVeiculo, RegistroRejeitado,
+    limpa_numero_conteiner, persiste_df, persiste_rejeitados, processa_json,
+    valida_numero_conteiner, valida_placa)
+
+CLASSES_EVENTO = [AcessoVeiculo, PesagemVeiculo, EmbarqueDesembarque, InspecaoNaoInvasiva]
 
 CHAVE_INSPECAO = ['numeroConteiner', 'dataHoraOcorrencia']
 CHAVE_PESAGEM = ['placa', 'dataHoraOcorrencia']
 CHAVE_ACESSO = ['placa', 'operacao', 'tipoOperacao', 'dataHoraOcorrencia']
+CHAVE_EMBARQUE = ['numeroConteiner', 'dataHoraOcorrencia']
 CONTEINER_VALIDO = 'CAAU2235240'
 CONTEINER_12_CARACTERES = 'CAAUU2235240'  # caso real do recinto 7961304 (erro MySQL 1406)
+CONTEINER_COM_ESPACO = 'UETU 5244953'  # caso real do recinto 6913201, em pesagem (erro 1406)
 PLACA_VALIDA = '5767UDC'
 PLACA_SEMIRREBOQUE_LIXO = '5767UDCSEMIRREBOQUE'  # caso real do recinto 6913201 (erro MySQL 1406)
 PLACA_SEMIRREBOQUE_CIRILICA = 'МIO3H52'  # caso real do recinto 8931404 (erro MySQL 1366)
@@ -51,7 +59,8 @@ def evento_inspecao(numero_conteiner, data_hora_ocorrencia='2026-09-29T15:13:18'
     }
 
 
-def evento_pesagem(placa, placa_semirreboque, data_hora_ocorrencia='2026-10-01T16:01:12'):
+def evento_pesagem(placa, placa_semirreboque, data_hora_ocorrencia='2026-10-01T16:01:12',
+                   numero_conteiner=None):
     """Evento tipo 3 (PesagemVeiculo), com os valores do caso real do recinto 6913201."""
     return {
         'dadosTransmissao': {'tipoEvento': 3, 'dataHoraTransmissao': '2026-10-01T13:01:18'},
@@ -65,32 +74,54 @@ def evento_pesagem(placa, placa_semirreboque, data_hora_ocorrencia='2026-10-01T1
             'taraConjunto': 13630.0,
             'capturaAutoPeso': False,
             'placa': placa,
+            'listaConteineresUld': [{'numeroConteiner': numero_conteiner}] if numero_conteiner
+            else [],
             'listaSemirreboque': [{'placa': placa_semirreboque, 'tara': 8000.0}],
         },
     }
 
 
-def evento_acesso(placa_semirreboque, nome_motorista='ROBERT GABRIEL COFFANI CRESPO'):
+def evento_acesso(placa_semirreboque, nome_motorista='ROBERT GABRIEL COFFANI CRESPO',
+                  numero_conteiner='KOCU4207306', operacao='C', tipo_operacao='I'):
     """Evento tipo 1 (AcessoVeiculo), com os valores do caso real do recinto 8931404."""
     return {
         'dadosTransmissao': {'tipoEvento': 1, 'dataHoraTransmissao': '2026-10-05T01:14:53'},
         'jsonOriginal': {
             'codigoRecinto': '8931404',
-            'tipoOperacao': 'I',
+            'tipoOperacao': tipo_operacao,
             'contingencia': False,
             'dataHoraOcorrencia': '2026-10-05T01:11:54',
-            'operacao': 'C',
+            'operacao': operacao,
             'direcao': 'S',
             'placa': 'GIA6H99',
             'ocrPlaca': True,
             'cnpjTransportador': '08011564000131',
             'motorista': {'cpf': '45886730842', 'nome': nome_motorista},
-            'listaConteineresUld': [{'numeroConteiner': 'KOCU4207306',
+            'listaConteineresUld': [{'numeroConteiner': numero_conteiner,
                                      'ocrNumero': True, 'tipo': '45G1'}],
             'listaSemirreboque': [{'placa': placa_semirreboque, 'ocrPlaca': True}],
             'listaDeclaracaoAduaneira': [{'tipo': 'DUIMP', 'numeroDeclaracao': '26BR00018703179'}],
             'listaManifestos': [{'listaConhecimentos': [{'tipo': 'CE_MERCANTE',
                                                          'numero': '152605302165469'}]}],
+        },
+    }
+
+
+def evento_embarque(numero_conteiner, viagem='123456789'):
+    """Evento tipo 4 (EmbarqueDesembarque). numero_conteiner None simula carga solta."""
+    return {
+        'dadosTransmissao': {'tipoEvento': 4, 'dataHoraTransmissao': '2026-10-08T10:05:00'},
+        'jsonOriginal': {
+            'codigoRecinto': '8931356',
+            'tipoOperacao': 'I',
+            'contingencia': False,
+            'dataHoraOcorrencia': '2026-10-08T10:00:00',
+            'viagem': viagem,
+            'escala': '26000123456',
+            'embarqueDesembarque': 'D',
+            'pesoBrutoBalanca': 21000.0,
+            'numeroConteiner': numero_conteiner,
+            'tipoConteiner': '45G1',
         },
     }
 
@@ -102,8 +133,8 @@ def lote(*eventos):
 @pytest.fixture
 def session():
     engine = create_engine('sqlite://')
-    Base.metadata.create_all(engine, [InspecaoNaoInvasiva.__table__, PesagemVeiculo.__table__,
-                                      AcessoVeiculo.__table__, RegistroRejeitado.__table__])
+    Base.metadata.create_all(engine, [classe.__table__ for classe in CLASSES_EVENTO] +
+                             [RegistroRejeitado.__table__])
     sessao = sessionmaker(bind=engine)()
     yield sessao
     sessao.close()
@@ -298,6 +329,161 @@ class TestNormalizacaoCharset:
             lote(evento_acesso('ABC1234', nome_motorista='JOSÉ ANTÔNIO ASSUNÇÃO')),
             AcessoVeiculo, CHAVE_ACESSO)
         assert df_eventos.iloc[0]['nomeMotorista'] == 'JOSÉ ANTÔNIO ASSUNÇÃO'
+        assert rejeitados == []
+
+
+class TestLimpaNumeroConteiner:
+
+    @pytest.mark.parametrize('entrada, esperado', [
+        (CONTEINER_COM_ESPACO, 'UETU5244953'),
+        ('uetu-524495.3', 'UETU5244953'),
+        (' UETU5244953 ', 'UETU5244953'),
+        ('UETU5244953', 'UETU5244953'),
+        (None, None), ('', None), (' - ', None),
+        (123, 123),  # não é texto: quem reprova é o validador
+        ('\u041cSKU 1234567', '\u041cSKU1234567'),  # homóglifo preservado para normaliza_textos
+    ])
+    def test_limpa(self, entrada, esperado):
+        assert limpa_numero_conteiner(entrada) == esperado
+
+
+class TestNumeroConteinerEmTodasAsTabelas:
+    """A mesma limpeza e a mesma regra de formato valem para os quatro eventos."""
+
+    def test_pesagem_com_espaco_e_limpa_e_gravada(self, session):
+        df_eventos, rejeitados = processa_json(
+            lote(evento_pesagem('SVZ1I18', 'ELO4D21', '2026-10-08T16:45:04',
+                                numero_conteiner=CONTEINER_COM_ESPACO)),
+            PesagemVeiculo, CHAVE_PESAGEM)
+        assert rejeitados == []  # limpar separador não é rejeição
+        persiste_df(df_eventos, PesagemVeiculo, session)
+        pesagem = session.query(PesagemVeiculo).one()
+        assert pesagem.numeroConteiner == 'UETU5244953'
+        assert pesagem.placa == 'SVZ1I18'
+        assert pesagem.placaSemirreboque == 'ELO4D21'
+
+    def test_pesagem_conteiner_invalido_anula_campo(self):
+        df_eventos, rejeitados = processa_json(
+            lote(evento_pesagem(PLACA_VALIDA, 'ELO4D21',
+                                numero_conteiner=CONTEINER_12_CARACTERES)),
+            PesagemVeiculo, CHAVE_PESAGEM)
+        assert len(df_eventos) == 1
+        assert pd.isna(df_eventos.iloc[0]['numeroConteiner'])
+        assert [(r.nomeColuna, r.motivo, r.valorColuna) for r in rejeitados] == [
+            ('numeroConteiner', 'TAMANHO_EXCEDIDO', CONTEINER_12_CARACTERES)]
+        assert rejeitados[0].detalhe.endswith(ACAO_CAMPO_ANULADO)
+
+    def test_acesso_conteiner_invalido_anula_campo(self):
+        df_eventos, rejeitados = processa_json(
+            lote(evento_acesso('ABC1234', numero_conteiner='KOCU42073')),
+            AcessoVeiculo, CHAVE_ACESSO)
+        assert len(df_eventos) == 1
+        assert pd.isna(df_eventos.iloc[0]['numeroConteiner'])
+        assert [(r.nomeColuna, r.motivo) for r in rejeitados] == [
+            ('numeroConteiner', 'FORMATO_INVALIDO')]
+        assert rejeitados[0].detalhe.endswith(ACAO_CAMPO_ANULADO)
+
+    def test_acesso_minusculo_com_separadores_e_limpo(self):
+        df_eventos, rejeitados = processa_json(
+            lote(evento_acesso('ABC1234', numero_conteiner='kocu-420730.6')),
+            AcessoVeiculo, CHAVE_ACESSO)
+        assert df_eventos.iloc[0]['numeroConteiner'] == 'KOCU4207306'
+        assert rejeitados == []
+
+    def test_embarque_conteiner_invalido_rejeita_evento(self):
+        df_eventos, rejeitados = processa_json(
+            lote(evento_embarque(CONTEINER_12_CARACTERES)), EmbarqueDesembarque, CHAVE_EMBARQUE)
+        assert df_eventos.empty
+        assert [(r.nomeTabela, r.nomeColuna, r.motivo) for r in rejeitados] == [
+            ('apirecintos_embarquedesembarque', 'numeroConteiner', 'TAMANHO_EXCEDIDO')]
+        assert rejeitados[0].detalhe.endswith(ACAO_EVENTO_REJEITADO)
+
+    def test_embarque_com_espaco_e_limpo(self):
+        df_eventos, rejeitados = processa_json(
+            lote(evento_embarque(CONTEINER_COM_ESPACO)), EmbarqueDesembarque, CHAVE_EMBARQUE)
+        assert list(df_eventos['numeroConteiner']) == ['UETU5244953']
+        assert rejeitados == []
+
+    def test_embarque_carga_solta_sem_conteiner_e_aceito(self):
+        df_eventos, rejeitados = processa_json(
+            lote(evento_embarque(None)), EmbarqueDesembarque, CHAVE_EMBARQUE)
+        assert len(df_eventos) == 1
+        assert rejeitados == []
+
+    def test_inspecao_com_espaco_e_limpa(self):
+        df_eventos, rejeitados = processa_json(
+            lote(evento_inspecao(CONTEINER_COM_ESPACO)), InspecaoNaoInvasiva, CHAVE_INSPECAO)
+        assert list(df_eventos['numeroConteiner']) == ['UETU5244953']
+        assert rejeitados == []
+
+
+class TestTamanhoGenerico:
+    """Rede genérica contra o erro 1406 em qualquer coluna (EventoAPIBase._valida_tamanhos)."""
+
+    def test_coluna_auxiliar_sem_regra_e_anulada(self):
+        df_eventos, rejeitados = processa_json(
+            lote(evento_embarque(CONTEINER_VALIDO, viagem='1234567890AB')),
+            EmbarqueDesembarque, CHAVE_EMBARQUE)
+        assert len(df_eventos) == 1
+        assert pd.isna(df_eventos.iloc[0]['viagem'])
+        assert df_eventos.iloc[0]['numeroConteiner'] == CONTEINER_VALIDO
+        rejeitado, = rejeitados
+        assert rejeitado.nomeColuna == 'viagem'
+        assert rejeitado.valorColuna == '1234567890AB'
+        assert rejeitado.motivo == 'TAMANHO_EXCEDIDO'
+        assert rejeitado.detalhe == 'Esperado até 9 caracteres, recebido 12. ' + ACAO_CAMPO_ANULADO
+
+    def test_coluna_da_chave_unica_rejeita_evento(self):
+        df_eventos, rejeitados = processa_json(
+            lote(evento_acesso('ABC1234', tipo_operacao='XX')), AcessoVeiculo, CHAVE_ACESSO)
+        assert df_eventos.empty
+        rejeitado, = rejeitados
+        assert rejeitado.nomeColuna == 'tipoOperacao'
+        assert rejeitado.motivo == 'TAMANHO_EXCEDIDO'
+        assert rejeitado.detalhe.endswith(ACAO_EVENTO_REJEITADO)
+
+    def test_colunas_da_chave_unica_vem_da_tabela(self):
+        assert PesagemVeiculo._colunas_chave_unica() == {
+            'placa', 'dataHoraOcorrencia', 'dataHoraTransmissao'}
+        assert InspecaoNaoInvasiva._colunas_chave_unica() == {
+            'numeroConteiner', 'dataHoraOcorrencia'}
+
+    @pytest.mark.parametrize('classe', CLASSES_EVENTO)
+    def test_nenhum_texto_sai_maior_que_a_coluna(self, classe):
+        """Vale para toda coluna de texto de todo evento, inclusive as criadas no futuro."""
+        chave_unica = classe._colunas_chave_unica()
+        colunas = [coluna for coluna in classe.__table__.columns
+                   if isinstance(coluna.type, String) and coluna.name not in chave_unica]
+        evento = classe()
+        for coluna in colunas:
+            setattr(evento, coluna.name, 'X' * (coluna.type.length + 1))
+        rejeicoes = evento.valida_campos()
+        assert not any(rejeicao.rejeita_evento for rejeicao in rejeicoes)
+        assert {rejeicao.nomeColuna for rejeicao in rejeicoes} == {c.name for c in colunas}
+        assert all(getattr(evento, coluna.name) is None for coluna in colunas)
+
+    @pytest.mark.parametrize('classe', CLASSES_EVENTO)
+    def test_estouro_em_qualquer_coluna_da_chave_unica_rejeita_evento(self, classe):
+        for nome in classe._colunas_chave_unica():
+            coluna = classe.__table__.columns[nome]
+            if not isinstance(coluna.type, String):
+                continue
+            evento = classe()
+            setattr(evento, nome, 'X' * (coluna.type.length + 1))
+            assert [rejeicao.rejeita_evento for rejeicao in evento.valida_campos()] == [True]
+
+    def test_valor_no_limite_da_coluna_nao_e_tocado(self):
+        df_eventos, rejeitados = processa_json(
+            lote(evento_embarque(CONTEINER_VALIDO, viagem='123456789')),
+            EmbarqueDesembarque, CHAVE_EMBARQUE)
+        assert df_eventos.iloc[0]['viagem'] == '123456789'
+        assert rejeitados == []
+
+    def test_agendamento_nao_e_validado_nem_registrado(self):
+        df_eventos, rejeitados = processa_json(
+            lote(evento_acesso(PLACA_SEMIRREBOQUE_LIXO, operacao='G')),
+            AcessoVeiculo, CHAVE_ACESSO)
+        assert df_eventos.empty
         assert rejeitados == []
 
 

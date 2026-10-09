@@ -69,27 +69,66 @@ class EventoAPIBase(BaseRastreavel, BaseDumpable):
     # mapeado e retorna None se válido, ou (motivo, detalhe) se inválido. Duas políticas:
     #   _validadores       -> coluna de identidade do evento: evento inteiro rejeitado
     #   _validadores_campo -> coluna auxiliar: campo anulado (NULL) e evento mantido
-    # Nos dois casos a ocorrência é registrada em RegistroRejeitado. Subclasses sobrescrevem.
+    # Subclasses sobrescrevem. Além delas, sem declaração nenhuma, normaliza_textos (charset) e
+    # _valida_tamanhos (tamanho máximo) cobrem TODAS as colunas de texto de qualquer evento.
+    # Toda ocorrência é registrada em RegistroRejeitado.
     # ATENÇÃO: os nomes precisam conter '_' para não serem tratados como coluna por get_campos().
     _validadores = {}
     _validadores_campo = {}
 
     def valida_campos(self) -> List[Rejeicao]:
-        """Normaliza os textos e aplica _validadores e _validadores_campo aos campos já mapeados.
+        """Normaliza e valida os campos já mapeados.
+
+        Garantia ao final: nenhum texto do evento está fora do charset do banco nem é maior que
+        a sua coluna (erros MySQL 1366 e 1406, que derrubavam o lote inteiro).
 
         A ordem importa: primeiro normaliza_textos (homóglifos viram letras latinas e o texto fica
-        representável no charset do banco), depois os validadores, que são estritos a ASCII.
-        Campos auxiliares inválidos são anulados aqui mesmo. Se alguma Rejeicao tiver
-        rejeita_evento=True, o evento não deve ser persistido.
+        representável no charset do banco), depois os validadores declarados (_validadores e
+        _validadores_campo, estritos a ASCII) e por fim _valida_tamanhos, a rede genérica para as
+        colunas sem regra própria. Campos auxiliares inválidos são anulados aqui mesmo. Se alguma
+        Rejeicao tiver rejeita_evento=True, o evento não deve ser persistido.
 
         Returns: lista de Rejeicao. Vazia se o evento é válido e não precisou de correção.
         """
-        rejeicoes = self.normaliza_textos()
-        rejeicoes += self._aplica_validadores(self._validadores, ACAO_EVENTO_REJEITADO)
-        rejeicoes_campo = self._aplica_validadores(self._validadores_campo, ACAO_CAMPO_ANULADO)
-        for rejeicao in rejeicoes_campo:
-            setattr(self, rejeicao.nomeColuna, None)
-        return rejeicoes + rejeicoes_campo
+        normalizadas = self.normaliza_textos()
+        invalidas = self._aplica_validadores(self._validadores, ACAO_EVENTO_REJEITADO)
+        invalidas += self._aplica_validadores(self._validadores_campo, ACAO_CAMPO_ANULADO)
+        invalidas += self._valida_tamanhos(ignorar={rejeicao.nomeColuna for rejeicao in invalidas})
+        for rejeicao in invalidas:
+            if rejeicao.acao == ACAO_CAMPO_ANULADO:
+                setattr(self, rejeicao.nomeColuna, None)
+        return normalizadas + invalidas
+
+    def _valida_tamanhos(self, ignorar: set) -> List[Rejeicao]:
+        """Rede genérica contra o erro MySQL 1406 (Data too long), para TODAS as colunas de texto.
+
+        Compara cada valor com o tamanho declarado na coluna, sem regra por classe. Só atua em
+        valor que o banco recusaria, então não muda nada para eventos que já eram gravados.
+        Estouro em coluna da chave única rejeita o evento; nas demais, o campo é anulado e o
+        evento mantido.
+
+        Args:
+            ignorar: colunas já reprovadas por um validador declarado (evita registro em dobro)
+        """
+        chave_unica = self._colunas_chave_unica()
+        rejeicoes = []
+        for coluna in self.__table__.columns:
+            tamanho = getattr(coluna.type, 'length', None)
+            if not isinstance(coluna.type, String) or not tamanho or coluna.name in ignorar:
+                continue
+            valor = getattr(self, coluna.name, None)
+            if isinstance(valor, str) and len(valor) > tamanho:
+                detalhe = f'Esperado até {tamanho} caracteres, recebido {len(valor)}'
+                acao = ACAO_EVENTO_REJEITADO if coluna.name in chave_unica \
+                    else ACAO_CAMPO_ANULADO
+                rejeicoes.append(Rejeicao(coluna.name, valor, 'TAMANHO_EXCEDIDO', detalhe, acao))
+        return rejeicoes
+
+    @classmethod
+    def _colunas_chave_unica(cls) -> set:
+        """Colunas que identificam o evento: as que participam de UniqueConstraint da tabela."""
+        return {coluna.name for restricao in cls.__table__.constraints
+                if isinstance(restricao, UniqueConstraint) for coluna in restricao.columns}
 
     def normaliza_textos(self) -> List[Rejeicao]:
         """Normaliza TODAS as colunas de texto para o charset do banco (apirecintos_normalizacao).
@@ -155,11 +194,11 @@ def get_listaConteineresUld(o_kwargs: dict) -> Union[Tuple[str, bool, str, bool]
     """
     "estoura" objeto listaConteineresUld
 
-       Returns: numeroConteiner, ocrNumero, tipo, vazio
+       Returns: numeroConteiner (já limpo, ver limpa_numero_conteiner), ocrNumero, tipo, vazio
     """
     listaConteineresUld = o_kwargs.get('listaConteineresUld')
     if listaConteineresUld and isinstance(listaConteineresUld, list) and len(listaConteineresUld) > 0:
-        return listaConteineresUld[0].get('numeroConteiner'), \
+        return limpa_numero_conteiner(listaConteineresUld[0].get('numeroConteiner')), \
             listaConteineresUld[0].get('ocrNumero', False), \
             listaConteineresUld[0].get('tipo'), \
             listaConteineresUld[0].get('vazio', False)
@@ -305,6 +344,24 @@ REGEX_NUMERO_CONTEINER = re.compile(r'^[A-Z]{4}[0-9]{7}$')
 REGEX_PLACA = re.compile(r'^[A-Za-z0-9]+$')
 
 
+def limpa_numero_conteiner(numero):
+    """Padroniza o número de contêiner no mapeamento: só letras e dígitos, em maiúsculas.
+
+    'uetu 524495-3' -> 'UETU5244953'. Espaço, hífen e ponto são ruído de digitação, não erro:
+    limpar aqui evita perder um contêiner válido (e o erro 1406 pelos 12 caracteres). Ponto único
+    de limpeza para todos os eventos; o formato é conferido depois por valida_numero_conteiner.
+
+    Usa isalnum() Unicode de propósito, como alfanumeric_c: um homóglifo (М cirílico) precisa
+    chegar a EventoAPIBase.normaliza_textos para ser corrigido. Apagado aqui, sobraria um número
+    de 10 caracteres sem rastro.
+
+    Returns: número limpo; None se não sobrar nada; o próprio valor se não for texto
+    """
+    if not isinstance(numero, str):
+        return numero
+    return ''.join(c for c in numero if c.isalnum()).upper() or None
+
+
 def valida_numero_conteiner(numero) -> Optional[Tuple[str, str]]:
     """Valida o formato do número de contêiner: 4 letras maiúsculas + 7 dígitos (11 caracteres).
 
@@ -441,7 +498,9 @@ class AcessoVeiculo(EventoAPIBase):
     __tablename__ = 'apirecintos_acessosveiculo'
     __table_args__ = (UniqueConstraint('placa', 'operacao', 'tipoOperacao', 'dataHoraOcorrencia', 'dataHoraRegistro'),
                       )
-    _validadores_campo = {'placaSemirreboque': valida_placa}  # placa já é truncada no _mapeia
+    # placa não precisa de regra: já é truncada no _mapeia
+    _validadores_campo = {'placaSemirreboque': valida_placa,
+                          'numeroConteiner': valida_numero_conteiner}
     dataHoraRegistro = Column(DateTime(), index=True)
     operacao = Column(String(1), index=True)  # G - A*g*endamento, C - A*c*esso
     direcao = Column(String(1), index=True)  # E - Entrada, S - Saída
@@ -554,6 +613,7 @@ class EmbarqueDesembarque(EventoAPIBase):
     __tablename__ = 'apirecintos_embarquedesembarque'
     __table_args__ = (UniqueConstraint('numeroConteiner', 'dataHoraOcorrencia'),
                       )
+    _validadores = {'numeroConteiner': valida_numero_conteiner}
 
     viagem = Column(String(9), index=True)
     pesoBrutoManifesto = Column(Numeric(7, 2))
@@ -578,9 +638,7 @@ class EmbarqueDesembarque(EventoAPIBase):
         self.embarqueDesembarque = kwargs.get('embarqueDesembarque')
         self.cargaSolta = kwargs.get('cargaSolta')
         self.pesoBrutoBalanca = valida_peso(kwargs.get('pesoBrutoBalanca'), 99999.99)
-        numeroConteiner = kwargs.get('numeroConteiner')
-        if numeroConteiner:
-            self.numeroConteiner = ''.join([c for c in numeroConteiner if c.isalnum()])
+        self.numeroConteiner = limpa_numero_conteiner(kwargs.get('numeroConteiner'))
         self.taraConteiner = valida_peso(kwargs.get('taraConteiner'), 99999.99)
         self.tipoConteiner = kwargs.get('tipoConteiner')
         self.tipoDeclaracao, self.numeroDeclaracao = get_listaDeclaracaoAduaneira(kwargs)
@@ -598,7 +656,8 @@ class PesagemVeiculo(EventoAPIBase):
     __tablename__ = 'apirecintos_pesagensveiculo'
     __table_args__ = (UniqueConstraint('placa', 'dataHoraOcorrencia', 'dataHoraTransmissao'),)
     _validadores = {'placa': valida_placa}
-    _validadores_campo = {'placaSemirreboque': valida_placa}
+    _validadores_campo = {'placaSemirreboque': valida_placa,
+                          'numeroConteiner': valida_numero_conteiner}
     dataHoraTransmissao = Column(DateTime(), index=True)
     pesoBrutoBalanca = Column(Numeric(7, 2), index=True)
     pesoBrutoManifesto = Column(Numeric(7, 2))
@@ -712,6 +771,10 @@ def processa_json(texto: str, classeevento: Type[BaseDumpable],
         instancia = classeevento()
         instancia.processa_json(evento_json)
         if ('placa' in chave_unica) and (instancia.placa is None):
+            continue
+        if classeevento == AcessoVeiculo and instancia.operacao != 'C':
+            # Só Acessos (operação C) são persistidos (ver filtro ao final). Agendamentos não são
+            # validados, para não registrar rejeição de evento que nem seria gravado.
             continue
         rejeicoes = instancia.valida_campos()
         if rejeicoes:
