@@ -28,7 +28,7 @@ Ao investigar comportamento que não está neste repo, procurar nesses projetos 
 
 - `bhadrasana/main.py` — ponto de montagem da app Flask: cria `app`, conecta Mongo/SQL, registra todos os blueprints (`*_app(app)`), monta o menu de navegação (`Nav`).
 - `bhadrasana/routes/` — um arquivo por blueprint/"app" (ex.: `ovr.py`, `rvf.py`, `risco.py`, `apirecintos.py`, `cencomm.py`, `lista_apreensoes.py`, `operacoes_dashboard.py`, `assistentetg.py`...). **Este é o padrão a seguir para novas "apps": um blueprint próprio em `routes/`, registrado em `main.py`.**
-- `bhadrasana/models/` — modelos SQLAlchemy e managers de domínio (ex.: `ovrmanager.py`, `rvfmanager.py`, `ermodel.py`).
+- `bhadrasana/models/` — modelos SQLAlchemy e managers de domínio (ex.: `ovrmanager.py`, `rvfmanager.py`, `ermodel.py`). `navii_ficha.py` (17/10/2026) abre a Ficha de repressão na importação pelo card do **NAVI-I** — é chamado pelo **virasana** (`virasana/navii/ficha_navii.py`), não tem rota no Fichas; só aditivo, usa as regras do `ovrmanager` numa transação (ver o `CONTEXTO.md` do NAVI-I, no virasana). Armadilha: o `__init__` de `BaseRastreavel` (OVR, RVF, ImagemRVF, EventoOVR) descarta os argumentos nomeados, menos `user_name` — atribuir campo a campo.
 - `bhadrasana/forms/` — WTForms.
 - `bhadrasana/templates/` — Jinja2, estende `layout.html`/`new_base.html` (Bootstrap).
 - `bhadrasana/scripts/` — scripts de manutenção/importação standalone (ex.: `importa_tgs.py`, `exporta_para_impala_RD.py`). `fma_update.py` (cron diário) consulta as **FMAs eletrônicas** (Fichas de Mercadoria Abandonada, que os recintos são obrigados a informar) na API da Janela Única Portuária e abre automaticamente uma **Ficha OVR por FMA** (`tipooperacao = 0`, "Mercadoria Abandonada"; com CE, recinto, data de entrada e consignatário) para acompanhar o procedimento até a retomada pelo importador ou o perdimento. É a fonte oficial de **carga abandonada** do AJNA (útil ao ciclo de vida e ao risco, no virasana).
@@ -59,6 +59,16 @@ no Servidor. Regras:
 ```bash
 python -m pytest tests --disable-warnings
 ```
+
+Nesta máquina (Windows), a junção quebrada `bhadrasana2/ajna_commons` derruba a coleta e `tests/test_api_recintos_json.py`
+acessa a rede ao ser importado; use:
+
+```bash
+.bhadrasana-venv/Scripts/python.exe -m pytest tests -q --disable-warnings -p no:cacheprovider --ignore=ajna_commons --rootdir=tests --ignore=tests/test_api_recintos_json.py
+```
+
+Em 17/10/2026 a suíte já tinha 61 falhas antigas (a maioria `UNIQUE constraint failed: ovr_ovrs.id` em
+`test_unitarios_ovrmanager.py`), independentes das mudanças recentes — compare com essa linha de base.
 
 (equivalente ao `testenv` do [tox.ini](tox.ini), que também roda `coverage` e, em `testenv:check`, `flake8`/`bandit`). Os testes usam banco em memória e Mongo mockado — não tocam nas bases reais.
 
