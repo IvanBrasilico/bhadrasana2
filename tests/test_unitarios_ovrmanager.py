@@ -46,19 +46,33 @@ from typing import List, Tuple
 engine = create_engine('sqlite://')
 Session = sessionmaker(bind=engine)
 session = Session()
-metadata.create_all(engine)
-mercante.metadata.create_all(engine, [
+TABELAS_MERCANTE = [
     mercante.metadata.tables['itensresumo'],
     mercante.metadata.tables['conhecimentosresumo']
-])
+]
 
-create_tiposevento(session)
-create_tiposprocesso(session)
-create_flags(session)
-create_tipomercadoria(session)
-create_marcas(session)
 
-from .test_base import BaseTestCase
+def recria_banco():
+    """Banco novo e semeado para cada teste.
+
+    Os testes usam ids fixos (OVR id=1, ProcessoOVR id=1...) e só apagam o que criaram no fim:
+    um teste que falhasse antes do session.delete deixava a OVR 1 no banco e todos os
+    seguintes caíam em UNIQUE constraint failed: ovr_ovrs.id.
+    """
+    session.rollback()
+    session.close()  # esvazia o identity map
+    metadata.drop_all(engine)
+    mercante.metadata.drop_all(engine, TABELAS_MERCANTE)
+    metadata.create_all(engine)
+    mercante.metadata.create_all(engine, TABELAS_MERCANTE)
+    create_tiposevento(session)
+    create_tiposprocesso(session)
+    create_flags(session)
+    create_tipomercadoria(session)
+    create_marcas(session)
+
+
+from .test_base import BaseTestCase, instancia
 
 
 class OVRTestCase(BaseTestCase):
@@ -66,7 +80,6 @@ class OVRTestCase(BaseTestCase):
 
     params_usuario = {'cpf': '92368425187', 'nome': 'Tibério', 'password': 'senha', 'telegram': None, 'setor_id': '1',
                       'cargo': 0}
-    new_usuario = gera_objeto(Usuario(), session=session, params=params_usuario)
 
     params_ovr = {'id': 1, 'numero': '1020304050', 'ano': '2020', 'tipooperacao': 0,
                   'numeroCEmercante': '999999999999999', 'numerodeclaracao': '55555555555555555555',
@@ -82,6 +95,8 @@ class OVRTestCase(BaseTestCase):
 
     def setUp(self) -> None:
         super().setUp(session)
+        recria_banco()
+        self.new_usuario = gera_objeto(Usuario(), session=session, params=self.params_usuario)
 
     def debug(self) -> None:
         pass
@@ -386,7 +401,7 @@ class OVRTestCase(BaseTestCase):
     def test38_get_processo(self):
         new_ovr = gera_objeto(OVR(), session=session, params=self.params_ovr)
         new_ovr.user_name = new_ovr.responsavel_cpf
-        new_processo = ProcessoOVR(id=1, ovr_id=new_ovr.id, ovr=new_ovr, tipoprocesso_id=1, numero='9999888877',
+        new_processo = instancia(ProcessoOVR, id=1, ovr_id=new_ovr.id, ovr=new_ovr, tipoprocesso_id=1, numero='9999888877',
                                    numerolimpo='9999888877')
         processo = get_processo(session=session, processo_id=new_processo.id)
         assert processo is not None
@@ -396,7 +411,7 @@ class OVRTestCase(BaseTestCase):
     def test39_excluir_processo(self):
         new_ovr = gera_objeto(OVR(), session=session, params=self.params_ovr)
         new_ovr.user_name = new_ovr.responsavel_cpf
-        new_processo = ProcessoOVR(id=2, ovr_id=new_ovr.id, ovr=new_ovr, tipoprocesso_id=1, numero='9999888877',
+        new_processo = instancia(ProcessoOVR, id=2, ovr_id=new_ovr.id, ovr=new_ovr, tipoprocesso_id=1, numero='9999888877',
                                    numerolimpo='9999888877')
         new_processo.user_name = new_ovr.user_name
         session.add(new_processo)
@@ -411,7 +426,7 @@ class OVRTestCase(BaseTestCase):
         responsavel = '68068220291'
         responsavel_ovr = atribui_responsavel_ovr(session=session, ovr_id=new_ovr.id, responsavel=responsavel,
                                                   user_name=new_ovr.user_name)
-        new_evento = EventoOVR(id=9, ovr_id=new_ovr.id, ovr=new_ovr, tipoevento_id=2, fase=1,
+        new_evento = instancia(EventoOVR, id=9, ovr_id=new_ovr.id, ovr=new_ovr, tipoevento_id=2, fase=1,
                                motivo='um motivo', excluido=False, meramente_informativo=False)
         new_evento.user_name = responsavel
         session.add(new_evento)
@@ -812,7 +827,7 @@ class OVRTestCase(BaseTestCase):
         session.add(setor_pai)
         session.add(setor_filho1)
         session.add(setor_filho2)
-        new_ovr = OVR(id=1, numero='1020304050', ano='2020', tipooperacao=0,
+        new_ovr = instancia(OVR, id=1, numero='1020304050', ano='2020', tipooperacao=0,
                       numeroCEmercante='999999999999999', numerodeclaracao='55555555555555555555',
                       observacoes='', datahora=datetime.now(), dataentrada=datetime.now().date(), fase=0,
                       tipoevento_id=1, recinto_id=1, setor_id='30', setor=setor_filho1, responsavel_cpf='',
@@ -987,21 +1002,21 @@ class OVRTestCase(BaseTestCase):
         pass
 
     def test94_get_lista_docx(self):
-        modelo_docx_1 = ModeloDocx(id=1, filename='Nome do modelo', _id=None, fonte_docx_id=1)
+        modelo_docx_1 = instancia(ModeloDocx, id=1, filename='Nome do modelo', _id=None, fonte_docx_id=1)
         session.add(modelo_docx_1)
         lista_docx = get_lista_docx(session=session)
         assert len(lista_docx) == 1
         session.delete(modelo_docx_1)
 
     def test95_get_docx_choices(self):
-        modelo_docx_1 = ModeloDocx(id=1, filename='Nome do modelo', _id=None, fonte_docx_id=1)
+        modelo_docx_1 = instancia(ModeloDocx, id=1, filename='Nome do modelo', _id=None, fonte_docx_id=1)
         session.add(modelo_docx_1)
         docx_choices = get_docx_choices(session=session)
         self.assert_choices(docx_choices)
         session.delete(modelo_docx_1)
 
     def test96_get_docx_or_none(self):
-        modelo_docx_1 = ModeloDocx(id=1, filename='Nome do modelo', _id=None, fonte_docx_id=1)
+        modelo_docx_1 = instancia(ModeloDocx, id=1, filename='Nome do modelo', _id=None, fonte_docx_id=1)
         session.add(modelo_docx_1)
         docx = get_docx_or_none(session=session, docx_id=modelo_docx_1.id)
         assert docx is not None
@@ -1009,7 +1024,7 @@ class OVRTestCase(BaseTestCase):
         session.delete(docx)
 
     def test97_get_docx(self):
-        modelo_docx_1 = ModeloDocx(id=1, filename='Nome do modelo', _id=None, fonte_docx_id=1)
+        modelo_docx_1 = instancia(ModeloDocx, id=1, filename='Nome do modelo', _id=None, fonte_docx_id=1)
         session.add(modelo_docx_1)
         docx = get_docx(session=session, docx_id=modelo_docx_1.id)
         assert docx is not None

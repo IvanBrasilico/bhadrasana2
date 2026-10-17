@@ -39,19 +39,28 @@ from typing import List, Tuple
 engine = create_engine('sqlite://')
 Session = sessionmaker(bind=engine)
 session = Session()
-metadata.create_all(engine)
-mercante.metadata.create_all(engine, [
+TABELAS_MERCANTE = [
     mercante.metadata.tables['itensresumo'],
     mercante.metadata.tables['conhecimentosresumo']
-])
+]
 
-create_tiposevento(session)
-create_tiposprocesso(session)
-create_flags(session)
-create_tipomercadoria(session)
-create_marcas(session)
 
-from .test_base import BaseTestCase
+def recria_banco():
+    """Banco novo e semeado para cada teste (ids fixos: ver test_unitarios_ovrmanager)."""
+    session.rollback()
+    session.close()  # esvazia o identity map
+    metadata.drop_all(engine)
+    mercante.metadata.drop_all(engine, TABELAS_MERCANTE)
+    metadata.create_all(engine)
+    mercante.metadata.create_all(engine, TABELAS_MERCANTE)
+    create_tiposevento(session)
+    create_tiposprocesso(session)
+    create_flags(session)
+    create_tipomercadoria(session)
+    create_marcas(session)
+
+
+from .test_base import BaseTestCase, instancia
 
 
 class OVRTestCase(BaseTestCase):
@@ -74,6 +83,7 @@ class OVRTestCase(BaseTestCase):
 
     def setUp(self) -> None:
         super().setUp(session)
+        recria_banco()
 
     def debug(self) -> None:
         pass
@@ -169,6 +179,8 @@ class OVRTestCase(BaseTestCase):
 
     # Verifica a existência de uma OVR
     def test13_get_ovr_responsavel(self):
+        # O responsável precisa existir; antes vinha do test10, que não o apagava
+        self.create_usuario(self.params_usuario['cpf'], self.params_usuario['nome'])
         new_ovr = gera_objeto(OVR(), session=session, params=self.params_ovr)
         ovr_responsavel = get_ovr_responsavel(session, new_ovr.responsavel_cpf)
         assert ovr_responsavel is not None
@@ -214,6 +226,8 @@ class OVRTestCase(BaseTestCase):
         session.commit()
 
     def test18_get_ovr_visao_usuario(self):
+        # O responsável precisa existir; antes vinha do test10, que não o apagava
+        self.create_usuario(self.params_usuario['cpf'], self.params_usuario['nome'])
         new_ovr = gera_objeto(OVR(), session=session, params=self.params_ovr)
         new_ovr.user_name = new_ovr.responsavel_cpf
         ovr_visao_usuario = get_ovr_visao_usuario(session=session, datainicio=new_ovr.datahora, datafim=datetime.now(),
@@ -369,7 +383,7 @@ class OVRTestCase(BaseTestCase):
     def test38_get_processo(self):
         new_ovr = gera_objeto(OVR(), session=session, params=self.params_ovr)
         new_ovr.user_name = new_ovr.responsavel_cpf
-        new_processo = ProcessoOVR(id=1, ovr_id=new_ovr.id, ovr=new_ovr, tipoprocesso_id=1, numero='9999888877',
+        new_processo = instancia(ProcessoOVR, id=1, ovr_id=new_ovr.id, ovr=new_ovr, tipoprocesso_id=1, numero='9999888877',
                                     numerolimpo='9999888877')
         processo = get_processo(session=session, processo_id=new_processo.id)
         assert processo is not None
@@ -379,7 +393,7 @@ class OVRTestCase(BaseTestCase):
     def test39_excluir_processo(self):
         new_ovr = gera_objeto(OVR(), session=session, params=self.params_ovr)
         new_ovr.user_name = new_ovr.responsavel_cpf
-        new_processo = ProcessoOVR(id=2, ovr_id=new_ovr.id, ovr=new_ovr, tipoprocesso_id=1, numero='9999888877',
+        new_processo = instancia(ProcessoOVR, id=2, ovr_id=new_ovr.id, ovr=new_ovr, tipoprocesso_id=1, numero='9999888877',
                                    numerolimpo='9999888877')
         new_processo.user_name = new_ovr.user_name
         session.add(new_processo)
@@ -394,7 +408,7 @@ class OVRTestCase(BaseTestCase):
         responsavel = '68068220291'
         responsavel_ovr = atribui_responsavel_ovr(session=session, ovr_id=new_ovr.id, responsavel=responsavel,
                                                   user_name=new_ovr.user_name)
-        new_evento = EventoOVR(id=9, ovr_id=new_ovr.id, ovr=new_ovr, tipoevento_id=2, fase=1,
+        new_evento = instancia(EventoOVR, id=9, ovr_id=new_ovr.id, ovr=new_ovr, tipoevento_id=2, fase=1,
                                 motivo='um motivo', excluido=False, meramente_informativo=False)
         new_evento.user_name = responsavel
         session.add(new_evento)

@@ -1344,17 +1344,15 @@ def ovr_app(app):
         alguma referência ao contêiner.
         """
         session = app.config.get('dbsession')
-        mongodb = app.config['mongodb']
         try:
             numerolote = request.form['numerolote']
-            datafim = datetime.strftime(datetime.today(), '%Y-%m-%d')
-            datainicio = datetime.strftime(
-                datetime.today() - timedelta(days=180), '%Y-%m-%d')
+            # Mesmo intervalo de antes (da meia-noite de 180 dias atrás à de hoje); desde
+            # 07/03/2025 (ebaa971) a função recebe número e datas, e não mais um dict.
+            datafim = datetime.combine(date.today(), datetime.min.time())
+            datainicio = datafim - timedelta(days=180)
             rvfs, ovrs, infoces, dues, eventos = \
-                consulta_container_objects({'numerolote': numerolote,
-                                            'datainicio': datainicio,
-                                            'datafim': datafim},
-                                           session, mongodb, limit=10)
+                consulta_container_objects(session, numerolote,
+                                           datainicio, datafim, limit=10)
         except Exception as err:
             logger.error(err, exc_info=True)
             return 'Erro! Detalhes no log da aplicação.\n' + str(err)

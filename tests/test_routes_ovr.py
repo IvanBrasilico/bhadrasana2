@@ -1,5 +1,5 @@
 import sys
-from datetime import date
+from datetime import date, timedelta
 
 from virasana.integracao.mercante import mercantealchemy
 
@@ -14,7 +14,7 @@ sys.path.append('../virasana')
 sys.path.append('../ajna_docs/commons')
 sys.path.insert(0, '../ajna_api')
 
-from tests.app_creator import app, session, drop_tables, engine
+from tests.app_creator import app, session, drop_tables, engine, recria_banco
 from bhadrasana.models import Setor, Usuario, PerfilUsuario, get_perfisusuario, gera_objeto
 from bs4 import BeautifulSoup
 from bhadrasana.models.laudo import Empresa
@@ -95,13 +95,18 @@ def create_empresas(session):
     session.commit()
 
 
-create_setores(session)
-create_perfis(session)
-create_usuarios(session)
-create_empresas(session)
-
-
 class OVRAppTestCase(BaseTestCase):
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        # Banco do app_creator é compartilhado com outros módulos: semear aqui, e não na
+        # importação (que roda na coleta, antes dos testes dos outros módulos).
+        # test_z01/test_z02 apagam tabelas de propósito: precisam continuar por último.
+        recria_banco()
+        create_setores(session)
+        create_perfis(session)
+        create_usuarios(session)
+        create_empresas(session)
 
     def render_page(self, content):
         with open('saida_tests.html', 'w') as fileout:
@@ -143,12 +148,15 @@ class OVRAppTestCase(BaseTestCase):
         assert b'erika' in login.data
         recinto = self.create_recinto('Wonderland')
         self.session.refresh(recinto)
+        # Datas relativas a hoje: o aviso "Empresa (mostrando 6 meses...)" da Ficha só
+        # considera Fichas recentes (routes/ovr.py, timedelta(days=1230)); datas fixas de
+        # 2021 saíram da janela com o passar do tempo.
         params = {'tipooperacao': 'Mercadoria Abandonada',
                   'numeroCEmercante': 'CE-123456789AAB',
                   'cnpj_fiscalizado': '04175124000169',
                   'numerodeclaracao': '111222333444',
                   'recinto_id': recinto.id,
-                  'adata': '2021-01-01',
+                  'adata': (date.today() - timedelta(days=30)).isoformat(),
                   'ahora': '13:15'}
         ovr1 = self.create_OVR(params, 'erika')
         self.session.refresh(ovr1)
@@ -200,7 +208,7 @@ class OVRAppTestCase(BaseTestCase):
                   'cnpj_fiscalizado': '04175124000169',
                   'numerodeclaracao': '111222333444',
                   'recinto_id': recinto.id,
-                  'adata': '2021-01-14',
+                  'adata': (date.today() - timedelta(days=17)).isoformat(),
                   'ahora': '09:40'}
         ovr2 = self.create_OVR(params, 'usuarioA1')
         self.session.refresh(ovr2)

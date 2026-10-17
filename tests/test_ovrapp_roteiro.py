@@ -9,13 +9,21 @@ from datetime import datetime, timedelta, date
 from bs4 import BeautifulSoup
 import virasana.integracao.mercante.mercantealchemy as mercante
 from bhadrasana.models.ovrmanager import get_ovr
-from tests.app_creator import app, session, create_usuarios, create_tables, create_setores, engine
+from tests.app_creator import app, session, create_usuarios, create_tables, create_setores, engine, \
+    recria_banco
 from bhadrasana.models.ovr import OVR, \
     Relatorio, RoteiroOperacaoOVR
 from .test_base import BaseTestCase
 
 
 class OVRAppTestCase(BaseTestCase):
+    """Roteiro: os testes rodam em ordem alfabética e cada passo usa o estado do anterior
+    (a ficha 1 do test_a01a, a RVF programada no test_a03...). Por isso o banco é limpo
+    por classe, não por teste."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        recria_banco()
 
     def setUp(self) -> None:
         super().setUp(session)
@@ -109,6 +117,9 @@ class OVRAppTestCase(BaseTestCase):
         self.login('ivan', 'ivan')
         text, status_code = self.get_consulta_container_text('A1')
         assert status_code == 200
+        # A rota responde 200 também no erro; de 03/2025 a 10/2026 respondia só
+        # "Erro! ... consulta_container_objects() missing 1 required positional argument"
+        assert 'Erro!' not in text
         assert '1234' in text
         text, status_code = self.get_consulta_container_text('A2')
         assert status_code == 200
@@ -211,7 +222,10 @@ class OVRAppTestCase(BaseTestCase):
                    'recinto_id': 'None',
                    'tipoevento_id': 'None',
                    'flag_id': 'None',
-                   'infracao_id': 'None'}
+                   'infracao_id': 'None',
+                   # O navegador envia a 1ª opção ('None', 'Selecione'); sem o campo, o form
+                   # usa default=-1 e get_ovr_filtro passa a filtrar ResultadoOVR == -1.
+                   'tiporesultado_id': 'None'}
         rv = self.app.post('/pesquisa_ovr', data=payload, follow_redirects=True)
         assert rv.status_code == 200
         assert b'152005079623267' in rv.data

@@ -12,6 +12,19 @@ import virasana.integracao.mercante.mercantealchemy as mercante
 from bhadrasana.models.ovrmanager import get_usuarios, cadastra_ovr, get_recintos
 
 
+def instancia(classe, **campos):
+    """Cria o modelo atribuindo campo a campo.
+
+    Os modelos que herdam de BaseRastreavel (OVR, EventoOVR, ProcessoOVR, ModeloDocx...)
+    ignoram os kwargs do construtor desde 18/07/2023 (commit 34ede82; só user_name é lido):
+    OVR(id=1, setor_id='30') cria um objeto vazio.
+    """
+    objeto = classe()
+    for campo, valor in campos.items():
+        setattr(objeto, campo, valor)
+    return objeto
+
+
 class BaseTestCase(unittest.TestCase):
 
     def setUp(self, session) -> None:

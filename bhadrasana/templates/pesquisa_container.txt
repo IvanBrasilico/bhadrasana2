@@ -40,7 +40,7 @@ DUEs
 {% for due in dues %}
     {% if due %}
     Número: {{ due.numero_due }}
-    País Importador: {{ due.nome_pais_importador') }} Canal: 'Não implementado' Data Registro:
+    País Importador: {{ due.nome_pais_importador }} Canal: 'Não implementado' Data Registro:
     {{ due.data_registro_due }}
     Exportador: {{ due.ni_declarante }} - 'Implementar nome declarante'
     Recinto: {% if due %} 'Implementar recintoAduaneiroDespacho.nome'
