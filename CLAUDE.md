@@ -80,7 +80,7 @@ O usuário está adicionando novas "apps" ao sistema Fichas, mas **não** quer n
 - Evitar mexer em infraestrutura compartilhada (`main.py`, `layout.html`/`new_base.html`, `views.py`, autenticação, modelos usados pelo Fichas legado) sem necessidade explícita — e quando for necessário, tratar como mudança de maior risco e confirmar com o usuário antes.
 - Não fazer upgrade de dependências centrais (Flask, Werkzeug, SQLAlchemy) como efeito colateral de outra tarefa.
 - Existe ambiente de homologação separado ([wsgi_staging.py](wsgi_staging.py), variáveis `*_HOM`, montado em `/bhadrasana2_hom`) — preferir validar mudanças de maior risco por ali antes de produção.
-- Rodar a suíte de testes antes de considerar uma mudança pronta.
+- Rodar os testes afetados antes de considerar uma mudança pronta e oferecer a suíte completa (ver o workflow abaixo).
 
 ## Planos futuros (NÃO fazer agora, só quando solicitado explicitamente)
 
@@ -93,4 +93,9 @@ Essas migrações são objetivos de médio/longo prazo. Não iniciar trabalho ne
 
 - Para mudanças não-triviais, ou que toquem código/templates compartilhados, propor um plano antes de editar.
 - Novas funcionalidades ("apps") devem ser isoladas: blueprint próprio, templates próprios, e reaproveitar models existentes só por leitura/consulta quando fizer sentido — evitar acoplar o novo código às entranhas do Fichas legado.
-- Rodar `pytest` (e `flake8`/`bandit` quando pertinente) antes de dar uma tarefa como concluída.
+- Rodar `pytest` (e `flake8`/`bandit` quando pertinente) antes de dar uma tarefa como concluída — **só os testes
+  necessários** (pedido do usuário, 22/10/2026): numa mudança localizada, os arquivos de teste da área
+  (`pytest tests/test_x.py ...`), não a suíte inteira. Ao terminar, dizer o que rodou e **oferecer** a suíte
+  completa — não rodar sem o usuário aceitar, salvo mudança ampla ou em código compartilhado. Mudança no que o
+  virasana importa daqui (ex.: `bhadrasana/models/apirecintos.py`, `navii_ficha.py`) afeta o gate do virasana
+  (`python qualidade_navii.py`, no repo virasana, que só enxerga as alterações do próprio repo) — oferecer também.
