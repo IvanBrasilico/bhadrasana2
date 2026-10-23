@@ -6,6 +6,8 @@
 
 **Fichas está em produção, em uso ativo, e em desenvolvimento incremental contínuo.** Este não é um projeto greenfield nem um protótipo — mudanças aqui afetam um sistema real em operação.
 
+**Nome do sistema (23/10/2026):** o AJNA foi rebatizado **NAVI** — módulos **NAVI-I** (importação), **NAVI-E** (exportação) e o Fichas como **Navi-Fichas** (decidido pelo usuário). Grafia em maiúsculas, decisão do usuário. Em texto NOVO para o usuário (títulos, marcas, manual, relatórios) usar "NAVI", nunca "AJNA". O legado com "AJNA" (`layout.html`/`new_base.html`, ~37 templates daqui e ~29 do virasana, textos históricos) fica como está por enquanto, decisão do usuário: só mexer com novo pedido. Identificadores técnicos (repositórios, `ajna_commons`, `ajna_docs`, URL `/ajna/` do manual, programas do supervisor já em produção) não mudam sem pedido explícito.
+
 ## Stack atual
 
 - Flask 2.3.3, Werkzeug 3.1.3, SQLAlchemy 1.4.54, pandas 2.3.3 (ver [setup.py](setup.py) — é a fonte confiável; **não confiar em [versoes.txt](versoes.txt)**, que é um dump antigo/corrompido de outro ambiente).
