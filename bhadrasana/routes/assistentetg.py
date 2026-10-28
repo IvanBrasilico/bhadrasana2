@@ -216,6 +216,15 @@ def assistentetg_app(app):
         try:
             planilha = request.files['planilha']
             df = pd.read_excel(planilha)
+            colunas = [remove_accents2(str(c)) for c in df.columns]
+            faltam = [c for c in ('item', 'descricao', 'quantidade', 'unidade')
+                      if c not in colunas]
+            if faltam:
+                flash('Planilha fora do padrão: não encontrei a(s) coluna(s) "{}". '
+                      'A planilha deve ter, na primeira aba e na primeira linha, as colunas '
+                      '"item", "descrição", "quantidade" e "unidade" (arquivo .xlsx).'
+                      .format('", "'.join(faltam)))
+                return render_template('assistente_tg.html', oform=FiltroTGForm())
             df_out = monta_planilha(df, 5)
             out_filename = 'TG ' + planilha.filename
             df_out.to_excel(os.path.join(get_user_save_path(), out_filename), index=False)
