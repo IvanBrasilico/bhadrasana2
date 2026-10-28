@@ -81,9 +81,10 @@ def evento_pesagem(placa, placa_semirreboque, data_hora_ocorrencia='2026-10-01T1
     }
 
 
-def evento_acesso(placa_semirreboque, nome_motorista='ROBERT GABRIEL COFFANI CRESPO',
+def evento_acesso(placa_semirreboque, nome_motorista='FULANO DE TAL FICTICIO SANTOS',
                   numero_conteiner='KOCU4207306', operacao='C', tipo_operacao='I'):
-    """Evento tipo 1 (AcessoVeiculo), com os valores do caso real do recinto 8931404."""
+    """Evento tipo 1 (AcessoVeiculo), com os valores do caso real do recinto 8931404 (CPF, CNPJ e nome
+    anonimizados: fictícios, com dígito verificador válido)."""
     return {
         'dadosTransmissao': {'tipoEvento': 1, 'dataHoraTransmissao': '2026-10-05T01:14:53'},
         'jsonOriginal': {
@@ -95,8 +96,8 @@ def evento_acesso(placa_semirreboque, nome_motorista='ROBERT GABRIEL COFFANI CRE
             'direcao': 'S',
             'placa': 'GIA6H99',
             'ocrPlaca': True,
-            'cnpjTransportador': '08011564000131',
-            'motorista': {'cpf': '45886730842', 'nome': nome_motorista},
+            'cnpjTransportador': '45494985000197',
+            'motorista': {'cpf': '03371585417', 'nome': nome_motorista},
             'listaConteineresUld': [{'numeroConteiner': numero_conteiner,
                                      'ocrNumero': True, 'tipo': '45G1'}],
             'listaSemirreboque': [{'placa': placa_semirreboque, 'ocrPlaca': True}],
