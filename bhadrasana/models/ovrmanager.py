@@ -1486,7 +1486,8 @@ def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
                     for campo in campos_faltantes:
                         alternativas = ', '.join(de_para[campo])
                         alertas[campo] = f'Campo {campo}({alternativas}) não encontrado.'
-            if row.get('descricao') is None:
+            descricao = row.get('descricao')
+            if descricao is None or str(descricao).strip() in ('', '-', '#REF!'):
                 logger.info('Abortando linha {} da planilha {}'
                             'devido descrição vazia'.format(index, lfilename))
                 conta_linhas_puladas += 1
@@ -1564,6 +1565,8 @@ def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
                 'Erro: %s' % str(err))
         else:
             raise KeyError('Erro na coluna {} linha {}'.format(str(err), index))
+    except ValueError as err:
+        raise ValueError('Linha {} da planilha: valor não numérico ({})'.format(index + 2, err))
 
 class TipoPlanilha(Enum):
     Safira = 0
