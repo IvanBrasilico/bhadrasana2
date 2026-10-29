@@ -8,6 +8,20 @@
 
 **Nome do sistema (23/10/2026):** o AJNA foi rebatizado **NAVI** — módulos **NAVI-I** (importação), **NAVI-E** (exportação) e o Fichas como **Navi-Fichas** (decidido pelo usuário). Grafia em maiúsculas, decisão do usuário. Em texto NOVO para o usuário (títulos, marcas, manual, relatórios) usar "NAVI", nunca "AJNA". O legado com "AJNA" (`layout.html`/`new_base.html`, ~37 templates daqui e ~29 do virasana, textos históricos) fica como está por enquanto, decisão do usuário: só mexer com novo pedido. Identificadores técnicos (repositórios, `ajna_commons`, `ajna_docs`, URL `/ajna/` do manual, programas do supervisor já em produção) não mudam sem pedido explícito.
 
+**NAVI — Navegador Analítico de Vigilância Inteligente.** Os módulos, nas palavras do usuário (29/10/2026):
+
+- **NAVI-I** — análise de risco, imagens de escaneamento e logística, com foco na importação (no virasana).
+- **NAVI-E** — análise de risco, imagens de escaneamento e logística, com foco na exportação, e controle do COV.
+- **Navi-Fichas** — controle do andamento das ações fiscais e controle de carga (**este repositório**).
+- **NAVI-Dados** — coleção de APIs e scripts que alimentam os dados corporativos usados pelos sistemas: dados de
+  sistemas externos em vários namespaces (Pucomex DUE, Mercante, API Recintos, CNPJ, CPF...); repositório `../navi-dados`.
+
+**Padrão de todos os módulos** (usuário, 29/10/2026): testes abrangentes, com cobertura medida; boas práticas — gate
+de qualidade (pytest com coverage, flake8, bandit, radon) e CI/CD (o GitLab interno não tem runner: o gate roda local e
+no `tox`, no modelo do `qualidade_navii.py` do virasana); e manual do usuário em site MkDocs (`ajna_docs/docs2.0`,
+publicado em `/ajna/`). Funcionalidade nova só está pronta com testes, gate e manual atualizado. Aqui o gate é o
+`tox` (ver "Como rodar os testes"), comparado com a linha de base das falhas antigas.
+
 ## Stack atual
 
 - Flask 2.3.3, Werkzeug 3.1.3, SQLAlchemy 1.4.54, pandas 2.3.3 (ver [setup.py](setup.py) — é a fonte confiável; **não confiar em [versoes.txt](versoes.txt)**, que é um dump antigo/corrompido de outro ambiente).
