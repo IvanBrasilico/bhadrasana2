@@ -13,6 +13,7 @@
                     <th style="max-width: 50px;">Unidade</th>
                     <th style="max-width: 50px;">Valor</th>
                     <th style="max-width: 50px;">NCM</th>
+                    <th style="max-width: 70px;"></th>
                     <th style="max-width: 50px;">
                         <button id="btn_excluir_todos_itens" type="button"
                                 class="btn btn-danger form-control"
@@ -26,23 +27,30 @@
                 <tr>
                     <td><a href="lista_itemtg?tg_id={{itemtg.tg_id}}&item_id={{itemtg.id}}">{{loop.index}}</a></td>
                     <td style="word-wrap: break-word; max-width: 500px; min-width: 400px;">
-                        <input class="form-control" type="text"
+                        <input class="form-control" type="text" id="descricao_{{ itemtg.id }}"
                                value="{{ itemtg.descricao }}"
                                onkeydown="do_update(event, {{itemtg.id}}, 'descricao', this.value)">
                     </td>
                     <td style="max-width: 40px;">
-                        <input class="form-control" type="text" step="any"
+                        <input class="form-control" type="text" step="any" id="qtde_{{ itemtg.id }}"
                                value="{{ itemtg.qtde }}"
-                               onkeydown="do_update(event, {{'%.2f' % itemtg.id}}, 'qtde', this.value)">
+                               onkeydown="do_update(event, {{ itemtg.id }}, 'qtde', this.value)">
                     </td>
                     <td style="max-width: 50px;">{{ itemtg.get_unidadedemedida }}</td>
                     <td style="max-width: 60px;"><input class="form-control" type="text" step="any"
+                                                        id="valor_{{ itemtg.id }}"
                                                         value="{{ itemtg.valor|moeda }}"
-                                                        onkeydown="do_update(event, {{ '%.2f' % itemtg.id}}, 'valor', this.value)">
+                                                        onkeydown="do_update(event, {{ itemtg.id }}, 'valor', this.value)">
                     </td>
                     <td style="max-width: 60px;"><input class="form-control" type="text"
+                                                        id="ncm_{{ itemtg.id }}"
                                                         value="{{ itemtg.ncm }}"
                                                         onkeydown="do_update(event, {{itemtg.id}}, 'ncm', this.value)">
+                    </td>
+                    <td style="max-width: 70px;">
+                        <button type="button" class="btn btn-primary form-control"
+                                onclick="atualiza_itemtg({{ itemtg.id }})">atualizar
+                        </button>
                     </td>
                     <td style="max-width: 70px;">
                         <button id="btn_excluir" type="button" class="btn btn-danger form-control"
@@ -163,17 +171,32 @@
 </div>
 {% endblock %} {% block scripts %} {{super()}}
 <script>
+    function erro_edicao_itemtg(xhr) {
+        var erro = (xhr.responseJSON && xhr.responseJSON.error) || xhr.statusText;
+        alert('Erro ao atualizar o item: ' + erro);
+    }
+    // Botão "atualizar": envia os campos da linha de uma vez e recarrega a tela
+    function atualiza_itemtg(id){
+        $.getJSON('edita_itemtg', {
+            id: id,
+            descricao: $('#descricao_' + id).val(),
+            qtde: $('#qtde_' + id).val(),
+            valor: $('#valor_' + id).val(),
+            ncm: $('#ncm_' + id).val()
+        }).done(function() { window.location.reload(); })
+          .fail(erro_edicao_itemtg);
+    }
+    // Enter na célula: atualiza só aquele campo
     function do_update(event, id, campo, value){
       var key = event.which || event.keyCode;
       if (key == 13){
-        console.log(value)
+        event.preventDefault();
         $.getJSON('edita_itemtg', {
          id: id,
          campo: campo,
          valor: value
-        }, function(response) {
-            console.log(response)
-        });
+        }).done(function() { window.location.reload(); })
+          .fail(erro_edicao_itemtg);
       }
     }
     function exporta_planilhatg(formato) {

@@ -1130,6 +1130,38 @@ def cadastra_itemtg(session, params: dict) -> ItemTG:
     return item_tg
 
 
+def atualiza_campos_itemtg(session, itemtg_id, campos: dict) -> ItemTG:
+    """Atualiza só os campos informados de um ItemTG existente (edição na tela de itens).
+
+    Aceita descricao, qtde, valor e ncm. Quantidade e valor passam por normaliza_valor_br
+    (formato brasileiro ou inglês). Descrição, quantidade e valor não podem ficar em branco.
+    Recalcula o total do TG ao final.
+    """
+    itemtg = get_itemtg(session, itemtg_id)
+    if itemtg is None or itemtg.id is None:
+        raise KeyError(f'Item {itemtg_id} não encontrado')
+    permitidos = ('descricao', 'qtde', 'valor', 'ncm')
+    desconhecidos = [campo for campo in campos if campo not in permitidos]
+    if desconhecidos:
+        raise KeyError(f'Campo(s) não editável(is): {", ".join(desconhecidos)}')
+    try:
+        for campo, valor in campos.items():
+            texto = '' if valor is None else str(valor).strip()
+            if campo in ('descricao', 'qtde', 'valor') and texto == '':
+                raise ValueError(f'O campo {campo} não pode ficar em branco')
+            if campo in ('qtde', 'valor'):
+                setattr(itemtg, campo, normaliza_valor_br(texto))
+            else:
+                setattr(itemtg, campo, texto or None)
+        session.add(itemtg)
+        session.commit()
+    except Exception as err:
+        session.rollback()
+        raise err
+    atualiza_valortotal_tg(session, itemtg.tg_id)
+    return itemtg
+
+
 def lista_itemtg(session, tg_id: str) -> List[ItemTG]:
     try:
         tg_id = int(tg_id)

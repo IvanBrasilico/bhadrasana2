@@ -28,7 +28,8 @@ from bhadrasana.models.ovr import OVR, OKRObjective, faseOVR
 from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_ovr_filtro, gera_eventoovr, gera_processoovr, get_tipos_processo, lista_itemtg, \
     get_itemtg, get_recintos, \
-    cadastra_itemtg, get_usuarios, atribui_responsavel_ovr, lista_tgovr, get_tgovr, \
+    cadastra_itemtg, atualiza_campos_itemtg, get_usuarios, atribui_responsavel_ovr, \
+    lista_tgovr, get_tgovr, \
     cadastra_tgovr, get_ovr_responsavel, Setor, importa_planilha_tg, exporta_planilhaovr, \
     get_tiposmercadoria_choice, \
     inclui_flag_ovr, exclui_flag_ovr, get_flags, informa_lavratura_auto, \
@@ -1007,12 +1008,16 @@ def ovr_app(app):
         try:
             id = request.args.get('id')
             campo = request.args.get('campo')
-            valor = request.args.get('valor')
-            if cadastra_itemtg(session, {'id': id, campo: valor}) is None:
-                flash('Os campos de preenchimentos obrigatório estão em branco!')
+            if campo:  # Enter na célula: um campo por chamada (id, campo, valor)
+                campos = {campo: request.args.get('valor')}
+            else:  # botão "atualizar": os campos da linha
+                campos = {chave: request.args.get(chave)
+                          for chave in ('descricao', 'qtde', 'valor', 'ncm')
+                          if request.args.get(chave) is not None}
+            atualiza_campos_itemtg(session, id, campos)
         except Exception as err:
             logger.error(err, exc_info=True)
-            return {'error': str(err), 'msg': 'Erro!'}, 500
+            return {'error': str(err), 'msg': 'Erro!'}, 400
         return {'msg': 'Modificado com sucesso'}, 200
 
     @app.route('/exclui_itemtg', methods=['GET'])
