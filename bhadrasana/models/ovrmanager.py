@@ -13,6 +13,7 @@ sys.path.insert(0, '../ajna_api')
 
 from collections import OrderedDict, defaultdict
 from datetime import timedelta, datetime
+from decimal import Decimal, InvalidOperation
 from enum import Enum
 from typing import List, Tuple, Set
 
@@ -909,10 +910,34 @@ def gera_processoovr(session, params) -> ProcessoOVR:
                        session, params)
 
 
+def normaliza_valor_br(texto) -> Decimal:
+    """Converte o valor digitado em Decimal, no formato brasileiro ou inglês.
+
+    Aceita 26.663,49 / 26663,49 / R$ 26.663,49 (brasileiro) e 26663.49 / 26,663.49
+    (inglês), decidindo pelo último separador. Em branco ou inválido levanta ValueError.
+    """
+    s = str(texto if texto is not None else '').replace('R$', '').strip()
+    if s == '':
+        raise ValueError('Valor não informado. Use o formato 26663,49')
+    ultimo = max(s.rfind(','), s.rfind('.'))
+    if ultimo >= 0 and s[ultimo] == ',':  # decimal com vírgula: brasileiro
+        s = s.replace('.', '').replace(',', '.')
+    else:  # decimal com ponto: inglês
+        s = s.replace(',', '')
+    try:
+        valor = Decimal(s)
+    except InvalidOperation:
+        raise ValueError(f'Valor inválido: "{texto}". Use o formato 26663,49')
+    if not valor.is_finite():
+        raise ValueError(f'Valor inválido: "{texto}". Use o formato 26663,49')
+    return valor
+
+
 @mesmo_responsavel
 def gera_resultadoovr(session, params) -> ResultadoOVR:
     ovr = get_ovr_one(session, params['ovr_id'])
     params['cpf_auditor'] = ovr.cpfauditorresponsavel
+    params['valor'] = normaliza_valor_br(params.get('valor'))
     return gera_objeto(ResultadoOVR(),
                        session, params)
 
