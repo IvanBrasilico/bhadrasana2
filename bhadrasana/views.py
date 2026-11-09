@@ -219,7 +219,7 @@ def index():
         fig = make_subplots(rows=2, cols=3, horizontal_spacing=0.1,
                             specs=[[{"type": "pie"}, {"type": "indicator"}, {"type": "indicator"}],
                                    [{"type": "indicator"}, {"type": "indicator"}, {"type": "indicator"}]])
-        fichas_pie = go.Pie(labels=df.Fase.values, values=df.Qtde.values,
+        fichas_pie = go.Pie(labels=df.Fase.values, values=df.Qtde.tolist(),
                             textinfo='label+value',
                             insidetextorientation='radial',
                             title='Resumo das minhas Fichas')
