@@ -44,7 +44,9 @@ Ao investigar comportamento que não está neste repo, procurar nesses projetos 
 
 - `bhadrasana/main.py` — ponto de montagem da app Flask: cria `app`, conecta Mongo/SQL, registra todos os blueprints (`*_app(app)`), monta o menu de navegação (`Nav`).
 - `bhadrasana/routes/` — um arquivo por blueprint/"app" (ex.: `ovr.py`, `rvf.py`, `risco.py`, `apirecintos.py`, `cencomm.py`, `lista_apreensoes.py`, `operacoes_dashboard.py`, `assistentetg.py`...). **Este é o padrão a seguir para novas "apps": um blueprint próprio em `routes/`, registrado em `main.py`.**
-- `bhadrasana/models/` — modelos SQLAlchemy e managers de domínio (ex.: `ovrmanager.py`, `rvfmanager.py`, `ermodel.py`). `navii_ficha.py` (17/10/2026) abre a Ficha de repressão na importação pelo card do **NAVI-I** — é chamado pelo **virasana** (`virasana/navii/ficha_navii.py`), não tem rota no Fichas; só aditivo, usa as regras do `ovrmanager` numa transação (ver o `CONTEXTO.md` do NAVI-I, no virasana). **Cópia no `../navi-i`**
+- `bhadrasana/models/` — modelos SQLAlchemy e managers de domínio (ex.: `ovrmanager.py`, `rvfmanager.py`, `ermodel.py`). `navii_ficha.py` (17/10/2026) abre a Ficha de repressão na importação pelo card do **NAVI-I** — era chamado pelo NAVI-I antigo do **virasana** (`virasana/navii/ficha_navii.py`, que saiu no EOL do virasana em
+  09/11/2026), não tem rota no Fichas. **Hoje ninguém o chama** (só `tests/test_navii_ficha.py`): o NAVI-I novo tem a
+  cópia dele e não importa o Fichas. Candidato a sair no porte do Fichas; só aditivo, usa as regras do `ovrmanager` numa transação (ver o `CONTEXTO.md` do NAVI-I, no virasana). **Cópia no `../navi-i`**
   (NAVI-I em repositório próprio, `navi-i/PLANO.md`, decisão 1, 03/11/2026): o NAVI-I novo terá a sua versão deste
   arquivo e de `gera_eventoovr` e `valida_mesmo_responsavel_ovr_user_name` do `ovrmanager`. Mudar essas regras aqui pede
   espelhar lá. Armadilha: o `__init__` de `BaseRastreavel` (OVR, RVF, ImagemRVF, EventoOVR) descarta os argumentos nomeados, menos `user_name` — atribuir campo a campo.
@@ -69,7 +71,7 @@ no Servidor. Regras:
   automático da barra final (`/tela` → `/tela/`) sai com o Host interno e quebra atrás do proxy
   (foi o caso de `/entregas_cnpj` em 01/10/2026).
 - Link para a outra app usa o prefixo dela fixo: `/bhadrasana2/...` ou `/virasana/...`.
-- Teste montando a app no prefixo (modelo: `virasana/tests/test_prefixo_proxy.py`, no repo virasana):
+- Teste montando a app no prefixo (modelo: `tests/test_prefixo_proxy.py`, no repo `../navi-i`):
   abre cada tela com e sem barra final sem redirect e confere que todo `href`/`src`/`action`/URL do
   JS começa com o prefixo.
 
@@ -116,5 +118,7 @@ Essas migrações são objetivos de médio/longo prazo. Não iniciar trabalho ne
   necessários** (pedido do usuário, 22/10/2026): numa mudança localizada, os arquivos de teste da área
   (`pytest tests/test_x.py ...`), não a suíte inteira. Ao terminar, dizer o que rodou e **oferecer** a suíte
   completa — não rodar sem o usuário aceitar, salvo mudança ampla ou em código compartilhado. Mudança no que o
-  virasana importa daqui (ex.: `bhadrasana/models/apirecintos.py`, `navii_ficha.py`) afeta o gate do virasana
-  (`python qualidade_navii.py`, no repo virasana, que só enxerga as alterações do próprio repo) — oferecer também.
+  virasana importa daqui (os modelos das telas Bagagens e API Recintos: `bhadrasana/models/apirecintos.py`,
+  `apirecintos_risco.py`, `ovr.py`, `rvf.py`, `laudo.py`, `ovrmanager.get_recintos_api`) pode quebrar o virasana, que
+  está em fim de vida e sem gate: conferir que ele sobe e que `/virasana/bagagens` e `/virasana/eventos` respondem
+  (ver o `CLAUDE.md` de lá).
