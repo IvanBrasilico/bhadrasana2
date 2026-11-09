@@ -10,7 +10,7 @@
 
 **NAVI — Navegador Analítico de Vigilância Inteligente.** Os módulos, nas palavras do usuário (29/10/2026):
 
-- **NAVI-I** — análise de risco, imagens de escaneamento e logística, com foco na importação (no virasana).
+- **NAVI-I** — análise de risco, imagens de escaneamento e logística, com foco na importação (no `../navi-i`).
 - **NAVI-E** — análise de risco, imagens de escaneamento e logística, com foco na exportação, e controle do COV.
 - **Navi-Fichas** — controle do andamento das ações fiscais e controle de carga (**este repositório**).
 - **NAVI-Dados** — coleção de APIs e scripts que alimentam os dados corporativos usados pelos sistemas: dados de
@@ -46,7 +46,7 @@ Ao investigar comportamento que não está neste repo, procurar nesses projetos 
 - `bhadrasana/routes/` — um arquivo por blueprint/"app" (ex.: `ovr.py`, `rvf.py`, `risco.py`, `apirecintos.py`, `cencomm.py`, `lista_apreensoes.py`, `operacoes_dashboard.py`, `assistentetg.py`...). **Este é o padrão a seguir para novas "apps": um blueprint próprio em `routes/`, registrado em `main.py`.**
 - `bhadrasana/models/` — modelos SQLAlchemy e managers de domínio (ex.: `ovrmanager.py`, `rvfmanager.py`, `ermodel.py`). `navii_ficha.py` (17/10/2026) abre a Ficha de repressão na importação pelo card do **NAVI-I** — era chamado pelo NAVI-I antigo do **virasana** (`virasana/navii/ficha_navii.py`, que saiu no EOL do virasana em
   09/11/2026), não tem rota no Fichas. **Hoje ninguém o chama** (só `tests/test_navii_ficha.py`): o NAVI-I novo tem a
-  cópia dele e não importa o Fichas. Candidato a sair no porte do Fichas; só aditivo, usa as regras do `ovrmanager` numa transação (ver o `CONTEXTO.md` do NAVI-I, no virasana). **Cópia no `../navi-i`**
+  cópia dele e não importa o Fichas. Candidato a sair no porte do Fichas; só aditivo, usa as regras do `ovrmanager` numa transação (ver `navi-i/src/navi_i/navii/CONTEXTO.md`). **Cópia no `../navi-i`**
   (NAVI-I em repositório próprio, `navi-i/PLANO.md`, decisão 1, 03/11/2026): o NAVI-I novo terá a sua versão deste
   arquivo e de `gera_eventoovr` e `valida_mesmo_responsavel_ovr_user_name` do `ovrmanager`. Mudar essas regras aqui pede
   espelhar lá. Armadilha: o `__init__` de `BaseRastreavel` (OVR, RVF, ImagemRVF, EventoOVR) descarta os argumentos nomeados, menos `user_name` — atribuir campo a campo.

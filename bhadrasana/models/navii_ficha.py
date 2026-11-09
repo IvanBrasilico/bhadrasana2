@@ -1,8 +1,8 @@
 """
 Abertura de Ficha pelo NAVI-I: o TRATAMENTO do risco apurado na análise de risco na importação.
 
-A tela NAVI-I fica no repo virasana; plano aprovado pelo usuário em 17/10/2026
-(virasana/navii/CONTEXTO.md, "Tratamento do risco: Fichas pelo NAVI-I"). Chamado pelo NAVI-I,
+A tela NAVI-I ficava no repo virasana (hoje no navi-i); plano aprovado pelo usuário em 17/10/2026
+(navi-i/src/navi_i/navii/CONTEXTO.md, "Tratamento do risco: Fichas pelo NAVI-I"). Chamado pelo NAVI-I,
 não por rota do Fichas.
 
 Só ADITIVO: não muda nenhuma regra do Fichas. Usa os models e as regras existentes (usuário
