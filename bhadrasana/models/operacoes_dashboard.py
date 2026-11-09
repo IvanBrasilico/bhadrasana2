@@ -21,13 +21,30 @@ alocadas. Assim, a solução para se adequar à Portaria de OVR é agrupar as fi
  em OVRs conforme tipo e/ou equipe.
 
  "Operação" neste dashboard é o sentido corrente, que seria um conjunto de fiscalizações.
+
+O dashboard pode ser filtrado pelo período de ABERTURA da Ficha (`OVR.datahora`, 09/11/2026):
+`inicio` e `fim` são datas, os dois dias inclusive; sem eles (o padrão), sem filtro.
 """
 from collections import Counter
+from datetime import date, datetime, time, timedelta
 from decimal import Decimal
+from typing import Optional
 
+from sqlalchemy import and_, exists
 from sqlalchemy.orm import selectinload
 
-from bhadrasana.models.ovr import Flag, OVR, TipoResultado
+from bhadrasana.models.ovr import Flag, OVR, TipoResultado, flags_table
+
+
+def filtra_abertura(query, inicio: Optional[date] = None, fim: Optional[date] = None):
+    """As Fichas abertas (`OVR.datahora`) de `inicio` a `fim`, os dois dias inteiros.
+
+    Sem um deles, aquele lado fica aberto; sem os dois, a consulta não muda."""
+    if inicio:
+        query = query.filter(OVR.datahora >= datetime.combine(inicio, time.min))
+    if fim:
+        query = query.filter(OVR.datahora < datetime.combine(fim + timedelta(days=1), time.min))
+    return query
 
 
 def listar_operacoes(session):
@@ -46,14 +63,24 @@ def listar_operacoes(session):
     return [pendentes] + flags
 
 
-def listar_ovrs_com_pendencias(session):
-    ovrs = (
+def listar_ovrs_com_pendencias(session, inicio: Optional[date] = None, fim: Optional[date] = None):
+    """Fichas não concluídas que não estão em nenhuma Operação, com ou sem outras flags.
+
+    Por subconsulta (09/11/2026): o filtro antigo, na junção com as flags, deixava de fora a Ficha
+    sem nenhuma flag (nome nulo) e punha nas pendentes a Ficha de uma Operação que tivesse outra
+    flag (a linha da outra flag passava)."""
+    # a coluna da Ficha na tabela de ligação chama-se rvf_id (ver flags_table em models/ovr.py)
+    em_operacao = exists().where(and_(flags_table.c.rvf_id == OVR.id,
+                                      flags_table.c.flag_id == Flag.id,
+                                      Flag.nome.like('Operação%')))
+    consulta = (
         session.query(OVR)
-        .outerjoin(Flag, OVR.flags)
-        .filter(~Flag.nome.like('Operação%'))
+        .filter(~em_operacao)
         .filter(OVR.fase < 3)  # Ver faseOVR em models/ovr.py
         # .filter(OVR.tipooperacao == 1)  # Ver tipoOperacao em models/ovr.py
-        .group_by(OVR.id)
+    )
+    ovrs = (
+        filtra_abertura(consulta, inicio, fim)
         .options(
             selectinload(OVR.flags),
             selectinload(OVR.tgs),
@@ -68,14 +95,14 @@ def listar_ovrs_com_pendencias(session):
     return ovrs
 
 
-def monta_dashboard_operacao(session, flag_id):
+def monta_dashboard_operacao(session, flag_id,
+                             inicio: Optional[date] = None, fim: Optional[date] = None):
     if flag_id == -1:
-        ovrs = listar_ovrs_com_pendencias(session)
+        ovrs = listar_ovrs_com_pendencias(session, inicio, fim)
     else:
         ovrs = (
-            session.query(OVR)
-            .join(OVR.flags)
-            .filter(Flag.id == flag_id)
+            filtra_abertura(session.query(OVR).join(OVR.flags).filter(Flag.id == flag_id),
+                            inicio, fim)
             .options(
                 selectinload(OVR.flags),
                 selectinload(OVR.tgs),
@@ -225,12 +252,12 @@ def ovr_dashboard_status(ovr):
     return status
 
 
-def monta_resumo_operacoes(session):
+def monta_resumo_operacoes(session, inicio: Optional[date] = None, fim: Optional[date] = None):
     operacoes = listar_operacoes(session)
     resumo = []
 
     for operacao in operacoes:
-        dados = monta_dashboard_operacao(session, operacao.id)
+        dados = monta_dashboard_operacao(session, operacao.id, inicio, fim)
         resumo.append({
             'flag_id': operacao.id,
             'nome': operacao.nome,

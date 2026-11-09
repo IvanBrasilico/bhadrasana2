@@ -11,6 +11,15 @@
             </option>
             {% endfor %}
         </select>
+        &nbsp;
+        <label for="abertura_inicio">Abertura da Ficha de</label>
+        <input type="date" name="abertura_inicio" id="abertura_inicio" value="{{ periodo.abertura_inicio or '' }}">
+        <label for="abertura_fim">até</label>
+        <input type="date" name="abertura_fim" id="abertura_fim" value="{{ periodo.abertura_fim or '' }}">
+        <button type="submit" class="btn btn-default btn-sm">Filtrar</button>
+        <a href="{{ url_for('dashboard_operacoes', flag_id=operacao_atual.id if operacao_atual else None) }}"
+           id="sem_filtro">Sem filtro</a>
+        <div id="periodo_abertura"><small>Período de abertura da Ficha: <b>{{ descricao_periodo }}</b></small></div>
     </form>
 
     {% if not operacao_atual %}
@@ -34,7 +43,7 @@
             {% for op in resumo_operacoes %}
             <tr>
                 <td style="text-align: left;">
-                    <a href="{{ url_for('dashboard_operacoes', flag_id=op.flag_id) }}">
+                    <a href="{{ url_for('dashboard_operacoes', flag_id=op.flag_id, **periodo) }}">
                         {{ op.nome }}
                     </a>
                 </td>
@@ -56,7 +65,7 @@
         {% for op in resumo_operacoes %}
         <div class="col-lg-3">
             <div class="panel rounded-pill panel-info">
-                <a class="op-card" href="{{ url_for('dashboard_operacoes', flag_id=op.flag_id) }}">
+                <a class="op-card" href="{{ url_for('dashboard_operacoes', flag_id=op.flag_id, **periodo) }}">
                     <h3>{{ op.nome }}</h3>
                     <div>OVRs: {{ op.total_ovrs }}</div>
                     <div>RVFs: {{ op.total_rvfs }}</div>

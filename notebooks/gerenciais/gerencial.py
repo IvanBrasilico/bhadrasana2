@@ -21,7 +21,7 @@ sys.path.append(caminho_virasana)
 from ajna_commons.flask.conf import DATABASE, MONGODB_URI
 
 from bhadrasana.models import engine
-
+# engine = engine.connect()
 
 def AnoMes(row):
     return str(row.Ano) + str(row['Mês']).zfill(2)
@@ -53,13 +53,14 @@ SQL_TGs_NCM = \
      group by year(tg.create_date), substring(i.ncm, 1, 4)
      order by Ano, Valor desc;'''
 
-df_detalhe = pd.read_sql(SQL_TGs, engine)
+with engine.connect() as con:
+    df_detalhe = pd.read_sql_query(SQL_TGs, con)
 
-df_sum = pd.read_sql(SQL_TGs_SUM, engine)
-df_ano_sum = df_sum.groupby(['Ano']).agg(qtde=pd.NamedAgg(column='Qtde', aggfunc='sum'),
+    df_sum = pd.read_sql_query(SQL_TGs_SUM, con)
+    df_ano_sum = df_sum.groupby(['Ano']).agg(qtde=pd.NamedAgg(column='Qtde', aggfunc='sum'),
                                          valor=pd.NamedAgg(column='ValorTG', aggfunc='sum')).reset_index()
 
-df_ncm = pd.read_sql(SQL_TGs_NCM, engine)
+    df_ncm = pd.read_sql_query(SQL_TGs_NCM, con)
 
 
 def FigTotalTGPorAno():
