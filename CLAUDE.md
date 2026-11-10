@@ -52,7 +52,10 @@ Ao investigar comportamento que não está neste repo, procurar nesses projetos 
   espelhar lá. Armadilha: o `__init__` de `BaseRastreavel` (OVR, RVF, ImagemRVF, EventoOVR) descarta os argumentos nomeados, menos `user_name` — atribuir campo a campo.
 - `bhadrasana/forms/` — WTForms.
 - `bhadrasana/templates/` — Jinja2, estende `layout.html`/`new_base.html` (Bootstrap).
-- `bhadrasana/scripts/` — scripts de manutenção/importação standalone (ex.: `importa_tgs.py`, `exporta_para_impala_RD.py`). `fma_update.py` (cron diário) consulta as **FMAs eletrônicas** (Fichas de Mercadoria Abandonada, que os recintos são obrigados a informar) na API da Janela Única Portuária e abre automaticamente uma **Ficha OVR por FMA** (`tipooperacao = 0`, "Mercadoria Abandonada"; com CE, recinto, data de entrada e consignatário) para acompanhar o procedimento até a retomada pelo importador ou o perdimento. É a fonte oficial de **carga abandonada** do AJNA (útil ao ciclo de vida e ao risco, no virasana).
+- `bhadrasana/scripts/` — scripts de manutenção/importação standalone (ex.: `importa_tgs.py`, `exporta_para_impala_RD.py`). `fma_update.py` (cron diário) consulta as **FMAs eletrônicas** (Fichas de Mercadoria Abandonada, que os recintos são obrigados a informar) na API da Janela Única Portuária e abre automaticamente uma **Ficha OVR por FMA** (`tipooperacao = 0`, "Mercadoria Abandonada"; com CE, recinto, data de entrada e consignatário) para acompanhar o procedimento até a retomada pelo importador ou o perdimento. É a fonte oficial de **carga abandonada** do AJNA (útil ao ciclo de vida e ao risco, no virasana). **Cópia no NAVI-Dados**
+  (09/11/2026, fase L3 do fim de vida do virasana): `navi-dados/f3/src/navi_dados/periodico/fma.py`, copiado igual, que
+  substitui o cron no corte (`navi-dados/PLANO_SIVANA_FMA.md`). Mudar a regra da Ficha aqui pede espelhar lá; depois do
+  corte, este script sai.
 - `bhadrasana/docx/` — geração de documentos Word a partir de modelos `.docx`.
 - `bhadrasana/security/check.py` — checagens de segurança/permissão.
 - `tests/` — pytest; `tests/app_creator.py` monta uma app de teste com SQLite em memória + `mongomock`, e semeia usuários/setores fixos para os testes.
