@@ -126,11 +126,15 @@ def create_tables(engine, session):
         mercante.metadata.tables['conhecimentosresumo']
     ])
     recintosapi_models.Base.metadata.create_all(engine)
-    laudo.metadata.create_all(engine, [
-        laudo.metadata.tables['laudo_empresas'],
-    ])
+    laudo.metadata.create_all(engine, laudo_tables())
     # consulta_container_objects consulta as DUEs do contêiner (virasana, get_dues_container)
     due_alchemy.metadata.create_all(engine, due_tables())
+
+
+def laudo_tables():
+    # navi_cnpj: a Empresa; laudo_sats: as SATs da Pesquisa Empresa
+    return [laudo.metadata.tables['navi_cnpj'],
+            laudo.metadata.tables['laudo_sats']]
 
 
 def due_tables():
@@ -159,7 +163,7 @@ def recria_banco():
     session.rollback()
     session.close()  # esvazia o identity map: objetos de outro módulo não voltam no flush
     recintosapi_models.Base.metadata.drop_all(engine)
-    laudo.metadata.drop_all(engine, [laudo.metadata.tables['laudo_empresas']])
+    laudo.metadata.drop_all(engine, laudo_tables())
     create_tables(engine, session)
     create_setores(session)
     create_usuarios(session)

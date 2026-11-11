@@ -1787,7 +1787,8 @@ def monta_ovr_dict(db, session, ovr_id: id,
         rvfs_dicts = [rvf.dump(explode=True) for rvf in lista_rvfs]
         ovr_dict['rvfs'] = rvfs_dicts
         empresa = get_empresa(session, ovr.cnpj_fiscalizado)
-        ovr_dict['nome_fiscalizado'] = empresa.nome
+        # CPF e CNPJ fora do cadastro (navi_cnpj) não acham empresa
+        ovr_dict['nome_fiscalizado'] = empresa.nome if empresa else ''
         ovr_dict['marcas'] = []
         for rvf_dict in rvfs_dicts:
             ovr_dict['marcas'].extend(rvf_dict['marcasencontradas'])

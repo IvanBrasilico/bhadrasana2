@@ -23,7 +23,8 @@ from bhadrasana.forms.ovr import OVRForm, FiltroOVRForm, HistoricoOVRForm, \
     FiltroAbasForm, ResultadoOVRForm
 from bhadrasana.models import delete_objeto, get_usuario, \
     usuario_tem_perfil_nome, get_filename_valido
-from bhadrasana.models.laudo import get_empresa, get_empresas_nome, get_sats_cnpj, get_pessoas_nome, get_pessoa
+from bhadrasana.models.laudo import get_empresa, get_empresas, get_empresas_nome, get_sats_cnpj, \
+    get_pessoas_nome, get_pessoa
 from bhadrasana.models.ovr import OVR, OKRObjective, faseOVR
 from bhadrasana.models.ovrmanager import cadastra_ovr, get_ovr, \
     get_ovr_filtro, gera_eventoovr, gera_processoovr, get_tipos_processo, lista_itemtg, \
@@ -1404,13 +1405,21 @@ def ovr_app(app):
                                                   'qtdeovrs': len(ovrs)})
                 else:
                     logger.info('Consultando empresa %s' % filtro_form.cnpj.data)
-                    empresa = get_empresa(session, filtro_form.cnpj.data)
                     logger.info('get_dues_empresa')
-                    dues = get_dues_empresa(mongodb,
+                    # As DUEs estão no MySQL (virasana due_manager, desde 03/2025): a sessão
+                    # SQL, não o Mongo
+                    dues = get_dues_empresa(session,
                                             filtro_form.cnpj.data, limit=limit)
                     logger.info('get_ovr_empresa')
                     ovrs = get_ovr_empresa(session, filtro_form.cnpj.data)
-                    empresas_qtdeovrs = [{'empresa': empresa, 'qtdeovrs': len(ovrs)}]
+                    # Os estabelecimentos da raiz, cada um com as Fichas dele; a seção
+                    # Fichas, abaixo, continua com todas as da raiz
+                    empresas = get_empresas(session, filtro_form.cnpj.data, limit=limit)
+                    empresas_qtdeovrs = [
+                        {'empresa': empresa,
+                         'qtdeovrs': sum(1 for ovr in ovrs
+                                         if ovr.cnpj_fiscalizado == empresa.cnpj)}
+                        for empresa in empresas] or [{'empresa': None, 'qtdeovrs': len(ovrs)}]
                     logger.info('get CEs da Empresa')
                     conhecimentos = get_ces_empresa(session, filtro_form.cnpj.data, limit=limit)
                     listaCE = [ce.numeroCEmercante for ce in conhecimentos]

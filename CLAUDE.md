@@ -50,6 +50,11 @@ Ao investigar comportamento que não está neste repo, procurar nesses projetos 
   (NAVI-I em repositório próprio, `navi-i/PLANO.md`, decisão 1, 03/11/2026): o NAVI-I novo terá a sua versão deste
   arquivo e de `gera_eventoovr` e `valida_mesmo_responsavel_ovr_user_name` do `ovrmanager`. Mudar essas regras aqui pede
   espelhar lá. Armadilha: o `__init__` de `BaseRastreavel` (OVR, RVF, ImagemRVF, EventoOVR) descarta os argumentos nomeados, menos `user_name` — atribuir campo a campo.
+  **`laudo.Empresa` lê a `navi_cnpj`** (11/11/2026, `navi-dados/PLANO_EMPRESA_NAVI_CNPJ.md`): só leitura, sobre o
+  cadastro de CNPJ do NAVI-Dados (`cnpj` de 14 dígitos é a chave; `nome` = `nome_empresarial_pj`); a `laudo_empresas`
+  ficou como histórico. Um `before_flush` recusa gravar `Empresa` pelo ORM; os testes semeiam pelo Core
+  (`Empresa.__table__.insert()`). CPF não procura empresa (`get_empresa` devolve `None`). Vale também para quem importa a
+  classe daqui (virasana). O NAVI-I tem a mesma troca na cópia dele.
 - `bhadrasana/forms/` — WTForms.
 - `bhadrasana/templates/` — Jinja2, estende `layout.html`/`new_base.html` (Bootstrap).
 - `bhadrasana/scripts/` — scripts de manutenção/importação standalone (ex.: `importa_tgs.py`, `exporta_para_impala_RD.py`). `fma_update.py` (rodava no cron, de hora em hora, até 10/11/2026) consulta as **FMAs eletrônicas** (Fichas de Mercadoria Abandonada, que os recintos são obrigados a informar) na API da Janela Única Portuária e abre automaticamente uma **Ficha OVR por FMA** (`tipooperacao = 0`, "Mercadoria Abandonada"; com CE, recinto, data de entrada e consignatário) para acompanhar o procedimento até a retomada pelo importador ou o perdimento. É a fonte oficial de **carga abandonada** do AJNA (útil ao ciclo de vida e ao risco, no virasana). **Cópia no NAVI-Dados**

@@ -85,13 +85,9 @@ def create_usuarios(session):
 
 
 def create_empresas(session):
-    empresas = [(1, '04175124000169', 'Empresa de teste')]
-    for linha in empresas:
-        empresa = Empresa()
-        empresa.id = linha[0]
-        empresa.cnpj = linha[1]
-        empresa.nome = linha[2]
-        session.add(empresa)
+    # Empresa é só leitura (navi_cnpj): semear pelo Core, que não passa pelo flush
+    session.execute(Empresa.__table__.insert(),
+                    [{'cnpj': '04175124000169', 'nome_empresarial_pj': 'Empresa de teste'}])
     session.commit()
 
 
