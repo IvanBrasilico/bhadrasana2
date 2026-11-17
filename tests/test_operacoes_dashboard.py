@@ -2,7 +2,7 @@
 09/11/2026). O padrão continua "Sem filtro".
 
 17/11/2026: atalho de ano, total do resumo com cada Ficha uma vez e as Fichas repetidas, a categoria "Fichas sem
-operação informada" (resultado registrado no período), os fiscalizados com nome da navi_cnpj e a descrição e as NCMs
+operação informada" (concluídas, com valor de TG ou de multa e resultado registrado no período), os fiscalizados com nome da navi_cnpj e a descrição e as NCMs
 dos CEs na tela da Operação."""
 import re
 import sys
@@ -22,7 +22,7 @@ import virasana.integracao.mercante.mercantealchemy as mercante  # noqa: E402
 from bhadrasana.models import laudo  # noqa: E402
 from bhadrasana.models import operacoes_dashboard as od  # noqa: E402
 from bhadrasana.models.laudo import Empresa  # noqa: E402
-from bhadrasana.models.ovr import Flag, OVR, ResultadoOVR, TipoResultado, metadata  # noqa: E402
+from bhadrasana.models.ovr import Flag, OVR, ResultadoOVR, TGOVR, TipoResultado, metadata  # noqa: E402
 from bhadrasana.models.rvf import RVF  # noqa: E402 - a Ficha referencia a RVF (o mapper precisa dela)
 from bhadrasana.routes.operacoes_dashboard import ano_inteiro, anos_do_atalho, dashboard_app, \
     descreve_periodo  # noqa: E402
@@ -189,6 +189,13 @@ def novo_resultado(session, ficha, registrado_em, valor, tipo=TipoResultado.Cred
     session.commit()
 
 
+def nova_tg(session, ficha, valor):
+    tg = TGOVR()
+    tg.ovr_id, tg.numerolote, tg.descricao, tg.valor = ficha.id, 'MSCU1234567', 'Mercadoria', Decimal(valor)
+    session.add(tg)
+    session.commit()
+
+
 def nova_rvf(session, ficha, conteiner, ce=None, descricao='Encontrado na verificação'):
     rvf = RVF()
     rvf.ovr_id, rvf.numerolote, rvf.numeroCEmercante, rvf.descricao = ficha.id, conteiner, ce, descricao
@@ -205,7 +212,9 @@ def monta_banco_completo():
       Mercante).
     - Fora de Operação: p1 (aberta em 2026, ainda aberta, resultado em 2026: pendente, NÃO sem operação), p2
       (concluída, aberta em 2025, resultado em 2026), p3 (concluída, aberta em 2026, resultado em 2025), p4
-      (concluída sem resultado), p5 (concluída, resultado em março de 2026), p6 (arquivada, resultado em 2026).
+      (concluída sem resultado), p5 (concluída, resultado em março de 2026), p6 (arquivada, resultado em 2026), p7
+      (concluída, resultado de valor zero), p8 (concluída, só perdimento: sem valor de TG nem de multa), p9 (concluída,
+      apreensão sem valor e TG de 300).
     """
     session = cria_tabelas()
     operacao_a, operacao_b = Flag(), Flag()
@@ -234,6 +243,9 @@ def monta_banco_completo():
         'p4': nova_ficha(session, datetime(2026, 4, 1), 3),
         'p5': nova_ficha(session, datetime(2026, 1, 5), 3),
         'p6': nova_ficha(session, datetime(2026, 1, 6), 4),
+        'p7': nova_ficha(session, datetime(2026, 1, 7), 3),
+        'p8': nova_ficha(session, datetime(2026, 1, 8), 3),
+        'p9': nova_ficha(session, datetime(2026, 1, 9), 3),
     }
     novo_resultado(session, f['f1'], datetime(2026, 3, 10), '1000.00')
     novo_resultado(session, f['p1'], datetime(2026, 3, 20), '500.00')
@@ -241,6 +253,10 @@ def monta_banco_completo():
     novo_resultado(session, f['p3'], datetime(2025, 12, 31, 23, 59, 59), '300.00')
     novo_resultado(session, f['p5'], datetime(2026, 3, 25), '400.00')
     novo_resultado(session, f['p6'], datetime(2026, 2, 1), '600.00')
+    novo_resultado(session, f['p7'], datetime(2026, 2, 2), '0.00')
+    novo_resultado(session, f['p8'], datetime(2026, 2, 3), '800.00', TipoResultado.Perdimento)
+    novo_resultado(session, f['p9'], datetime(2026, 4, 10), '0.00', TipoResultado.Apreensao)
+    nova_tg(session, f['p9'], '300.00')
     nova_rvf(session, f['f1'], 'MSCU1234567')
     nova_rvf(session, f['f1'], 'XXXU0000000')     # contêiner sem NCM no CE: todas as do CE
     nova_rvf(session, f['f4'], 'TGHU7654321', ce=CE1)
@@ -279,28 +295,30 @@ class TestSemOperacaoETotais(unittest.TestCase):
 
     def test_sem_operacao_pela_data_do_resultado(self):
         """Entra a Ficha Concluída fora de Operação com resultado registrado no período, qualquer que seja a
-        abertura; não entram a de Operação, a com resultado fora do período, a sem resultado, a ainda aberta (p1)
-        nem a arquivada (p6), mesmo com resultado no período."""
+        abertura, e com valor em "Valor TG" ou "Valor Multas" (p9 só tem TG); não entram a de Operação, a com
+        resultado fora do período, a sem resultado, a ainda aberta (p1), a arquivada (p6) nem as concluídas sem
+        valor de TG ou de multa (p7 de valor zero, p8 só com perdimento)."""
         self.assertEqual(self.ids(od.listar_fichas_sem_operacao(self.session, *ANO_2026)),
-                         {self.f['p2'].id, self.f['p5'].id})
+                         {self.f['p2'].id, self.f['p5'].id, self.f['p9'].id})
         self.assertEqual(self.ids(od.listar_fichas_sem_operacao(self.session, date(2025, 12, 31), date(2025, 12, 31))),
                          {self.f['p3'].id})     # registrado no último segundo do dia
         self.assertEqual(self.ids(od.listar_fichas_sem_operacao(self.session, inicio=date(2026, 3, 11))),
-                         {self.f['p5'].id})     # p1 tem resultado depois, mas não está concluída
+                         {self.f['p5'].id, self.f['p9'].id})    # p1 tem resultado depois, mas não está concluída
 
     def test_total_conta_cada_ficha_uma_vez_e_lista_as_repetidas(self):
         resumo = od.monta_resumo_operacoes(self.session, *ANO_2026)
         linhas = {linha['flag_id']: linha for linha in resumo['linhas']}
         self.assertEqual([linha['flag_id'] for linha in resumo['linhas']][:2], [od.ID_PENDENTES, od.ID_SEM_OPERACAO])
         self.assertEqual(linhas[od.ID_PENDENTES]['total_ovrs'], 1)            # p1
-        self.assertEqual(linhas[od.ID_SEM_OPERACAO]['total_ovrs'], 2)         # p2 e p5
+        self.assertEqual(linhas[od.ID_SEM_OPERACAO]['total_ovrs'], 3)         # p2, p5 e p9
         self.assertEqual(linhas[self.operacao_a.id]['total_ovrs'], 5)
         self.assertEqual(linhas[self.operacao_b.id]['total_ovrs'], 1)         # f2
-        self.assertEqual(sum(linha['total_ovrs'] for linha in resumo['linhas']), 9)
+        self.assertEqual(sum(linha['total_ovrs'] for linha in resumo['linhas']), 10)
         totais = resumo['totais']
-        self.assertEqual(totais['total_ovrs'], 8)                             # f1 a f5, p1, p2 e p5
-        self.assertEqual(totais['percentual_conclusao'], 37)                  # f1, p2 e p5: 3 de 8
+        self.assertEqual(totais['total_ovrs'], 9)                             # f1 a f5, p1, p2, p5 e p9
+        self.assertEqual(totais['percentual_conclusao'], 44)                  # f1, p2, p5 e p9: 4 de 9
         self.assertEqual(totais['total_multas'], Decimal('2100.00'))          # sem os 600 da arquivada (p6)
+        self.assertEqual(totais['total_tgs'], Decimal('300.00'))              # p9
         self.assertEqual(totais['total_ces'], 3)
         self.assertEqual(totais['total_rvfs'], 3)
         self.assertEqual(totais['total_containers'], 3)
@@ -397,7 +415,7 @@ class TestTelaCompleta(unittest.TestCase):
 
     def test_detalhe_da_categoria_sem_operacao(self):
         html = self.html(flag_id=od.ID_SEM_OPERACAO, abertura_inicio='2026-01-01', abertura_fim='2026-12-31')
-        self.assertIn('Total Fichas: 2', html)
+        self.assertIn('Total Fichas: 3', html)
         # o "Sem filtro" volta ao resumo: a categoria não existe sem período
         self.assertEqual(re.search(r'href="([^"]*)"\s+id="sem_filtro"', html).group(1), '/operacoes_dashboard')
 

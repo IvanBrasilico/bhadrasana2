@@ -38,11 +38,11 @@ from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 from typing import Optional
 
-from sqlalchemy import and_, exists
+from sqlalchemy import and_, exists, or_
 from sqlalchemy.orm import selectinload
 
 from bhadrasana.models.laudo import Empresa
-from bhadrasana.models.ovr import Flag, OVR, ResultadoOVR, TipoResultado, flags_table
+from bhadrasana.models.ovr import Flag, OVR, ResultadoOVR, TGOVR, TipoResultado, flags_table
 from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem
 
 ID_PENDENTES = -1
@@ -129,11 +129,27 @@ def listar_ovrs_com_pendencias(session, inicio: Optional[date] = None, fim: Opti
     return consulta.order_by(OVR.datahora.desc()).all()
 
 
+# Resultados que não entram em "Valor Multas" (ver monta_dashboard_operacao)
+TIPOS_FORA_DAS_MULTAS = (TipoResultado.Apreensao.value, TipoResultado.Perdimento.value,
+                         TipoResultado.Sancao.value)
+
+
+def com_valor():
+    """A Ficha tem valor em "Valor TG" (TG com valor) ou em "Valor Multas" (resultado com valor,
+    fora apreensão, perdimento e sanção), as mesmas regras das colunas da tela."""
+    tg_com_valor = exists().where(and_(TGOVR.ovr_id == OVR.id, TGOVR.valor > 0))
+    multa_com_valor = exists().where(and_(
+        ResultadoOVR.ovr_id == OVR.id, ResultadoOVR.valor > 0,
+        ResultadoOVR.tipo_resultado.notin_(TIPOS_FORA_DAS_MULTAS)))
+    return or_(tg_com_valor, multa_com_valor)
+
+
 def listar_fichas_sem_operacao(session, inicio: Optional[date] = None, fim: Optional[date] = None):
     """Fichas Concluídas fora de qualquer Operação com resultado registrado de `inicio` a `fim`.
 
-    Só o status Concluída (decisão do usuário, 17/11/2026): Arquivada e as não concluídas ficam
-    de fora, mesmo com resultado. Vale a data do registro do resultado
+    Só o status Concluída e com resultado de fato, isto é, com valor em "Valor TG" ou em "Valor
+    Multas" (`com_valor`; decisão do usuário, 17/11/2026): Arquivada, as não concluídas e as
+    concluídas sem valor ficam de fora. Vale a data do registro do resultado
     (`ResultadoOVR.create_date`), não a da abertura. Sem período, nada: seriam todas as Fichas
     concluídas da história."""
     if not (inicio or fim):
@@ -144,7 +160,8 @@ def listar_fichas_sem_operacao(session, inicio: Optional[date] = None, fim: Opti
     consulta = (session.query(OVR)
                 .filter(~em_operacao())
                 .filter(OVR.fase == FASE_CONCLUIDA)
-                .filter(com_resultado_no_periodo))
+                .filter(com_resultado_no_periodo)
+                .filter(com_valor()))
     return carrega_relacoes(consulta).order_by(OVR.datahora.desc()).all()
 
 
@@ -203,8 +220,7 @@ def monta_dashboard_operacao(session, flag_id,
 
         valor_multas = Decimal('0.00')
         for resultado in ovr.resultados:
-            if resultado.tipo_resultado not in (TipoResultado.Apreensao.value,
-                                                TipoResultado.Perdimento.value, TipoResultado.Sancao.value):
+            if resultado.tipo_resultado not in TIPOS_FORA_DAS_MULTAS:
                 if resultado.valor:
                     valor_multas += resultado.valor
                     total_multas += resultado.valor

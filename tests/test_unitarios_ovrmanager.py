@@ -403,6 +403,9 @@ class OVRTestCase(BaseTestCase):
         new_ovr.user_name = new_ovr.responsavel_cpf
         new_processo = instancia(ProcessoOVR, id=1, ovr_id=new_ovr.id, ovr=new_ovr, tipoprocesso_id=1, numero='9999888877',
                                    numerolimpo='9999888877')
+        new_processo.user_name = new_ovr.user_name
+        session.add(new_processo)
+        session.commit()
         processo = get_processo(session=session, processo_id=new_processo.id)
         assert processo is not None
         session.delete(new_ovr)
