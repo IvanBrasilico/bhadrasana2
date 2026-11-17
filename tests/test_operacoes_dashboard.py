@@ -203,8 +203,9 @@ def monta_banco_completo():
     - Operação A: f1 (concluída, crédito de 1.000, CE1, duas RVFs), f2 (também na Operação B), f3 (filial fora da
       navi_cnpj: o nome vem da raiz), f4 (CPF; RVF com o CE1, sem CE na Ficha), f5 (sem fiscalizado; CE3 fora do
       Mercante).
-    - Fora de Operação: p1 (aberta em 2026, ainda aberta, resultado em 2026: pendente E sem operação), p2 (aberta em
-      2025, resultado em 2026), p3 (aberta em 2026, resultado em 2025), p4 (concluída sem resultado).
+    - Fora de Operação: p1 (aberta em 2026, ainda aberta, resultado em 2026: pendente, NÃO sem operação), p2
+      (concluída, aberta em 2025, resultado em 2026), p3 (concluída, aberta em 2026, resultado em 2025), p4
+      (concluída sem resultado), p5 (concluída, resultado em março de 2026), p6 (arquivada, resultado em 2026).
     """
     session = cria_tabelas()
     operacao_a, operacao_b = Flag(), Flag()
@@ -231,11 +232,15 @@ def monta_banco_completo():
         'p2': nova_ficha(session, datetime(2025, 12, 20), 3),
         'p3': nova_ficha(session, datetime(2026, 2, 1), 3),
         'p4': nova_ficha(session, datetime(2026, 4, 1), 3),
+        'p5': nova_ficha(session, datetime(2026, 1, 5), 3),
+        'p6': nova_ficha(session, datetime(2026, 1, 6), 4),
     }
     novo_resultado(session, f['f1'], datetime(2026, 3, 10), '1000.00')
     novo_resultado(session, f['p1'], datetime(2026, 3, 20), '500.00')
     novo_resultado(session, f['p2'], datetime(2026, 1, 15), '200.00')
     novo_resultado(session, f['p3'], datetime(2025, 12, 31, 23, 59, 59), '300.00')
+    novo_resultado(session, f['p5'], datetime(2026, 3, 25), '400.00')
+    novo_resultado(session, f['p6'], datetime(2026, 2, 1), '600.00')
     nova_rvf(session, f['f1'], 'MSCU1234567')
     nova_rvf(session, f['f1'], 'XXXU0000000')     # contêiner sem NCM no CE: todas as do CE
     nova_rvf(session, f['f4'], 'TGHU7654321', ce=CE1)
@@ -273,36 +278,35 @@ class TestSemOperacaoETotais(unittest.TestCase):
         self.assertEqual(od.listar_fichas_sem_operacao(self.session), [])
 
     def test_sem_operacao_pela_data_do_resultado(self):
-        """Entra a Ficha fora de Operação com resultado registrado no período, qualquer que seja a abertura ou a
-        fase; não entram a de Operação com resultado, a com resultado fora do período nem a sem resultado."""
+        """Entra a Ficha Concluída fora de Operação com resultado registrado no período, qualquer que seja a
+        abertura; não entram a de Operação, a com resultado fora do período, a sem resultado, a ainda aberta (p1)
+        nem a arquivada (p6), mesmo com resultado no período."""
         self.assertEqual(self.ids(od.listar_fichas_sem_operacao(self.session, *ANO_2026)),
-                         {self.f['p1'].id, self.f['p2'].id})
+                         {self.f['p2'].id, self.f['p5'].id})
         self.assertEqual(self.ids(od.listar_fichas_sem_operacao(self.session, date(2025, 12, 31), date(2025, 12, 31))),
                          {self.f['p3'].id})     # registrado no último segundo do dia
         self.assertEqual(self.ids(od.listar_fichas_sem_operacao(self.session, inicio=date(2026, 3, 11))),
-                         {self.f['p1'].id})
+                         {self.f['p5'].id})     # p1 tem resultado depois, mas não está concluída
 
     def test_total_conta_cada_ficha_uma_vez_e_lista_as_repetidas(self):
         resumo = od.monta_resumo_operacoes(self.session, *ANO_2026)
         linhas = {linha['flag_id']: linha for linha in resumo['linhas']}
         self.assertEqual([linha['flag_id'] for linha in resumo['linhas']][:2], [od.ID_PENDENTES, od.ID_SEM_OPERACAO])
         self.assertEqual(linhas[od.ID_PENDENTES]['total_ovrs'], 1)            # p1
-        self.assertEqual(linhas[od.ID_SEM_OPERACAO]['total_ovrs'], 2)         # p1 e p2
+        self.assertEqual(linhas[od.ID_SEM_OPERACAO]['total_ovrs'], 2)         # p2 e p5
         self.assertEqual(linhas[self.operacao_a.id]['total_ovrs'], 5)
         self.assertEqual(linhas[self.operacao_b.id]['total_ovrs'], 1)         # f2
         self.assertEqual(sum(linha['total_ovrs'] for linha in resumo['linhas']), 9)
         totais = resumo['totais']
-        self.assertEqual(totais['total_ovrs'], 7)                             # f1 a f5, p1 e p2
-        self.assertEqual(totais['percentual_conclusao'], 28)                  # f1 e p2: 2 de 7
-        self.assertEqual(totais['total_multas'], Decimal('1700.00'))          # e não 2.200 (p1 em duas linhas)
+        self.assertEqual(totais['total_ovrs'], 8)                             # f1 a f5, p1, p2 e p5
+        self.assertEqual(totais['percentual_conclusao'], 37)                  # f1, p2 e p5: 3 de 8
+        self.assertEqual(totais['total_multas'], Decimal('2100.00'))          # sem os 600 da arquivada (p6)
         self.assertEqual(totais['total_ces'], 3)
         self.assertEqual(totais['total_rvfs'], 3)
         self.assertEqual(totais['total_containers'], 3)
+        # pendentes (não concluídas) e sem operação (concluídas) não se cruzam: só f2, em duas Operações
         repetidas = {ficha['id']: ficha['linhas'] for ficha in resumo['repetidas']}
-        self.assertEqual(repetidas, {
-            self.f['f2'].id: ['Operação A', 'Operação B'],
-            self.f['p1'].id: ['Fichas pendentes**', 'Fichas sem operação informada***'],
-        })
+        self.assertEqual(repetidas, {self.f['f2'].id: ['Operação A', 'Operação B']})
 
     def test_sem_periodo_nao_tem_a_categoria(self):
         resumo = od.monta_resumo_operacoes(self.session)
@@ -377,8 +381,8 @@ class TestTelaCompleta(unittest.TestCase):
         self.assertIn('<tfoot>', html)
         self.assertIn('id="total_resumo"', html)
         self.assertIn('Fichas sem operação informada***', html)
-        self.assertIn('Fichas em mais de uma linha do resumo (2)', html)
-        self.assertIn('R$ 1.700,00', html)
+        self.assertIn('Fichas em mais de uma linha do resumo (1)', html)
+        self.assertIn('R$ 2.100,00', html)
         self.assertIn(f'flag_id={od.ID_SEM_OPERACAO}&amp;abertura_inicio=2026-01-01', html)
 
     def test_sem_periodo_sem_a_categoria(self):

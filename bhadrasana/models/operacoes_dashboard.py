@@ -26,11 +26,12 @@ O dashboard pode ser filtrado pelo período de ABERTURA da Ficha (`OVR.datahora`
 `inicio` e `fim` são datas, os dois dias inclusive; sem eles (o padrão), sem filtro.
 
 Com o período preenchido (17/11/2026) entra a categoria virtual "Fichas sem operação informada": as
-Fichas fora de qualquer Operação com resultado REGISTRADO no período (`ResultadoOVR.create_date`;
-concluída = com resultado, decisão do usuário). Só ela usa a data do resultado.
+Fichas fora de qualquer Operação, com status Concluída, e com resultado REGISTRADO no período
+(`ResultadoOVR.create_date`). Só ela usa a data do resultado. Como as pendentes são as não
+concluídas, as duas categorias não se cruzam.
 
-O total do resumo conta cada Ficha uma vez; as Fichas que aparecem em mais de uma linha (duas
-Operações, ou "pendente" e com resultado) são listadas para o usuário conferir e corrigir.
+O total do resumo conta cada Ficha uma vez; as Fichas que aparecem em mais de uma linha (em duas
+Operações) são listadas para o usuário conferir e corrigir.
 """
 from collections import Counter, defaultdict
 from datetime import date, datetime, time, timedelta
@@ -46,6 +47,8 @@ from virasana.integracao.mercante.mercantealchemy import Conhecimento, NCMItem
 
 ID_PENDENTES = -1
 ID_SEM_OPERACAO = -2
+# status (fase) Concluída: ver faseOVR em models/ovr.py
+FASE_CONCLUIDA = 3
 # CEs e CNPJs por consulta (IN): a conhecimentosresumo tem dezenas de milhões de linhas, a
 # consulta vai sempre pela chave
 TAMANHO_LOTE = 500
@@ -127,17 +130,21 @@ def listar_ovrs_com_pendencias(session, inicio: Optional[date] = None, fim: Opti
 
 
 def listar_fichas_sem_operacao(session, inicio: Optional[date] = None, fim: Optional[date] = None):
-    """Fichas fora de qualquer Operação com resultado registrado de `inicio` a `fim`.
+    """Fichas Concluídas fora de qualquer Operação com resultado registrado de `inicio` a `fim`.
 
-    Concluída = com resultado (decisão do usuário, 17/11/2026), em qualquer fase; vale a data
-    do registro do resultado (`ResultadoOVR.create_date`), não a da abertura. Sem período,
-    nada: seriam todas as Fichas com resultado da história."""
+    Só o status Concluída (decisão do usuário, 17/11/2026): Arquivada e as não concluídas ficam
+    de fora, mesmo com resultado. Vale a data do registro do resultado
+    (`ResultadoOVR.create_date`), não a da abertura. Sem período, nada: seriam todas as Fichas
+    concluídas da história."""
     if not (inicio or fim):
         return []
     com_resultado_no_periodo = exists().where(and_(
         ResultadoOVR.ovr_id == OVR.id,
         *condicoes_periodo(ResultadoOVR.create_date, inicio, fim)))
-    consulta = session.query(OVR).filter(~em_operacao()).filter(com_resultado_no_periodo)
+    consulta = (session.query(OVR)
+                .filter(~em_operacao())
+                .filter(OVR.fase == FASE_CONCLUIDA)
+                .filter(com_resultado_no_periodo))
     return carrega_relacoes(consulta).order_by(OVR.datahora.desc()).all()
 
 

@@ -87,8 +87,7 @@
     <div class="table" id="fichas_repetidas">
         <h3>Fichas em mais de uma linha do resumo ({{ resumo.repetidas|length }})</h3>
         <p><small>Pela lógica, cada Ficha deveria estar numa linha só. Conferir e corrigir: Ficha em duas
-            Operações, deixar só a flag da Operação certa; Ficha "pendente" que já tem resultado, concluir a
-            Ficha ou vinculá-la à Operação.</small></p>
+            Operações, deixar só a flag da Operação certa.</small></p>
         <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive">
             <thead>
             <tr>
@@ -293,9 +292,10 @@
         não são exibidas Fichas arquivadas ou concluídas, porque seriam muitas. Fichas arquivadas ou concluídas
         que possam pertencer a uma operação e houve esquecimento de vinculação precisam ser pesquisadas no
         Pesquisa Fichas.</p>
-    <p>*** Fichas sem operação informada: só com o período preenchido. Fichas que não estão vinculadas a
-        nenhuma operação e tiveram resultado registrado no período (concluída = com resultado). Diferente das
-        outras linhas, aqui vale a <b>data do registro do resultado</b>, não a da abertura da Ficha.</p>
+    <p>*** Fichas sem operação informada: só com o período preenchido. Fichas com status <b>Concluída</b>
+        que não estão vinculadas a nenhuma operação e tiveram resultado registrado no período (as arquivadas
+        não entram). Diferente das outras linhas, aqui vale a <b>data do registro do resultado</b>, não a da
+        abertura da Ficha.</p>
     <p>**** Total: cada Ficha conta uma vez, mesmo que apareça em mais de uma linha; por isso pode ser menor
         que a soma da coluna. As Fichas repetidas são listadas abaixo do resumo, para conferência.</p>
 </div>
