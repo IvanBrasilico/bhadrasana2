@@ -12,20 +12,29 @@
             {% endfor %}
         </select>
         &nbsp;
+        <label for="ano_atalho">Ano</label>
+        <select id="ano_atalho">
+            <option value="">—</option>
+            {% for ano, rotulo in anos %}
+            <option value="{{ ano }}" {% if ano == ano_selecionado %}selected{% endif %}>{{ rotulo }}</option>
+            {% endfor %}
+        </select>
+        &nbsp;
         <label for="abertura_inicio">Abertura da Ficha de</label>
         <input type="date" name="abertura_inicio" id="abertura_inicio" value="{{ periodo.abertura_inicio or '' }}">
         <label for="abertura_fim">até</label>
         <input type="date" name="abertura_fim" id="abertura_fim" value="{{ periodo.abertura_fim or '' }}">
         <button type="submit" class="btn btn-default btn-sm">Filtrar</button>
-        <a href="{{ url_for('dashboard_operacoes', flag_id=operacao_atual.id if operacao_atual else None) }}"
+        <a href="{{ url_for('dashboard_operacoes', flag_id=flag_sem_filtro) }}"
            id="sem_filtro">Sem filtro</a>
         <div id="periodo_abertura"><small>Período de abertura da Ficha: <b>{{ descricao_periodo }}</b></small></div>
     </form>
 
-    {% if not operacao_atual %}
+    {% if resumo %}
     <div class="table">
         <h2>Resumo das operações</h2>
-        <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive">
+        <table id="resumo_operacoes"
+               class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive">
             <thead>
             <tr>
                 <th style="text-align: left;">Operação</th>
@@ -40,7 +49,7 @@
             </tr>
             </thead>
             <tbody>
-            {% for op in resumo_operacoes %}
+            {% for op in resumo.linhas %}
             <tr>
                 <td style="text-align: left;">
                     <a href="{{ url_for('dashboard_operacoes', flag_id=op.flag_id, **periodo) }}">
@@ -58,11 +67,53 @@
             </tr>
             {% endfor %}
             </tbody>
+            <tfoot>
+            <tr id="total_resumo" style="font-weight: bold;">
+                <td style="text-align: left;">Total****</td>
+                <td>{{ resumo.totais.total_ovrs }}</td>
+                <td>{{ resumo.totais.percentual_conclusao }}%</td>
+                <td>{{ resumo.totais.total_rvfs }}</td>
+                <td>{{ resumo.totais.total_ces }}</td>
+                <td>{{ resumo.totais.total_containers }}</td>
+                <td style="text-align: right;">R$ {{ resumo.totais.total_tgs|br_currency }}</td>
+                <td style="text-align: right;">R$ {{ resumo.totais.total_multas|br_currency }}</td>
+                <td style="text-align: right;">R$ {{ resumo.totais.total_perdimentos|br_currency }}</td>
+            </tr>
+            </tfoot>
         </table>
     </div>
+
+    {% if resumo.repetidas %}
+    <div class="table" id="fichas_repetidas">
+        <h3>Fichas em mais de uma linha do resumo ({{ resumo.repetidas|length }})</h3>
+        <p><small>Pela lógica, cada Ficha deveria estar numa linha só. Conferir e corrigir: Ficha em duas
+            Operações, deixar só a flag da Operação certa; Ficha "pendente" que já tem resultado, concluir a
+            Ficha ou vinculá-la à Operação.</small></p>
+        <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive">
+            <thead>
+            <tr>
+                <th>Ficha</th>
+                <th>Abertura</th>
+                <th>Fase</th>
+                <th style="text-align: left;">Aparece em</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for ficha in resumo.repetidas %}
+            <tr>
+                <td><a href="{{ url_for('ovr', id=ficha.id) }}" target="_blank">{{ ficha.id }}</a></td>
+                <td>{{ ficha.datahora.strftime('%d/%m/%Y %H:%M') if ficha.datahora else '' }}</td>
+                <td>{{ ficha.fase }}</td>
+                <td style="text-align: left;">{{ ficha.linhas|join('; ') }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
     &nbsp;
     <div class="row col-xl-12" style=" width: 100%; overflow-x: auto;">
-        {% for op in resumo_operacoes %}
+        {% for op in resumo.linhas %}
         <div class="col-lg-3">
             <div class="panel rounded-pill panel-info">
                 <a class="op-card" href="{{ url_for('dashboard_operacoes', flag_id=op.flag_id, **periodo) }}">
@@ -103,6 +154,29 @@
     </div>
 
     <div class="table">
+        <h2>Fiscalizados</h2>
+        <table id="fiscalizados"
+               class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive">
+            <thead>
+            <tr>
+                <th style="text-align: left;">CNPJ/CPF</th>
+                <th style="text-align: left;">Nome</th>
+                <th>Fichas</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for fiscalizado in dados.fiscalizados %}
+            <tr>
+                <td style="text-align: left;">{{ fiscalizado.cnpj|mascara_cpf_cnpj }}</td>
+                <td style="text-align: left;">{{ fiscalizado.nome }}</td>
+                <td>{{ fiscalizado.qtd_fichas }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="table">
 
         <h2>Operações</h2>
         <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive">
@@ -111,6 +185,7 @@
                 <th>Ficha</th>
                 <th>Data</th>
                 <th>CE Mercante</th>
+                <th>Fiscalizado</th>
                 <th>Status</th>
                 <th>RVFs</th>
                 <th>TGs</th>
@@ -124,6 +199,8 @@
                 <td><a href="ovr?id={{ ovr.id }}" target="_blank">{{ ovr.id }}</a></td>
                 <td>{{ ovr.datahora.strftime('%d/%m/%Y %H:%M') if ovr.datahora else '' }}</td>
                 <td>{{ ovr.numeroCEmercante or '' }}</td>
+                <td>{{ ovr.cnpj_fiscalizado|mascara_cpf_cnpj }}{% if ovr.fiscalizado_nome %}<br>
+                    <small>{{ ovr.fiscalizado_nome }}</small>{% endif %}</td>
                 <td>{{ ovr.status_dashboard }}</td>
                 <td>{{ ovr.qtd_rvfs }}</td>
                 <td>{{ ovr.qtd_tgs }}</td>
@@ -138,14 +215,18 @@
     <div class="table">
 
         <h2>RVFs</h2>
-        <table class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive">
+        <table id="rvfs"
+               class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive">
             <thead>
             <tr>
                 <th>ID</th>
                 <th>Operação (Ficha)</th>
                 <th>Contêiner</th>
                 <th>Data</th>
-                <th>Descrição</th>
+                <th>Descrição (RVF)</th>
+                <th>CE</th>
+                <th>Descrição no CE</th>
+                <th>NCMs declaradas</th>
             </tr>
             </thead>
             <tbody>
@@ -156,18 +237,45 @@
                 <td>{{ rvf.numerolote or '' }}</td>
                 <td>{{ rvf.datahora.strftime('%d/%m/%Y %H:%M') if rvf.datahora else '' }}</td>
                 <td>{{ rvf.descricao }}</td>
+                <td>{{ rvf.ce }}</td>
+                <td title="{{ rvf.ce_descricao }}">{{ rvf.ce_descricao|truncate(180) }}</td>
+                <td title="{{ rvf.ce_ncms.todas|join(', ') }}">{{ rvf.ce_ncms.exibidas|join(', ') }}
+                    {%- if rvf.ce_ncms.restantes %} (+{{ rvf.ce_ncms.restantes }}){% endif %}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <p><small>NCMs declaradas: as do contêiner da RVF no CE; se o contêiner não tiver NCM no CE, todas as
+            do CE.</small></p>
+    </div>
+
+    <div class="table">
+        <h2>CEs mercantes</h2>
+        <table id="conhecimentos"
+               class="inlineTable table table-striped table-bordered table-hover table-condensed table-responsive">
+            <thead>
+            <tr>
+                <th>CE</th>
+                <th>Fichas</th>
+                <th style="text-align: left;">Descrição no CE</th>
+                <th style="text-align: left;">NCMs declaradas</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for conhecimento in dados.conhecimentos %}
+            <tr>
+                <td>{{ conhecimento.ce }}</td>
+                <td>{% for id_ficha in conhecimento.fichas %}<a href="{{ url_for('ovr', id=id_ficha) }}"
+                        target="_blank">{{ id_ficha }}</a>{% if not loop.last %}, {% endif %}{% endfor %}</td>
+                <td style="text-align: left;">
+                    {%- if conhecimento.no_mercante %}{{ conhecimento.descricao }}
+                    {%- else %}<i>CE não encontrado no Mercante</i>{% endif %}</td>
+                <td style="text-align: left;">{{ conhecimento.ncms.todas|join(', ') }}</td>
             </tr>
             {% endfor %}
             </tbody>
         </table>
     </div>
-
-    <h2>CEs mercantes</h2>
-    <ul>
-        {% for ce in dados.ces_mercantes %}
-        <li>{{ ce }}</li>
-        {% endfor %}
-    </ul>
 
     <h2>Contêineres</h2>
     <ul>
@@ -185,22 +293,39 @@
         não são exibidas Fichas arquivadas ou concluídas, porque seriam muitas. Fichas arquivadas ou concluídas
         que possam pertencer a uma operação e houve esquecimento de vinculação precisam ser pesquisadas no
         Pesquisa Fichas.</p>
+    <p>*** Fichas sem operação informada: só com o período preenchido. Fichas que não estão vinculadas a
+        nenhuma operação e tiveram resultado registrado no período (concluída = com resultado). Diferente das
+        outras linhas, aqui vale a <b>data do registro do resultado</b>, não a da abertura da Ficha.</p>
+    <p>**** Total: cada Ficha conta uma vez, mesmo que apareça em mais de uma linha; por isso pode ser menor
+        que a soma da coluna. As Fichas repetidas são listadas abaixo do resumo, para conferência.</p>
 </div>
 <div id="bottom" class="row col-sm-12">
     AJNA - Receita Federal do Brasil 2017
 </div>
 {% endblock %} {% block scripts %} {{super()}}
 <script>
+    // Atalho de ano: preenche o período de 01/01 a 31/12 do ano e filtra
+    $('#ano_atalho').change(function () {
+        var ano = $(this).val();
+        if (!ano) {
+            return;
+        }
+        $('#abertura_inicio').val(ano + '-01-01');
+        $('#abertura_fim').val(ano + '-12-31');
+        this.form.submit();
+    });
+
+    // Ordenação pelo cabeçalho: só as linhas do corpo (o rodapé de totais fica no lugar)
     $('th').click(function () {
         var index = $(this).index();
-        var table = $(this).parents('table').eq(0);
-        var rows = table.find('tr:gt(0)').toArray().sort(comparer(index));
+        var corpo = $(this).parents('table').eq(0).children('tbody');
+        var rows = corpo.children('tr').toArray().sort(comparer(index));
         this.asc = !this.asc;
         if (!this.asc) {
             rows = rows.reverse();
         }
         for (var i = 0; i < rows.length; i++) {
-            table.append(rows[i]);
+            corpo.append(rows[i]);
         }
     });
 

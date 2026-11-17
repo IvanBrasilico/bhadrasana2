@@ -5,7 +5,8 @@ from typing import Optional
 from flask import render_template, request
 from flask_caching import Cache
 
-from bhadrasana.models.operacoes_dashboard import listar_operacoes, monta_dashboard_operacao, monta_resumo_operacoes
+from bhadrasana.models.operacoes_dashboard import ID_SEM_OPERACAO, listar_operacoes, \
+    monta_detalhe_operacao, monta_resumo_operacoes
 
 # bp = Blueprint('ovr_dashboard', __name__, url_prefix='/ovr')
 
@@ -31,6 +32,21 @@ def periodo_de_abertura():
     if inicio and fim and inicio > fim:
         inicio, fim = fim, inicio
     return inicio, fim
+
+
+def anos_do_atalho(hoje: Optional[date] = None) -> list:
+    """O atalho de ano do período: o ano atual e os cinco anteriores, como (ano, rótulo)."""
+    ano_atual = (hoje or date.today()).year
+    return [(ano_atual, f'Ano atual ({ano_atual})')] + \
+        [(ano, str(ano)) for ano in range(ano_atual - 1, ano_atual - 6, -1)]
+
+
+def ano_inteiro(inicio: Optional[date], fim: Optional[date]) -> Optional[int]:
+    """O ano, quando o período é de 01/01 a 31/12 dele (para marcar o atalho na tela)."""
+    if inicio and fim and inicio.year == fim.year and \
+            (inicio.month, inicio.day, fim.month, fim.day) == (1, 1, 12, 31):
+        return inicio.year
+    return None
 
 
 def descreve_periodo(inicio: Optional[date], fim: Optional[date]) -> str:
@@ -64,27 +80,34 @@ def dashboard_app(app):
         flag_id = request.args.get('flag_id', type=int)
         inicio, fim = periodo_de_abertura()
 
-        operacoes = listar_operacoes(session)
+        # "Fichas sem operação informada" só existe com o período preenchido
+        operacoes = listar_operacoes(session, com_sem_operacao=bool(inicio or fim))
         dados = None
-        operacao_atual = None
-        resumo_operacoes = None
+        resumo = None
 
-        if flag_id:
-            operacao_atual = next((f for f in operacoes if f.id == flag_id), None)
-            if operacao_atual:
-                dados = monta_dashboard_operacao(session, flag_id, inicio, fim)
+        # flag_id desconhecido (ou a categoria sem operação sem período): mostra o resumo
+        operacao_atual = next((f for f in operacoes if f.id == flag_id), None) if flag_id else None
+        if operacao_atual:
+            dados = monta_detalhe_operacao(session, flag_id, inicio, fim)
         else:
-            resumo_operacoes = monta_resumo_operacoes(session, inicio, fim)
+            resumo = monta_resumo_operacoes(session, inicio, fim)
 
         # o período vai junto nos links das operações (só os lados preenchidos)
         periodo = {nome: valor.isoformat()
                    for nome, valor in zip(PARAMETROS_PERIODO, (inicio, fim)) if valor}
+        # o "Sem filtro" fica na Operação, menos na categoria que só existe com período
+        flag_sem_filtro = None
+        if operacao_atual and operacao_atual.id != ID_SEM_OPERACAO:
+            flag_sem_filtro = operacao_atual.id
         return render_template(
             'operacoes_dashboard.html',
             operacoes=operacoes,
             operacao_atual=operacao_atual,
             dados=dados,
-            resumo_operacoes=resumo_operacoes,
+            resumo=resumo,
             periodo=periodo,
             descricao_periodo=descreve_periodo(inicio, fim),
+            anos=anos_do_atalho(),
+            ano_selecionado=ano_inteiro(inicio, fim),
+            flag_sem_filtro=flag_sem_filtro,
         )
