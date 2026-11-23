@@ -55,6 +55,7 @@ from sqlalchemy.orm import undefer_group
 from ajna_commons.flask.log import logger
 from bhadrasana.models import operacoes_dashboard as od
 from bhadrasana.models.ovr import Enumerado, OVR, TipoResultado
+from bhadrasana.models.rvf import RVF
 from bhadrasana.models.virasana_manager import get_imagens_container
 from bhadrasana.routes.operacoes_dashboard import descreve_periodo
 from virasana.integracao.mercante.mercantealchemy import Conhecimento, Item, Manifesto, \
@@ -449,12 +450,12 @@ def dados_do_conhecimento(session, ce: str, refs: Referencias) -> Optional[dict]
     }
 
 
-def ordena_rvfs(rvfs) -> list:
+def ordena_rvfs(rvfs: list[RVF]) -> list:
     return sorted(rvfs, key=lambda rvf: (rvf.datahora or rvf.create_date or datetime.min,
                                          rvf.id or 0))
 
 
-def dados_das_rvfs(rvfs: list) -> List[dict]:
+def dados_das_rvfs(rvfs: list[RVF]) -> List[dict]:
     return [{
         'id': rvf.id,
         'data': br_data_hora(rvf.datahora or rvf.create_date),

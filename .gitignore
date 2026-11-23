@@ -177,3 +177,4 @@ virasana
 /tests/json/formato_contagil.json
 /impala_dump.sql
 /impala_dump_inserts.sql
+*.zip
