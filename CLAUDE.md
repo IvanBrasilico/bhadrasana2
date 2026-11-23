@@ -63,6 +63,14 @@ Ao investigar comportamento que não está neste repo, procurar nesses projetos 
   foi desligado (`navi-dados/PLANO_SIVANA_FMA.md`). O script fica só como volta, até ser apagado depois de alguns dias
   estáveis. A regra da Ficha de FMA agora se muda lá.
 - `bhadrasana/docx/` — geração de documentos Word a partir de modelos `.docx`.
+- `bhadrasana/estudo_de_caso/` (23/11/2026) — pacote ZIP de **estudos de caso para apresentação**: dados da Ficha e
+  do CE para o slide de abertura, escaneamento do contêiner, amostra das fotos da RVF em miniatura e um `SKILL.md` com
+  as instruções para uma IA montar o PowerPoint (três slides por caso). Só lê. Script:
+  `bhadrasana/scripts/estudo_de_caso.py` (`--ficha`, `--ano` ou nada = as 5 maiores Operações do Dashboard por Valor
+  TG + Valor Multas; em cada Operação, o caso é a Ficha de maior valor). O escaneamento é achado por contêiner + data
+  (a regra e os dias vão no pacote, para conferir). Lê as tabelas de portos e NCM do `../navi-i`, se estiver ao lado.
+  Mudar os campos do `dados.json` pede mudar o `SKILL.md` (o teste confere os nomes). Manual: seção no
+  `ajna_docs/docs2.0/docs/fichas/operacoes_dashboard.md`.
 - `bhadrasana/security/check.py` — checagens de segurança/permissão.
 - `tests/` — pytest; `tests/app_creator.py` monta uma app de teste com SQLite em memória + `mongomock`, e semeia usuários/setores fixos para os testes.
 
