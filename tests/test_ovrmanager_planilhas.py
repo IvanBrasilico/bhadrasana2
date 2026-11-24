@@ -49,18 +49,21 @@ class OVRTestCase(BaseTestCase):
         tg.numerolote = 'CCNU1234567'
         session.add(tg)
         session.commit()
-        # test xls file
+        # test xls file: importa tudo e, desde 11/2026, sem aviso de campo opcional ausente
         file_name = os.path.join(os.path.dirname(__file__), 'teste.xls')
         alert = importa_planilha_tg(session, tg, file_name)
-        assert 'Campo procedencia(País Procedência, *****) não encontrado' in alert
-        # test csv file
+        assert alert == ''
+        # test csv file: o arquivo usa vírgula e é lido com ';', nenhuma coluna é reconhecida;
+        # o aviso diz isso, e campo opcional ou não utilizado (procedência) não avisa mais
         file_name = os.path.join(os.path.dirname(__file__), 'teste_csv')
         alert = importa_planilha_tg(session, tg, file_name)
-        assert 'Campo procedencia(País Procedência, *****) não encontrado' in alert
-        # test ods file
+        assert 'Campo descricao' in alert
+        assert 'procedencia' not in alert
+        # test ods file: o arquivo não tem linha de cabeçalho, nenhuma coluna é reconhecida
         file_name = os.path.join(os.path.dirname(__file__), 'teste.ods')
         alert = importa_planilha_tg(session, tg, file_name)
-        assert 'Campo procedencia(País Procedência, *****) não encontrado' in alert
+        assert 'Campo descricao' in alert
+        assert 'procedencia' not in alert
         # test Exception file reading
         file_name_wrong = os.path.join(os.path.dirname(__file__), '123.abc')
         with self.assertRaises(Exception):

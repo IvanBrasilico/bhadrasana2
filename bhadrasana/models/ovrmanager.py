@@ -1,3 +1,4 @@
+import html
 import io
 import sys
 from sqlite3 import OperationalError
@@ -1432,6 +1433,14 @@ de_para = OrderedDict([
 ])
 
 
+# Campos cuja falta muda o resultado da importação e por isso gera aviso na tela. Os demais
+# (marca, modelo, taxa de câmbio, procedência, origem, moeda) são opcionais ou não utilizados.
+CAMPOS_COM_AVISO = ('descricao', 'ncm', 'unidadedemedida', 'qtde', 'valor')
+
+AVISO_DOLAR_SEM_TAXA = ('A planilha traz "Preço USD" e não tem a coluna "Taxa de Câmbio": '
+                        'os valores foram gravados em dólar, sem conversão para reais.')
+
+
 def procura_chave_lower(akey: str, original: dict):
     result = None
     lower_key = akey.lower()
@@ -1499,6 +1508,68 @@ def muda_chaves(original: dict) -> dict:
     return new_dict
 
 
+def texto_ou_nulo(valor, tamanho: int = 200):
+    """Texto sem espaços nas pontas, cortado em `tamanho`, ou None se vier em branco."""
+    if valor is None:
+        return None
+    return str(valor).strip()[:tamanho] or None
+
+
+# Grafias comuns nas planilhas para as unidades de medida que o sistema conhece.
+SINONIMOS_UNIDADE = {'UNIDADE': 'UN', 'UNIDADES': 'UN', 'UND': 'UN', 'UNID': 'UN',
+                     'QUILO': 'KG', 'QUILOS': 'KG', 'QUILOGRAMA': 'KG', 'QUILOGRAMAS': 'KG',
+                     'KGS': 'KG'}
+
+
+def indice_unidade_medida(valor):
+    """Índice da unidade de medida no Enumerado, ou None se o sistema não a conhece.
+
+    Ignora caixa, espaços e ponto final ("un.", "Kg") e aceita as grafias de
+    SINONIMOS_UNIDADE.
+    """
+    sigla = str(valor if valor is not None else '').strip().upper().rstrip('.').strip()
+    sigla = SINONIMOS_UNIDADE.get(sigla, sigla)
+    if not sigla:
+        return None
+    try:
+        return Enumerado.index_unidadeMedida(sigla)
+    except ValueError:
+        return None
+
+
+def alerta_unidades_desconhecidas(unidades: dict) -> str:
+    """Aviso das unidades não reconhecidas na planilha, que foram gravadas como UN.
+
+    unidades: {texto que veio na planilha: [linhas da planilha]}. O texto é escapado porque
+    a tela exibe o aviso como HTML.
+    """
+    partes = []
+    for unidade, linhas in unidades.items():
+        lista = ', '.join(str(linha) for linha in linhas[:5])
+        if len(linhas) > 5:
+            lista += f' e mais {len(linhas) - 5}'
+        rotulo = 'linhas' if len(linhas) > 1 else 'linha'
+        partes.append(f'"{html.escape(unidade[:20])}" ({rotulo} {lista})')
+    conhecidas = ' e '.join(nome for _, nome in Enumerado.unidadeMedida() if nome.strip())
+    return ('Unidade de medida não reconhecida, gravada como UN: {}. '
+            'O sistema só conhece {}.'.format('; '.join(partes), conhecidas))
+
+
+def normaliza_ncm(valor) -> str:
+    """Só os dígitos do NCM, no máximo 8, repondo o zero à esquerda perdido.
+
+    Planilhas (ex.: a exportação do SECTA) trazem o NCM como número, e os capítulos 01 a 09
+    perdem o zero inicial (09012100 vira 9012100). Todo nível do código tem quantidade par
+    de dígitos (2, 4, 6 ou 8); quantidade ímpar indica um zero à esquerda perdido.
+    """
+    if isinstance(valor, float) and valor.is_integer():
+        valor = int(valor)  # 9012100.0 não pode virar 90121000
+    digitos = ''.join([s for s in str(valor) if s.isnumeric()])
+    if len(digitos) % 2 == 1 and len(digitos) < 8:
+        digitos = '0' + digitos
+    return digitos[:8]
+
+
 def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
     if isinstance(afile, str):
         lfilename = afile
@@ -1530,17 +1601,19 @@ def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
     df = df.dropna(how='all')
     print(df.head())
     df = df.replace({np.nan: None})
+    colunas = [str(coluna).strip().lower() for coluna in df.columns]
+    valor_em_dolar_sem_taxa = 'preço usd' in colunas and 'taxa de câmbio' not in colunas
     alertas = dict()
     index = 0
     try:
         conta_linhas_puladas = 0
+        unidades_desconhecidas = {}
         for index, original_row in df.iterrows():
             row = muda_chaves(original_row)
             logger.info(row)
             if index == 0:
-                campos_faltantes = set(de_para.keys()) - set(row.keys())
-                if campos_faltantes:
-                    for campo in campos_faltantes:
+                for campo in CAMPOS_COM_AVISO:
+                    if campo not in row:
                         alternativas = ', '.join(de_para[campo])
                         alertas[campo] = f'Campo {campo}({alternativas}) não encontrado.'
             descricao = row.get('descricao')
@@ -1551,6 +1624,7 @@ def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
                 if conta_linhas_puladas > 10:
                     break
                 continue
+            modelo = texto_ou_nulo(row.get('modelo'))
             numero = row.get('numero')
             if numero:
                 itemtg = get_itemtg_numero(session, tg, numero)
@@ -1558,7 +1632,7 @@ def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
                 try:
                     itemtg = get_itemtg_descricao_qtde_modelo(
                         session, tg,
-                        row['descricao'], row['qtde'], row.get('modelo'))
+                        row['descricao'], row['qtde'], modelo)
                 except sqlalchemy.orm.exc.MultipleResultsFound:
                     logger.info('Abortando edição de linha {} da planilha {}'
                                 'devido não ser único'.format(index, lfilename))
@@ -1566,20 +1640,16 @@ def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
                 itemtg.numero = index
             itemtg.tg_id = tg.id
             itemtg.descricao = row['descricao'].strip()
-            try:
-                unidade = row.get('unidadedemedida', '').strip()
-                itemtg.unidadedemedida = Enumerado. \
-                    index_unidadeMedida(row['unidadedemedida'].strip().upper())
-                print(itemtg.unidadedemedida)
-            except ValueError as err:
+            unidade = row['unidadedemedida']
+            itemtg.unidadedemedida = indice_unidade_medida(unidade)
+            if itemtg.unidadedemedida is None:
                 itemtg.unidadedemedida = Enumerado.index_unidadeMedida('UN')
-                print(err, unidade)
-            itemtg.modelo = row.get('modelo')
-            itemtg.contramarca = row.get('marca')
+                unidades_desconhecidas.setdefault(str(unidade).strip(), []).append(index + 2)
+            itemtg.modelo = modelo
+            itemtg.contramarca = texto_ou_nulo(row.get('contramarca'))
             ncm = row.get('ncm')
             if ncm:
-                ncm = str(ncm)
-                itemtg.ncm = ''.join([s for s in ncm if s.isnumeric()])[:8]
+                itemtg.ncm = normaliza_ncm(ncm)
             else:
                 if alertas.get('ncm') is None:
                     alertas['ncm'] = 'Campo ncm ({}) não encontrado.'. \
@@ -1611,6 +1681,11 @@ def importa_planilha_tg(session, tg: TGOVR, afile) -> str:
             session.add(itemtg)
         session.commit()
         atualiza_valortotal_tg(session, tg.id)
+        if valor_em_dolar_sem_taxa:
+            alertas = {'Taxa de Câmbio': AVISO_DOLAR_SEM_TAXA, **alertas}
+        if unidades_desconhecidas:
+            alertas = {'unidade': alerta_unidades_desconhecidas(unidades_desconhecidas),
+                       **alertas}
         if len(alertas) > 0:
             return ' '.join([v for k, v in alertas.items()])
         return ''
